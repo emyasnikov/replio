@@ -173,6 +173,8 @@ class ChatLoop:
         self.session_auto_save()
 
         if self.config.get('web_search'):
-            self._perform_search(content)
+            if not self._perform_search(content):
+                print('\001\033[90m\002(Skipping AI — no search results)\001\033[0m\002')
+                return
 
         self._stream_response()
