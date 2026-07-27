@@ -54,7 +54,8 @@ class DDGResultParser(HTMLParser):
 
 def search(query: str, num_results: int = 5) -> list[dict]:
     data = urllib.parse.urlencode({'q': query}).encode()
-    req = urllib.request.Request(SEARCH_URL, data=data)
+    headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)'}
+    req = urllib.request.Request(SEARCH_URL, data=data, headers=headers)
 
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
