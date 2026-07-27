@@ -95,9 +95,13 @@ repl.ai/
 ```json
 {
   "name": "20250727_120000",
+  "model": "llama3.2",
   "messages": [
     {"role": "user", "content": "Hello", "timestamp": "2026-07-27T14:30:00+00:00"},
-    {"role": "assistant", "content": "Hi! How can I help?", "timestamp": "2026-07-27T14:30:05+00:00", "duration": 4.8}
+    {"role": "assistant", "content": "Hi! How can I help?", "timestamp": "2026-07-27T14:30:05+00:00", "duration": 4.8, "model": "llama3.2"},
+    {"role": "command", "content": "/model llama3.3", "timestamp": "2026-07-27T14:35:00+00:00"},
+    {"role": "user", "content": "Now?", "timestamp": "2026-07-27T14:35:10+00:00"},
+    {"role": "assistant", "content": "Ready.", "timestamp": "2026-07-27T14:35:15+00:00", "duration": 3.1, "model": "llama3.3"}
   ]
 }
 ```

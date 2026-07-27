@@ -27,6 +27,7 @@ def register_builtins(registry):
         if arg:
             chat.config.set('model', arg.strip())
             chat.provider.model = chat.config.get('model')
+            chat.current_session.model = chat.config.get('model')
             print(f'Model set to: {chat.config.get("model")}')
         else:
             print(f'Current model: {chat.config.get("model")}')
@@ -36,6 +37,7 @@ def register_builtins(registry):
         if arg:
             chat.config.set('provider', arg.strip())
             chat._reinit_provider()
+            chat.current_session.model = chat.config.get('model')
             print(f'Provider set to: {chat.config.get("provider")}')
         else:
             print(f'Current provider: {chat.config.get("provider")}')
@@ -61,6 +63,7 @@ def register_builtins(registry):
             chat.config.set('api_key', api_key)
 
         chat._reinit_provider()
+        chat.current_session.model = chat.config.get('model')
         print(f'Connected to {provider} ({base_url})')
 
     @registry.register('config')
@@ -96,7 +99,7 @@ def register_builtins(registry):
             return
 
         if action == 'new':
-            s = chat.sessions.create()
+            s = chat.sessions.create(model=chat.config.get('model'))
             print(f'New session: {s.name}')
         elif action == 'list':
             sessions = chat.sessions.list()
