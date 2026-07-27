@@ -10,6 +10,8 @@ DEFAULT_CONFIG = {
     'temperature': 0.7,
     'max_tokens': 2048,
     'system_prompt': '',
+    'web_search': False,
+    'search_results': 5,
 }
 
 

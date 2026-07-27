@@ -37,7 +37,11 @@ repl.ai/
 │   ├── commands/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Command registration + dispatch
-│   │   └── builtins.py      # /help, /connect, /model, etc.
+│   │   └── builtins.py      # /help, /connect, /model, /search, etc.
+│   ├── web/
+│   │   ├── __init__.py
+│   │   ├── search.py        # DuckDuckGo Lite search via html.parser
+│   │   └── display.py       # Terminal formatting + context injection
 │   └── utils/
 │       ├── __init__.py
 │       └── http.py          # urllib-based SSE streaming
@@ -82,7 +86,9 @@ repl.ai/
   "api_key": "",
   "temperature": 0.7,
   "max_tokens": 2048,
-  "system_prompt": ""
+  "system_prompt": "",
+  "web_search": false,
+  "search_results": 5
 }
 ```
 

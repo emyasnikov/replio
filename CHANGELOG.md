@@ -3,6 +3,11 @@
 ## 2026-07-27
 
 ### Added
+- Web search: DuckDuckGo Lite via `html.parser` — `/search <query>` and `/web <query>` commands
+- Auto-search mode: set `web_search: true` in config to search on every message
+- Search results displayed as compact list, injected as AI context for grounded responses
+- `web/search.py` — `DDGResultParser` (HTMLParser), search endpoint at `lite.duckduckgo.com`
+- `web/display.py` — `format_results()` for terminal, `format_context()` for AI context injection
 - Project scaffold (pyproject.toml, .venv, directory structure)
 - Config module: global + local JSON merge (`~/.config/replai/` + `.replai/`)
 - HTTP SSE streaming via urllib for live token output

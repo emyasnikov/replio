@@ -129,3 +129,16 @@ def register_builtins(registry):
         elif action == 'save':
             chat.session_auto_save()
             print('Session saved')
+
+    @registry.register('search', aliases=['web'])
+    def search_cmd(arg=''):
+        if not arg:
+            print('Usage: /search <query>')
+            return
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        chat.current_session.add_message(
+            'user', arg, timestamp=now.isoformat(timespec='seconds')
+        )
+        chat._perform_search(arg)
+        chat._stream_response()
