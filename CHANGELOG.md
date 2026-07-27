@@ -3,6 +3,15 @@
 ## 2026-07-27
 
 ### Added
+- Tool calling system: two-phase chat (non-streaming tool decision → stream final content)
+- `tools/registry.py` — decorator-based tool registration (OpenAI function calling format)
+- `tools/builtins.py` — `web_search` and `fetch_page` tools
+- `BaseProvider.chat_nonstreaming()` — returns `{role, content, tool_calls, finish_reason}`
+- Ollama provider: refactored payload generation, `chat_nonstreaming()` with `tools` support
+- `_chat_with_tools()` — decision loop that executes tool calls and injects results
+- `_show_tool_status()` — dimmed `[web_search: "query"]` status during tool execution
+- `/search` command integrated with tool calling (uses `_chat_with_tools(force_search=...)`)
+- Config default: `tool_calling: true`
 - Web search: DuckDuckGo Lite via `html.parser` — `/search <query>` and `/web <query>` commands
 - Auto-search mode: set `web_search: true` in config to search on every message
 - Search results displayed as compact list, injected as AI context for grounded responses
