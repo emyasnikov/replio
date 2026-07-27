@@ -96,8 +96,8 @@ repl.ai/
 {
   "name": "20250727_120000",
   "messages": [
-    {"role": "user", "content": "Hello"},
-    {"role": "assistant", "content": "Hi! How can I help?"}
+    {"role": "user", "content": "Hello", "timestamp": "2026-07-27T14:30:00+00:00"},
+    {"role": "assistant", "content": "Hi! How can I help?", "timestamp": "2026-07-27T14:30:05+00:00", "duration": 4.8}
   ]
 }
 ```
