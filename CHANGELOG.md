@@ -15,6 +15,8 @@
 - Streaming token display with ANSI-colored prompt
 - Timestamps on every message and duration tracking on assistant responses
 - Elapsed time display after each response
+- Model tracking: session-level `model` field + per-message `model` on each assistant response
+- Command logging: all slash commands stored as `command`-role messages in session history
 
 ### Fixed
 - `ollama.py` streaming crash: `KeyError: 'type'` on raw SSE events without `'type'` key

@@ -20,7 +20,7 @@ class ChatLoop:
 
         sessions_dir = config.local_path.parent / 'sessions'
         self.sessions = SessionManager(sessions_dir)
-        self.current_session = self.sessions.create()
+        self.current_session = self.sessions.create(model=self.config.get('model'))
         self._load_history(config)
         self.registry = CommandRegistry(self)
         register_builtins(self.registry)
@@ -96,7 +96,9 @@ class ChatLoop:
                 continue
 
             if line.startswith('/'):
+                self.current_session.add_message('command', line)
                 self.registry.dispatch(line)
+                self.session_auto_save()
             else:
                 self._handle_message(line)
 
@@ -139,5 +141,6 @@ class ChatLoop:
                 'assistant', full_response,
                 timestamp=end.isoformat(timespec='seconds'),
                 duration=round(duration, 1),
+                model=self.config.get('model'),
             )
             self.session_auto_save()
