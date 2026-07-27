@@ -20,7 +20,7 @@ class ChatLoop:
 
         sessions_dir = config.local_path.parent / 'sessions'
         self.sessions = SessionManager(sessions_dir)
-        self.current_session = self.sessions.create(model=self.config.get('model'))
+        self.current_session = self.sessions.create()
         self._load_history(config)
         self.registry = CommandRegistry(self)
         register_builtins(self.registry)
@@ -111,7 +111,7 @@ class ChatLoop:
         )
         self.session_auto_save()
 
-        print()
+        print('\001\033[90m\002\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\001\033[0m\002')
         messages = self.current_session.messages
         full_response = ''
         start = datetime.now(timezone.utc)
@@ -142,5 +142,6 @@ class ChatLoop:
                 timestamp=end.isoformat(timespec='seconds'),
                 duration=round(duration, 1),
                 model=self.config.get('model'),
+                provider=self.config.get('provider'),
             )
             self.session_auto_save()

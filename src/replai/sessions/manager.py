@@ -4,10 +4,9 @@ from pathlib import Path
 
 
 class Session:
-    def __init__(self, name: str, messages: list | None = None, model: str = ''):
+    def __init__(self, name: str, messages: list | None = None):
         self.name = name
         self.messages = messages or []
-        self.model = model
 
     def add_message(self, role: str, content: str, **kwargs):
         msg = {'role': role, 'content': content}
@@ -18,16 +17,11 @@ class Session:
         self.messages.append(msg)
 
     def to_dict(self):
-        result = {'name': self.name, 'messages': self.messages}
-        if self.model:
-            result['model'] = self.model
-        return result
+        return {'name': self.name, 'messages': self.messages}
 
     @classmethod
     def from_dict(cls, data):
-        return cls(
-            data['name'], data.get('messages', []), data.get('model', '')
-        )
+        return cls(data['name'], data.get('messages', []))
 
 
 class SessionManager:
@@ -36,10 +30,10 @@ class SessionManager:
         self.sessions_dir.mkdir(parents=True, exist_ok=True)
         self.current: Session | None = None
 
-    def create(self, name: str | None = None, model: str = '') -> Session:
+    def create(self, name: str | None = None) -> Session:
         if not name:
             name = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.current = Session(name, model=model)
+        self.current = Session(name)
         return self.current
 
     def load(self, name: str) -> Session | None:
