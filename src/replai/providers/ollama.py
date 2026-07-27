@@ -41,7 +41,7 @@ class OllamaProvider(BaseProvider):
             return
 
         for event in stream_sse(url, self._headers(), payload):
-            if event['type'] in ('done', 'error'):
+            if 'type' in event:
                 yield event
                 return
             choices = event.get('choices', [])
