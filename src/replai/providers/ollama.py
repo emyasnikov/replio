@@ -19,8 +19,7 @@ class OllamaProvider(BaseProvider):
             headers['Authorization'] = f'Bearer {self.api_key}'
         return headers
 
-    def chat(self, messages: list[dict], stream: bool = True):
-        url = f'{self.base_url}/v1/chat/completions'
+    def _payload(self, messages, stream=False, tools=None):
         payload = {
             'model': self.model,
             'messages': messages,
@@ -28,19 +27,41 @@ class OllamaProvider(BaseProvider):
             'max_tokens': self.max_tokens,
             'stream': stream,
         }
+        if tools:
+            payload['tools'] = tools
+        return payload
+
+    def _post(self, payload):
+        url = f'{self.base_url}/v1/chat/completions'
+        data = json.dumps(payload).encode('utf-8')
+        req = urllib.request.Request(url, data=data, headers=self._headers())
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read())
+
+    def chat_nonstreaming(self, messages: list[dict],
+                          tools: list[dict] | None = None) -> dict:
+        payload = self._payload(messages, stream=False, tools=tools)
+        result = self._post(payload)
+        choice = result['choices'][0]
+        message = choice['message']
+        return {
+            'role': message.get('role', 'assistant'),
+            'content': message.get('content'),
+            'tool_calls': message.get('tool_calls'),
+            'finish_reason': choice.get('finish_reason'),
+        }
+
+    def chat(self, messages: list[dict], stream: bool = True):
+        payload = self._payload(messages, stream=stream)
 
         if not stream:
-            data = json.dumps(payload).encode('utf-8')
-            req = urllib.request.Request(url, data=data,
-                                         headers=self._headers())
-            with urllib.request.urlopen(req) as resp:
-                result = json.loads(resp.read())
+            result = self._post(payload)
             content = result['choices'][0]['message']['content']
             yield {'type': 'token', 'content': content}
             yield {'type': 'done'}
             return
 
-        for event in stream_sse(url, self._headers(), payload):
+        for event in stream_sse(self._endpoint(), self._headers(), payload):
             if 'type' in event:
                 yield event
                 return
@@ -54,6 +75,9 @@ class OllamaProvider(BaseProvider):
             finish = choices[0].get('finish_reason')
             if finish:
                 yield {'type': 'done', 'reason': finish}
+
+    def _endpoint(self):
+        return f'{self.base_url}/v1/chat/completions'
 
     def list_models(self) -> list[str]:
         url = f'{self.base_url}/v1/models'

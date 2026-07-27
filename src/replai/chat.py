@@ -1,4 +1,5 @@
 import sys
+import json
 import readline
 import os
 from datetime import datetime, timezone
@@ -146,7 +147,7 @@ class ChatLoop:
 
         return full_response
 
-    def _perform_search(self, query: str):
+    def _perform_search(self, query: str, silent: bool = False) -> str | None:
         from .web.search import search as web_search
         from .web.display import format_results, format_context
 
@@ -154,16 +155,86 @@ class ChatLoop:
         results = web_search(query, num)
 
         if not results:
-            print('\001\033[90m\002(no search results)\001\033[0m\002')
-            return False
+            if not silent:
+                print('\001\033[90m\002(no search results)\001\033[0m\002')
+            return None
 
-        print()
-        print(format_results(query, results))
+        if not silent:
+            print()
+            print(format_results(query, results))
 
-        context = format_context(query, results)
-        self.current_session.add_message('system', context)
+        return format_context(query, results)
+
+    def _init_tooling(self):
+        if not self.config.get('tool_calling'):
+            self._tool_registry = None
+            return None
+        from .tools.registry import ToolRegistry
+        from .tools.builtins import register_tools
+        self._tool_registry = ToolRegistry()
+        register_tools(self._tool_registry)
+        return self._tool_registry.schema()
+
+    def _show_tool_status(self, name, arguments):
+        args_str = ', '.join(f'{k}={v!r}' for k, v in arguments.items())
+        print(f'\001\033[90m\002[{name}: {args_str}]\001\033[0m\002')
+
+    def _output_content(self, content):
+        end = datetime.now(timezone.utc)
+        elapsed = round((end - self._response_start).total_seconds(), 1)
+
+        print(f'\001\033[33m\002<<<\001\033[0m\002 {content}')
+        print(f'\001\033[90m\002({elapsed:.1f}s)\001\033[0m\002')
+
+        self.current_session.add_message(
+            'assistant', content,
+            timestamp=end.isoformat(timespec='seconds'),
+            duration=elapsed,
+            model=self.config.get('model'),
+            provider=self.config.get('provider'),
+        )
         self.session_auto_save()
-        return True
+
+    def _chat_with_tools(self, force_search: str | None = None):
+        messages = self.current_session.messages
+        tools_schema = self._init_tooling()
+        self._response_start = datetime.now(timezone.utc)
+
+        if force_search:
+            context = self._perform_search(force_search, silent=False)
+            if context:
+                messages.append({
+                    'role': 'tool',
+                    'tool_call_id': 'forced',
+                    'content': context,
+                })
+
+        while True:
+            result = self.provider.chat_nonstreaming(messages, tools=tools_schema)
+
+            tcs = result.get('tool_calls')
+            if tcs:
+                messages.append({
+                    'role': 'assistant',
+                    'content': result.get('content'),
+                    'tool_calls': tcs,
+                })
+                for tc in tcs:
+                    name = tc['function']['name']
+                    args = json.loads(tc['function']['arguments'])
+                    self._show_tool_status(name, args)
+                    output = self._tool_registry.execute(name, args)
+                    messages.append({
+                        'role': 'tool',
+                        'tool_call_id': tc['id'],
+                        'content': output,
+                    })
+                continue
+
+            content = result.get('content', '')
+            if content:
+                self._output_content(content)
+            break
 
     def _handle_message(self, content):
         now = datetime.now(timezone.utc)
@@ -172,9 +243,15 @@ class ChatLoop:
         )
         self.session_auto_save()
 
-        if self.config.get('web_search'):
-            if not self._perform_search(content):
+        if self.config.get('tool_calling'):
+            self._chat_with_tools()
+        elif self.config.get('web_search'):
+            context = self._perform_search(content, silent=True)
+            if context:
+                self.current_session.add_message('system', context)
+            else:
                 print('\001\033[90m\002(Skipping AI — no search results)\001\033[0m\002')
                 return
-
-        self._stream_response()
+            self._stream_response()
+        else:
+            self._stream_response()

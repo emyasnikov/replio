@@ -38,6 +38,10 @@ repl.ai/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Command registration + dispatch
 │   │   └── builtins.py      # /help, /connect, /model, /search, etc.
+│   ├── tools/
+│   │   ├── __init__.py
+│   │   ├── registry.py      # Tool registration + dispatch (OpenAI function calling)
+│   │   └── builtins.py      # web_search, fetch_page tools
 │   ├── web/
 │   │   ├── __init__.py
 │   │   ├── search.py        # DuckDuckGo Lite search via html.parser
@@ -64,6 +68,8 @@ repl.ai/
 - Config: global (`~/.config/replai/config.json`) → local (`.replai/config.json`) merge, local wins
 - Sessions stored as `.replai/sessions/<name>.json`
 - Slash commands registered via `@registry.register()` decorator
+- Tools registered via `@tool_registry.register()` decorator (OpenAI function calling format)
+- Two-phase chat when `tool_calling: true`: non-streaming tool decision loop → stream final content
 
 ### Adding a Provider
 1. Create `src/replai/providers/<name>.py`
@@ -76,6 +82,13 @@ repl.ai/
 2. Use `@registry.register('name', aliases=['a1', 'a2'])` decorator
 3. Handler receives one string argument (the text after the command name)
 
+### Adding a Tool
+1. Open `tools/builtins.py`
+2. Use `@registry.register(name, description, parameters)` decorator
+3. parameters follow OpenAI function calling JSON schema format
+4. Handler receives keyword arguments matching the schema
+5. Return a string (the tool result injected into the conversation)
+
 ## Config Schema
 
 ```json
@@ -87,6 +100,7 @@ repl.ai/
   "temperature": 0.7,
   "max_tokens": 2048,
   "system_prompt": "",
+  "tool_calling": true,
   "web_search": false,
   "search_results": 5
 }
@@ -108,5 +122,12 @@ repl.ai/
     {"role": "user", "content": "Now?", "timestamp": "2026-07-27T14:35:10+00:00"},
     {"role": "assistant", "content": "Ready.", "timestamp": "2026-07-27T14:35:15+00:00", "duration": 3.1, "model": "llama3.3", "provider": "ollama"}
   ]
+}
+
+## Tool Call Messages
+
+```json
+{"role": "assistant", "tool_calls": [{"id": "call_xxx", "type": "function", "function": {"name": "web_search", "arguments": "{\"query\": \"latest Python\"}"}}], "timestamp": "..."},
+{"role": "tool", "tool_call_id": "call_xxx", "content": "Web search results...", "timestamp": "..."},
 }
 ```

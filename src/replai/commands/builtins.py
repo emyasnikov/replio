@@ -140,7 +140,10 @@ def register_builtins(registry):
         chat.current_session.add_message(
             'user', arg, timestamp=now.isoformat(timespec='seconds')
         )
-        if not chat._perform_search(arg):
-            print('No results found — try a different query.')
-            return
-        chat._stream_response()
+        if chat.config.get('tool_calling'):
+            chat._chat_with_tools(force_search=arg)
+        else:
+            if not chat._perform_search(arg):
+                print('No results found — try a different query.')
+                return
+            chat._stream_response()

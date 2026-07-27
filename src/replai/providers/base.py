@@ -11,5 +11,9 @@ class BaseProvider:
     def chat(self, messages: list[dict], stream: bool = True):
         raise NotImplementedError
 
+    def chat_nonstreaming(self, messages: list[dict],
+                          tools: list[dict] | None = None) -> dict:
+        raise NotImplementedError
+
     def list_models(self) -> list[str]:
         raise NotImplementedError
