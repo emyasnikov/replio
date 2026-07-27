@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -8,8 +8,13 @@ class Session:
         self.name = name
         self.messages = messages or []
 
-    def add_message(self, role: str, content: str):
-        self.messages.append({'role': role, 'content': content})
+    def add_message(self, role: str, content: str, **kwargs):
+        msg = {'role': role, 'content': content}
+        msg['timestamp'] = kwargs.pop(
+            'timestamp', datetime.now(timezone.utc).isoformat(timespec='seconds')
+        )
+        msg.update(kwargs)
+        self.messages.append(msg)
 
     def to_dict(self):
         return {'name': self.name, 'messages': self.messages}

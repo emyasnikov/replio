@@ -1,6 +1,7 @@
 import sys
 import readline
 import os
+from datetime import datetime, timezone
 
 from .config import Config
 from .providers.ollama import OllamaProvider
@@ -102,12 +103,16 @@ class ChatLoop:
         self._save_history()
 
     def _handle_message(self, content):
-        self.current_session.add_message('user', content)
+        now = datetime.now(timezone.utc)
+        self.current_session.add_message(
+            'user', content, timestamp=now.isoformat(timespec='seconds')
+        )
         self.session_auto_save()
 
         print()
         messages = self.current_session.messages
         full_response = ''
+        start = datetime.now(timezone.utc)
 
         for event in self.provider.chat(messages):
             t = event.get('type', '')
@@ -122,9 +127,17 @@ class ChatLoop:
                 print(f'\001\033[91m\002[Error {code}]\001\033[0m\002 {msg}')
                 break
             elif t == 'done':
+                elapsed = (datetime.now(timezone.utc) - start).total_seconds()
                 print()
+                print(f'\001\033[90m\002({elapsed:.1f}s)\001\033[0m\002')
                 break
 
         if full_response:
-            self.current_session.add_message('assistant', full_response)
+            end = datetime.now(timezone.utc)
+            duration = (end - start).total_seconds()
+            self.current_session.add_message(
+                'assistant', full_response,
+                timestamp=end.isoformat(timespec='seconds'),
+                duration=round(duration, 1),
+            )
             self.session_auto_save()

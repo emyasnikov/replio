@@ -13,4 +13,11 @@
 - Built-in slash commands: `/help`, `/connect`, `/model`, `/provider`, `/session`, `/config`, `/exit`
 - REPL loop with readline input history and tab completion
 - Streaming token display with ANSI-colored prompt
-- Documentation: README.md, AGENTS.md, TODO.md, CHANGELOG.md
+- Timestamps on every message and duration tracking on assistant responses
+- Elapsed time display after each response
+
+### Fixed
+- `ollama.py` streaming crash: `KeyError: 'type'` on raw SSE events without `'type'` key
+
+### Documentation
+- README.md, AGENTS.md, TODO.md, CHANGELOG.md
