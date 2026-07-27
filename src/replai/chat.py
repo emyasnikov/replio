@@ -104,13 +104,7 @@ class ChatLoop:
 
         self._save_history()
 
-    def _handle_message(self, content):
-        now = datetime.now(timezone.utc)
-        self.current_session.add_message(
-            'user', content, timestamp=now.isoformat(timespec='seconds')
-        )
-        self.session_auto_save()
-
+    def _stream_response(self) -> str | None:
         messages = self.current_session.messages
         full_response = ''
         start = datetime.now(timezone.utc)
@@ -131,7 +125,7 @@ class ChatLoop:
                 code = event.get('code', '')
                 msg = event.get('message', 'Unknown error')
                 print(f'\001\033[91m\002[Error {code}]\001\033[0m\002 {msg}')
-                break
+                return None
             elif t == 'done':
                 elapsed = (datetime.now(timezone.utc) - start).total_seconds()
                 print()
@@ -149,3 +143,36 @@ class ChatLoop:
                 provider=self.config.get('provider'),
             )
             self.session_auto_save()
+
+        return full_response
+
+    def _perform_search(self, query: str):
+        from .web.search import search as web_search
+        from .web.display import format_results, format_context
+
+        num = self.config.get('search_results', 5)
+        results = web_search(query, num)
+
+        if not results:
+            print('\001\033[90m\002(no search results)\001\033[0m\002')
+            return False
+
+        print()
+        print(format_results(query, results))
+
+        context = format_context(query, results)
+        self.current_session.add_message('system', context)
+        self.session_auto_save()
+        return True
+
+    def _handle_message(self, content):
+        now = datetime.now(timezone.utc)
+        self.current_session.add_message(
+            'user', content, timestamp=now.isoformat(timespec='seconds')
+        )
+        self.session_auto_save()
+
+        if self.config.get('web_search'):
+            self._perform_search(content)
+
+        self._stream_response()
