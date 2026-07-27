@@ -111,14 +111,18 @@ class ChatLoop:
         )
         self.session_auto_save()
 
-        print('\001\033[90m\002\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\001\033[0m\002')
         messages = self.current_session.messages
         full_response = ''
         start = datetime.now(timezone.utc)
+        first_token = True
 
         for event in self.provider.chat(messages):
             t = event.get('type', '')
             if t == 'token':
+                if first_token:
+                    sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
+                    sys.stdout.flush()
+                    first_token = False
                 token = event['content']
                 sys.stdout.write(token)
                 sys.stdout.flush()

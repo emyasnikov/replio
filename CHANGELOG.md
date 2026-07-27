@@ -17,7 +17,7 @@
 - Elapsed time display after each response
 - Model tracking: per-message `model` + `provider` on each assistant response
 - Command logging: all slash commands stored as `command`-role messages in session history
-- Visual separator line between user input and AI response
+- `<<< ` prefix on streaming responses for clear user/AI separation
 
 ### Fixed
 - `ollama.py` streaming crash: `KeyError: 'type'` on raw SSE events without `'type'` key
