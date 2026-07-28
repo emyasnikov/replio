@@ -1,4 +1,43 @@
 import json
+from html.parser import HTMLParser
+import re
+
+
+class _TextExtractor(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self._parts = []
+        self._skip_depth = 0
+        self._skip_tags = frozenset({'script', 'style', 'svg', 'noscript'})
+        self._block_tags = frozenset({
+            'p', 'br', 'li', 'div', 'tr', 'td', 'th',
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'blockquote', 'pre', 'hr',
+        })
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self._skip_tags:
+            self._skip_depth += 1
+        if self._skip_depth == 0 and tag in self._block_tags:
+            self._parts.append('\n')
+
+    def handle_endtag(self, tag):
+        if tag in self._skip_tags:
+            self._skip_depth = max(0, self._skip_depth - 1)
+        if self._skip_depth == 0 and tag in self._block_tags:
+            self._parts.append('\n')
+
+    def handle_data(self, data):
+        if self._skip_depth == 0:
+            self._parts.append(data)
+
+    def text(self):
+        text = ''.join(self._parts)
+        text = re.sub(r' +', ' ', text)
+        text = re.sub(r'\n ', '\n', text)
+        text = re.sub(r' \n', '\n', text)
+        text = re.sub(r'\n{3,}', '\n\n', text)
+        return text.strip()
 
 
 def register_tools(registry):
@@ -48,9 +87,9 @@ def register_tools(registry):
             )
             with urllib.request.urlopen(req, timeout=15) as resp:
                 content = resp.read().decode('utf-8', errors='replace')
-            import re
-            text = re.sub(r'<[^>]+>', ' ', content)
-            text = re.sub(r'\s+', ' ', text).strip()
+            extractor = _TextExtractor()
+            extractor.feed(content)
+            text = extractor.text()
             if len(text) > 8000:
                 text = text[:8000] + '\n... (truncated)'
             return text
