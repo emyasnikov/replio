@@ -28,7 +28,7 @@
 - [x] Auto-search mode (`web_search: true` config)
 
 ## Polish
-- [ ] Verify tool calling integration end-to-end
+- [x] Verify tool calling integration end-to-end
 - [ ] Add `tool_status_visible` config flag (default `true`)
 - [ ] Search term extraction from user messages (for `fetch_page` tool)
 - [ ] Edge cases: streaming when `tool_calling=true` but no tools used
