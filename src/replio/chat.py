@@ -131,7 +131,7 @@ class ChatLoop:
                     if not thinking:
                         idx = -1
                         marker = ''
-                        for m in ('<thinking>', '...'):
+                        for m in ('<thinking>',):
                             pos = token.find(m)
                             if pos != -1 and (idx == -1 or pos < idx):
                                 idx = pos
@@ -157,20 +157,28 @@ class ChatLoop:
                             token = token[idx + len(marker):]
                             thinking = True
                         else:
-                            segments = self._render_token(token, md_state)
-                            for text, ansi in segments:
+                            if self.config.get('markdown_streaming'):
+                                segments = self._render_token(token, md_state)
+                                for text, ansi in segments:
+                                    if first_content:
+                                        sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
+                                        sys.stdout.flush()
+                                        first_content = False
+                                    sys.stdout.write(f'\001{ansi}\002{text}\001\033[0m\002')
+                                    sys.stdout.flush()
+                            else:
                                 if first_content:
                                     sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
                                     sys.stdout.flush()
                                     first_content = False
-                                sys.stdout.write(f'\001{ansi}\002{text}\001\033[0m\002')
+                                sys.stdout.write('\001\033[33m\002' + token + '\001\033[0m\002')
                                 sys.stdout.flush()
                             full_response += token
                             token = ''
                     else:
                         closer = ''
                         closer_pos = -1
-                        for c in ('...', '</thinking>'):
+                        for c in ('</thinking>',):
                             pos = token.find(c)
                             if pos != -1 and (closer_pos == -1 or pos < closer_pos):
                                 closer_pos = pos
