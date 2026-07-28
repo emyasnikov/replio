@@ -55,3 +55,5 @@
 - Removed `...` as thinking marker (too many false positives in normal text)
 - Removed `...` as thinking closer (same issue)
 - Markdown streaming now off by default; the state machine was unreliable on real streaming output
+- `_chat_with_tools()` no longer skips `_stream_response()` when `chat_nonstreaming` returns empty/null content — final response is always streamed
+- Added 3 new test cases: empty-content, multiple tool calls, and API error path (now 7 tests total)
