@@ -35,7 +35,7 @@
 - [x] Error handling improvements (network timeout, auth errors)
 - [x] Thinking/reasoning token detection and dimmed display
 - [x] Markdown-aware streaming (basic formatting)
-- [ ] Auto-session naming with first user message as context hint
+- [x] Auto-session naming with first user message as context hint
 
 ## Sessions & Providers
 - [ ] Session export to Markdown
