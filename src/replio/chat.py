@@ -223,6 +223,11 @@ class ChatLoop:
         while True:
             result = self.provider.chat_nonstreaming(messages, tools=tools_schema)
 
+            if 'error' in result:
+                err = result['error']
+                print(f'\001\033[91m\002[Error {err["code"]}]\001\033[0m\002 {err["message"]}')
+                break
+
             tcs = result.get('tool_calls')
             if tcs:
                 messages.append({
