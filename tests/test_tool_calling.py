@@ -63,6 +63,7 @@ class TestToolCalling(unittest.TestCase):
         }
         self.chat._chat_with_tools()
         self.chat._stream_response.assert_called_once()
+        self.chat.session_auto_save.assert_called()
 
     def test_single_tool_then_final(self):
         self.chat.provider.chat_nonstreaming.side_effect = [
@@ -87,6 +88,7 @@ class TestToolCalling(unittest.TestCase):
 
         self.chat._show_tool_status.assert_called_once()
         self.chat._stream_response.assert_called_once()
+        self.chat.session_auto_save.assert_called()
         tool_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'tool']
         self.assertEqual(len(tool_msgs), 1)
 
@@ -112,6 +114,7 @@ class TestToolCalling(unittest.TestCase):
         self.assertEqual(len(tool_msgs), 1)
         self.assertIn('unknown tool', tool_msgs[0]['content'].lower())
         self.chat._stream_response.assert_called_once()
+        self.chat.session_auto_save.assert_called()
 
     def test_force_search_injects_context(self):
         self.chat.provider.chat_nonstreaming.return_value = {
@@ -126,6 +129,7 @@ class TestToolCalling(unittest.TestCase):
         self.assertEqual(len(tool_msgs), 1)
         self.assertEqual(tool_msgs[0]['tool_call_id'], 'forced')
         self.chat._stream_response.assert_called_once()
+        self.chat.session_auto_save.assert_called()
 
     def test_empty_content_still_streams(self):
         self.chat.provider.chat_nonstreaming.return_value = {
@@ -136,6 +140,22 @@ class TestToolCalling(unittest.TestCase):
         }
         self.chat._chat_with_tools()
         self.chat._stream_response.assert_called_once()
+        self.chat.session_auto_save.assert_called()
+
+    def test_empty_stream_falls_back_to_nonstreaming_content(self):
+        self.chat.provider.chat_nonstreaming.return_value = {
+            'content': 'Fallback answer.',
+            'tool_calls': None,
+            'finish_reason': 'stop',
+            'role': 'assistant',
+        }
+        self.chat._stream_response = MagicMock(return_value='')
+        self.chat._chat_with_tools()
+        self.chat._stream_response.assert_called_once()
+        self.chat.session_auto_save.assert_called()
+        assistant_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'assistant']
+        self.assertEqual(len(assistant_msgs), 1)
+        self.assertEqual(assistant_msgs[0]['content'], 'Fallback answer.')
 
     def test_multiple_tool_calls(self):
         self.chat.provider.chat_nonstreaming.side_effect = [
@@ -163,6 +183,7 @@ class TestToolCalling(unittest.TestCase):
 
         self.assertEqual(self.chat._show_tool_status.call_count, 2)
         self.chat._stream_response.assert_called_once()
+        self.chat.session_auto_save.assert_called()
         tool_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'tool']
         self.assertEqual(len(tool_msgs), 2)
 
@@ -172,6 +193,7 @@ class TestToolCalling(unittest.TestCase):
         }
         self.chat._chat_with_tools()
         self.chat._stream_response.assert_not_called()
+        self.chat.session_auto_save.assert_called()
 
     def tearDown(self):
         self.temp_dir.cleanup()
