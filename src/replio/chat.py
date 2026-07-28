@@ -222,8 +222,8 @@ class ChatLoop:
                 model=self.config.get('model'),
                 provider=self.config.get('provider'),
             )
-            self.session_auto_save()
 
+        self.session_auto_save()
         return full_response
 
     def _perform_search(self, query: str, silent: bool = False) -> str | None:
@@ -373,6 +373,7 @@ class ChatLoop:
                     'role': 'assistant',
                     'content': result.get('content'),
                     'tool_calls': tcs,
+                    'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
                 })
                 for tc in tcs:
                     name = tc['function']['name']
@@ -391,9 +392,11 @@ class ChatLoop:
                         'role': 'tool',
                         'tool_call_id': tc['id'],
                         'content': output,
+                        'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
                     })
                 continue
 
+            self.session_auto_save()
             self._stream_response()
             break
 
