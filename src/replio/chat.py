@@ -394,9 +394,7 @@ class ChatLoop:
                     })
                 continue
 
-            content = result.get('content', '')
-            if content:
-                self._stream_response()
+            self._stream_response()
             break
 
     def _handle_message(self, content):
