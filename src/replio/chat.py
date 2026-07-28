@@ -144,7 +144,7 @@ class ChatLoop:
                                     sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
                                     sys.stdout.flush()
                                     first_content = False
-                                sys.stdout.write('\001\033[33m\002' + before + '\001\033[0m\002')
+                                sys.stdout.write(before)
                                 sys.stdout.flush()
                                 full_response += before
                             if first_content:
@@ -172,7 +172,7 @@ class ChatLoop:
                                     sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
                                     sys.stdout.flush()
                                     first_content = False
-                                sys.stdout.write('\001\033[33m\002' + token + '\001\033[0m\002')
+                                sys.stdout.write(token)
                                 sys.stdout.flush()
                             full_response += token
                             token = ''
@@ -190,7 +190,7 @@ class ChatLoop:
                                 sys.stdout.write('\001\033[90m\002' + before + '\001\033[0m\002')
                                 sys.stdout.flush()
                                 full_response += before
-                            sys.stdout.write('\001\033[33m\002' + closer + '\001\033[0m\002')
+                            sys.stdout.write(closer)
                             sys.stdout.flush()
                             full_response += closer
                             token = token[closer_pos + len(closer):]
@@ -315,11 +315,11 @@ class ChatLoop:
                 if idx != -1:
                     before = token[:idx]
                     if before:
-                        segments.append((before, '\033[1m\033[33m'))
+                        segments.append((before, '\033[1m'))
                     state['bold'] = False
                     token = token[idx + 2:]
                 else:
-                    segments.append((token, '\033[1m\033[33m'))
+                    segments.append((token, '\033[1m'))
                     token = ''
             else:
                 idx = -1
@@ -332,7 +332,7 @@ class ChatLoop:
                 if idx != -1:
                     before = token[:idx]
                     if before:
-                        segments.append((before, '\033[33m'))
+                        segments.append((before, ''))
                     if marker == '```':
                         state['code_block'] = True
                     elif marker == '**':
@@ -341,7 +341,7 @@ class ChatLoop:
                         state['inline_code'] = True
                     token = token[idx + len(marker):]
                 else:
-                    segments.append((token, '\033[33m'))
+                    segments.append((token, ''))
                     token = ''
         return segments
 
