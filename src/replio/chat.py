@@ -397,6 +397,16 @@ class ChatLoop:
         )
         self.session_auto_save()
 
+        user_msgs = [m for m in self.current_session.messages if m['role'] == 'user']
+        if len(user_msgs) == 1:
+            name = ''.join(c if c.isalnum() or c in '-_ ' else '' for c in content[:40]).strip().replace(' ', '_')
+            if name:
+                old = self.sessions.sessions_dir / f'{self.current_session.name}.json'
+                self.current_session.name = name.lower()
+                new = self.sessions.sessions_dir / f'{self.current_session.name}.json'
+                if old.exists() and old != new:
+                    old.rename(new)
+
         if self.config.get('tool_calling'):
             self._chat_with_tools()
         elif self.config.get('web_search'):
