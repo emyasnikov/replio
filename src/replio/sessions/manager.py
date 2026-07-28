@@ -17,7 +17,8 @@ class Session:
         self.messages.append(msg)
 
     def to_dict(self):
-        return {'name': self.name, 'messages': self.messages}
+        visible = [m for m in self.messages if m.get('role') != 'tool']
+        return {'name': self.name, 'messages': visible}
 
     @classmethod
     def from_dict(cls, data):
