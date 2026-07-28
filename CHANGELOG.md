@@ -48,3 +48,4 @@
 - `_chat_with_tools()`: when no tools are used, now calls `_stream_response()` for live token output instead of dumping the full response at once
 - Error handling: `_post()`, `chat_nonstreaming()`, `chat()`, `_chat_with_tools()`, and `list_models()` now catch `HTTPError` (auth 401, server 500) and `URLError` (network, timeout) gracefully — errors print in red, REPL continues
 - Thinking/reasoning token detection: provider-level `reasoning_content` field (DeepSeek R1, o1, o3) + content-level `...` and `<thinking>` marker parsing. Thinking tokens display in dimmed gray. Configurable via `show_thinking` (default `true`)
+- Markdown-aware streaming: code blocks in cyan, inline code in green, bold text rendered with ANSI bold. Markers consumed from display but preserved in session history. Via `_render_token()` state machine in `_stream_response()`

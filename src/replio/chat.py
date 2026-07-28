@@ -112,6 +112,7 @@ class ChatLoop:
         first_content = True
         show_thinking = self.config.get('show_thinking', True)
         thinking = False
+        md_state = {'code_block': False, 'inline_code': False, 'bold': False}
 
         for event in self.provider.chat(messages):
             t = event.get('type', '')
@@ -156,12 +157,14 @@ class ChatLoop:
                             token = token[idx + len(marker):]
                             thinking = True
                         else:
-                            if first_content:
-                                sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
+                            segments = self._render_token(token, md_state)
+                            for text, ansi in segments:
+                                if first_content:
+                                    sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
+                                    sys.stdout.flush()
+                                    first_content = False
+                                sys.stdout.write(f'\001{ansi}\002{text}\001\033[0m\002')
                                 sys.stdout.flush()
-                                first_content = False
-                            sys.stdout.write('\001\033[33m\002' + token + '\001\033[0m\002')
-                            sys.stdout.flush()
                             full_response += token
                             token = ''
                     else:
@@ -272,6 +275,66 @@ class ChatLoop:
         )
         refined_query = (refined.get('content') or query).strip().strip('"\'')
         return refined_query if refined_query else query
+
+    def _render_token(self, token: str, state: dict) -> list[tuple[str, str]]:
+        segments = []
+        while token:
+            if state['code_block']:
+                idx = token.find('```')
+                if idx != -1:
+                    before = token[:idx]
+                    if before:
+                        segments.append((before, '\033[36m'))
+                    state['code_block'] = False
+                    token = token[idx + 3:]
+                else:
+                    segments.append((token, '\033[36m'))
+                    token = ''
+            elif state['inline_code']:
+                idx = token.find('`')
+                if idx != -1:
+                    before = token[:idx]
+                    if before:
+                        segments.append((before, '\033[32m'))
+                    state['inline_code'] = False
+                    token = token[idx + 1:]
+                else:
+                    segments.append((token, '\033[32m'))
+                    token = ''
+            elif state['bold']:
+                idx = token.find('**')
+                if idx != -1:
+                    before = token[:idx]
+                    if before:
+                        segments.append((before, '\033[1m\033[33m'))
+                    state['bold'] = False
+                    token = token[idx + 2:]
+                else:
+                    segments.append((token, '\033[1m\033[33m'))
+                    token = ''
+            else:
+                idx = -1
+                marker = ''
+                for m in ('```', '**', '`'):
+                    pos = token.find(m)
+                    if pos != -1 and (idx == -1 or pos < idx):
+                        idx = pos
+                        marker = m
+                if idx != -1:
+                    before = token[:idx]
+                    if before:
+                        segments.append((before, '\033[33m'))
+                    if marker == '```':
+                        state['code_block'] = True
+                    elif marker == '**':
+                        state['bold'] = True
+                    elif marker == '`':
+                        state['inline_code'] = True
+                    token = token[idx + len(marker):]
+                else:
+                    segments.append((token, '\033[33m'))
+                    token = ''
+        return segments
 
     def _chat_with_tools(self, force_search: str | None = None):
         messages = self.current_session.messages

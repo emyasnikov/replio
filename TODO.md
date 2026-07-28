@@ -34,7 +34,7 @@
 - [x] Edge cases: streaming when `tool_calling=true` but no tools used
 - [x] Error handling improvements (network timeout, auth errors)
 - [x] Thinking/reasoning token detection and dimmed display
-- [ ] Markdown-aware streaming (basic formatting)
+- [x] Markdown-aware streaming (basic formatting)
 - [ ] Auto-session naming with first user message as context hint
 
 ## Sessions & Providers
@@ -47,6 +47,7 @@
 
 ## Future Optimizations
 - [ ] Unified streaming: rewrite `_chat_with_tools()` to use a single SSE stream, detecting tool_calls vs content from the first delta. Eliminates double-call cost when no tools are used.
+- [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
 
 ## Advanced
 - [ ] Multi-line input (detect `"""` or `'''` blocks)
