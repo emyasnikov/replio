@@ -18,11 +18,11 @@ DEFAULT_CONFIG = {
 
 class Config:
     def __init__(self, path: str | None = None):
-        self.global_path = Path.home() / '.config' / 'replai' / 'config.json'
+        self.global_path = Path.home() / '.config' / 'replio' / 'config.json'
         if path:
-            self.local_path = Path(path).resolve() / '.replai' / 'config.json'
+            self.local_path = Path(path).resolve() / '.replio' / 'config.json'
         else:
-            self.local_path = Path.cwd() / '.replai' / 'config.json'
+            self.local_path = Path.cwd() / '.replio' / 'config.json'
         self.data = dict(DEFAULT_CONFIG)
         self._load()
 

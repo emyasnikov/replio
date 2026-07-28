@@ -7,7 +7,7 @@ from .chat import ChatLoop
 
 def main():
     parser = argparse.ArgumentParser(
-        description='REPL.ai — A terminal-based REPL AI chat application'
+        description='REPL.io — A terminal-based REPL AI chat application'
     )
     parser.add_argument(
         '--path', '-p',

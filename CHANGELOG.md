@@ -18,7 +18,7 @@
 - `web/search.py` — `DDGResultParser` (HTMLParser), search endpoint at `lite.duckduckgo.com`
 - `web/display.py` — `format_results()` for terminal, `format_context()` for AI context injection
 - Project scaffold (pyproject.toml, .venv, directory structure)
-- Config module: global + local JSON merge (`~/.config/replai/` + `.replai/`)
+- Config module: global + local JSON merge (`~/.config/replio/` + `.replio/`)
 - HTTP SSE streaming via urllib for live token output
 - Provider abstraction layer (OpenAI-compatible `/v1/chat/completions`)
 - Ollama cloud provider (defaults to `https://api.ollama.com`)

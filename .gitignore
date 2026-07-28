@@ -1,7 +1,7 @@
 .venv/
 __pycache__/
 *.pyc
-.replai/
+.replio/
 *.egg-info/
 dist/
 build/
