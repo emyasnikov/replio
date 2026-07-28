@@ -222,7 +222,8 @@ class ChatLoop:
                 for tc in tcs:
                     name = tc['function']['name']
                     args = json.loads(tc['function']['arguments'])
-                    self._show_tool_status(name, args)
+                    if self.config.get('tool_status_visible', True):
+                        self._show_tool_status(name, args)
                     output = self._tool_registry.execute(name, args)
                     messages.append({
                         'role': 'tool',
