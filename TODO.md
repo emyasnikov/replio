@@ -55,3 +55,12 @@
 - [ ] Config validation (test connection on change)
 - [ ] Custom system prompts per session
 - [ ] Streaming with thinking/reasoning block toggle
+
+## Ideas (from AI brainstorming)
+- [ ] Citations / source attribution — return URL + snippet with every answer
+- [ ] Bookmarks — `/bookmark add/remove/list` for session pinning
+- [ ] Interactive data analysis — CSV querying, SQL execution, code eval in REPL
+- [ ] Notebook mode — persistent editable cells with run outputs
+- [ ] Hybrid web + local RAG — vector store (FAISS/Weaviate), embeddings, local document search
+- [ ] Command palette / fuzzy search — CTRL-P style history search
+- [ ] Topic-aware ranking — classifier for query intent to weight search results
