@@ -109,19 +109,86 @@ class ChatLoop:
         messages = self.current_session.messages
         full_response = ''
         start = datetime.now(timezone.utc)
-        first_token = True
+        first_content = True
+        show_thinking = self.config.get('show_thinking', True)
+        thinking = False
 
         for event in self.provider.chat(messages):
             t = event.get('type', '')
-            if t == 'token':
-                if first_token:
-                    sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
+            if t == 'thinking':
+                if show_thinking:
+                    if first_content:
+                        sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
+                        sys.stdout.flush()
+                        first_content = False
+                    sys.stdout.write('\001\033[90m\002' + event['content'] + '\001\033[0m\002')
                     sys.stdout.flush()
-                    first_token = False
+                    full_response += event['content']
+            elif t == 'token':
                 token = event['content']
-                sys.stdout.write(token)
-                sys.stdout.flush()
-                full_response += token
+                while token:
+                    if not thinking:
+                        idx = -1
+                        marker = ''
+                        for m in ('<thinking>', '...'):
+                            pos = token.find(m)
+                            if pos != -1 and (idx == -1 or pos < idx):
+                                idx = pos
+                                marker = m
+                        if idx != -1:
+                            before = token[:idx]
+                            if before:
+                                if first_content:
+                                    sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
+                                    sys.stdout.flush()
+                                    first_content = False
+                                sys.stdout.write('\001\033[33m\002' + before + '\001\033[0m\002')
+                                sys.stdout.flush()
+                                full_response += before
+                            if first_content:
+                                sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
+                                sys.stdout.flush()
+                                first_content = False
+                            if show_thinking:
+                                sys.stdout.write('\001\033[90m\002' + marker + '\001\033[0m\002')
+                                sys.stdout.flush()
+                                full_response += marker
+                            token = token[idx + len(marker):]
+                            thinking = True
+                        else:
+                            if first_content:
+                                sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
+                                sys.stdout.flush()
+                                first_content = False
+                            sys.stdout.write('\001\033[33m\002' + token + '\001\033[0m\002')
+                            sys.stdout.flush()
+                            full_response += token
+                            token = ''
+                    else:
+                        closer = ''
+                        closer_pos = -1
+                        for c in ('...', '</thinking>'):
+                            pos = token.find(c)
+                            if pos != -1 and (closer_pos == -1 or pos < closer_pos):
+                                closer_pos = pos
+                                closer = c
+                        if closer_pos != -1:
+                            before = token[:closer_pos]
+                            if before and show_thinking:
+                                sys.stdout.write('\001\033[90m\002' + before + '\001\033[0m\002')
+                                sys.stdout.flush()
+                                full_response += before
+                            sys.stdout.write('\001\033[33m\002' + closer + '\001\033[0m\002')
+                            sys.stdout.flush()
+                            full_response += closer
+                            token = token[closer_pos + len(closer):]
+                            thinking = False
+                        else:
+                            if show_thinking:
+                                sys.stdout.write('\001\033[90m\002' + token + '\001\033[0m\002')
+                                sys.stdout.flush()
+                                full_response += token
+                            token = ''
             elif t == 'error':
                 code = event.get('code', '')
                 msg = event.get('message', 'Unknown error')

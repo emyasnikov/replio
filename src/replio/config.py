@@ -15,6 +15,7 @@ DEFAULT_CONFIG = {
     'query_refine': False,
     'query_refine_min_words': 3,
     'query_refine_context': 4,
+    'show_thinking': True,
     'web_search': False,
     'search_results': 5,
 }
