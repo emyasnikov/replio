@@ -83,6 +83,10 @@ class OllamaProvider(BaseProvider):
             if not choices:
                 continue
             delta = choices[0].get('delta', {})
+            reasoning = delta.get('reasoning_content', '')
+            if reasoning:
+                yield {'type': 'thinking', 'content': reasoning}
+                continue
             content = delta.get('content', '')
             if content:
                 yield {'type': 'token', 'content': content}
