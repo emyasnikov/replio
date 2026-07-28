@@ -11,6 +11,7 @@ DEFAULT_CONFIG = {
     'max_tokens': 2048,
     'system_prompt': '',
     'tool_calling': True,
+    'tool_status_visible': True,
     'web_search': False,
     'search_results': 5,
 }

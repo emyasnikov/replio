@@ -29,7 +29,7 @@
 
 ## Polish
 - [x] Verify tool calling integration end-to-end
-- [ ] Add `tool_status_visible` config flag (default `true`)
+- [x] Add `tool_status_visible` config flag (default `true`)
 - [ ] Search term extraction from user messages (for `fetch_page` tool)
 - [ ] Edge cases: streaming when `tool_calling=true` but no tools used
 - [ ] Error handling improvements (network timeout, auth errors)
