@@ -14,6 +14,28 @@ Zero external dependencies — Python stdlib only.
 - **Configurable** — global `~/.config/replio/config.json` + local `.replio/config.json` merge
 - **Input history** — readline-based up/down recall + tab completion for commands
 
+## Features Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Web search (DuckDuckGo) | ✅ Done | `web_search` tool + `/search` command |
+| Page fetching | ✅ Done | `fetch_page` tool, HTML→text, 8K truncation |
+| Query refinement | ✅ Done | `query_refine` config, auto-improves short queries |
+| Tool calling (two-phase) | ✅ Done | Model decides to search/fetch via function calling |
+| Thinking/reasoning display | ✅ Done | `show_thinking` config, provider `reasoning_content` |
+| Markdown-aware streaming | ✅ Done | `markdown_streaming` config (opt-in, off by default) |
+| Session management | ✅ Done | Create, list, load, delete, auto-save, auto-naming |
+| Slash commands | ✅ Done | `/help`, `/model`, `/provider`, `/connect`, `/session`, `/config`, `/exit` |
+| Input history + tab complete | ✅ Done | readline-based |
+| Error handling (network, auth) | ✅ Done | Graceful red error messages, REPL continues |
+| Citations / source attribution | ❌ Planned | Return URL + snippet with every answer |
+| Bookmarks (session pinning) | ❌ Planned | `bookmark add/remove/list` commands |
+| Interactive data analysis | ❌ Planned | CSV querying, SQL, code execution in REPL |
+| Notebook mode (cells) | ❌ Planned | Persistent editable cells with outputs |
+| Hybrid web + local RAG | ❌ Future | Vector store (FAISS/Weaviate), breaks stdlib-only |
+| Command palette / fuzzy search | ❌ Future | Requires `prompt_toolkit` or `fzf`, breaks stdlib-only |
+| Topic-aware ranking | ❌ Future | ML classifier for query intent tagging |
+
 ## Quick Start
 
 ```bash
