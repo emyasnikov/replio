@@ -32,7 +32,7 @@
 - [x] Add `tool_status_visible` config flag (default `true`)
 - [x] Search term extraction — `query_refine` config: auto-refines short web_search queries via a lightweight model call, injecting recent conversation context
 - [x] Edge cases: streaming when `tool_calling=true` but no tools used
-- [ ] Error handling improvements (network timeout, auth errors)
+- [x] Error handling improvements (network timeout, auth errors)
 - [ ] Thinking/reasoning token detection and dimmed display
 - [ ] Markdown-aware streaming (basic formatting)
 - [ ] Auto-session naming with first user message as context hint
