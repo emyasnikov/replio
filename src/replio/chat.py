@@ -82,7 +82,8 @@ class ChatLoop:
             self.current_session.add_message('system', system_prompt)
 
         model_str = self.config.get('model', '?')
-        print(f'REPL.io  |  model: {model_str}  |  /help for commands')
+        provider_str = self.config.get('provider', '?')
+        print(f'REPL.io ({provider_str}: {model_str})  /help for commands')
 
         while True:
             try:
