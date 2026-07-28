@@ -45,6 +45,13 @@
 - [ ] Anthropic provider (via OpenAI-compatible /messages endpoint)
 - [ ] Provider auto-detection from base_url
 
+## Bugfixes (2026-07-28)
+- [x] Session save after file rename — JSON `name` field matches filename
+- [x] Tool-call messages lost on exception — `try/finally` in `_chat_with_tools` and `_stream_response`
+- [x] Final assistant response missing when streaming returns empty — fallback to non-streaming content
+- [x] `fetch_page` returns HTML/JS noise — `_TextExtractor` (HTMLParser) for clean text extraction
+- [x] Tool-result content in session files — filtered from serialization; assistant `tool_calls` preserved
+
 ## Future Optimizations
 - [ ] Unified streaming: rewrite `_chat_with_tools()` to use a single SSE stream, detecting tool_calls vs content from the first delta. Eliminates double-call cost when no tools are used.
 - [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
