@@ -195,6 +195,17 @@ class ChatLoop:
         )
         self.session_auto_save()
 
+    def _refine_query(self, query: str) -> str:
+        context_count = self.config.get('query_refine_context', 4)
+        context_msgs = self.current_session.messages[-context_count:] if context_count > 0 else []
+        refine_sys = "You are a search query optimizer. Rewrite the user's query to be more specific and standalone based on the conversation context. Return ONLY the rewritten query, nothing else."
+        refined = self.provider.chat_nonstreaming(
+            [{'role': 'system', 'content': refine_sys}] + context_msgs + [{'role': 'user', 'content': query}],
+            tools=None,
+        )
+        refined_query = (refined.get('content') or query).strip().strip('"\'')
+        return refined_query if refined_query else query
+
     def _chat_with_tools(self, force_search: str | None = None):
         messages = self.current_session.messages
         tools_schema = self._init_tooling()
@@ -222,6 +233,13 @@ class ChatLoop:
                 for tc in tcs:
                     name = tc['function']['name']
                     args = json.loads(tc['function']['arguments'])
+                    if (self.config.get('query_refine')
+                            and name == 'web_search'
+                            and len(args.get('query', '').split()) <= self.config.get('query_refine_min_words', 3)):
+                        original = args['query']
+                        args['query'] = self._refine_query(args['query'])
+                        if args['query'] != original:
+                            print(f'\001\033[90m\002[refine: "{original}" → "{args["query"]}"]\001\033[0m\002')
                     if self.config.get('tool_status_visible', True):
                         self._show_tool_status(name, args)
                     output = self._tool_registry.execute(name, args)

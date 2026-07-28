@@ -12,6 +12,9 @@ DEFAULT_CONFIG = {
     'system_prompt': '',
     'tool_calling': True,
     'tool_status_visible': True,
+    'query_refine': False,
+    'query_refine_min_words': 3,
+    'query_refine_context': 4,
     'web_search': False,
     'search_results': 5,
 }

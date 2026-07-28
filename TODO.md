@@ -30,7 +30,7 @@
 ## Polish
 - [x] Verify tool calling integration end-to-end
 - [x] Add `tool_status_visible` config flag (default `true`)
-- [ ] Search term extraction from user messages (for `fetch_page` tool)
+- [x] Search term extraction — `query_refine` config: auto-refines short web_search queries via a lightweight model call, injecting recent conversation context
 - [ ] Edge cases: streaming when `tool_calling=true` but no tools used
 - [ ] Error handling improvements (network timeout, auth errors)
 - [ ] Thinking/reasoning token detection and dimmed display
