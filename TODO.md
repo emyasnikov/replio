@@ -34,7 +34,7 @@
 - [x] Edge cases: streaming when `tool_calling=true` but no tools used
 - [x] Error handling improvements (network timeout, auth errors)
 - [x] Thinking/reasoning token detection and dimmed display
-- [x] Markdown-aware streaming (basic formatting)
+- [x] Markdown-aware streaming (basic formatting, disabled by default via `markdown_streaming` config)
 - [x] Auto-session naming with first user message as context hint
 
 ## Sessions & Providers
