@@ -31,7 +31,7 @@
 - [x] Verify tool calling integration end-to-end
 - [x] Add `tool_status_visible` config flag (default `true`)
 - [x] Search term extraction — `query_refine` config: auto-refines short web_search queries via a lightweight model call, injecting recent conversation context
-- [ ] Edge cases: streaming when `tool_calling=true` but no tools used
+- [x] Edge cases: streaming when `tool_calling=true` but no tools used
 - [ ] Error handling improvements (network timeout, auth errors)
 - [ ] Thinking/reasoning token detection and dimmed display
 - [ ] Markdown-aware streaming (basic formatting)
@@ -44,6 +44,9 @@
 - [ ] OpenAI provider
 - [ ] Anthropic provider (via OpenAI-compatible /messages endpoint)
 - [ ] Provider auto-detection from base_url
+
+## Future Optimizations
+- [ ] Unified streaming: rewrite `_chat_with_tools()` to use a single SSE stream, detecting tool_calls vs content from the first delta. Eliminates double-call cost when no tools are used.
 
 ## Advanced
 - [ ] Multi-line input (detect `"""` or `'''` blocks)

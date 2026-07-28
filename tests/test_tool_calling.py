@@ -39,6 +39,7 @@ class TestToolCalling(unittest.TestCase):
         self.chat._tool_registry = None
 
         self.chat._output_content = MagicMock()
+        self.chat._stream_response = MagicMock(return_value='Mocked stream response')
         self.chat._perform_search = MagicMock(return_value='Mocked search context.')
         self.chat._show_tool_status = MagicMock()
         self.chat.session_auto_save = MagicMock()
@@ -61,7 +62,7 @@ class TestToolCalling(unittest.TestCase):
             'role': 'assistant',
         }
         self.chat._chat_with_tools()
-        self.chat._output_content.assert_called_once_with('Hello world')
+        self.chat._stream_response.assert_called_once()
 
     def test_single_tool_then_final(self):
         self.chat.provider.chat_nonstreaming.side_effect = [
@@ -85,7 +86,7 @@ class TestToolCalling(unittest.TestCase):
             self.chat._chat_with_tools()
 
         self.chat._show_tool_status.assert_called_once()
-        self.chat._output_content.assert_called_once_with('Final answer.')
+        self.chat._stream_response.assert_called_once()
         tool_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'tool']
         self.assertEqual(len(tool_msgs), 1)
 
@@ -110,7 +111,7 @@ class TestToolCalling(unittest.TestCase):
         tool_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'tool']
         self.assertEqual(len(tool_msgs), 1)
         self.assertIn('unknown tool', tool_msgs[0]['content'].lower())
-        self.chat._output_content.assert_called_once_with('Recovered.')
+        self.chat._stream_response.assert_called_once()
 
     def test_force_search_injects_context(self):
         self.chat.provider.chat_nonstreaming.return_value = {
@@ -124,7 +125,7 @@ class TestToolCalling(unittest.TestCase):
         tool_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'tool']
         self.assertEqual(len(tool_msgs), 1)
         self.assertEqual(tool_msgs[0]['tool_call_id'], 'forced')
-        self.chat._output_content.assert_called_once_with('Answer based on search.')
+        self.chat._stream_response.assert_called_once()
 
     def tearDown(self):
         self.temp_dir.cleanup()
