@@ -1,6 +1,6 @@
 # TODO
 
-## Phase 1 — Core Chat (done)
+## Core Chat
 - [x] Project scaffolding (pyproject.toml, venv, dir structure)
 - [x] Config module (global + local JSON merge)
 - [x] HTTP SSE streaming utility (urllib)
@@ -12,20 +12,32 @@
 - [x] Streaming token display
 - [x] Documentation (README, AGENTS.md, TODO.md, CHANGELOG.md)
 
-## Phase 2 — Polish
-- [ ] `AGENTS.md` / `README.md` / `TODO.md` updates
+## Tool Calling
+- [x] `tools/registry.py` — decorator-based tool registration
+- [x] `tools/builtins.py` — `web_search` and `fetch_page` tools
+- [x] `BaseProvider.chat_nonstreaming()` — non-streaming tool decision round
+- [x] Two-phase chat: non-streaming tool decision → stream final content
+- [x] `_show_tool_status()` — dimmed status during tool execution
+- [x] `/search` command integration with tool calling
+- [x] Config default: `tool_calling: true`
+
+## Web Search
+- [x] DuckDuckGo Lite search via `html.parser` (`web/search.py`)
+- [x] Terminal + AI context formatting (`web/display.py`)
+- [x] `/search <query>` and `/web <query>` commands
+- [x] Auto-search mode (`web_search: true` config)
+
+## Polish
+- [ ] Verify tool calling integration end-to-end
+- [ ] Add `tool_status_visible` config flag (default `true`)
+- [ ] Search term extraction from user messages (for `fetch_page` tool)
+- [ ] Edge cases: streaming when `tool_calling=true` but no tools used
 - [ ] Error handling improvements (network timeout, auth errors)
 - [ ] Thinking/reasoning token detection and dimmed display
 - [ ] Markdown-aware streaming (basic formatting)
 - [ ] Auto-session naming with first user message as context hint
 
-## Phase 3 — Web Search
-- [ ] Web search provider abstraction
-- [ ] Default web search implementation (DuckDuckGo / custom API)
-- [ ] `/search` command or inline `?` prefix
-- [ ] Compact summary display with expandable details toggle
-
-## Phase 4 — Sessions & Providers
+## Sessions & Providers
 - [ ] Session export to Markdown
 - [ ] Session import from Markdown/JSON
 - [ ] Groq provider
@@ -33,7 +45,7 @@
 - [ ] Anthropic provider (via OpenAI-compatible /messages endpoint)
 - [ ] Provider auto-detection from base_url
 
-## Phase 5 — Advanced
+## Advanced
 - [ ] Multi-line input (detect `"""` or `'''` blocks)
 - [ ] `/compact` session summarization
 - [ ] Config validation (test connection on change)
