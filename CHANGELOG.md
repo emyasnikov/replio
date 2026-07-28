@@ -38,3 +38,8 @@
 
 ### Documentation
 - README.md, AGENTS.md, TODO.md, CHANGELOG.md
+
+## 2026-07-28
+
+### Added
+- Mock test suite for tool calling (`tests/test_tool_calling.py`): 4 offline tests covering no-tools, single-tool, unknown-tool error, and force-search paths

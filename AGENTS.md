@@ -21,6 +21,8 @@ repl.io/
 ├── README.md
 ├── TODO.md
 ├── CHANGELOG.md
+├── tests/
+│   └── test_tool_calling.py   # Mock tests (no network/API key needed)
 ├── src/replio/
 │   ├── __init__.py
 │   ├── __main__.py          # python -m replio
@@ -106,9 +108,30 @@ repl.io/
 }
 ```
 
+## Testing
+
+- Tests live in `tests/` and use stdlib `unittest` (no external test runner needed)
+- **Mock tests** patch provider responses — no internet, no API key required
+- Run all tests:
+  ```bash
+  python -m unittest discover tests
+  ```
+- Run a specific test file:
+  ```bash
+  python -m unittest tests.test_tool_calling
+  ```
+- Run before committing changes to verify core logic isn't broken
+- Manual live tests (against real API) are done ad-hoc; not automated
+
 ## Changelog Convention
 
 `CHANGELOG.md` is grouped by **days** (not versions). Entries under `## YYYY-MM-DD` headings.
+
+## Tracking Conventions
+
+- `TODO.md` is grouped by **feature sections** (not numbered phases). Sections are unordered.
+- After completing a planned task: mark it `[x]` in `TODO.md` and add a line under the current date in `CHANGELOG.md`.
+- Keep both files in sync with actual project state.
 
 ## Session JSON Format
 
