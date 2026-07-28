@@ -408,10 +408,15 @@ class ChatLoop:
 
         user_msgs = [m for m in self.current_session.messages if m['role'] == 'user']
         if len(user_msgs) == 1:
-            name = ''.join(c if c.isalnum() or c in '-_ ' else '' for c in content[:40]).strip().replace(' ', '_')
-            if name:
+            ts = self.current_session.name
+            truncated = content[:40]
+            space = truncated.rfind(' ')
+            if space > 0:
+                truncated = truncated[:space]
+            msg_part = ''.join(c if c.isalnum() or c in '-_ ' else '' for c in truncated).strip().replace(' ', '_')
+            if msg_part:
                 old = self.sessions.sessions_dir / f'{self.current_session.name}.json'
-                self.current_session.name = name.lower()
+                self.current_session.name = f'{ts}_{msg_part.lower()}'
                 new = self.sessions.sessions_dir / f'{self.current_session.name}.json'
                 if old.exists() and old != new:
                     old.rename(new)
