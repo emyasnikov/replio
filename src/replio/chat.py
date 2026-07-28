@@ -252,7 +252,7 @@ class ChatLoop:
 
             content = result.get('content', '')
             if content:
-                self._output_content(content)
+                self._stream_response()
             break
 
     def _handle_message(self, content):
