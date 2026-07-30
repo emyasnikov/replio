@@ -1,4 +1,4 @@
-# REPL.ai — Agent Guide
+# REPL.io — Agent Guide
 
 ## Project
 
@@ -15,15 +15,15 @@ A terminal-based REPL AI chat app with multi-provider support, sessions, web sea
 ## Project Structure
 
 ```
-repl.ai/
+repl.io/
 ├── pyproject.toml
 ├── AGENTS.md
 ├── README.md
 ├── TODO.md
 ├── CHANGELOG.md
-├── src/replai/
+├── src/replio/
 │   ├── __init__.py
-│   ├── __main__.py          # python -m replai
+│   ├── __main__.py          # python -m replio
 │   ├── main.py              # CLI arg parsing + bootstrap
 │   ├── config.py            # JSON config (global + local merge)
 │   ├── chat.py              # Main REPL loop with readline
@@ -65,14 +65,14 @@ repl.ai/
 ### Architecture Rules
 - `BaseProvider` uses OpenAI-compatible `/v1/chat/completions` format
 - Adding a provider = subclass `BaseProvider` + register in `ChatLoop._reinit_provider()`
-- Config: global (`~/.config/replai/config.json`) → local (`.replai/config.json`) merge, local wins
-- Sessions stored as `.replai/sessions/<name>.json`
+- Config: global (`~/.config/replio/config.json`) → local (`.replio/config.json`) merge, local wins
+- Sessions stored as `.replio/sessions/<name>.json`
 - Slash commands registered via `@registry.register()` decorator
 - Tools registered via `@tool_registry.register()` decorator (OpenAI function calling format)
 - Two-phase chat when `tool_calling: true`: non-streaming tool decision loop → stream final content
 
 ### Adding a Provider
-1. Create `src/replai/providers/<name>.py`
+1. Create `src/replio/providers/<name>.py`
 2. Subclass `BaseProvider`, implement `chat()` and `list_models()`
 3. Add import + mapping in `chat.py` `_reinit_provider()` method
 4. Add to `/connect` prompt flow if needed

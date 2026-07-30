@@ -10,7 +10,7 @@ from .sessions.manager import SessionManager
 from .commands.registry import CommandRegistry
 from .commands.builtins import register_builtins
 
-HISTFILE = '.replai_history'
+HISTFILE = '.replio_history'
 
 
 class ChatLoop:
@@ -82,7 +82,7 @@ class ChatLoop:
             self.current_session.add_message('system', system_prompt)
 
         model_str = self.config.get('model', '?')
-        print(f'REPL.ai  |  model: {model_str}  |  /help for commands')
+        print(f'REPL.io  |  model: {model_str}  |  /help for commands')
 
         while True:
             try:

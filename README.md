@@ -1,4 +1,4 @@
-# REPL.ai
+# REPL.io
 
 A terminal-based REPL AI chat application supporting multiple LLM providers. Inspired by OpenCode and Open WebUI.
 
@@ -11,16 +11,16 @@ Zero external dependencies — Python stdlib only.
 - **Streaming responses** — live token-by-token output with SSE
 - **Web search integration** — compact summary with expandable details (planned)
 - **Slash commands** — `/help`, `/model`, `/provider`, `/connect`, `/session`, `/config`, `/exit`
-- **Configurable** — global `~/.config/replai/config.json` + local `.replai/config.json` merge
+- **Configurable** — global `~/.config/replio/config.json` + local `.replio/config.json` merge
 - **Input history** — readline-based up/down recall + tab completion for commands
 
 ## Quick Start
 
 ```bash
-git clone <repo> && cd repl.ai
+git clone <repo> && cd repl.io
 python3 -m venv .venv
 .venv/bin/pip install -e .
-.venv/bin/replai
+.venv/bin/replio
 ```
 
 ### First-time setup
@@ -52,7 +52,7 @@ Type any message to chat. Tab-complete `/` commands. Up/down arrows for history.
 ## Project Structure
 
 ```
-src/replai/
+src/replio/
 ├── main.py           CLI entry point
 ├── config.py         Config load/merge/save
 ├── chat.py           REPL loop + streaming display
