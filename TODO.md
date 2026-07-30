@@ -1,69 +1,5 @@
 # TODO
 
-## Core Chat
-- [x] Project scaffolding (pyproject.toml, venv, dir structure)
-- [x] Config module (global + local JSON merge)
-- [x] HTTP SSE streaming utility (urllib)
-- [x] Base provider (OpenAI-compatible interface)
-- [x] Ollama cloud provider
-- [x] Session manager (JSON CRUD)
-- [x] Command registry + built-in slash commands
-- [x] REPL loop with readline history + tab completion
-- [x] Streaming token display
-- [x] Documentation (README, AGENTS.md, TODO.md, CHANGELOG.md)
-
-## Tool Calling
-- [x] `tools/registry.py` — decorator-based tool registration
-- [x] `tools/builtins.py` — `web_search` and `fetch_page` tools
-- [x] `BaseProvider.chat_nonstreaming()` — non-streaming tool decision round
-- [x] Two-phase chat: non-streaming tool decision → stream final content
-- [x] `_show_tool_status()` — dimmed status during tool execution
-- [x] `/search` command integration with tool calling
-- [x] Config default: `tool_calling: true`
-
-## Web Search
-- [x] DuckDuckGo Lite search via `html.parser` (`web/search.py`)
-- [x] Terminal + AI context formatting (`web/display.py`)
-- [x] `/search <query>` and `/web <query>` commands
-- [x] Auto-search mode (`web_search: true` config)
-
-## Polish
-- [x] Verify tool calling integration end-to-end
-- [x] Add `tool_status_visible` config flag (default `true`)
-- [x] Search term extraction — `query_refine` config: auto-refines short web_search queries via a lightweight model call, injecting recent conversation context
-- [x] Edge cases: streaming when `tool_calling=true` but no tools used
-- [x] Error handling improvements (network timeout, auth errors)
-- [x] Thinking/reasoning token detection and dimmed display
-- [x] Markdown-aware streaming (basic formatting, disabled by default via `markdown_streaming` config)
-- [x] Auto-session naming with first user message as context hint
-
-## Sessions & Providers
-- [ ] Session export to Markdown
-- [ ] Session import from Markdown/JSON
-- [ ] Groq provider
-- [ ] OpenAI provider
-- [ ] Anthropic provider (via OpenAI-compatible /messages endpoint)
-- [ ] Provider auto-detection from base_url
-
-## Bugfixes (2026-07-28)
-- [x] Session save after file rename — JSON `name` field matches filename
-- [x] Tool-call messages lost on exception — `try/finally` in `_chat_with_tools` and `_stream_response`
-- [x] Final assistant response missing when streaming returns empty — fallback to non-streaming content
-- [x] `fetch_page` returns HTML/JS noise — `_TextExtractor` (HTMLParser) for clean text extraction
-- [x] Tool-result content in session files — filtered from serialization; assistant `tool_calls` preserved
-
-## Future Optimizations
-- [ ] Unified streaming: rewrite `_chat_with_tools()` to use a single SSE stream, detecting tool_calls vs content from the first delta. Eliminates double-call cost when no tools are used.
-- [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
-
-## Advanced
-- [ ] Multi-line input (detect `"""` or `'''` blocks)
-- [ ] `/compact` session summarization
-- [ ] Config validation (test connection on change)
-- [ ] Custom system prompts per session
-- [ ] Streaming with thinking/reasoning block toggle
-
-## Ideas (from AI brainstorming)
 - [ ] Citations / source attribution — return URL + snippet with every answer
 - [ ] Bookmarks — `/bookmark add/remove/list` for session pinning
 - [ ] Interactive data analysis — CSV querying, SQL execution, code eval in REPL
@@ -71,3 +7,50 @@
 - [ ] Hybrid web + local RAG — vector store (FAISS/Weaviate), embeddings, local document search
 - [ ] Command palette / fuzzy search — CTRL-P style history search
 - [ ] Topic-aware ranking — classifier for query intent to weight search results
+- [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
+- [ ] Unified streaming: rewrite `_chat_with_tools()` to use a single SSE stream, detecting tool_calls vs content from the first delta. Eliminates double-call cost when no tools are used.
+- [x] Tool-result content in session files — filtered from serialization; assistant `tool_calls` preserved
+- [x] `fetch_page` returns HTML/JS noise — `_TextExtractor` (HTMLParser) for clean text extraction
+- [x] Final assistant response missing when streaming returns empty — fallback to non-streaming content
+- [x] Tool-call messages lost on exception — `try/finally` in `_chat_with_tools` and `_stream_response`
+- [x] Session save after file rename — JSON `name` field matches filename
+- [x] Auto-session naming with first user message as context hint
+- [x] Markdown-aware streaming (basic formatting, disabled by default via `markdown_streaming` config)
+- [x] Thinking/reasoning token detection and dimmed display
+- [x] Error handling improvements (network timeout, auth errors)
+- [x] Edge cases: streaming when `tool_calling=true` but no tools used
+- [x] Search term extraction — `query_refine` config: auto-refines short web_search queries via a lightweight model call, injecting recent conversation context
+- [x] Add `tool_status_visible` config flag (default `true`)
+- [x] Verify tool calling integration end-to-end
+- [ ] Provider auto-detection from base_url
+- [ ] Anthropic provider (via OpenAI-compatible /messages endpoint)
+- [ ] OpenAI provider
+- [ ] Groq provider
+- [ ] Session import from Markdown/JSON
+- [ ] Session export to Markdown
+- [ ] Streaming with thinking/reasoning block toggle
+- [ ] Custom system prompts per session
+- [ ] Config validation (test connection on change)
+- [ ] `/compact` session summarization
+- [ ] Multi-line input (detect `"""` or `'''` blocks)
+- [x] Auto-search mode (`web_search: true` config)
+- [x] `/search <query>` and `/web <query>` commands
+- [x] Terminal + AI context formatting (`web/display.py`)
+- [x] DuckDuckGo Lite search via `html.parser` (`web/search.py`)
+- [x] Config default: `tool_calling: true`
+- [x] `/search` command integration with tool calling
+- [x] `_show_tool_status()` — dimmed status during tool execution
+- [x] Two-phase chat: non-streaming tool decision → stream final content
+- [x] `BaseProvider.chat_nonstreaming()` — non-streaming tool decision round
+- [x] `tools/builtins.py` — `web_search` and `fetch_page` tools
+- [x] `tools/registry.py` — decorator-based tool registration
+- [x] Documentation (README, AGENTS.md, TODO.md, CHANGELOG.md)
+- [x] Streaming token display
+- [x] REPL loop with readline history + tab completion
+- [x] Command registry + built-in slash commands
+- [x] Session manager (JSON CRUD)
+- [x] Ollama cloud provider
+- [x] Base provider (OpenAI-compatible interface)
+- [x] HTTP SSE streaming utility (urllib)
+- [x] Config module (global + local JSON merge)
+- [x] Project scaffolding (pyproject.toml, venv, dir structure)
