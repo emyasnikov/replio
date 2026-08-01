@@ -2,7 +2,9 @@
 
 ## Project
 
-A terminal-based REPL AI chat app with multi-provider support, sessions, web search, and slash commands.
+A terminal-based **agentic REPL core**. The model is the planner; the tool registry is how it acts. It is a zero-dependency Python app (`stdlib only`) built around a **single agent loop**: one SSE stream per turn where the model either emits content or requests tool calls, which the loop executes and feeds back until the model answers.
+
+Multi-provider chat, web search, sessions, slash commands, and (planned) machine access, personas, delegation, and plugins are all capabilities on top of that core.
 
 ## Tech Stack
 
@@ -12,7 +14,25 @@ A terminal-based REPL AI chat app with multi-provider support, sessions, web sea
 - `urllib.error` — HTTP error handling
 - `json` / `pathlib` / `os` — config and session storage
 
-## Project Structure
+## Architecture: Agentic Core
+
+The agentic core has three layers:
+
+1. **Agent loop** (`chat.py`) — the orchestration. Each turn runs a single streaming request. The provider's `chat()` is a generator yielding events, and the loop reacts:
+   - `thinking` / `token` — streamed to the terminal (dimmed thinking, optional markdown)
+   - `tool_calls` — append the assistant message, execute each call, append `tool` results, then continue the loop
+   - `error` — print and bail
+   - `done` — persist the assistant message (timestamp/duration/model) and stop
+   
+   One stream, one round trip when no tools are used. `chat_nonstreaming()` is reserved for query refinement, not the main path.
+
+2. **ToolRegistry** (`tools/registry.py`) — the **single dispatch point**. The model invokes tools via OpenAI function calling; slash commands are thin wrappers that call the same `execute()`. The loop never special-cases tool names — per-tool behavior comes from registration metadata (`refine`, later `confirm`).
+
+3. **Commands** (`commands/`) — user-facing affordances. A command either wraps a tool (e.g. `/search` → `web_search`) or performs a local action (`/model`, `/session`).
+
+Providers (`providers/`) are OpenAI-compatible `/v1/chat/completions` backends that implement the event-generator `chat()` contract.
+
+### Project Structure
 
 ```
 repl.io/
@@ -28,7 +48,7 @@ repl.io/
 │   ├── __main__.py          # python -m replio
 │   ├── main.py              # CLI arg parsing + bootstrap
 │   ├── config.py            # JSON config (global + local merge)
-│   ├── chat.py              # Main REPL loop with readline
+│   ├── chat.py              # Agent loop + REPL with readline
 │   ├── providers/
 │   │   ├── __init__.py
 │   │   ├── base.py          # Abstract provider (OpenAI-compatible)
@@ -65,17 +85,35 @@ repl.io/
 - `\001` / `\002` readline markers around ANSI codes in prompts
 
 ### Architecture Rules
+- One agent loop, one SSE stream per turn — no separate non-streaming decision round
+- `ToolRegistry` is the single dispatch point: commands call tools, they never reimplement them
+- No tool-name special-casing in the loop — use registration metadata instead
+- `BaseProvider.chat()` is a generator yielding events: `thinking`, `token`, `tool_calls`, `error`, `done`
 - `BaseProvider` uses OpenAI-compatible `/v1/chat/completions` format
-- Adding a provider = subclass `BaseProvider` + register in `ChatLoop._reinit_provider()`
 - Config: global (`~/.config/replio/config.json`) → local (`.replio/config.json`) merge, local wins
 - Sessions stored as `.replio/sessions/<name>.json`
 - Slash commands registered via `@registry.register()` decorator
 - Tools registered via `@tool_registry.register()` decorator (OpenAI function calling format)
-- Two-phase chat when `tool_calling: true`: non-streaming tool decision loop → stream final content
+
+### Doc Conventions
+- `TODO.md` is grouped by **feature sections**. `## Ideas` sits at the top for visibility; current work and planned features follow; older feature groups stay below; `## REPL & Core` forms the ground (bottom) section — current state stays readable with `head`. Unfinished tasks remain in their group. Completed items are marked `[x]` **inline in their group** — do not flatten the list or move history into an archive section.
+- `CHANGELOG.md` is grouped by **days** (not versions). Entries under `## YYYY-MM-DD` headings.
+- After completing a planned task: mark it `[x]` in `TODO.md` and add a line under the current date in `CHANGELOG.md`.
+- Keep both files in sync with actual project state.
+
+## Extension Points
+
+### Adding a Tool
+1. Open `tools/builtins.py`
+2. Use `@registry.register(name, description, parameters)` decorator
+3. `parameters` follow the OpenAI function calling JSON schema format
+4. Handler receives keyword arguments matching the schema
+5. Return a string (the tool result injected into the conversation)
+6. Add optional metadata for loop behavior — e.g. `refine=True` to auto-refine short query args via a lightweight model call (gated by the `query_refine` config)
 
 ### Adding a Provider
 1. Create `src/replio/providers/<name>.py`
-2. Subclass `BaseProvider`, implement `chat()` and `list_models()`
+2. Subclass `BaseProvider`, implement the `chat()` event generator and `list_models()`
 3. Add import + mapping in `chat.py` `_reinit_provider()` method
 4. Add to `/connect` prompt flow if needed
 
@@ -83,13 +121,21 @@ repl.io/
 1. Open `commands/builtins.py`
 2. Use `@registry.register('name', aliases=['a1', 'a2'])` decorator
 3. Handler receives one string argument (the text after the command name)
+4. If the command performs a tool action, call `chat_loop._tool_registry.execute(name, args)` rather than reimplementing it
 
-### Adding a Tool
-1. Open `tools/builtins.py`
-2. Use `@registry.register(name, description, parameters)` decorator
-3. parameters follow OpenAI function calling JSON schema format
-4. Handler receives keyword arguments matching the schema
-5. Return a string (the tool result injected into the conversation)
+### Future: Plugins
+Tools and providers are planned to become installable plugins (roadmap Phase 5) via directory-based loading from `~/.config/replio/plugins/` and `.replio/plugins/` — plain Python modules that register into the existing registries, keeping the core lean and flexible.
+
+## Roadmap
+
+- **Phase 0** — Unified streaming agent loop (single SSE stream, `tool_calls` events)
+- **Phase 1** — Unified dispatch (slash commands → same `ToolRegistry`, generic refinement)
+- **Phase 2** — Machine access (read/write/exec tools, tool policies, `confirm`-gated exec)
+- **Phase 3** — Personas (`/agent` with per-agent prompt, sessions, model)
+- **Phase 4** — Delegation (`delegate` tool → sub-agent loops; team orchestration)
+- **Phase 5** — Plugins (tools + providers installable, directory-based)
+
+Implement one phase at a time. Docs-first: restructure planning docs, then build the phase, mark it `[x]`, and log it in `CHANGELOG.md`.
 
 ## Config Schema
 
@@ -122,16 +168,6 @@ repl.io/
   ```
 - Run before committing changes to verify core logic isn't broken
 - Manual live tests (against real API) are done ad-hoc; not automated
-
-## Changelog Convention
-
-`CHANGELOG.md` is grouped by **days** (not versions). Entries under `## YYYY-MM-DD` headings.
-
-## Tracking Conventions
-
-- `TODO.md` is grouped by **feature sections** (not numbered phases). Sections are unordered.
-- After completing a planned task: mark it `[x]` in `TODO.md` and add a line under the current date in `CHANGELOG.md`.
-- Keep both files in sync with actual project state.
 
 ## Session JSON Format
 
