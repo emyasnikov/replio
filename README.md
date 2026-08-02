@@ -57,7 +57,6 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 ```
 >>> /help            list all commands
 >>> /model <model>   switch model
->>> /search <query>  search the web
 >>> /session list    saved conversations
 >>> /exit            goodbye
 ```

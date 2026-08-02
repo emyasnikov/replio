@@ -62,8 +62,9 @@ class OllamaProvider(BaseProvider):
             'finish_reason': choice.get('finish_reason'),
         }
 
-    def chat(self, messages: list[dict], stream: bool = True):
-        payload = self._payload(messages, stream=stream)
+    def chat(self, messages: list[dict], stream: bool = True,
+             tools: list[dict] | None = None):
+        payload = self._payload(messages, stream=stream, tools=tools)
 
         if not stream:
             result = self._post(payload)
@@ -75,6 +76,7 @@ class OllamaProvider(BaseProvider):
             yield {'type': 'done'}
             return
 
+        tool_calls_acc: dict[int, dict] = {}
         for event in stream_sse(self._endpoint(), self._headers(), payload):
             if 'type' in event:
                 yield event
@@ -87,12 +89,28 @@ class OllamaProvider(BaseProvider):
             if reasoning:
                 yield {'type': 'thinking', 'content': reasoning}
                 continue
+            for tc in delta.get('tool_calls', []):
+                idx = tc.get('index', 0)
+                entry = tool_calls_acc.setdefault(idx, {
+                    'id': '', 'type': 'function',
+                    'function': {'name': '', 'arguments': ''},
+                })
+                if tc.get('id'):
+                    entry['id'] = tc['id']
+                fn = tc.get('function', {})
+                if fn.get('name'):
+                    entry['function']['name'] = fn['name']
+                if fn.get('arguments'):
+                    entry['function']['arguments'] += fn['arguments']
             content = delta.get('content', '')
             if content:
                 yield {'type': 'token', 'content': content}
             finish = choices[0].get('finish_reason')
             if finish:
-                yield {'type': 'done', 'reason': finish}
+                if tool_calls_acc:
+                    yield {'type': 'tool_calls', 'tool_calls': list(tool_calls_acc.values())}
+                else:
+                    yield {'type': 'done', 'reason': finish}
 
     def _endpoint(self):
         return f'{self.base_url}/v1/chat/completions'

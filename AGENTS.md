@@ -28,7 +28,7 @@ The agentic core has three layers:
 
 2. **ToolRegistry** (`tools/registry.py`) — the **single dispatch point**. The model invokes tools via OpenAI function calling; slash commands are thin wrappers that call the same `execute()`. The loop never special-cases tool names — per-tool behavior comes from registration metadata (`refine`, later `confirm`).
 
-3. **Commands** (`commands/`) — user-facing affordances. A command either wraps a tool (e.g. `/search` → `web_search`) or performs a local action (`/model`, `/session`).
+3. **Commands** (`commands/`) — user-facing affordances. A command either wraps a tool or performs a local action (`/model`, `/session`).
 
 Providers (`providers/`) are OpenAI-compatible `/v1/chat/completions` backends that implement the event-generator `chat()` contract.
 
@@ -59,7 +59,7 @@ repl.io/
 │   ├── commands/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Command registration + dispatch
-│   │   └── builtins.py      # /help, /connect, /model, /search, etc.
+│   │   └── builtins.py      # /help, /connect, /model, /session, etc.
 │   ├── tools/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Tool registration + dispatch (OpenAI function calling)

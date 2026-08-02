@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.6.0 — 2026-08-02
+
+### Added
+
+- Unified streaming agent loop (`_agent_loop()` in `chat.py`) — a single SSE stream per turn replaces the two-phase non-streaming decision + streaming call; `tool_calls` events are handled mid-stream, eliminating the double-call cost when no tools are used
+- `_StreamRenderer` in `chat.py` — stateful streaming display (thinking markers, markdown, `<<<` prefix) extracted from the old `_stream_response` and reused across loop rounds
+- `OllamaProvider.chat()` now accepts `tools`, forwards them in the stream payload, and accumulates fragmented `delta.tool_calls` into a `tool_calls` event
+- `tests/helpers.py` — shared `make_chat()` builder for ChatLoop tests
+- `tests/test_agent_loop.py` — loop-level tests: no-tools single round trip, thinking excluded from persisted content, error bail, empty stream
+- `tests/test_ollama_provider.py` — provider streaming tests: fragmented tool-call accumulation, `done`/`thinking` events, `tools` in payload, error passthrough
+
+### Changed
+
+- `BaseProvider.chat()` signature gains `tools: list[dict] | None = None`
+- `_handle_message()` branches collapse onto `_agent_loop()`; `chat_nonstreaming()` is now used only by `_refine_query()`
+- `tests/test_tool_calling.py` rewritten against the streaming event generator
+
+### Removed
+
+- `_chat_with_tools()`, `_stream_response()`, `_output_content()` and `_response_start` from `chat.py`
+- `/search` and `/web` slash commands — model tool-calling and `web_search` auto mode cover searching
+
 ## v0.5.0 — 2026-07-28
 
 ### Added

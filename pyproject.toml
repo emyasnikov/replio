@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "replio"
-version = "0.5.0"
+version = "0.6.0"
 description = "A terminal-based REPL AI chat application allowing web search alongside other tool calling"
 requires-python = ">=3.10"
 authors = [{name = "Contributors"}]
