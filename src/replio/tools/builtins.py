@@ -57,6 +57,7 @@ def register_tools(registry):
             },
             'required': ['query'],
         },
+        refine=True,
     )
     def web_search(query: str) -> str:
         results = web_search_fn(query)

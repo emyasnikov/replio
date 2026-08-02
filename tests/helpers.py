@@ -6,6 +6,8 @@ from unittest.mock import MagicMock
 from replio.config import Config
 from replio.chat import ChatLoop
 from replio.sessions.manager import SessionManager
+from replio.commands.registry import CommandRegistry
+from replio.commands.builtins import register_builtins
 
 
 def make_chat(config_data: dict | None = None) -> ChatLoop:
@@ -41,4 +43,7 @@ def make_chat(config_data: dict | None = None) -> ChatLoop:
     chat._show_tool_status = MagicMock()
     chat.session_auto_save = MagicMock()
     chat._tmp = temp_dir
+
+    chat.registry = CommandRegistry(chat)
+    register_builtins(chat.registry)
     return chat

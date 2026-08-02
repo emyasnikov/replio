@@ -97,8 +97,8 @@ repl.io/
 
 ### Doc Conventions
 - `TODO.md` is grouped by **feature sections**. `## Ideas` sits at the top for visibility; current work and planned features follow; older feature groups stay below; `## REPL & Core` forms the ground (bottom) section — current state stays readable with `head`. Unfinished tasks remain in their group. Completed items are marked `[x]` **inline in their group** — do not flatten the list or move history into an archive section.
-- `CHANGELOG.md` is grouped by **days** (not versions). Entries under `## YYYY-MM-DD` headings.
-- After completing a planned task: mark it `[x]` in `TODO.md` and add a line under the current date in `CHANGELOG.md`.
+- `CHANGELOG.md` is grouped by **versions**, newest at the top — new `## vX.Y.Z — YYYY-MM-DD` sections go above previous ones, so the latest changes are readable with `head`. Entries under each version are grouped by `### Added` / `### Changed` / `### Removed`, and **within each group the newest entry comes first**.
+- After completing a planned task: mark it `[x]` in `TODO.md` and add entries under the current version section at the top of `CHANGELOG.md` (start a new version section first if none exists).
 - Keep both files in sync with actual project state.
 
 ## Extension Points
