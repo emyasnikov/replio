@@ -13,6 +13,89 @@ from .commands.builtins import register_builtins
 HISTFILE = '.replio_history'
 
 
+class _StreamRenderer:
+    def __init__(self, show_thinking: bool, markdown: bool, render_token):
+        self.show_thinking = show_thinking
+        self.markdown = markdown
+        self.render_token = render_token
+        self.first_content = True
+        self.thinking = False
+        self.md_state = {'code_block': False, 'inline_code': False, 'bold': False}
+        self.content = ''
+
+    def _prefix(self):
+        if self.first_content:
+            sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
+            sys.stdout.flush()
+            self.first_content = False
+
+    def _write_thinking(self, text):
+        self._prefix()
+        sys.stdout.write('\001\033[90m\002' + text + '\001\033[0m\002')
+        sys.stdout.flush()
+
+    def _write_token(self, text):
+        self._prefix()
+        sys.stdout.write(text)
+        sys.stdout.flush()
+        self.content += text
+
+    def _write_token_ansi(self, text, ansi):
+        self._prefix()
+        sys.stdout.write(f'\001{ansi}\002{text}\001\033[0m\002')
+        sys.stdout.flush()
+        self.content += text
+
+    def thinking_event(self, content):
+        if self.show_thinking:
+            self._write_thinking(content)
+
+    def token_event(self, content):
+        token = content
+        while token:
+            if not self.thinking:
+                idx = -1
+                marker = ''
+                for m in ('<thinking>',):
+                    pos = token.find(m)
+                    if pos != -1 and (idx == -1 or pos < idx):
+                        idx = pos
+                        marker = m
+                if idx != -1:
+                    before = token[:idx]
+                    if before:
+                        self._write_token(before)
+                    self._write_thinking(marker)
+                    token = token[idx + len(marker):]
+                    self.thinking = True
+                else:
+                    if self.markdown:
+                        for text, ansi in self.render_token(token, self.md_state):
+                            self._write_token_ansi(text, ansi)
+                    else:
+                        self._write_token(token)
+                    token = ''
+            else:
+                closer = ''
+                closer_pos = -1
+                for c in ('</thinking>',):
+                    pos = token.find(c)
+                    if pos != -1 and (closer_pos == -1 or pos < closer_pos):
+                        closer_pos = pos
+                        closer = c
+                if closer_pos != -1:
+                    before = token[:closer_pos]
+                    if before:
+                        self._write_thinking(before)
+                    sys.stdout.write(closer)
+                    sys.stdout.flush()
+                    token = token[closer_pos + len(closer):]
+                    self.thinking = False
+                else:
+                    self._write_thinking(token)
+                    token = ''
+
+
 class ChatLoop:
     def __init__(self, config: Config):
         self.config = config
@@ -106,128 +189,83 @@ class ChatLoop:
 
         self._save_history()
 
-    def _stream_response(self) -> str | None:
+    def _agent_loop(self):
         messages = self.current_session.messages
-        full_response = ''
-        start = datetime.now(timezone.utc)
-        first_content = True
+        tools_schema = self._init_tooling()
+        turn_start = datetime.now(timezone.utc)
         show_thinking = self.config.get('show_thinking', True)
-        thinking = False
-        md_state = {'code_block': False, 'inline_code': False, 'bold': False}
+        markdown = self.config.get('markdown_streaming')
+        renderer: _StreamRenderer | None = None
+        done = False
 
         try:
-            for event in self.provider.chat(messages):
-                t = event.get('type', '')
-                if t == 'thinking':
-                    if show_thinking:
-                        if first_content:
-                            sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
-                            sys.stdout.flush()
-                            first_content = False
-                        sys.stdout.write('\001\033[90m\002' + event['content'] + '\001\033[0m\002')
-                        sys.stdout.flush()
-                        full_response += event['content']
-                elif t == 'token':
-                    token = event['content']
-                    while token:
-                        if not thinking:
-                            idx = -1
-                            marker = ''
-                            for m in ('<thinking>',):
-                                pos = token.find(m)
-                                if pos != -1 and (idx == -1 or pos < idx):
-                                    idx = pos
-                                    marker = m
-                            if idx != -1:
-                                before = token[:idx]
-                                if before:
-                                    if first_content:
-                                        sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
-                                        sys.stdout.flush()
-                                        first_content = False
-                                    sys.stdout.write(before)
-                                    sys.stdout.flush()
-                                    full_response += before
-                                if first_content:
-                                    sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
-                                    sys.stdout.flush()
-                                    first_content = False
-                                if show_thinking:
-                                    sys.stdout.write('\001\033[90m\002' + marker + '\001\033[0m\002')
-                                    sys.stdout.flush()
-                                    full_response += marker
-                                token = token[idx + len(marker):]
-                                thinking = True
-                            else:
-                                if self.config.get('markdown_streaming'):
-                                    segments = self._render_token(token, md_state)
-                                    for text, ansi in segments:
-                                        if first_content:
-                                            sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
-                                            sys.stdout.flush()
-                                            first_content = False
-                                        sys.stdout.write(f'\001{ansi}\002{text}\001\033[0m\002')
-                                        sys.stdout.flush()
-                                else:
-                                    if first_content:
-                                        sys.stdout.write('\001\033[33m\002<<< \001\033[0m\002')
-                                        sys.stdout.flush()
-                                        first_content = False
-                                    sys.stdout.write(token)
-                                    sys.stdout.flush()
-                                full_response += token
-                                token = ''
-                        else:
-                            closer = ''
-                            closer_pos = -1
-                            for c in ('</thinking>',):
-                                pos = token.find(c)
-                                if pos != -1 and (closer_pos == -1 or pos < closer_pos):
-                                    closer_pos = pos
-                                    closer = c
-                            if closer_pos != -1:
-                                before = token[:closer_pos]
-                                if before and show_thinking:
-                                    sys.stdout.write('\001\033[90m\002' + before + '\001\033[0m\002')
-                                    sys.stdout.flush()
-                                    full_response += before
-                                sys.stdout.write(closer)
-                                sys.stdout.flush()
-                                full_response += closer
-                                token = token[closer_pos + len(closer):]
-                                thinking = False
-                            else:
-                                if show_thinking:
-                                    sys.stdout.write('\001\033[90m\002' + token + '\001\033[0m\002')
-                                    sys.stdout.flush()
-                                    full_response += token
-                                token = ''
-                elif t == 'error':
-                    code = event.get('code', '')
-                    msg = event.get('message', 'Unknown error')
-                    print(f'\001\033[91m\002[Error {code}]\001\033[0m\002 {msg}')
-                    return None
-                elif t == 'done':
-                    elapsed = (datetime.now(timezone.utc) - start).total_seconds()
-                    print()
-                    print(f'\001\033[90m\002({elapsed:.1f}s)\001\033[0m\002')
+            while True:
+                renderer = _StreamRenderer(show_thinking, markdown, self._render_token)
+                tool_calls_detected = False
+                for event in self.provider.chat(messages, tools=tools_schema):
+                    t = event.get('type', '')
+                    if t == 'thinking':
+                        renderer.thinking_event(event['content'])
+                    elif t == 'token':
+                        renderer.token_event(event['content'])
+                    elif t == 'tool_calls':
+                        tool_calls_detected = True
+                        self._execute_tool_calls(event['tool_calls'])
+                        break
+                    elif t == 'error':
+                        code = event.get('code', '')
+                        msg = event.get('message', 'Unknown error')
+                        print(f'\001\033[91m\002[Error {code}]\001\033[0m\002 {msg}')
+                        return
+                    elif t == 'done':
+                        done = True
+                        break
+                if not tool_calls_detected:
                     break
-
         finally:
-            if full_response:
+            if done and renderer and renderer.content:
                 end = datetime.now(timezone.utc)
-                duration = (end - start).total_seconds()
+                duration = round((end - turn_start).total_seconds(), 1)
                 self.current_session.add_message(
-                    'assistant', full_response,
+                    'assistant', renderer.content,
                     timestamp=end.isoformat(timespec='seconds'),
-                    duration=round(duration, 1),
+                    duration=duration,
                     model=self.config.get('model'),
                     provider=self.config.get('provider'),
                 )
-
+                print(f'\001\033[90m\002({duration:.1f}s)\001\033[0m\002')
             self.session_auto_save()
 
-        return full_response
+    def _execute_tool_calls(self, tcs: list[dict]):
+        messages = self.current_session.messages
+        messages.append({
+            'role': 'assistant',
+            'content': None,
+            'tool_calls': tcs,
+            'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+        })
+        for tc in tcs:
+            name = tc['function']['name']
+            try:
+                args = json.loads(tc['function']['arguments'])
+            except (json.JSONDecodeError, KeyError):
+                args = {}
+            if (self.config.get('query_refine')
+                    and name == 'web_search'
+                    and len(args.get('query', '').split()) <= self.config.get('query_refine_min_words', 3)):
+                original = args['query']
+                args['query'] = self._refine_query(args['query'])
+                if args['query'] != original:
+                    print(f'\001\033[90m\002[refine: "{original}" → "{args["query"]}"]\001\033[0m\002')
+            if self.config.get('tool_status_visible', True):
+                self._show_tool_status(name, args)
+            output = self._tool_registry.execute(name, args)
+            messages.append({
+                'role': 'tool',
+                'tool_call_id': tc['id'],
+                'content': output,
+                'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+            })
 
     def _perform_search(self, query: str, silent: bool = False) -> str | None:
         from .web.search import search as web_search
@@ -260,22 +298,6 @@ class ChatLoop:
     def _show_tool_status(self, name, arguments):
         args_str = ', '.join(f'{k}={v!r}' for k, v in arguments.items())
         print(f'\001\033[90m\002[{name}: {args_str}]\001\033[0m\002')
-
-    def _output_content(self, content):
-        end = datetime.now(timezone.utc)
-        elapsed = round((end - self._response_start).total_seconds(), 1)
-
-        print(f'\001\033[33m\002<<<\001\033[0m\002 {content}')
-        print(f'\001\033[90m\002({elapsed:.1f}s)\001\033[0m\002')
-
-        self.current_session.add_message(
-            'assistant', content,
-            timestamp=end.isoformat(timespec='seconds'),
-            duration=elapsed,
-            model=self.config.get('model'),
-            provider=self.config.get('provider'),
-        )
-        self.session_auto_save()
 
     def _refine_query(self, query: str) -> str:
         context_count = self.config.get('query_refine_context', 4)
@@ -348,73 +370,6 @@ class ChatLoop:
                     token = ''
         return segments
 
-    def _chat_with_tools(self, force_search: str | None = None):
-        messages = self.current_session.messages
-        tools_schema = self._init_tooling()
-        self._response_start = datetime.now(timezone.utc)
-
-        if force_search:
-            context = self._perform_search(force_search, silent=False)
-            if context:
-                messages.append({
-                    'role': 'tool',
-                    'tool_call_id': 'forced',
-                    'content': context,
-                })
-
-        try:
-            while True:
-                result = self.provider.chat_nonstreaming(messages, tools=tools_schema)
-
-                if 'error' in result:
-                    err = result['error']
-                    print(f'\001\033[91m\002[Error {err["code"]}]\001\033[0m\002 {err["message"]}')
-                    break
-
-                tcs = result.get('tool_calls')
-                if tcs:
-                    messages.append({
-                        'role': 'assistant',
-                        'content': result.get('content'),
-                        'tool_calls': tcs,
-                        'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
-                    })
-                    for tc in tcs:
-                        name = tc['function']['name']
-                        args = json.loads(tc['function']['arguments'])
-                        if (self.config.get('query_refine')
-                                and name == 'web_search'
-                                and len(args.get('query', '').split()) <= self.config.get('query_refine_min_words', 3)):
-                            original = args['query']
-                            args['query'] = self._refine_query(args['query'])
-                            if args['query'] != original:
-                                print(f'\001\033[90m\002[refine: "{original}" → "{args["query"]}"]\001\033[0m\002')
-                        if self.config.get('tool_status_visible', True):
-                            self._show_tool_status(name, args)
-                        output = self._tool_registry.execute(name, args)
-                        messages.append({
-                            'role': 'tool',
-                            'tool_call_id': tc['id'],
-                            'content': output,
-                            'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
-                        })
-                    continue
-
-                response = self._stream_response()
-                if not response and result.get('content'):
-                    end = datetime.now(timezone.utc)
-                    duration = round((end - self._response_start).total_seconds(), 1)
-                    self.current_session.add_message(
-                        'assistant', result['content'],
-                        timestamp=end.isoformat(timespec='seconds'),
-                        duration=duration,
-                        model=self.config.get('model'),
-                        provider=self.config.get('provider'),
-                    )
-                break
-        finally:
-            self.session_auto_save()
-
     def _handle_message(self, content):
         now = datetime.now(timezone.utc)
         self.current_session.add_message(
@@ -439,7 +394,7 @@ class ChatLoop:
                     self.session_auto_save()
 
         if self.config.get('tool_calling'):
-            self._chat_with_tools()
+            self._agent_loop()
         elif self.config.get('web_search'):
             context = self._perform_search(content, silent=True)
             if context:
@@ -447,6 +402,6 @@ class ChatLoop:
             else:
                 print('\001\033[90m\002(Skipping AI — no search results)\001\033[0m\002')
                 return
-            self._stream_response()
+            self._agent_loop()
         else:
-            self._stream_response()
+            self._agent_loop()

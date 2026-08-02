@@ -8,7 +8,8 @@ class BaseProvider:
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-    def chat(self, messages: list[dict], stream: bool = True):
+    def chat(self, messages: list[dict], stream: bool = True,
+             tools: list[dict] | None = None):
         raise NotImplementedError
 
     def chat_nonstreaming(self, messages: list[dict],
