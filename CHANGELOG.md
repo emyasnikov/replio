@@ -4,6 +4,9 @@
 
 ### Added
 
+- `/tool <name> <json-args>` slash command — generic thin wrapper executing any registered tool via the same `ToolRegistry` the model uses; no args lists registered tools
+- `tests/test_tool_registry.py` — registry metadata tests: `refine_required()` for `web_search` vs `fetch_page`/unknown
+- `tests/test_commands.py` — `/tool` dispatch tests: registry execution, name listing, disabled path, invalid JSON
 - Unified streaming agent loop (`_agent_loop()` in `chat.py`) — a single SSE stream per turn replaces the two-phase non-streaming decision + streaming call; `tool_calls` events are handled mid-stream, eliminating the double-call cost when no tools are used
 - `_StreamRenderer` in `chat.py` — stateful streaming display (thinking markers, markdown, `<<<` prefix) extracted from the old `_stream_response` and reused across loop rounds
 - `OllamaProvider.chat()` now accepts `tools`, forwards them in the stream payload, and accumulates fragmented `delta.tool_calls` into a `tool_calls` event
@@ -13,6 +16,7 @@
 
 ### Changed
 
+- `ToolRegistry.register()` accepts `refine` metadata; `refine_required()` lookup added — `web_search` registered with `refine=True`, and `_execute_tool_calls()` now refines via metadata instead of special-casing the `web_search` name
 - `BaseProvider.chat()` signature gains `tools: list[dict] | None = None`
 - `_handle_message()` branches collapse onto `_agent_loop()`; `chat_nonstreaming()` is now used only by `_refine_query()`
 - `tests/test_tool_calling.py` rewritten against the streaming event generator

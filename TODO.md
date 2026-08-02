@@ -24,9 +24,9 @@
 - [x] Unified streaming agent loop
   - [x] Single SSE stream, detect `tool_calls` vs content from the first delta
   - [x] Eliminates double-call cost when no tools are used
-- [ ] Unified dispatch
-  - [ ] Slash commands call the same `ToolRegistry` as the model
-  - [ ] Generic query refinement via tool metadata; collapse `_handle_message` branches
+- [x] Unified dispatch
+  - [x] Slash commands call the same `ToolRegistry` as the model
+  - [x] Generic query refinement via tool metadata; collapse `_handle_message` branches
 
 ## Machine Access
 

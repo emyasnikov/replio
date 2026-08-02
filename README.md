@@ -57,6 +57,7 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 ```
 >>> /help            list all commands
 >>> /model <model>   switch model
+>>> /tool <name> <json>  run a tool directly
 >>> /session list    saved conversations
 >>> /exit            goodbye
 ```

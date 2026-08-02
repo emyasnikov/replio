@@ -251,7 +251,7 @@ class ChatLoop:
             except (json.JSONDecodeError, KeyError):
                 args = {}
             if (self.config.get('query_refine')
-                    and name == 'web_search'
+                    and self._tool_registry.refine_required(name)
                     and len(args.get('query', '').split()) <= self.config.get('query_refine_min_words', 3)):
                 original = args['query']
                 args['query'] = self._refine_query(args['query'])

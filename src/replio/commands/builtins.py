@@ -1,4 +1,5 @@
 import sys
+import json
 
 
 def register_builtins(registry):
@@ -129,3 +130,22 @@ def register_builtins(registry):
         elif action == 'save':
             chat.session_auto_save()
             print('Session saved')
+
+    @registry.register('tool')
+    def tool_cmd(arg=''):
+        chat._init_tooling()
+        if not chat._tool_registry:
+            print('Tool calling is disabled (tool_calling: false)')
+            return
+        parts = arg.strip().split(maxsplit=1)
+        if not arg:
+            print('Available tools: ' + ', '.join(chat._tool_registry.names()))
+            return
+        name = parts[0]
+        args_str = parts[1] if len(parts) > 1 else '{}'
+        try:
+            arguments = json.loads(args_str) if args_str else {}
+        except json.JSONDecodeError:
+            print('Usage: /tool <name> {"key": "value"}')
+            return
+        print(chat._tool_registry.execute(name, arguments))

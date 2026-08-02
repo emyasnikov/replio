@@ -3,11 +3,13 @@ class ToolRegistry:
         self._tools: dict[str, dict] = {}
         self._schema: list[dict] = []
 
-    def register(self, name: str, description: str, parameters: dict):
+    def register(self, name: str, description: str, parameters: dict,
+                 refine: bool = False):
         def wrapper(fn):
             entry = {
                 'name': name,
                 'fn': fn,
+                'refine': refine,
                 'schema': {
                     'type': 'function',
                     'function': {
@@ -30,6 +32,10 @@ class ToolRegistry:
             return tool['fn'](**arguments)
         except Exception as e:
             return f'Error executing {name}: {e}'
+
+    def refine_required(self, name: str) -> bool:
+        tool = self._tools.get(name)
+        return bool(tool and tool.get('refine'))
 
     def schema(self) -> list[dict]:
         return list(self._schema)
