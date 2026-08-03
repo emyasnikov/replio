@@ -19,6 +19,27 @@
 
 ---
 
+## Activity Lines & Tool Status
+
+- [ ] Deterministic activity lines — typed status lines printed as the loop executes tools, replacing the mechanical `[tool: args]` status
+  - [ ] Six-category glyph set from tool registration metadata (`category` + `status` template): `*` search, `→` read, `←` write/edit, `~` ask, `- [ ]` todo, `$` exec (ask/todo/exec reserved for Phase 2 tools)
+  - [ ] OpenCode-style tool call notation as reference: `% WebFetch https://...` — prefix glyph + tool name + key argument
+  - [ ] `ToolRegistry.activity(name, args)` returns `(glyph, label)`; the loop renders `  ↳ <glyph> <label>` dimmed — no name special-casing
+- [ ] Spinner — animated `⠧`-style indicator as liveness feedback when narration/thinking is hidden (`show_thinking: false`); folded into `show_thinking`, no new config key; stdlib `threading` daemon, cleared with `\r\033[K`
+- [ ] Activity lines are ephemeral UI — never persisted to session files (tool calls are already recorded there)
+
+## Session Log Store
+
+- [ ] Sessions are complete logs — persist every message, tool call + result, reasoning, and error for later analysis
+  - [ ] `Session.to_dict()` stops filtering `role: tool` — full tool results persisted
+  - [ ] Per-round `thinking` metadata on assistant messages (reasoning before each tool call/answer); excluded from `content`
+  - [ ] Session-level `errors` array — `error` events persisted instead of lost
+  - [ ] Session `createdAt` / `updatedAt` metadata (bumped on every message)
+  - [ ] `tool_analysis` (default `true`): model-generated one-line analysis of each tool result, log-only (e.g. "A page about the Replio project which lists features x, y…")
+  - [ ] `session_tool_max_chars` (default 0 = unlimited): cap persisted tool-result content
+  - [ ] No `index.json` — session names already carry timestamp + first-message slug; `/session list` keeps directory scan
+  - [ ] Flat message list retained (maps 1:1 to provider context); turns-with-parts structure documented as an optional future refactor
+
 ## Agentic Core
 
 - [x] Unified streaming agent loop
