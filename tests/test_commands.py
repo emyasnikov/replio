@@ -42,6 +42,42 @@ class TestToolCommand(unittest.TestCase):
         self.assertIn('Start a new session', output)
         self.assertIn('Delete a session', output)
 
+    def test_config_parses_json_list(self):
+        self._dispatch('/config tools.deny ["run_command", "web_search"]')
+        self.assertEqual(self.chat.config.get('tools.deny'),
+                         ['run_command', 'web_search'])
+
+    def test_config_parses_numbers(self):
+        self._dispatch('/config temperature 0.3')
+        self._dispatch('/config max_tokens 4096')
+        self.assertEqual(self.chat.config.get('temperature'), 0.3)
+        self.assertEqual(self.chat.config.get('max_tokens'), 4096)
+
+    def test_config_add_item(self):
+        self.chat.config.set('tools.deny', ['run_command'])
+        self._dispatch('/config tools.deny -a write_file')
+        self.assertIn('write_file', self.chat.config.get('tools.deny'))
+
+    def test_config_add_creates_list(self):
+        self._dispatch('/config tools.deny -a run_command')
+        self.assertEqual(self.chat.config.get('tools.deny'), ['run_command'])
+
+    def test_config_remove_item(self):
+        self.chat.config.set('tools.deny', ['run_command', 'write_file'])
+        self._dispatch('/config tools.deny -r run_command')
+        self.assertNotIn('run_command', self.chat.config.get('tools.deny'))
+
+    def test_config_unknown_key_prompts(self):
+        with patch('replio.commands.builtins.input', return_value='y'):
+            self._dispatch('/config frobnicate 1')
+        self.assertEqual(self.chat.config.get('frobnicate'), 1)
+
+    def test_config_unknown_key_declined(self):
+        with patch('replio.commands.builtins.input', return_value='n'):
+            output = self._dispatch('/config frobnicate 1')
+        self.assertIn('Skipped', output)
+        self.assertIsNone(self.chat.config.get('frobnicate'))
+
     def test_tool_executes_via_registry(self):
         with patch('replio.web.search.search', return_value=[
             {'title': 'T', 'url': 'http://x.com', 'snippet': 'S'}

@@ -1,7 +1,12 @@
+import fnmatch
+import os
+import re
 import subprocess
 from pathlib import Path
 
 MAX_RESULT_CHARS = 8000
+SKIP_DIRS = frozenset({'__pycache__', '.git', '.venv', '.replio',
+                       '.opencode', 'dist', 'node_modules'})
 
 
 def _truncate(text: str) -> str:
@@ -13,7 +18,7 @@ def _truncate(text: str) -> str:
 def register_machine_tools(registry):
     @registry.register(
         name='read_file',
-        description='Read the contents of a text file. Use to inspect source code, configs, logs, or any file on disk. Returns numbered lines.',
+        description='Read the contents of a text file. Use to inspect source code, configs, logs, or any file on disk after locating it with glob. Returns numbered lines.',
         parameters={
             'type': 'object',
             'properties': {
@@ -53,14 +58,16 @@ def register_machine_tools(registry):
         width = len(str(end))
         out = [f'{i:>{width}}|{line}'
                for i, line in enumerate(lines[start:end], start=start + 1)]
-        result = '\n'.join(out)
+        header = f'# {path} — {len(lines)} lines'
         if end < len(lines):
-            result += f'\n... (showing lines {start + 1}-{end} of {len(lines)})'
-        return _truncate(result) if result else '(empty file)'
+            header += f' (showing {start + 1}-{end})'
+        if not out:
+            return f'{header}\n(empty file)'
+        return _truncate(header + '\n' + '\n'.join(out))
 
     @registry.register(
         name='list_dir',
-        description='List the contents of a directory. Returns sorted entries with a trailing / for subdirectories and file sizes.',
+        description='List the immediate contents of a directory. Returns sorted entries with a trailing / for subdirectories and file sizes. Use glob for recursive search.',
         parameters={
             'type': 'object',
             'properties': {
@@ -187,3 +194,113 @@ def register_machine_tools(registry):
         if body:
             lines.append(_truncate(body))
         return '\n'.join(lines)
+
+    @registry.register(
+        name='glob',
+        description='Find files and directories matching a glob pattern (e.g. "**/*.py", "src/**/chat.py"). Use to locate a file path before reading or listing it — do not guess paths.',
+        parameters={
+            'type': 'object',
+            'properties': {
+                'pattern': {
+                    'type': 'string',
+                    'description': 'Glob pattern; ** matches across directories',
+                },
+                'path': {
+                    'type': 'string',
+                    'description': 'Directory to search from (defaults to the current directory)',
+                },
+            },
+            'required': ['pattern'],
+        },
+        category='read',
+        permission='list',
+        path_arg='path',
+        key_arg='pattern',
+    )
+    def glob(pattern: str, path: str = '.') -> str:
+        base = Path(path).expanduser()
+        if not base.exists() or not base.is_dir():
+            return f'Error: not a directory: {path}'
+        matches = []
+        for m in sorted(base.glob(pattern)):
+            if any(p in SKIP_DIRS for p in m.relative_to(base).parts):
+                continue
+            try:
+                rel = m.relative_to(base)
+            except ValueError:
+                rel = m
+            matches.append(f'{rel}{"/" if m.is_dir() else ""}')
+        if not matches:
+            return f'(no matches for "{pattern}")'
+        result = '\n'.join(matches[:200])
+        if len(matches) > 200:
+            result += f'\n... (showing 200 of {len(matches)} matches)'
+        return _truncate(result)
+
+    @registry.register(
+        name='grep',
+        description='Search file contents for a regex pattern. Returns matching file:line: text. Use to find where something is defined or used.',
+        parameters={
+            'type': 'object',
+            'properties': {
+                'pattern': {
+                    'type': 'string',
+                    'description': 'Regular expression to search for',
+                },
+                'path': {
+                    'type': 'string',
+                    'description': 'Directory or file to search (defaults to the current directory)',
+                },
+                'glob': {
+                    'type': 'string',
+                    'description': 'Glob to limit which files are searched (e.g. "*.py")',
+                },
+            },
+            'required': ['pattern'],
+        },
+        category='read',
+        permission='list',
+        path_arg='path',
+        key_arg='pattern',
+    )
+    def grep(pattern: str, path: str = '.', glob: str = '*') -> str:
+        try:
+            regex = re.compile(pattern)
+        except re.error as e:
+            return f'Error: invalid regex: {e}'
+        base = Path(path).expanduser()
+        if not base.exists():
+            return f'Error: path not found: {path}'
+        files = [base] if base.is_file() else []
+        if not files:
+            for root, dirs, names in os.walk(base):
+                dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+                for name in sorted(names):
+                    if fnmatch.fnmatch(name, glob):
+                        files.append(Path(root) / name)
+        results = []
+        for f in files:
+            try:
+                text = f.read_text(encoding='utf-8', errors='replace')
+            except OSError:
+                continue
+            if base.is_file():
+                rel = base.name
+            else:
+                try:
+                    rel = f.relative_to(base)
+                except ValueError:
+                    rel = f
+            for i, line in enumerate(text.splitlines(), 1):
+                if regex.search(line):
+                    results.append(f'{rel}:{i}: {line[:120].strip()}')
+                    if len(results) >= 100:
+                        break
+            if len(results) >= 100:
+                break
+        if not results:
+            return f'(no matches for "{pattern}")'
+        result = '\n'.join(results[:100])
+        if len(results) >= 100:
+            result += '\n... (showing first 100 matches)'
+        return _truncate(result)

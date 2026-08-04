@@ -32,7 +32,16 @@ class TestMachineTools(unittest.TestCase):
         self.assertIn('5|line5', out)
         self.assertIn('7|line7', out)
         self.assertNotIn('line8', out)
-        self.assertIn('of 20', out)
+        self.assertIn('20 lines', out)
+        self.assertIn('(showing 5-7)', out)
+
+    def test_read_file_header_reports_total(self):
+        (self.root / 'a.txt').write_text('one\ntwo\nthree\n')
+        out = self.run_tool('read_file', path=str(self.root / 'a.txt'))
+        self.assertIn('3 lines', out)
+        self.assertNotIn('(showing', out)
+        self.assertIn('1|one', out)
+        self.assertIn('3|three', out)
 
     def test_read_file_missing(self):
         out = self.run_tool('read_file', path=str(self.root / 'nope.txt'))
@@ -84,12 +93,76 @@ class TestMachineTools(unittest.TestCase):
         out = self.run_tool('run_command', command='sleep 5', cwd=str(self.root), timeout=1)
         self.assertIn('timed out', out)
 
+    def test_glob_recursive(self):
+        (self.root / 'src').mkdir()
+        (self.root / 'src' / 'app.py').write_text('x')
+        (self.root / 'src' / 'deep').mkdir()
+        (self.root / 'src' / 'deep' / 'mod.py').write_text('y')
+        out = self.run_tool('glob', pattern='**/*.py', path=str(self.root))
+        self.assertIn('src/app.py', out)
+        self.assertIn('src/deep/mod.py', out)
+
+    def test_glob_skips_noise_dirs(self):
+        (self.root / 'app.py').write_text('x')
+        (self.root / '.venv').mkdir()
+        (self.root / '.venv' / 'lib.py').write_text('y')
+        (self.root / '__pycache__').mkdir()
+        (self.root / '__pycache__' / 'cache.py').write_text('z')
+        out = self.run_tool('glob', pattern='**/*.py', path=str(self.root))
+        self.assertIn('app.py', out)
+        self.assertNotIn('.venv', out)
+        self.assertNotIn('cache.py', out)
+
+    def test_glob_dir_marker(self):
+        (self.root / 'src').mkdir()
+        (self.root / 'src' / 'a.txt').write_text('x')
+        out = self.run_tool('glob', pattern='**/*', path=str(self.root))
+        self.assertIn('src/', out)
+
+    def test_glob_no_match(self):
+        out = self.run_tool('glob', pattern='**/*.rs', path=str(self.root))
+        self.assertIn('no matches', out)
+
+    def test_glob_bad_path(self):
+        out = self.run_tool('glob', pattern='**/*.py', path=str(self.root / 'nope'))
+        self.assertIn('not a directory', out)
+
+    def test_grep_finds_matches(self):
+        (self.root / 'a.py').write_text('import os\nvalue = 1\n')
+        (self.root / 'b.txt').write_text('no match here\n')
+        out = self.run_tool('grep', pattern='value', path=str(self.root))
+        self.assertIn('a.py:2:', out)
+        self.assertNotIn('b.txt', out)
+
+    def test_grep_glob_filter(self):
+        (self.root / 'a.py').write_text('needle\n')
+        (self.root / 'b.md').write_text('needle\n')
+        out = self.run_tool('grep', pattern='needle', path=str(self.root), glob='*.py')
+        self.assertIn('a.py:1:', out)
+        self.assertNotIn('b.md', out)
+
+    def test_grep_file_target(self):
+        (self.root / 'a.py').write_text('needle here\n')
+        out = self.run_tool('grep', pattern='needle', path=str(self.root / 'a.py'))
+        self.assertIn('a.py:1:', out)
+
+    def test_grep_no_match(self):
+        (self.root / 'a.py').write_text('nothing\n')
+        out = self.run_tool('grep', pattern='zzz', path=str(self.root))
+        self.assertIn('no matches', out)
+
+    def test_grep_invalid_regex(self):
+        out = self.run_tool('grep', pattern='[unclosed', path=str(self.root))
+        self.assertIn('invalid regex', out)
+
     def test_metadata_registered(self):
         expected = {
             'read_file': ('read', 'read', 'path', 'path'),
             'list_dir': ('read', 'list', 'path', 'path'),
             'write_file': ('write', 'edit', 'path', 'path'),
             'run_command': ('exec', 'bash', None, 'command'),
+            'glob': ('read', 'list', 'path', 'pattern'),
+            'grep': ('read', 'list', 'path', 'pattern'),
         }
         for name, (category, permission, path_arg, key_arg) in expected.items():
             self.assertEqual(self.registry.permission_for(name), permission, name)

@@ -67,7 +67,7 @@ Type any message to chat. Tab-complete `/` commands. Arrow keys for history.
 
 ## Machine Access & Permissions
 
-The model can read (`read_file`, `list_dir`), write (`write_file`), and execute shell commands (`run_command`) on your machine. Access is governed by a permission policy:
+The model can read and search your machine (`read_file`, `list_dir`, `glob`, `grep`), write (`write_file`), and execute shell commands (`run_command`). Access is governed by a permission policy:
 
 ```json
 {

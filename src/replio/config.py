@@ -47,6 +47,10 @@ class Config:
                 with open(p) as f:
                     self.data.update(json.load(f))
 
+    def reload(self):
+        self.data = dict(DEFAULT_CONFIG)
+        self._load()
+
     def save(self):
         self.local_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.local_path, 'w') as f:

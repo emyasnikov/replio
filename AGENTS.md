@@ -65,7 +65,7 @@ repl.io/
 │   │   ├── registry.py      # Tool registration + dispatch (OpenAI function calling)
 │   │   ├── policy.py        # ToolPolicy — allow/ask/deny permissions + path scoping
 │   │   ├── builtins.py      # web_search, fetch_page tools
-│   │   └── machine.py       # read_file, list_dir, write_file, run_command tools
+│   │   └── machine.py       # read_file, list_dir, write_file, run_command, glob, grep tools
 │   ├── web/
 │   │   ├── __init__.py
 │   │   ├── search.py        # DuckDuckGo Lite search via html.parser

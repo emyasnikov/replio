@@ -12,6 +12,7 @@
 
 ## Polish
 
+- [x] `/config` structured values — JSON auto-parse, `-a`/`-r` list add/remove, `reload` from disk, unknown-key y/N confirm
 - [ ] Custom system prompts per session
 - [ ] Config validation (test connection on change)
 - [ ] `/compact` session summarization
@@ -57,6 +58,8 @@
   - [x] `write_file` — parent-dir creation, `w`/`a` modes
   - [x] `run_command` — subprocess exec with timeout, stdout/stderr capture, exit code, 8k output cap
   - [x] Registered with `category`/`permission`/`path_arg`/`key_arg` metadata (forward-compat for the activity-lines glyph set)
+- [x] Discovery tools — `glob` (recursive pattern lookup, noise-dir skip) and `grep` (regex content search with `file:line:` results) so the model locates files without guessing paths
+- [x] `read_file` always reports total line count in its header so the model knows when a file is fully read
 - [x] Tool permission model (`tools/policy.py` + config)
   - [x] `tools.allow` / `tools.deny` name-level policies — `deny` and allow-whitelist take precedence
   - [x] `tool_permission` category actions — `read`/`list`/`edit`/`bash`/`web` → `allow`/`ask`/`deny`

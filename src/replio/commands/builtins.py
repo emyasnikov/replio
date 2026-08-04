@@ -86,16 +86,66 @@ def register_builtins(registry):
             for k, v in chat.config.data.items():
                 val = '***' if k == 'api_key' and v else v
                 print(f'  {k}: {val}')
-        elif len(parts) == 1:
-            key = parts[0]
+            return
+        key = parts[0]
+        rest = parts[1].strip() if len(parts) > 1 else ''
+
+        if key == 'reload' and not rest:
+            old = {k: chat.config.get(k) for k in ('provider', 'base_url', 'model')}
+            chat.config.reload()
+            print('Config reloaded from disk')
+            for k in ('provider', 'base_url', 'model'):
+                if chat.config.get(k) != old[k]:
+                    print(f'  {k}: {old[k]} → {chat.config.get(k)} — run /provider or /connect to apply')
+            return
+
+        if not rest:
             val = chat.config.get(key)
             if key == 'api_key':
                 val = '***' if val else val
             print(f'  {key}: {val}')
-        else:
-            key, value = parts
-            chat.config.set(key, value)
-            print(f'Config {key} = {value}')
+            return
+
+        if rest in ('-a', '-r') or rest.startswith('-a ') or rest.startswith('-r '):
+            op = rest[:2]
+            items = rest[2:].strip().split()
+            current = chat.config.get(key)
+            if not isinstance(current, list):
+                print(f'Config {key} is not a list — cannot add/remove items')
+                return
+            changed = False
+            for it in items:
+                if op == '-a' and it not in current:
+                    current.append(it)
+                    changed = True
+                elif op == '-r' and it in current:
+                    current.remove(it)
+                    changed = True
+            if changed:
+                chat.config.set(key, current)
+                print(f'Config {key} = {current}')
+            else:
+                print(f'Config {key} unchanged ({current})')
+            return
+
+        if key not in chat.config.data:
+            try:
+                answer = input(
+                    f'Unknown config key "{key}". Store anyway? [y/N] '
+                ).strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                print()
+                return
+            if answer not in ('y', 'yes'):
+                print('Skipped')
+                return
+
+        try:
+            value = json.loads(rest)
+        except json.JSONDecodeError:
+            value = rest
+        chat.config.set(key, value)
+        print(f'Config {key} = {value}')
 
     @registry.register('session', description='Manage saved sessions', subcommands=[
         ('new', 'Start a new session'),

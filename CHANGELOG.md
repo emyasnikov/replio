@@ -4,6 +4,9 @@
 
 ### Added
 
+- `glob` tool — recursive pattern file discovery (`**/*.py`, `src/**/chat.py`); skips noise dirs (`.git`, `.venv`, `__pycache__`…), marks dirs with `/`, caps at 200 matches
+- `grep` tool — regex content search returning `file:line: text` matches with an optional file-filter `glob`; skips noise dirs, caps at 100 matches, friendly invalid-regex error
+- `/config` structured values — JSON auto-parse (`["run_command"]` → list, `0.3`/`2048`/`true` → number/bool), `-a`/`-r` list add/remove, `reload` re-reads config from disk (warns when provider/model changed), unknown keys prompt y/N before storing
 - Command registration metadata — `description` and `subcommands` on `CommandRegistry.register()` (`self.meta`); canonical names tracked so aliases can't shadow real command names
 - Machine access tools (`tools/machine.py`): `read_file` (numbered lines, `offset`/`limit`, truncation), `list_dir` (sorted entries, dir markers, sizes), `write_file` (parent-dir creation, write/append), `run_command` (subprocess exec with timeout, stdout/stderr capture, exit code, 8k output cap)
 - Tool permission model (`tools/policy.py`) — `ToolPolicy` resolves each tool call to `allow`/`ask`/`deny` from configurable permission keys (`tool_permission`: `read`/`list`/`edit`/`bash`/`web`) plus name-level `tools.allow`/`tools.deny` (deny and allow-whitelist take precedence)
@@ -15,6 +18,7 @@
 
 ### Changed
 
+- `read_file` always emits a `# <path> — N lines` header (with the shown range when truncated) so the model knows the file's total size without extra reads
 - `/help` compacts to one line per command with aliases inline (`/help, /h`) and subcommand rows beneath (`/session` → `new`/`list`/`load`/`delete`/`save`), all aligned to a computed description column
 - `/session` (no args) reuses the shared subcommand metadata instead of a hardcoded usage block
 - `/tool` command respects tool policy — listing shows only allowed tools, execution routes through `_run_tool()` (deny rejection + confirm prompts)
