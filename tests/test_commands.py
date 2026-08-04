@@ -24,6 +24,24 @@ class TestToolCommand(unittest.TestCase):
         self.assertIn('web_search', output)
         self.assertIn('fetch_page', output)
 
+    def test_help_lists_aliases_inline(self):
+        output = self._dispatch('/help')
+        self.assertIn('/help, /h', output)
+        self.assertIn('/exit, /quit, /q', output)
+        self.assertNotIn('aliases:', output)
+
+    def test_help_shows_subcommands(self):
+        output = self._dispatch('/help')
+        self.assertIn('new', output)
+        self.assertIn('Start a new session', output)
+        self.assertIn('load', output)
+        self.assertIn('List saved sessions', output)
+
+    def test_session_no_args_shows_subcommands(self):
+        output = self._dispatch('/session')
+        self.assertIn('Start a new session', output)
+        self.assertIn('Delete a session', output)
+
     def test_tool_executes_via_registry(self):
         with patch('replio.web.search.search', return_value=[
             {'title': 'T', 'url': 'http://x.com', 'snippet': 'S'}

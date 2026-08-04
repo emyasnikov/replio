@@ -4,6 +4,7 @@
 
 ### Added
 
+- Command registration metadata — `description` and `subcommands` on `CommandRegistry.register()` (`self.meta`); canonical names tracked so aliases can't shadow real command names
 - Machine access tools (`tools/machine.py`): `read_file` (numbered lines, `offset`/`limit`, truncation), `list_dir` (sorted entries, dir markers, sizes), `write_file` (parent-dir creation, write/append), `run_command` (subprocess exec with timeout, stdout/stderr capture, exit code, 8k output cap)
 - Tool permission model (`tools/policy.py`) — `ToolPolicy` resolves each tool call to `allow`/`ask`/`deny` from configurable permission keys (`tool_permission`: `read`/`list`/`edit`/`bash`/`web`) plus name-level `tools.allow`/`tools.deny` (deny and allow-whitelist take precedence)
 - Path-scoped confirmation — read/write/list calls targeting paths outside the project worktree escalate to `ask` (opencode-style `external_directory`), so in-worktree file ops run unattended while external access prompts
@@ -14,6 +15,8 @@
 
 ### Changed
 
+- `/help` compacts to one line per command with aliases inline (`/help, /h`) and subcommand rows beneath (`/session` → `new`/`list`/`load`/`delete`/`save`), all aligned to a computed description column
+- `/session` (no args) reuses the shared subcommand metadata instead of a hardcoded usage block
 - `/tool` command respects tool policy — listing shows only allowed tools, execution routes through `_run_tool()` (deny rejection + confirm prompts)
 - `Session.to_dict()` and the agent loop unchanged — confirm prompts and tool status remain ephemeral REPL UI, never persisted
 

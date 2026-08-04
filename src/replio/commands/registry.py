@@ -5,19 +5,24 @@ class CommandRegistry:
     def __init__(self, chat_loop):
         self.chat_loop = chat_loop
         self.commands: dict[str, Callable] = {}
+        self.meta: dict[str, dict] = {}
 
     def register(self, name: str, aliases: list[str] | None = None,
-                 handler: Callable | None = None):
+                 handler: Callable | None = None, description: str = '',
+                 subcommands: list[tuple[str, str]] | None = None):
+        def store(fn):
+            self.commands[name] = fn
+            for alias in (aliases or []):
+                self.commands[alias] = fn
+            self.meta[name] = {
+                'description': description,
+                'aliases': list(aliases or []),
+                'subcommands': list(subcommands or []),
+            }
+            return fn
         if handler is None:
-            def wrapper(fn):
-                self.commands[name] = fn
-                for alias in (aliases or []):
-                    self.commands[alias] = fn
-                return fn
-            return wrapper
-        self.commands[name] = handler
-        for alias in (aliases or []):
-            self.commands[alias] = handler
+            return store
+        return store(handler)
 
     def dispatch(self, line: str):
         parts = line.strip().split(maxsplit=1)

@@ -2,28 +2,43 @@ import sys
 import json
 
 
+def _command_label(name, aliases):
+    label = '/' + name
+    if aliases:
+        label += ', /' + ', /'.join(aliases)
+    return label
+
+
+def _render_commands(registry, names):
+    metas = {n: registry.meta.get(n, {}) for n in names}
+    labels = {n: _command_label(n, metas[n].get('aliases', [])) for n in names}
+    max_label = max((len(l) for l in labels.values()), default=0)
+    sub_col = 2 + max((len(n) for n in names), default=0) + 1
+    sub_len = max(
+        (len(s) for m in metas.values() for s, _ in m.get('subcommands', [])),
+        default=0,
+    )
+    desc_col = max(2 + max_label + 2, sub_col + sub_len + 2)
+    for n in names:
+        print(f'  {labels[n]:<{desc_col - 2}}{metas[n].get("description", "")}')
+        for sub, sdesc in metas[n].get('subcommands', []):
+            print(f'{" " * sub_col}{sub:<{desc_col - sub_col}}{sdesc}')
+
+
 def register_builtins(registry):
     chat = registry.chat_loop
 
-    @registry.register('help', aliases=['h'])
+    @registry.register('help', aliases=['h'], description='Show available commands')
     def help_cmd(_=None):
         print('Available commands:')
-        seen = set()
-        for name, fn in sorted(registry.commands.items()):
-            if id(fn) not in seen:
-                seen.add(id(fn))
-                print(f'  /{name}')
-                aliases = [k for k, v in registry.commands.items()
-                           if v is fn and k != name]
-                if aliases:
-                    print(f'      aliases: {", ".join(aliases)}')
+        _render_commands(registry, sorted(registry.meta))
 
-    @registry.register('exit', aliases=['quit', 'q'])
+    @registry.register('exit', aliases=['quit', 'q'], description='Exit the REPL')
     def exit_cmd(_=None):
         chat.session_auto_save()
         sys.exit(0)
 
-    @registry.register('model')
+    @registry.register('model', description='Show or switch the active model')
     def model_cmd(arg=''):
         if arg:
             chat.config.set('model', arg.strip())
@@ -32,7 +47,7 @@ def register_builtins(registry):
         else:
             print(f'Current model: {chat.config.get("model")}')
 
-    @registry.register('provider')
+    @registry.register('provider', description='Show or switch the active provider')
     def provider_cmd(arg=''):
         if arg:
             chat.config.set('provider', arg.strip())
@@ -41,7 +56,7 @@ def register_builtins(registry):
         else:
             print(f'Current provider: {chat.config.get("provider")}')
 
-    @registry.register('connect')
+    @registry.register('connect', description='Set up provider connection interactively')
     def connect_cmd(_=None):
         print('Setting up provider connection:')
         provider = input(
@@ -64,7 +79,7 @@ def register_builtins(registry):
         chat._reinit_provider()
         print(f'Connected to {provider} ({base_url})')
 
-    @registry.register('config')
+    @registry.register('config', description='Show, get, or set config values')
     def config_cmd(arg=''):
         parts = arg.strip().split(maxsplit=1)
         if not arg:
@@ -82,18 +97,19 @@ def register_builtins(registry):
             chat.config.set(key, value)
             print(f'Config {key} = {value}')
 
-    @registry.register('session')
+    @registry.register('session', description='Manage saved sessions', subcommands=[
+        ('new', 'Start a new session'),
+        ('list', 'List saved sessions'),
+        ('load', 'Load a session'),
+        ('delete', 'Delete a session'),
+        ('save', 'Save the current session'),
+    ])
     def session_cmd(arg=''):
         parts = arg.strip().split(maxsplit=1)
         action = parts[0] if parts else ''
 
         if not action:
-            print('Session commands:')
-            print('  /session new            start a new session')
-            print('  /session list           list saved sessions')
-            print('  /session load <name>    load a session')
-            print('  /session delete <name>  delete a session')
-            print('  /session save           save current session')
+            _render_commands(registry, ['session'])
             return
 
         if action == 'new':
@@ -131,7 +147,7 @@ def register_builtins(registry):
             chat.session_auto_save()
             print('Session saved')
 
-    @registry.register('tool')
+    @registry.register('tool', description='Run a tool directly (no args lists tools)')
     def tool_cmd(arg=''):
         chat._init_tooling()
         if not chat._tool_registry or not chat._tool_policy:
