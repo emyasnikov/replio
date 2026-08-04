@@ -41,6 +41,7 @@ def register_machine_tools(registry):
         permission='read',
         path_arg='path',
         key_arg='path',
+        short='Read the contents of a text file',
     )
     def read_file(path: str, offset: int = 1, limit: int = 500) -> str:
         p = Path(path).expanduser()
@@ -82,6 +83,7 @@ def register_machine_tools(registry):
         permission='list',
         path_arg='path',
         key_arg='path',
+        short="List a directory's contents",
     )
     def list_dir(path: str = '.') -> str:
         p = Path(path).expanduser()
@@ -133,6 +135,7 @@ def register_machine_tools(registry):
         permission='edit',
         path_arg='path',
         key_arg='path',
+        short='Write content to a file',
     )
     def write_file(path: str, content: str, mode: str = 'w') -> str:
         p = Path(path).expanduser()
@@ -171,6 +174,7 @@ def register_machine_tools(registry):
         category='exec',
         permission='bash',
         key_arg='command',
+        short='Run a shell command',
     )
     def run_command(command: str, cwd: str | None = None,
                     timeout: int = 30) -> str:
@@ -216,6 +220,7 @@ def register_machine_tools(registry):
         permission='list',
         path_arg='path',
         key_arg='pattern',
+        short='Find files matching a glob pattern',
     )
     def glob(pattern: str, path: str = '.') -> str:
         base = Path(path).expanduser()
@@ -262,6 +267,7 @@ def register_machine_tools(registry):
         permission='list',
         path_arg='path',
         key_arg='pattern',
+        short='Search file contents for a pattern',
     )
     def grep(pattern: str, path: str = '.', glob: str = '*') -> str:
         try:

@@ -35,9 +35,7 @@ def _render_tools(chat):
     rows = [(n, chat._tool_registry.info(n)) for n in allowed]
     name_w = max(len(n) for n, _ in rows)
     for n, info in rows:
-        action = chat._tool_policy.action(n, info['permission'])
-        print(f'  {n:<{name_w + 2}}{info["description"]}'
-              f'  [{info["category"]} · {info["permission"]}: {action}]')
+        print(f'  {n:<{name_w + 2}}{info["short"]}')
 
 
 def _render_tool_detail(chat, name):

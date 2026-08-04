@@ -6,7 +6,7 @@ class ToolRegistry:
     def register(self, name: str, description: str, parameters: dict,
                  refine: bool = False, category: str = 'tool',
                  permission: str = 'web', path_arg: str | None = None,
-                 key_arg: str | None = None):
+                 key_arg: str | None = None, short: str = ''):
         def wrapper(fn):
             entry = {
                 'name': name,
@@ -16,6 +16,7 @@ class ToolRegistry:
                 'permission': permission,
                 'path_arg': path_arg,
                 'key_arg': key_arg,
+                'short': short,
                 'schema': {
                     'type': 'function',
                     'function': {
@@ -62,6 +63,7 @@ class ToolRegistry:
         return {
             'name': name,
             'description': tool['schema']['function']['description'],
+            'short': tool['short'] or tool['schema']['function']['description'][:60],
             'category': tool['category'],
             'permission': tool['permission'],
             'parameters': tool['schema']['function']['parameters'],

@@ -44,15 +44,21 @@ class TestToolCommand(unittest.TestCase):
     def test_help_shows_tools_section(self):
         output = self._dispatch('/help')
         self.assertIn('Available tools:', output)
-        self.assertIn('run_command', output)
-        self.assertIn('[exec · bash: ask]', output)
-        self.assertIn('[read · read: allow]', output)
+        self.assertIn('Run a shell command', output)
+        self.assertIn('Find files matching a glob pattern', output)
+        self.assertNotIn('[exec · bash: ask]', output)
 
     def test_help_tool_detail(self):
         output = self._dispatch('/help read_file')
         self.assertIn('category: read', output)
         self.assertIn('path (required)', output)
         self.assertIn('offset (optional)', output)
+
+    def test_help_tool_detail_has_permission(self):
+        output = self._dispatch('/help run_command')
+        self.assertIn('category: exec', output)
+        self.assertIn('permission: bash: ask', output)
+        self.assertIn('command (required)', output)
 
     def test_help_command_by_name(self):
         output = self._dispatch('/help session')

@@ -4,6 +4,7 @@
 
 ### Added
 
+- Tool `short=` registration metadata — human-readable one-line labels for the `/help` tools table (falls back to a truncated `description`)
 - `CommandRegistry.canonical()` and `ToolRegistry.info()` accessors backing the `/help <name>` detail views
 - `glob` tool — recursive pattern file discovery (`**/*.py`, `src/**/chat.py`); skips noise dirs (`.git`, `.venv`, `__pycache__`…), marks dirs with `/`, caps at 200 matches
 - `grep` tool — regex content search returning `file:line: text` matches with an optional file-filter `glob`; skips noise dirs, caps at 100 matches, friendly invalid-regex error
@@ -19,6 +20,7 @@
 
 ### Changed
 
+- `/help` `Available tools` section renders a clean two-column table using new `short=` registration labels (`Run a shell command`, `Search the web`, …); category/permission/action now show only in `/help <tool>` details
 - `/help` is now the central help system — shows `Available commands` (aliases inline, subcommands at a standard 4-space indent) followed by `Available tools` (one per line with `[category · permission-key: action]`, policy-filtered)
 - `/help <name>` shows details for a specific command (aliases + subcommands) or tool (`category`, `permission: action`, full parameter schema with required/optional); commands take precedence
 - `/tool` (no args) lists allowed tool names one per line and points to `/help <tool>` for details
