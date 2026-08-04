@@ -41,6 +41,40 @@ class TestToolCommand(unittest.TestCase):
         output = self._dispatch('/tool web_search not-json')
         self.assertIn('Usage: /tool', output)
 
+    def test_tool_denied_by_policy(self):
+        self.chat.config.set('tools.deny', ['web_search'])
+        output = self._dispatch('/tool web_search {"query": "x"}')
+        self.assertIn('disabled by tool policy', output)
+
+    def test_tool_listing_respects_deny(self):
+        self.chat.config.set('tools.deny', ['web_search'])
+        output = self._dispatch('/tool')
+        self.assertNotIn('web_search', output)
+        self.assertIn('read_file', output)
+
+    def test_tool_ask_prompt_declined(self):
+        self.chat.config.set('tool_permission', {'web': 'ask'})
+        with patch('replio.chat.input', return_value='n'):
+            output = self._dispatch('/tool web_search {"query": "x"}')
+        self.assertIn('[cancelled]', output)
+
+    def test_tool_ask_prompt_accepted(self):
+        self.chat.config.set('tool_permission', {'web': 'ask'})
+        with patch('replio.web.search.search', return_value=[
+            {'title': 'T', 'url': 'http://x.com', 'snippet': 'S'}
+        ]), patch('replio.chat.input', return_value='y'):
+            output = self._dispatch('/tool web_search {"query": "python"}')
+        self.assertNotIn('[cancelled]', output)
+        self.assertIn('python', output)
+
+    def test_schema_filters_denied_tools(self):
+        self.chat.config.set('tools.deny', ['web_search', 'run_command'])
+        schema = self.chat._init_tooling()
+        names = [s['function']['name'] for s in schema]
+        self.assertNotIn('web_search', names)
+        self.assertNotIn('run_command', names)
+        self.assertIn('read_file', names)
+
 
 if __name__ == '__main__':
     unittest.main()

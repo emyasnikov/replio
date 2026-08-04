@@ -1,6 +1,28 @@
 # Changelog
 
-## v0.6.0 — 2026-08-02
+## v0.7.0 — 2026-08-03
+
+### Added
+
+- Machine access tools (`tools/machine.py`): `read_file` (numbered lines, `offset`/`limit`, truncation), `list_dir` (sorted entries, dir markers, sizes), `write_file` (parent-dir creation, write/append), `run_command` (subprocess exec with timeout, stdout/stderr capture, exit code, 8k output cap)
+- Tool permission model (`tools/policy.py`) — `ToolPolicy` resolves each tool call to `allow`/`ask`/`deny` from configurable permission keys (`tool_permission`: `read`/`list`/`edit`/`bash`/`web`) plus name-level `tools.allow`/`tools.deny` (deny and allow-whitelist take precedence)
+- Path-scoped confirmation — read/write/list calls targeting paths outside the project worktree escalate to `ask` (opencode-style `external_directory`), so in-worktree file ops run unattended while external access prompts
+- Confirm prompts in the agent loop (`_confirm_tool`) — `bash: ask` by default so every `run_command` confirms; cancelled calls feed `[cancelled]` tool results back to the model; denied tools are filtered from the provider schema entirely
+- Registration metadata — `category`, `permission`, `path_arg`, `key_arg` on `ToolRegistry.register()` plus `permission_for()`/`path_arg_for()`/`key_arg_for()`/`schema_filtered()`; retrofitted `web_search`/`fetch_page` (forward-compat for the deferred activity-lines glyph system)
+- `tests/test_tool_policy.py` (allow/deny, permission keys, external-directory escalation, precedence) and `tests/test_machine_tools.py` (read/list/write/exec against a temp dir, timeout, metadata)
+- `/tool` policy tests — deny rejection, `ask` accept/decline, schema filtering of denied tools
+
+### Changed
+
+- `/tool` command respects tool policy — listing shows only allowed tools, execution routes through `_run_tool()` (deny rejection + confirm prompts)
+- `Session.to_dict()` and the agent loop unchanged — confirm prompts and tool status remain ephemeral REPL UI, never persisted
+
+### Docs
+
+- `TODO.md` Machine Access section expanded; sandboxed exec and per-agent permission profiles documented as later work
+- `AGENTS.md` config schema + project structure updated with the permission model and new modules
+
+## v0.6.0 - 2026-08-02
 
 ### Added
 

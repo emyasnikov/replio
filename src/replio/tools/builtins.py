@@ -58,6 +58,9 @@ def register_tools(registry):
             'required': ['query'],
         },
         refine=True,
+        category='search',
+        permission='web',
+        key_arg='query',
     )
     def web_search(query: str) -> str:
         results = web_search_fn(query)
@@ -78,6 +81,9 @@ def register_tools(registry):
             },
             'required': ['url'],
         },
+        category='read',
+        permission='read',
+        key_arg='url',
     )
     def fetch_page(url: str) -> str:
         import urllib.request

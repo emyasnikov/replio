@@ -51,9 +51,21 @@
 
 ## Machine Access
 
-- [ ] `read_file`, `write_file`, `list_dir`, `run_command` tools
-- [ ] `tools.allow` / `tools.deny` config policies
-- [ ] `confirm`-gated destructive/exec tools
+- [x] Machine tools (`tools/machine.py`) — `read_file`, `list_dir`, `write_file`, `run_command`
+  - [x] `read_file` — numbered lines, `offset`/`limit`, truncation, binary/permission error handling
+  - [x] `list_dir` — sorted entries, trailing `/` for subdirs, file sizes
+  - [x] `write_file` — parent-dir creation, `w`/`a` modes
+  - [x] `run_command` — subprocess exec with timeout, stdout/stderr capture, exit code, 8k output cap
+  - [x] Registered with `category`/`permission`/`path_arg`/`key_arg` metadata (forward-compat for the activity-lines glyph set)
+- [x] Tool permission model (`tools/policy.py` + config)
+  - [x] `tools.allow` / `tools.deny` name-level policies — `deny` and allow-whitelist take precedence
+  - [x] `tool_permission` category actions — `read`/`list`/`edit`/`bash`/`web` → `allow`/`ask`/`deny`
+  - [x] Path-scoped confirm — read/write/list outside the project worktree escalate to `ask` (opencode-style `external_directory`); in-worktree ops run unattended
+  - [x] `bash: ask` default — every `run_command` prompts y/N; opt out via `tool_permission.bash = "allow"`
+- [x] Confirm prompts in the loop (`_run_tool`/`_confirm_tool`) — denied tools are filtered from the provider schema entirely; cancelled calls feed `[cancelled]` tool results back to the model
+- [x] `/tool` command routes through the same policy — listing shows only allowed tools, execution prompts on `ask`
+- [ ] Sandboxed exec — namespace/container isolation for `run_command` (documented, planned for a later version)
+- [ ] Per-agent permission profiles — `tool_permission` becomes per-agent when `/agent` personas land (Phase 3)
 
 ## Personas & Delegation
 

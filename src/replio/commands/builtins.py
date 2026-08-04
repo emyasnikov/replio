@@ -134,12 +134,14 @@ def register_builtins(registry):
     @registry.register('tool')
     def tool_cmd(arg=''):
         chat._init_tooling()
-        if not chat._tool_registry:
+        if not chat._tool_registry or not chat._tool_policy:
             print('Tool calling is disabled (tool_calling: false)')
             return
         parts = arg.strip().split(maxsplit=1)
         if not arg:
-            print('Available tools: ' + ', '.join(chat._tool_registry.names()))
+            allowed = [n for n in chat._tool_registry.names()
+                       if chat._tool_policy.allowed(n)]
+            print('Available tools: ' + ', '.join(allowed))
             return
         name = parts[0]
         args_str = parts[1] if len(parts) > 1 else '{}'
@@ -148,4 +150,4 @@ def register_builtins(registry):
         except json.JSONDecodeError:
             print('Usage: /tool <name> {"key": "value"}')
             return
-        print(chat._tool_registry.execute(name, arguments))
+        print(chat._run_tool(name, arguments))

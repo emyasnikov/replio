@@ -257,9 +257,7 @@ class ChatLoop:
                 args['query'] = self._refine_query(args['query'])
                 if args['query'] != original:
                     print(f'\001\033[90m\002[refine: "{original}" → "{args["query"]}"]\001\033[0m\002')
-            if self.config.get('tool_status_visible', True):
-                self._show_tool_status(name, args)
-            output = self._tool_registry.execute(name, args)
+            output = self._run_tool(name, args)
             messages.append({
                 'role': 'tool',
                 'tool_call_id': tc['id'],
@@ -288,12 +286,54 @@ class ChatLoop:
     def _init_tooling(self):
         if not self.config.get('tool_calling'):
             self._tool_registry = None
+            self._tool_policy = None
             return None
         from .tools.registry import ToolRegistry
         from .tools.builtins import register_tools
+        from .tools.machine import register_machine_tools
+        from .tools.policy import ToolPolicy
         self._tool_registry = ToolRegistry()
         register_tools(self._tool_registry)
-        return self._tool_registry.schema()
+        register_machine_tools(self._tool_registry)
+        self._tool_policy = ToolPolicy(
+            permissions=self.config.get('tool_permission', {}),
+            allow=self.config.get('tools.allow', []),
+            deny=self.config.get('tools.deny', []),
+            worktree=self.config.local_path.parent.parent,
+        )
+        allowed = {n for n in self._tool_registry.names()
+                   if self._tool_policy.allowed(n)}
+        return self._tool_registry.schema_filtered(allowed)
+
+    def _run_tool(self, name: str, args: dict) -> str:
+        registry = self._tool_registry
+        policy = self._tool_policy
+        path_arg = registry.path_arg_for(name)
+        path = args.get(path_arg) if path_arg else None
+        action = policy.action(name, registry.permission_for(name), path)
+        if action == 'deny':
+            return f'Error: tool "{name}" is disabled by tool policy'
+        if action == 'ask':
+            if not self._confirm_tool(name, args):
+                return f'[cancelled] User declined the {name} call'
+        if self.config.get('tool_status_visible', True):
+            self._show_tool_status(name, args)
+        return registry.execute(name, args)
+
+    def _confirm_tool(self, name: str, args: dict) -> bool:
+        key_arg = self._tool_registry.key_arg_for(name)
+        label = name
+        if key_arg and args.get(key_arg):
+            value = str(args[key_arg])
+            label = f'{name} {value[:80]}'
+        try:
+            answer = input(
+                f'\001\033[90m\002  ↳ {label} — approve? [y/N] \001\033[0m\002'
+            ).strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return False
+        return answer in ('y', 'yes')
 
     def _show_tool_status(self, name, arguments):
         args_str = ', '.join(f'{k}={v!r}' for k, v in arguments.items())

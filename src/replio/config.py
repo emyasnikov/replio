@@ -19,6 +19,15 @@ DEFAULT_CONFIG = {
     'markdown_streaming': False,
     'web_search': False,
     'search_results': 5,
+    'tools.allow': [],
+    'tools.deny': [],
+    'tool_permission': {
+        'read': 'allow',
+        'list': 'allow',
+        'edit': 'allow',
+        'bash': 'ask',
+        'web': 'allow',
+    },
 }
 
 

@@ -63,7 +63,9 @@ repl.io/
 │   ├── tools/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Tool registration + dispatch (OpenAI function calling)
-│   │   └── builtins.py      # web_search, fetch_page tools
+│   │   ├── policy.py        # ToolPolicy — allow/ask/deny permissions + path scoping
+│   │   ├── builtins.py      # web_search, fetch_page tools
+│   │   └── machine.py       # read_file, list_dir, write_file, run_command tools
 │   ├── web/
 │   │   ├── __init__.py
 │   │   ├── search.py        # DuckDuckGo Lite search via html.parser
@@ -104,12 +106,21 @@ repl.io/
 ## Extension Points
 
 ### Adding a Tool
-1. Open `tools/builtins.py`
+1. Open `tools/builtins.py` (web tools) or `tools/machine.py` (file/exec tools)
 2. Use `@registry.register(name, description, parameters)` decorator
 3. `parameters` follow the OpenAI function calling JSON schema format
 4. Handler receives keyword arguments matching the schema
 5. Return a string (the tool result injected into the conversation)
 6. Add optional metadata for loop behavior — e.g. `refine=True` to auto-refine short query args via a lightweight model call (gated by the `query_refine` config)
+7. Optional permission/display metadata: `category` (`search`/`read`/`write`/`exec`/`ask`/`todo`), `permission` (`read`/`list`/`edit`/`bash`/`web` — the `tool_permission` key that gates it), `path_arg` (which parameter is a filesystem path, for `external_directory` scope checks), `key_arg` (which argument to show in status/confirm labels, and for the future activity-lines glyph system)
+
+### Machine Access & Permissions
+- `ToolPolicy` (`tools/policy.py`) is the single permission resolution point; the loop and `/tool` both route through it — never special-case tool names for permission logic
+- Actions: `allow` (no prompt), `ask` (y/N confirm in the loop via `_confirm_tool`), `deny` (tool filtered from the provider schema and refused on direct calls)
+- Precedence: name-level `deny` / allow-whitelist → category action from `tool_permission` → `external_directory` escalation (read/write/list outside the project worktree becomes `ask`)
+- `bash: ask` by default — every `run_command` confirms; set `tool_permission.bash = "allow"` to disable prompting
+- Confirm prompts and tool status are ephemeral REPL UI — never persisted to session files
+- Sandboxed exec (namespace/container isolation) and per-agent permission profiles are planned future work (see TODO)
 
 ### Adding a Provider
 1. Create `src/replio/providers/<name>.py`
@@ -150,7 +161,16 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
   "system_prompt": "",
   "tool_calling": true,
   "web_search": false,
-  "search_results": 5
+  "search_results": 5,
+  "tools.allow": [],
+  "tools.deny": [],
+  "tool_permission": {
+    "read": "allow",
+    "list": "allow",
+    "edit": "allow",
+    "bash": "ask",
+    "web": "allow"
+  }
 }
 ```
 

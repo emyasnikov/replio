@@ -21,6 +21,7 @@ Clone and run.
 - **Streaming responses** — live token-by-token output via SSE
 - **Web search** — DuckDuckGo integration, page fetching, auto-query refinement
 - **Tool calling** — models search the web and fetch pages on the fly
+- **Machine access** — read, list, write, and run shell commands, gated by path-scoped permission prompts
 - **Sessions** — save, load, switch, and auto-name conversations
 - **Slash commands** — `/help`, `/model`, `/provider`, `/connect`, `/session`, `/config`, `/exit`
 - **Dual config** — global `~/.config/replio/` + per-project `.replio/` JSON merge
@@ -63,6 +64,31 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 ```
 
 Type any message to chat. Tab-complete `/` commands. Arrow keys for history.
+
+## Machine Access & Permissions
+
+The model can read (`read_file`, `list_dir`), write (`write_file`), and execute shell commands (`run_command`) on your machine. Access is governed by a permission policy:
+
+```json
+{
+  "tools.deny": [],
+  "tools.allow": [],
+  "tool_permission": {
+    "read": "allow",
+    "list": "allow",
+    "edit": "allow",
+    "bash": "ask",
+    "web": "allow"
+  }
+}
+```
+
+- `allow` — runs without prompting; `ask` — prompts y/N; `deny` — disabled (also hidden from the model).
+- `tools.deny` / `tools.allow` — exact tool-name policies (`deny` and allow-whitelist take precedence).
+- Reads/writes/lists **outside the project directory** always prompt for confirmation, even when the category is `allow`.
+- `bash` is `ask` by default — every shell command is confirmed. Set `"bash": "allow"` to skip prompting.
+
+Confirm prompts and tool status are ephemeral UI and are never written to session files.
 
 ## Project Structure
 

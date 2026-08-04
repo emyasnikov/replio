@@ -36,6 +36,17 @@ class TestToolRegistry(unittest.TestCase):
 
         self.assertTrue(reg.refine_required('do_stuff'))
 
+    def test_permission_metadata(self):
+        self.assertEqual(self.registry.permission_for('web_search'), 'web')
+        self.assertEqual(self.registry.permission_for('fetch_page'), 'read')
+        self.assertEqual(self.registry.key_arg_for('web_search'), 'query')
+        self.assertEqual(self.registry.path_arg_for('fetch_page'), None)
+
+    def test_schema_filtered(self):
+        schema = self.registry.schema_filtered({'web_search'})
+        names = [s['function']['name'] for s in schema]
+        self.assertEqual(names, ['web_search'])
+
 
 if __name__ == '__main__':
     unittest.main()

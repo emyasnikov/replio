@@ -4,12 +4,18 @@ class ToolRegistry:
         self._schema: list[dict] = []
 
     def register(self, name: str, description: str, parameters: dict,
-                 refine: bool = False):
+                 refine: bool = False, category: str = 'tool',
+                 permission: str = 'web', path_arg: str | None = None,
+                 key_arg: str | None = None):
         def wrapper(fn):
             entry = {
                 'name': name,
                 'fn': fn,
                 'refine': refine,
+                'category': category,
+                'permission': permission,
+                'path_arg': path_arg,
+                'key_arg': key_arg,
                 'schema': {
                     'type': 'function',
                     'function': {
@@ -37,8 +43,23 @@ class ToolRegistry:
         tool = self._tools.get(name)
         return bool(tool and tool.get('refine'))
 
+    def permission_for(self, name: str) -> str:
+        tool = self._tools.get(name)
+        return tool['permission'] if tool else 'web'
+
+    def path_arg_for(self, name: str) -> str | None:
+        tool = self._tools.get(name)
+        return tool['path_arg'] if tool else None
+
+    def key_arg_for(self, name: str) -> str | None:
+        tool = self._tools.get(name)
+        return tool['key_arg'] if tool else None
+
     def schema(self) -> list[dict]:
         return list(self._schema)
+
+    def schema_filtered(self, allowed: set[str]) -> list[dict]:
+        return [s for s in self._schema if s['function']['name'] in allowed]
 
     def names(self) -> list[str]:
         return list(self._tools.keys())
