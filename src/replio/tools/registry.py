@@ -55,6 +55,18 @@ class ToolRegistry:
         tool = self._tools.get(name)
         return tool['key_arg'] if tool else None
 
+    def info(self, name: str) -> dict | None:
+        tool = self._tools.get(name)
+        if not tool:
+            return None
+        return {
+            'name': name,
+            'description': tool['schema']['function']['description'],
+            'category': tool['category'],
+            'permission': tool['permission'],
+            'parameters': tool['schema']['function']['parameters'],
+        }
+
     def schema(self) -> list[dict]:
         return list(self._schema)
 

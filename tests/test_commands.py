@@ -37,6 +37,40 @@ class TestToolCommand(unittest.TestCase):
         self.assertIn('load', output)
         self.assertIn('List saved sessions', output)
 
+    def test_help_subcommand_indent(self):
+        output = self._dispatch('/help')
+        self.assertIn('\n    new', output)
+
+    def test_help_shows_tools_section(self):
+        output = self._dispatch('/help')
+        self.assertIn('Available tools:', output)
+        self.assertIn('run_command', output)
+        self.assertIn('[exec · bash: ask]', output)
+        self.assertIn('[read · read: allow]', output)
+
+    def test_help_tool_detail(self):
+        output = self._dispatch('/help read_file')
+        self.assertIn('category: read', output)
+        self.assertIn('path (required)', output)
+        self.assertIn('offset (optional)', output)
+
+    def test_help_command_by_name(self):
+        output = self._dispatch('/help session')
+        self.assertIn('Start a new session', output)
+
+    def test_help_alias_resolution(self):
+        output = self._dispatch('/help h')
+        self.assertIn('Show available commands and tools', output)
+
+    def test_help_unknown(self):
+        output = self._dispatch('/help nosuch')
+        self.assertIn('No help available for "nosuch"', output)
+
+    def test_tool_listing_points_to_help(self):
+        output = self._dispatch('/tool')
+        self.assertIn('Use /help <tool> for details', output)
+        self.assertNotIn(', web_search', output)
+
     def test_session_no_args_shows_subcommands(self):
         output = self._dispatch('/session')
         self.assertIn('Start a new session', output)
@@ -77,6 +111,14 @@ class TestToolCommand(unittest.TestCase):
             output = self._dispatch('/config frobnicate 1')
         self.assertIn('Skipped', output)
         self.assertIsNone(self.chat.config.get('frobnicate'))
+
+    def test_config_instances_do_not_share_lists(self):
+        self._dispatch('/config tools.deny -a run_command')
+        other = make_chat()
+        try:
+            self.assertEqual(other.config.get('tools.deny'), [])
+        finally:
+            other._tmp.cleanup()
 
     def test_tool_executes_via_registry(self):
         with patch('replio.web.search.search', return_value=[

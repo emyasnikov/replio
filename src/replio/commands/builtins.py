@@ -1,6 +1,8 @@
 import sys
 import json
 
+SUB_INDENT = 4
+
 
 def _command_label(name, aliases):
     label = '/' + name
@@ -13,25 +15,73 @@ def _render_commands(registry, names):
     metas = {n: registry.meta.get(n, {}) for n in names}
     labels = {n: _command_label(n, metas[n].get('aliases', [])) for n in names}
     max_label = max((len(l) for l in labels.values()), default=0)
-    sub_col = 2 + max((len(n) for n in names), default=0) + 1
-    sub_len = max(
-        (len(s) for m in metas.values() for s, _ in m.get('subcommands', [])),
-        default=0,
-    )
-    desc_col = max(2 + max_label + 2, sub_col + sub_len + 2)
+    desc_col = 2 + max_label + 2
     for n in names:
         print(f'  {labels[n]:<{desc_col - 2}}{metas[n].get("description", "")}')
         for sub, sdesc in metas[n].get('subcommands', []):
-            print(f'{" " * sub_col}{sub:<{desc_col - sub_col}}{sdesc}')
+            print(f'{" " * SUB_INDENT}{sub:<{desc_col - SUB_INDENT}}{sdesc}')
+
+
+def _render_tools(chat):
+    chat._init_tooling()
+    if not chat._tool_registry or not chat._tool_policy:
+        print('  (tool calling disabled)')
+        return
+    allowed = sorted(n for n in chat._tool_registry.names()
+                     if chat._tool_policy.allowed(n))
+    if not allowed:
+        print('  (no tools allowed)')
+        return
+    rows = [(n, chat._tool_registry.info(n)) for n in allowed]
+    name_w = max(len(n) for n, _ in rows)
+    for n, info in rows:
+        action = chat._tool_policy.action(n, info['permission'])
+        print(f'  {n:<{name_w + 2}}{info["description"]}'
+              f'  [{info["category"]} · {info["permission"]}: {action}]')
+
+
+def _render_tool_detail(chat, name):
+    info = chat._tool_registry.info(name)
+    if not info:
+        print(f'No help available for "{name}"')
+        return
+    action = chat._tool_policy.action(name, info['permission'])
+    print(name)
+    print(f'  {info["description"]}')
+    print(f'  category: {info["category"]}')
+    print(f'  permission: {info["permission"]}: {action}')
+    props = info['parameters'].get('properties', {})
+    required = info['parameters'].get('required', [])
+    if props:
+        print('  params:')
+        for p, spec in props.items():
+            req = 'required' if p in required else 'optional'
+            print(f'    {p} ({req}): {spec.get("description", "")}')
 
 
 def register_builtins(registry):
     chat = registry.chat_loop
 
-    @registry.register('help', aliases=['h'], description='Show available commands')
-    def help_cmd(_=None):
+    @registry.register('help', aliases=['h'],
+                       description='Show available commands and tools (use /help <cmd|tool> for details)')
+    def help_cmd(arg=''):
+        arg = arg.strip().lstrip('/')
+        if arg:
+            canonical = registry.canonical(arg)
+            if canonical:
+                _render_commands(registry, [canonical])
+                return
+            chat._init_tooling()
+            if chat._tool_registry and chat._tool_registry.info(arg):
+                _render_tool_detail(chat, arg)
+                return
+            print(f'No help available for "{arg}"')
+            return
         print('Available commands:')
         _render_commands(registry, sorted(registry.meta))
+        print()
+        print('Available tools:')
+        _render_tools(chat)
 
     @registry.register('exit', aliases=['quit', 'q'], description='Exit the REPL')
     def exit_cmd(_=None):
@@ -205,9 +255,15 @@ def register_builtins(registry):
             return
         parts = arg.strip().split(maxsplit=1)
         if not arg:
-            allowed = [n for n in chat._tool_registry.names()
-                       if chat._tool_policy.allowed(n)]
-            print('Available tools: ' + ', '.join(allowed))
+            allowed = sorted(n for n in chat._tool_registry.names()
+                             if chat._tool_policy.allowed(n))
+            if not allowed:
+                print('No tools allowed')
+                return
+            print('Available tools:')
+            for n in allowed:
+                print(f'  {n}')
+            print('Use /help <tool> for details')
             return
         name = parts[0]
         args_str = parts[1] if len(parts) > 1 else '{}'

@@ -1,3 +1,4 @@
+import copy
 import json
 from pathlib import Path
 
@@ -38,7 +39,7 @@ class Config:
             self.local_path = Path(path).resolve() / '.replio' / 'config.json'
         else:
             self.local_path = Path.cwd() / '.replio' / 'config.json'
-        self.data = dict(DEFAULT_CONFIG)
+        self.data = copy.deepcopy(DEFAULT_CONFIG)
         self._load()
 
     def _load(self):
@@ -48,7 +49,7 @@ class Config:
                     self.data.update(json.load(f))
 
     def reload(self):
-        self.data = dict(DEFAULT_CONFIG)
+        self.data = copy.deepcopy(DEFAULT_CONFIG)
         self._load()
 
     def save(self):

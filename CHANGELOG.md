@@ -4,6 +4,7 @@
 
 ### Added
 
+- `CommandRegistry.canonical()` and `ToolRegistry.info()` accessors backing the `/help <name>` detail views
 - `glob` tool — recursive pattern file discovery (`**/*.py`, `src/**/chat.py`); skips noise dirs (`.git`, `.venv`, `__pycache__`…), marks dirs with `/`, caps at 200 matches
 - `grep` tool — regex content search returning `file:line: text` matches with an optional file-filter `glob`; skips noise dirs, caps at 100 matches, friendly invalid-regex error
 - `/config` structured values — JSON auto-parse (`["run_command"]` → list, `0.3`/`2048`/`true` → number/bool), `-a`/`-r` list add/remove, `reload` re-reads config from disk (warns when provider/model changed), unknown keys prompt y/N before storing
@@ -18,16 +19,18 @@
 
 ### Changed
 
+- `/help` is now the central help system — shows `Available commands` (aliases inline, subcommands at a standard 4-space indent) followed by `Available tools` (one per line with `[category · permission-key: action]`, policy-filtered)
+- `/help <name>` shows details for a specific command (aliases + subcommands) or tool (`category`, `permission: action`, full parameter schema with required/optional); commands take precedence
+- `/tool` (no args) lists allowed tool names one per line and points to `/help <tool>` for details
 - `read_file` always emits a `# <path> — N lines` header (with the shown range when truncated) so the model knows the file's total size without extra reads
 - `/help` compacts to one line per command with aliases inline (`/help, /h`) and subcommand rows beneath (`/session` → `new`/`list`/`load`/`delete`/`save`), all aligned to a computed description column
 - `/session` (no args) reuses the shared subcommand metadata instead of a hardcoded usage block
 - `/tool` command respects tool policy — listing shows only allowed tools, execution routes through `_run_tool()` (deny rejection + confirm prompts)
 - `Session.to_dict()` and the agent loop unchanged — confirm prompts and tool status remain ephemeral REPL UI, never persisted
 
-### Docs
+### Fixed
 
-- `TODO.md` Machine Access section expanded; sandboxed exec and per-agent permission profiles documented as later work
-- `AGENTS.md` config schema + project structure updated with the permission model and new modules
+- `Config` shallow-copied `DEFAULT_CONFIG`, sharing the nested `tools.deny`/`tool_permission` lists/dicts across instances — mutations (e.g. `/config tools.deny -a …`) leaked into later sessions; now deep-copied on load and reload
 
 ## v0.6.0 - 2026-08-02
 

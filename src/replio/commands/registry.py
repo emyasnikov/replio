@@ -36,3 +36,11 @@ class CommandRegistry:
                 handler()
         else:
             print(f'Unknown command: /{cmd}. Type /help for available commands.')
+
+    def canonical(self, key: str) -> str | None:
+        if key in self.meta:
+            return key
+        for name, meta in self.meta.items():
+            if key in meta.get('aliases', []):
+                return name
+        return None
