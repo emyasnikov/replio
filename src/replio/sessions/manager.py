@@ -4,9 +4,19 @@ from pathlib import Path
 
 
 class Session:
-    def __init__(self, name: str, messages: list | None = None):
+    def __init__(self, name: str, messages: list | None = None,
+                 errors: list | None = None,
+                 created_at: str | None = None,
+                 updated_at: str | None = None):
+        now = datetime.now(timezone.utc).isoformat(timespec='seconds')
         self.name = name
         self.messages = messages or []
+        self.errors = errors or []
+        self.created_at = created_at or now
+        self.updated_at = updated_at or now
+
+    def _touch(self):
+        self.updated_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
 
     def add_message(self, role: str, content: str, **kwargs):
         msg = {'role': role, 'content': content}
@@ -15,14 +25,42 @@ class Session:
         )
         msg.update(kwargs)
         self.messages.append(msg)
+        self._touch()
 
-    def to_dict(self):
-        visible = [m for m in self.messages if m.get('role') != 'tool']
-        return {'name': self.name, 'messages': visible}
+    def add_error(self, code, message: str, timestamp: str | None = None):
+        ts = timestamp or datetime.now(timezone.utc).isoformat(timespec='seconds')
+        self.errors.append({'code': code, 'message': message, 'timestamp': ts})
+        self._touch()
+
+    def to_dict(self, tool_max_chars: int = 0):
+        messages = self.messages
+        if tool_max_chars > 0:
+            messages = []
+            for m in self.messages:
+                if m.get('role') == 'tool' and isinstance(m.get('content'), str):
+                    content = m['content']
+                    if len(content) > tool_max_chars:
+                        m = dict(m)
+                        m['content'] = content[:tool_max_chars] + (
+                            f'… (truncated from {len(content)} chars)')
+                messages.append(m)
+        return {
+            'name': self.name,
+            'messages': messages,
+            'errors': self.errors,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+        }
 
     @classmethod
     def from_dict(cls, data):
-        return cls(data['name'], data.get('messages', []))
+        return cls(
+            data['name'],
+            data.get('messages', []),
+            data.get('errors', []),
+            data.get('created_at'),
+            data.get('updated_at'),
+        )
 
 
 class SessionManager:
@@ -46,12 +84,12 @@ class SessionManager:
         self.current = Session.from_dict(data)
         return self.current
 
-    def save(self, session: Session | None = None):
+    def save(self, session: Session | None = None, tool_max_chars: int = 0):
         s = session or self.current
         if s is None:
             return
         with open(self.sessions_dir / f'{s.name}.json', 'w') as f:
-            json.dump(s.to_dict(), f, indent=2)
+            json.dump(s.to_dict(tool_max_chars=tool_max_chars), f, indent=2)
 
     def list(self) -> list[str]:
         return sorted(p.stem for p in self.sessions_dir.glob('*.json'))

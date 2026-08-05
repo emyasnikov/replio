@@ -160,6 +160,8 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
   "max_tokens": 2048,
   "system_prompt": "",
   "tool_calling": true,
+  "tool_analysis": false,
+  "session_tool_max_chars": 0,
   "web_search": false,
   "search_results": 5,
   "tools.allow": [],
@@ -191,22 +193,30 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
 
 ## Session JSON Format
 
+Sessions are complete logs — every message, tool call + result, reasoning, and error is persisted. `role: tool` messages are kept (with optional `session_tool_max_chars` truncation at serialization time only). `thinking` metadata holds reasoning before each tool call/answer and is excluded from `content`.
+
 ```json
 {
   "name": "20250727_120000",
+  "created_at": "2026-07-27T14:30:00+00:00",
+  "updated_at": "2026-07-27T14:35:15+00:00",
   "messages": [
     {"role": "user", "content": "Hello", "timestamp": "2026-07-27T14:30:00+00:00"},
     {"role": "assistant", "content": "Hi! How can I help?", "timestamp": "2026-07-27T14:30:05+00:00", "duration": 4.8, "model": "llama3.2", "provider": "ollama"},
     {"role": "command", "content": "/model llama3.3", "timestamp": "2026-07-27T14:35:00+00:00"},
     {"role": "user", "content": "Now?", "timestamp": "2026-07-27T14:35:10+00:00"},
-    {"role": "assistant", "content": "Ready.", "timestamp": "2026-07-27T14:35:15+00:00", "duration": 3.1, "model": "llama3.3", "provider": "ollama"}
+    {"role": "assistant", "content": "Ready.", "timestamp": "2026-07-27T14:35:15+00:00", "duration": 3.1, "model": "llama3.3", "provider": "ollama", "thinking": "The user is switching models, just confirm."}
+  ],
+  "errors": [
+    {"code": 401, "message": "Unauthorized", "timestamp": "2026-07-27T14:40:00+00:00"}
   ]
 }
+```
 
 ## Tool Call Messages
 
 ```json
-{"role": "assistant", "tool_calls": [{"id": "call_xxx", "type": "function", "function": {"name": "web_search", "arguments": "{\"query\": \"latest Python\"}"}}], "timestamp": "..."},
-{"role": "tool", "tool_call_id": "call_xxx", "content": "Web search results...", "timestamp": "..."},
-}
+{"role": "assistant", "tool_calls": [{"id": "call_xxx", "type": "function", "function": {"name": "web_search", "arguments": "{\"query\": \"latest Python\"}"}}], "timestamp": "...", "thinking": "..."},
+{"role": "tool", "tool_call_id": "call_xxx", "content": "Web search results...", "timestamp": "...", "analysis": "Pages about recent Python releases — 3.13 is the latest."},
 ```
+

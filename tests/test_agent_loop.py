@@ -32,7 +32,7 @@ class TestAgentLoop(unittest.TestCase):
         self.assertEqual(msgs[0]['content'], 'Hello world')
         self.chat.session_auto_save.assert_called()
 
-    def test_thinking_not_in_persisted_content(self):
+    def test_thinking_persisted_as_metadata_not_content(self):
         self.chat.provider.chat.return_value = [
             {'type': 'thinking', 'content': 'reasoning...'},
             {'type': 'token', 'content': 'Answer'},
@@ -42,14 +42,19 @@ class TestAgentLoop(unittest.TestCase):
         msgs = self._assistant_msgs()
         self.assertEqual(len(msgs), 1)
         self.assertEqual(msgs[0]['content'], 'Answer')
+        self.assertEqual(msgs[0]['thinking'], 'reasoning...')
 
-    def test_error_bails_gracefully(self):
+    def test_error_bails_gracefully_and_is_persisted(self):
         self.chat.provider.chat.return_value = [
             {'type': 'error', 'code': 401, 'message': 'Unauthorized'},
         ]
         self._run()
         self.assertEqual(self._assistant_msgs(), [])
         self.chat.session_auto_save.assert_called()
+        errors = self.chat.current_session.errors
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(errors[0]['code'], 401)
+        self.assertEqual(errors[0]['message'], 'Unauthorized')
 
     def test_empty_stream_persists_nothing(self):
         self.chat.provider.chat.return_value = []

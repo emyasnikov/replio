@@ -20,6 +20,7 @@ class _StreamRenderer:
         self.render_token = render_token
         self.first_content = True
         self.thinking = False
+        self.thinking_text = ''
         self.md_state = {'code_block': False, 'inline_code': False, 'bold': False}
         self.content = ''
 
@@ -30,6 +31,7 @@ class _StreamRenderer:
             self.first_content = False
 
     def _write_thinking(self, text):
+        self.thinking_text += text
         self._prefix()
         sys.stdout.write('\001\033[90m\002' + text + '\001\033[0m\002')
         sys.stdout.flush()
@@ -157,7 +159,10 @@ class ChatLoop:
 
     def session_auto_save(self):
         if self.current_session and self.current_session.messages:
-            self.sessions.save(self.current_session)
+            self.sessions.save(
+                self.current_session,
+                tool_max_chars=self.config.get('session_tool_max_chars', 0),
+            )
 
     def run(self):
         system_prompt = self.config.get('system_prompt', '')
@@ -210,11 +215,12 @@ class ChatLoop:
                         renderer.token_event(event['content'])
                     elif t == 'tool_calls':
                         tool_calls_detected = True
-                        self._execute_tool_calls(event['tool_calls'])
+                        self._execute_tool_calls(event['tool_calls'], renderer.thinking_text)
                         break
                     elif t == 'error':
                         code = event.get('code', '')
                         msg = event.get('message', 'Unknown error')
+                        self.current_session.add_error(code, msg)
                         print(f'\001\033[91m\002[Error {code}]\001\033[0m\002 {msg}')
                         return
                     elif t == 'done':
@@ -232,18 +238,17 @@ class ChatLoop:
                     duration=duration,
                     model=self.config.get('model'),
                     provider=self.config.get('provider'),
+                    thinking=renderer.thinking_text or None,
                 )
                 print(f'\001\033[90m\002({duration:.1f}s)\001\033[0m\002')
             self.session_auto_save()
 
-    def _execute_tool_calls(self, tcs: list[dict]):
-        messages = self.current_session.messages
-        messages.append({
-            'role': 'assistant',
-            'content': None,
-            'tool_calls': tcs,
-            'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
-        })
+    def _execute_tool_calls(self, tcs: list[dict], thinking: str = ''):
+        self.current_session.add_message(
+            'assistant', None,
+            tool_calls=tcs,
+            thinking=thinking or None,
+        )
         for tc in tcs:
             name = tc['function']['name']
             try:
@@ -258,12 +263,38 @@ class ChatLoop:
                 if args['query'] != original:
                     print(f'\001\033[90m\002[refine: "{original}" → "{args["query"]}"]\001\033[0m\002')
             output = self._run_tool(name, args)
-            messages.append({
-                'role': 'tool',
-                'tool_call_id': tc['id'],
-                'content': output,
-                'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
-            })
+            analysis = None
+            if (self.config.get('tool_analysis')
+                    and output and not output.startswith(('[cancelled]', 'Error'))):
+                analysis = self._analyze_tool_result(name, output)
+            self.current_session.add_message(
+                'tool', output,
+                tool_call_id=tc['id'],
+                analysis=analysis,
+            )
+
+    def _analyze_tool_result(self, name: str, output: str) -> str | None:
+        sys_prompt = (
+            "You write one-line insights for a session log. Given a tool name and its raw "
+            "result, state in a single sentence what useful information the result provided — "
+            "so a reader of the log can reconstruct the key insight without re-running the tool. "
+            "Return only that sentence, nothing else."
+        )
+        try:
+            result = self.provider.chat_nonstreaming(
+                [
+                    {'role': 'system', 'content': sys_prompt},
+                    {'role': 'user', 'content': f'Tool: {name}\n\nResult:\n{output[:2000]}'},
+                ],
+                tools=None,
+            )
+        except Exception:
+            return None
+        content = result.get('content')
+        if not isinstance(content, str):
+            return None
+        content = content.strip()
+        return content or None
 
     def _perform_search(self, query: str, silent: bool = False) -> str | None:
         from .web.search import search as web_search

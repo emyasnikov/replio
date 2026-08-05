@@ -13,6 +13,8 @@ DEFAULT_CONFIG = {
     'system_prompt': '',
     'tool_calling': True,
     'tool_status_visible': True,
+    'tool_analysis': False,
+    'session_tool_max_chars': 0,
     'query_refine': False,
     'query_refine_min_words': 3,
     'query_refine_context': 4,

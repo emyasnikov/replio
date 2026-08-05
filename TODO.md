@@ -31,15 +31,15 @@
 
 ## Session Log Store
 
-- [ ] Sessions are complete logs — persist every message, tool call + result, reasoning, and error for later analysis
-  - [ ] `Session.to_dict()` stops filtering `role: tool` — full tool results persisted
-  - [ ] Per-round `thinking` metadata on assistant messages (reasoning before each tool call/answer); excluded from `content`
-  - [ ] Session-level `errors` array — `error` events persisted instead of lost
-  - [ ] Session `createdAt` / `updatedAt` metadata (bumped on every message)
-  - [ ] `tool_analysis` (default `true`): model-generated one-line analysis of each tool result, log-only (e.g. "A page about the Replio project which lists features x, y…")
-  - [ ] `session_tool_max_chars` (default 0 = unlimited): cap persisted tool-result content
-  - [ ] No `index.json` — session names already carry timestamp + first-message slug; `/session list` keeps directory scan
-  - [ ] Flat message list retained (maps 1:1 to provider context); turns-with-parts structure documented as an optional future refactor
+- [x] Sessions are complete logs — persist every message, tool call + result, reasoning, and error for later analysis
+  - [x] `Session.to_dict()` stops filtering `role: tool` — full tool results persisted
+  - [x] Per-round `thinking` metadata on assistant messages (reasoning before each tool call/answer); excluded from `content`
+  - [x] Session-level `errors` array — `error` events persisted instead of lost
+  - [x] Session `created_at` / `updated_at` metadata (bumped on every message)
+  - [x] `tool_analysis` (default `false`): model-generated one-line analysis of each tool result, log-only (e.g. "A page about the Replio project which lists features x, y…")
+  - [x] `session_tool_max_chars` (default 0 = unlimited): cap persisted tool-result content
+  - [x] No `index.json` — session names already carry timestamp + first-message slug; `/session list` keeps directory scan
+  - [x] Flat message list retained (maps 1:1 to provider context); turns-with-parts structure documented as an optional future refactor
 
 ## Agentic Core
 
@@ -99,7 +99,7 @@
 - [x] Session manager (JSON CRUD)
 - [x] Session save after file rename — JSON `name` field matches filename
 - [x] Auto-session naming with first user message as context hint
-- [x] Tool-result content in session files — filtered from serialization; assistant `tool_calls` preserved
+- [x] Tool results and assistant `tool_calls` persisted in session files (full logs)
 
 ## Web Search
 

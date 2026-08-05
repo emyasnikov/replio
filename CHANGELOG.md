@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.8.0 — 2026-08-05
+
+### Added
+
+- `Session` metadata — `created_at`/`updated_at` (bumped on every message) and a top-level `errors` array with `add_error()`; `to_dict()` now persists **every** message, including `role: tool`
+- `tool_analysis` config (default `false`) — optional model-generated one-line insight summary stored as `analysis` on each tool message, so a session log can be reconstructed without re-running the tool; skipped for `[cancelled]`/error results
+- `session_tool_max_chars` config (default `0` = unlimited) — caps persisted tool-result content at serialization time only; the in-memory provider context always keeps full results
+- `_StreamRenderer` captures `thinking_text`; `_agent_loop` persists per-round reasoning as `thinking` metadata on tool-call and final assistant messages (still excluded from `content`)
+- Provider `error` events now append to the session `errors` array before the loop bails, instead of being dropped
+- `tests/test_session_log.py` — session model, save/load round-trip, legacy-file loading, `tool_max_chars` truncation, thinking metadata, and `tool_analysis` behavior
+
+### Changed
+
+- `SessionManager.save()` accepts `tool_max_chars`; `session_auto_save()` forwards the config value
+- `_execute_tool_calls()` appends assistant tool-call and tool-result messages via `Session.add_message()` (single timestamp/`updated_at` path instead of direct list appends)
+- Docs updated to match: session files are now complete logs (tool results, thinking, errors); confirm prompts and tool status remain ephemeral UI
+
 ## v0.7.0 — 2026-08-03
 
 ### Added

@@ -90,6 +90,13 @@ The model can read and search your machine (`read_file`, `list_dir`, `glob`, `gr
 
 Confirm prompts and tool status are ephemeral UI and are never written to session files.
 
+## Sessions
+
+Sessions are complete logs: every message, tool call + result, reasoning (`thinking` metadata), and error is persisted. `errors` holds failed provider requests, and `created_at`/`updated_at` track the session lifetime.
+
+- `session_tool_max_chars` (default `0` = unlimited) caps how much of each tool result is written to disk — the in-memory context always keeps the full result.
+- `tool_analysis` (default `false`) stores a model-generated one-line insight summary on each tool result, so a log can be reconstructed without re-running the tool.
+
 ## Project Structure
 
 ```
