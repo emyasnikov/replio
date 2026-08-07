@@ -31,6 +31,11 @@
 
 ## Session Log Store
 
+- [ ] Hardening: agent-loop turn failures are always visible in the session log
+  - [ ] Persist streamed content when the SSE stream ends without a `done`/finish event (clean connection drop) — `_agent_loop` currently only saves on `done` + non-empty `renderer.content`, silently discarding streamed replies
+  - [ ] Record an `errors` entry for silent turn failures — stream ended before a completion event, empty/thinking-only `done` response, and non-normal `finish_reason` (`length`, …) all log instead of vanishing
+  - [ ] Catch unexpected exceptions escaping the agent loop (outside provider `error` events), log them to session `errors`, and keep the REPL alive instead of crashing — `run()` has no try/except around `_handle_message()`
+  - [ ] Tests: token-stream-then-EOF persists content + logs error; empty `done` logs error; streamed exception is caught and logged instead of crashing
 - [x] Sessions are complete logs — persist every message, tool call + result, reasoning, and error for later analysis
   - [x] `Session.to_dict()` stops filtering `role: tool` — full tool results persisted
   - [x] Per-round `thinking` metadata on assistant messages (reasoning before each tool call/answer); excluded from `content`
