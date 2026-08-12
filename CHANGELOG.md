@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.9.0 — 2026-08-12
+
+### Added
+
+- `/compact` command (alias `/c`) — summarizes the conversation via a lightweight non-streaming model call and replaces the summarized history with a single `system` summary message, keeping the last `compact_keep` messages verbatim; prints the new context size
+- Context-size visibility — dimmed `(ctx N msgs · K chars)` line after each response, on `/session load`, and after `/compact` (config `show_context_size`, default `true`)
+- `/session load` compaction offer — when the loaded context exceeds `compact_prompt_chars` (default `20000`), prompts `Summarize the history before continuing? [y/N]` and compacts if accepted
+- `tests/test_http.py` — `stream_sse` survives a multi-byte UTF-8 character split across 4096-byte read chunks, normal data-line flow, and `[DONE]`/error passthrough
+
+### Changed
+
+- `max_tokens` default is now `0` (unset) — the value is omitted from the provider payload entirely, so the provider's own default applies and long answers are no longer cut at the old 2048-token default; set a cap explicitly via `/config max_tokens N`
+- `/session new` and `/session load` now reassign `ChatLoop.current_session` — previously they only updated `SessionManager.current`, so loaded/new sessions were never actually used for prompts, rendering, or autosave
+- If a configured `max_tokens` cap is hit (`finish_reason: length`), the loop now prints a visible truncation warning and records a session `errors` entry instead of stopping silently
+- `config.py` — new keys `show_context_size`, `compact_keep` (default `4`), `compact_prompt_chars` (default `20000`)
+
+### Fixed
+
+- `stream_sse` decoded each 4096-byte chunk with strict UTF-8, so a multi-byte character split across a chunk boundary raised `UnicodeDecodeError` — caught as a generic error that aborted the stream mid-output and killed the tool loop during long web research; buffering is now byte-based and each complete line is decoded with `errors='replace'`
+
 ## v0.8.0 — 2026-08-05
 
 ### Added

@@ -225,6 +225,13 @@ class ChatLoop:
                         return
                     elif t == 'done':
                         done = True
+                        reason = event.get('reason', '')
+                        if reason == 'length':
+                            msg = ('Assistant output truncated: max_tokens limit reached '
+                                   f'({self.config.get("max_tokens")})')
+                            self.current_session.add_error(0, msg)
+                            print('\001\033[93m\002[output truncated — max_tokens reached; '
+                                  'use /config max_tokens N]\001\033[0m\002')
                         break
                 if not tool_calls_detected:
                     break
@@ -241,6 +248,9 @@ class ChatLoop:
                     thinking=renderer.thinking_text or None,
                 )
                 print(f'\001\033[90m\002({duration:.1f}s)\001\033[0m\002')
+                if self.config.get('show_context_size', True):
+                    n, chars = self._context_size()
+                    print(f'\001\033[90m\002(ctx {n} msgs · {self._human_chars(chars)})\001\033[0m\002')
             self.session_auto_save()
 
     def _execute_tool_calls(self, tcs: list[dict], thinking: str = ''):
@@ -380,6 +390,51 @@ class ChatLoop:
         )
         refined_query = (refined.get('content') or query).strip().strip('"\'')
         return refined_query if refined_query else query
+
+    def _context_size(self) -> tuple[int, int]:
+        msgs = self.current_session.messages
+        chars = sum(len(m.get('content') or '') for m in msgs)
+        return len(msgs), chars
+
+    def _human_chars(self, n: int) -> str:
+        if n >= 1_000_000:
+            return f'{n / 1_000_000:.1f}M'
+        if n >= 1_000:
+            return f'{n / 1_000:.1f}k'
+        return str(n)
+
+    def compact_session(self):
+        keep = max(0, int(self.config.get('compact_keep', 4)))
+        msgs = self.current_session.messages
+        keep_msgs = msgs[-keep:] if keep else []
+        summarize = msgs[:-keep] if keep else msgs
+        if not summarize:
+            print('Nothing to compact')
+            return
+        prompt = (
+            "Summarize the conversation up to this point into a concise summary that "
+            "preserves key facts, decisions, tool findings, and open questions. "
+            "The summary will be the only remaining record of the earlier conversation. "
+            "Return only the summary text, nothing else."
+        )
+        try:
+            result = self.provider.chat_nonstreaming(
+                [{'role': 'system', 'content': prompt}] + summarize,
+                tools=None,
+            )
+        except Exception:
+            result = {}
+        summary = (result.get('content') or '').strip()
+        if not summary:
+            print('Compaction failed — context unchanged')
+            return
+        self.current_session.messages = keep_msgs
+        self.current_session.add_message(
+            'system', 'Summary of earlier conversation:\n\n' + summary
+        )
+        n, chars = self._context_size()
+        print(f'Compacted — context now {n} messages ({self._human_chars(chars)})')
+        self.session_auto_save()
 
     def _render_token(self, token: str, state: dict) -> list[tuple[str, str]]:
         segments = []

@@ -65,6 +65,21 @@ class TestOllamaStreaming(unittest.TestCase):
         payload = mock_sse.call_args[0][2]
         self.assertEqual(payload['tools'], schema)
 
+    def test_max_tokens_omitted_when_zero(self):
+        with patch('replio.providers.ollama.stream_sse') as mock_sse:
+            mock_sse.return_value = _sse([{'delta': {}, 'finish_reason': 'stop'}])
+            list(self.provider.chat([{'role': 'user', 'content': 'hi'}]))
+        payload = mock_sse.call_args[0][2]
+        self.assertNotIn('max_tokens', payload)
+
+    def test_max_tokens_included_when_set(self):
+        self.provider.max_tokens = 4096
+        with patch('replio.providers.ollama.stream_sse') as mock_sse:
+            mock_sse.return_value = _sse([{'delta': {}, 'finish_reason': 'stop'}])
+            list(self.provider.chat([{'role': 'user', 'content': 'hi'}]))
+        payload = mock_sse.call_args[0][2]
+        self.assertEqual(payload['max_tokens'], 4096)
+
     def test_error_passthrough(self):
         events = self._chat([
             {'type': 'error', 'code': 500, 'message': 'boom'},

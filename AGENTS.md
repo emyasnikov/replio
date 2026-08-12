@@ -102,6 +102,7 @@ repl.io/
 - `CHANGELOG.md` is grouped by **versions**, newest at the top — new `## vX.Y.Z — YYYY-MM-DD` sections go above previous ones, so the latest changes are readable with `head`. Entries under each version are grouped by `### Added` / `### Changed` / `### Removed`, and **within each group the newest entry comes first**.
 - After completing a planned task: mark it `[x]` in `TODO.md` and add entries under the current version section at the top of `CHANGELOG.md` (start a new version section first if none exists).
 - Keep both files in sync with actual project state.
+- Keep `version` in `pyproject.toml` in sync with the current version in `CHANGELOG.md` — bump it whenever a release section is started or finalized.
 
 ## Extension Points
 
@@ -157,11 +158,14 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
   "base_url": "https://api.ollama.com",
   "api_key": "",
   "temperature": 0.7,
-  "max_tokens": 2048,
+  "max_tokens": 0,
   "system_prompt": "",
   "tool_calling": true,
   "tool_analysis": false,
   "session_tool_max_chars": 0,
+  "show_context_size": true,
+  "compact_keep": 4,
+  "compact_prompt_chars": 20000,
   "web_search": false,
   "search_results": 5,
   "tools.allow": [],
@@ -175,6 +179,8 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
   }
 }
 ```
+
+`max_tokens` defaults to `0` = unset (omitted from the provider payload, so the provider's own default applies). Set a positive value to re-enable a cap; hitting it prints a warning and logs a session `errors` entry.
 
 ## Testing
 

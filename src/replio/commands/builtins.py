@@ -211,8 +211,8 @@ def register_builtins(registry):
             return
 
         if action == 'new':
-            s = chat.sessions.create()
-            print(f'New session: {s.name}')
+            chat.current_session = chat.sessions.create()
+            print(f'New session: {chat.current_session.name}')
         elif action == 'list':
             sessions = chat.sessions.list()
             if sessions:
@@ -229,7 +229,21 @@ def register_builtins(registry):
                 return
             s = chat.sessions.load(name)
             if s:
-                print(f'Loaded session: {name} ({len(s.messages)} messages)')
+                chat.current_session = s
+                n, chars = chat._context_size()
+                print(f'Loaded session: {name} — {n} messages · '
+                      f'{chat._human_chars(chars)} context')
+                threshold = chat.config.get('compact_prompt_chars', 20000)
+                if chars > threshold:
+                    try:
+                        answer = input(
+                            '  Summarize the history before continuing? [y/N] '
+                        ).strip().lower()
+                    except (EOFError, KeyboardInterrupt):
+                        print()
+                        return
+                    if answer in ('y', 'yes'):
+                        chat.compact_session()
             else:
                 print(f'Session not found: {name}')
         elif action == 'delete':
@@ -244,6 +258,11 @@ def register_builtins(registry):
         elif action == 'save':
             chat.session_auto_save()
             print('Session saved')
+
+    @registry.register('compact', aliases=['c'],
+                       description='Summarize the conversation and trim the context')
+    def compact_cmd(_=None):
+        chat.compact_session()
 
     @registry.register('tool', description='Run a tool directly (no args lists tools)')
     def tool_cmd(arg=''):

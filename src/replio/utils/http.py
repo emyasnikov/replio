@@ -9,19 +9,19 @@ def stream_sse(url, headers, payload, timeout=120):
 
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            buffer = ''
+            buffer = b''
             while True:
                 chunk = resp.read(4096)
                 if not chunk:
                     break
-                buffer += chunk.decode('utf-8')
-                while '\n' in buffer:
-                    line, buffer = buffer.split('\n', 1)
+                buffer += chunk
+                while b'\n' in buffer:
+                    line, buffer = buffer.split(b'\n', 1)
                     line = line.strip()
                     if not line:
                         continue
-                    if line.startswith('data: '):
-                        data_str = line[6:]
+                    if line.startswith(b'data: '):
+                        data_str = line[6:].decode('utf-8', errors='replace')
                         if data_str == '[DONE]':
                             yield {'type': 'done'}
                             return

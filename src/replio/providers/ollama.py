@@ -25,9 +25,10 @@ class OllamaProvider(BaseProvider):
             'model': self.model,
             'messages': messages,
             'temperature': self.temperature,
-            'max_tokens': self.max_tokens,
             'stream': stream,
         }
+        if self.max_tokens > 0:
+            payload['max_tokens'] = self.max_tokens
         if tools:
             payload['tools'] = tools
         return payload

@@ -82,6 +82,49 @@ class TestToolCommand(unittest.TestCase):
         self.assertIn('Start a new session', output)
         self.assertIn('Delete a session', output)
 
+    def test_session_new_switches_current_session(self):
+        old = self.chat.current_session
+        self._dispatch('/session new')
+        self.assertIsNot(self.chat.current_session, old)
+        self.assertEqual(self.chat.current_session.messages, [])
+
+    def test_session_load_switches_current_session(self):
+        old = self.chat.current_session
+        s = self.chat.sessions.create('saved1')
+        s.add_message('user', 'hello from saved session')
+        self.chat.sessions.save(s)
+        self._dispatch('/session load saved1')
+        self.assertIsNot(self.chat.current_session, old)
+        self.assertEqual([m['content'] for m in self.chat.current_session.messages],
+                         ['hello from saved session'])
+
+    def test_session_load_shows_context_size(self):
+        s = self.chat.sessions.create('saved2')
+        s.add_message('user', 'hello world')
+        self.chat.sessions.save(s)
+        output = self._dispatch('/session load saved2')
+        self.assertIn('1 messages', output)
+        self.assertIn('context', output)
+
+    def test_session_load_not_found(self):
+        output = self._dispatch('/session load nosuch')
+        self.assertIn('Session not found: nosuch', output)
+
+    def test_session_load_offers_compact_when_large(self):
+        s = self.chat.sessions.create('big1')
+        for i in range(20):
+            s.add_message('user', 'x' * 2000)
+        self.chat.sessions.save(s)
+        self.chat.compact_session = unittest.mock.MagicMock()
+        with patch('replio.commands.builtins.input', return_value='y'):
+            self._dispatch('/session load big1')
+        self.chat.compact_session.assert_called_once()
+
+    def test_compact_dispatch_calls_compaction(self):
+        self.chat.compact_session = unittest.mock.MagicMock()
+        self._dispatch('/compact')
+        self.chat.compact_session.assert_called_once()
+
     def test_config_parses_json_list(self):
         self._dispatch('/config tools.deny ["run_command", "web_search"]')
         self.assertEqual(self.chat.config.get('tools.deny'),

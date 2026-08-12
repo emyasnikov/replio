@@ -190,5 +190,46 @@ class TestSessionLogLoop(unittest.TestCase):
         self.assertIsNone(self._tool_msgs()[0]['analysis'])
 
 
+class TestCompactSession(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def test_compact_replaces_history_with_summary(self):
+        for i in range(6):
+            self.chat.current_session.add_message('user', f'msg {i}')
+            self.chat.current_session.add_message('assistant', f'answer {i}')
+        self.chat.provider.chat_nonstreaming.return_value = {
+            'role': 'assistant', 'content': 'COMPACTED SUMMARY',
+            'tool_calls': None, 'finish_reason': 'stop',
+        }
+        with patch('sys.stdout', new=io.StringIO()):
+            self.chat.compact_session()
+        self.chat.provider.chat_nonstreaming.assert_called_once()
+        msgs = self.chat.current_session.messages
+        self.assertEqual(len(msgs), 5)
+        self.assertEqual(msgs[-1]['role'], 'system')
+        self.assertIn('COMPACTED SUMMARY', msgs[-1]['content'])
+        self.assertEqual([m['content'] for m in msgs[:4]],
+                         ['msg 4', 'answer 4', 'msg 5', 'answer 5'])
+
+    def test_compact_nothing_when_no_history(self):
+        with patch('sys.stdout', new=io.StringIO()):
+            self.chat.compact_session()
+        self.chat.provider.chat_nonstreaming.assert_not_called()
+
+    def test_compact_failed_summary_keeps_context(self):
+        self.chat.current_session.add_message('user', 'hello')
+        self.chat.provider.chat_nonstreaming.return_value = {
+            'role': 'assistant', 'content': '', 'tool_calls': None, 'finish_reason': 'stop',
+        }
+        with patch('sys.stdout', new=io.StringIO()):
+            self.chat.compact_session()
+        self.assertEqual(len(self.chat.current_session.messages), 1)
+
+
 if __name__ == '__main__':
     unittest.main()

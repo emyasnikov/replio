@@ -23,7 +23,8 @@ Clone and run.
 - **Tool calling** — models search the web and fetch pages on the fly
 - **Machine access** — read, list, write, and run shell commands, gated by path-scoped permission prompts
 - **Sessions** — save, load, switch, and auto-name conversations
-- **Slash commands** — `/help`, `/model`, `/provider`, `/connect`, `/session`, `/config`, `/exit`
+- **Compaction** — `/compact` summarizes long conversations and trims the context
+- **Slash commands** — `/help`, `/model`, `/provider`, `/connect`, `/session`, `/compact`, `/config`, `/exit`
 - **Dual config** — global `~/.config/replio/` + per-project `.replio/` JSON merge
 - **Input history** — readline-based up/down recall + tab completion
 - **Thinking/reasoning display** — see model reasoning tokens (DeepSeek R1, o1, etc.)
@@ -59,6 +60,7 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 >>> /help            list all commands
 >>> /model <model>   switch model
 >>> /tool <name> <json>  run a tool directly
+>>> /compact         summarize the conversation and trim the context
 >>> /session list    saved conversations
 >>> /exit            goodbye
 ```
@@ -96,6 +98,9 @@ Sessions are complete logs: every message, tool call + result, reasoning (`think
 
 - `session_tool_max_chars` (default `0` = unlimited) caps how much of each tool result is written to disk — the in-memory context always keeps the full result.
 - `tool_analysis` (default `false`) stores a model-generated one-line insight summary on each tool result, so a log can be reconstructed without re-running the tool.
+- `show_context_size` (default `true`) prints `(ctx N msgs · K chars)` after each response so you can watch the context grow.
+- `/compact` summarizes the history (kept messages before the last `compact_keep`, default `4`) into a single summary message and trims the context.
+- `/session load` shows the loaded context size and offers to compact first when it exceeds `compact_prompt_chars` (default `20000`).
 
 ## Project Structure
 

@@ -15,7 +15,9 @@
 - [x] `/config` structured values — JSON auto-parse, `-a`/`-r` list add/remove, `reload` from disk, unknown-key y/N confirm
 - [ ] Custom system prompts per session
 - [ ] Config validation (test connection on change)
-- [ ] `/compact` session summarization
+- [x] `/compact` session summarization — replaces summarized history with a `system` summary message, keeps last `compact_keep` messages verbatim
+- [x] Context-size display — dimmed `(ctx N msgs · K chars)` after each response (config `show_context_size`, default `true`), on `/session load`, and after `/compact`
+- [x] `max_tokens` optional (default `0` = unset) — no default truncation; `/config max_tokens N` re-enables a cap, and hitting it warns + logs to session `errors` instead of stopping silently
 - [ ] Multi-line input (detect `"""` or `'''` blocks)
 
 ---
@@ -34,6 +36,7 @@
 - [ ] Hardening: agent-loop turn failures are always visible in the session log
   - [ ] Persist streamed content when the SSE stream ends without a `done`/finish event (clean connection drop) — `_agent_loop` currently only saves on `done` + non-empty `renderer.content`, silently discarding streamed replies
   - [ ] Record an `errors` entry for silent turn failures — stream ended before a completion event, empty/thinking-only `done` response, and non-normal `finish_reason` (`length`, …) all log instead of vanishing
+  - [x] Non-normal `finish_reason` (`length`) logs a session `errors` entry and prints a warning — `max_tokens` truncation is no longer silent
   - [ ] Catch unexpected exceptions escaping the agent loop (outside provider `error` events), log them to session `errors`, and keep the REPL alive instead of crashing — `run()` has no try/except around `_handle_message()`
   - [ ] Tests: token-stream-then-EOF persists content + logs error; empty `done` logs error; streamed exception is caught and logged instead of crashing
 - [x] Sessions are complete logs — persist every message, tool call + result, reasoning, and error for later analysis
@@ -102,6 +105,7 @@
 - [ ] Session export to Markdown
 - [ ] Session import from Markdown/JSON
 - [x] Session manager (JSON CRUD)
+- [x] `/session new` and `/session load` actually switch the active session — loaded messages now reach the provider context and autosave (were left stale on `SessionManager.current` only)
 - [x] Session save after file rename — JSON `name` field matches filename
 - [x] Auto-session naming with first user message as context hint
 - [x] Tool results and assistant `tool_calls` persisted in session files (full logs)
@@ -132,6 +136,7 @@
 - [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
 - [ ] Streaming with thinking/reasoning block toggle
 - [x] Thinking/reasoning token detection and dimmed display
+- [x] SSE streaming survives multi-byte UTF-8 characters split across 4096-byte read chunks — byte-buffered line decoding in `stream_sse` (was aborting long streams and tool loops)
 - [x] Markdown-aware streaming (basic formatting, disabled by default via `markdown_streaming` config)
 - [x] Error handling improvements (network timeout, auth errors)
 - [x] Edge cases: streaming when `tool_calling=true` but no tools used

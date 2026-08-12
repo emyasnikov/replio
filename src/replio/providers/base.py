@@ -1,7 +1,7 @@
 class BaseProvider:
     def __init__(self, base_url: str = '', api_key: str = '',
                  model: str = '', temperature: float = 0.7,
-                 max_tokens: int = 2048):
+                 max_tokens: int = 0):
         self.base_url = base_url.rstrip('/')
         self.api_key = api_key
         self.model = model

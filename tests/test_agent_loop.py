@@ -62,6 +62,28 @@ class TestAgentLoop(unittest.TestCase):
         self.assertEqual(self._assistant_msgs(), [])
         self.chat.session_auto_save.assert_called()
 
+    def test_length_finish_logs_truncation_error(self):
+        self.chat.provider.chat.return_value = [
+            {'type': 'token', 'content': 'Part of an answer'},
+            {'type': 'done', 'reason': 'length'},
+        ]
+        self._run()
+        errors = self.chat.current_session.errors
+        self.assertEqual(len(errors), 1)
+        self.assertIn('max_tokens', errors[0]['message'])
+        self.assertEqual(self._assistant_msgs()[0]['content'], 'Part of an answer')
+
+    def test_context_size_printed_after_response(self):
+        self.chat.provider.chat.return_value = [
+            {'type': 'token', 'content': 'Hello'},
+            {'type': 'done', 'reason': 'stop'},
+        ]
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat._agent_loop()
+        self.assertIn('ctx ', out.getvalue())
+        self.assertIn('msgs', out.getvalue())
+
 
 if __name__ == '__main__':
     unittest.main()
