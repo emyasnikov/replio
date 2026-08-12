@@ -78,10 +78,18 @@ class OllamaProvider(BaseProvider):
             return
 
         tool_calls_acc: dict[int, dict] = {}
+        usage = None
+        finished_reason = None
+        saw_done = False
         for event in stream_sse(self._endpoint(), self._headers(), payload):
-            if 'type' in event:
+            if event.get('type') == 'error':
                 yield event
                 return
+            if event.get('type') == 'done':
+                saw_done = True
+                break
+            if event.get('usage'):
+                usage = event.get('usage')
             choices = event.get('choices', [])
             if not choices:
                 continue
@@ -108,10 +116,16 @@ class OllamaProvider(BaseProvider):
                 yield {'type': 'token', 'content': content}
             finish = choices[0].get('finish_reason')
             if finish:
-                if tool_calls_acc:
-                    yield {'type': 'tool_calls', 'tool_calls': list(tool_calls_acc.values())}
-                else:
-                    yield {'type': 'done', 'reason': finish}
+                finished_reason = finish
+        if tool_calls_acc:
+            yield {'type': 'tool_calls', 'tool_calls': list(tool_calls_acc.values())}
+        elif finished_reason:
+            done = {'type': 'done', 'reason': finished_reason}
+            if usage:
+                done['usage'] = usage
+            yield done
+        elif saw_done:
+            yield {'type': 'done'}
 
     def _endpoint(self):
         return f'{self.base_url}/v1/chat/completions'

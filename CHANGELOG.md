@@ -4,22 +4,28 @@
 
 ### Added
 
+- `/session preview <name>` — read-only structural preview (name, created/updated, message counts by role, tools used) without switching the active session; shown on `/session load` too
+- `noise_tools` config (default `["fetch_page"]`) — results of these tools are replaced by a `[<tool> result excluded from log; see tool call above for parameters]` marker at persistence time only; the live turn still feeds the full result to the model, and the assistant `tool_calls` message keeps the query/URL so the log stays reproducible
 - Session-name tab completion — `/session load` and `/session delete` complete against saved session names (bash-style common-prefix completion, double-tab lists candidates)
-- `/compact` and `/session load` (when the compaction offer is accepted) print the generated summary text, so you can see exactly what was preserved from the earlier conversation
-- `/compact` command (alias `/c`) — summarizes the conversation via a lightweight non-streaming model call and replaces the summarized history with a single `system` summary message, keeping the last `compact_keep` messages verbatim; prints the new context size
-- Context-size visibility — dimmed `(ctx N msgs · K chars)` line after each response, on `/session load`, and after `/compact` (config `show_context_size`, default `true`)
-- `/session load` compaction offer — when the loaded context exceeds `compact_prompt_chars` (default `20000`), prompts `Summarize the history before continuing? [y/N]` and compacts if accepted
+- Compaction summary visibility — `/compact` and `/session load` (when the compaction offer is accepted) print the generated summary text, stored as the `result` of the triggering `command` message (with a `compact_from` boundary index)
+- Context-size visibility — dimmed `(Ns, N tokens)` line after each response, using the provider's `usage.prompt_tokens` when reported (fallback: char-based estimate); gated by `show_context_size` (default `true`)
+- `/session load` compaction offer — always prompts `Summarize & trim history before continuing? [y/N]`
 - `tests/test_http.py` — `stream_sse` survives a multi-byte UTF-8 character split across 4096-byte read chunks, normal data-line flow, and `[DONE]`/error passthrough
 
 ### Changed
 
+- Sessions are **append-only logs** — compaction no longer removes or rewrites session entries; it only trims the provider context via the summary record and boundary, so the full history always stays in the file
+- Provider payload is prepared from the log — `role: command` messages are never sent as-is; compaction summary records convert to `system` messages, and dangling tool messages are skipped
+- `/session load` and `/session preview` print a structural preview; `/session load` records the load as a `command` message in the loaded session
 - `max_tokens` default is now `0` (unset) — the value is omitted from the provider payload entirely, so the provider's own default applies and long answers are no longer cut at the old 2048-token default; set a cap explicitly via `/config max_tokens N`
 - `/session new` and `/session load` now reassign `ChatLoop.current_session` — previously they only updated `SessionManager.current`, so loaded/new sessions were never actually used for prompts, rendering, or autosave
 - If a configured `max_tokens` cap is hit (`finish_reason: length`), the loop now prints a visible truncation warning and records a session `errors` entry instead of stopping silently
-- `config.py` — new keys `show_context_size`, `compact_keep` (default `4`), `compact_prompt_chars` (default `20000`)
+- `OllamaProvider.chat()` streaming captures `usage` from the final chunk and attaches it to the `done` event
+- `config.py` — new keys `show_context_size`, `compact_keep` (default `4`), `noise_tools` (default `["fetch_page"]`); removed `compact_prompt_chars`
 
 ### Fixed
 
+- Compaction failed with sessions containing `command`/tool messages — the summarizer now sanitizes the batch (drops `command`, drops `tool_calls` declarations, converts `tool` → `user [tool result]`), and provider errors are printed instead of swallowed as a generic "Compaction failed"
 - Tab completion for `/` commands never matched — readline passes the current word, and command names have no leading slash, so the prefix test always failed; the completer now strips the `/` when comparing and re-adds it on completion
 - `stream_sse` decoded each 4096-byte chunk with strict UTF-8, so a multi-byte character split across a chunk boundary raised `UnicodeDecodeError` — caught as a generic error that aborted the stream mid-output and killed the tool loop during long web research; buffering is now byte-based and each complete line is decoded with `errors='replace'`
 

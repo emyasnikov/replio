@@ -12,7 +12,6 @@ A zero-dependency AI chat REPL for your terminal.
 
 REPL.io uses **nothing but the Python standard library**.
 No dependencies and gigabytes of `node_modules`.
-Clone and run.
 
 ## Features
 
@@ -32,14 +31,14 @@ Clone and run.
 ## Quick Start
 
 ```bash
-pip install replio
+pipx install replio
 replio
 ```
 
 Or from source:
 
 ```bash
-git clone https://github.com/emyasnikov/replio && cd replio
+git clone https://github.com/emyasnikov/replio.git && cd replio
 python3 -m venv .venv && .venv/bin/pip install -e .
 .venv/bin/replio
 ```
@@ -50,7 +49,7 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 >>> /connect
   Provider [ollama]:
   Base URL [https://ollama.com]:
-  API key: sk-...
+  API key: ...
   Model [gpt-oss:20b-cloud]:
 ```
 
@@ -58,10 +57,7 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 
 ```
 >>> /help            list all commands
->>> /model <model>   switch model
->>> /tool <name> <json>  run a tool directly
->>> /compact         summarize the conversation and trim the context
->>> /session list    saved conversations
+>>> /connect         connect to a model
 >>> /exit            goodbye
 ```
 
@@ -69,52 +65,12 @@ Type any message to chat. Tab-complete `/` commands and session names (e.g. `/se
 
 ## Machine Access & Permissions
 
-The model can read and search your machine (`read_file`, `list_dir`, `glob`, `grep`), write (`write_file`), and execute shell commands (`run_command`). Access is governed by a permission policy:
+The model can read and search your machine (`read_file`, `list_dir`, `glob`, `grep`), write (`write_file`), and execute shell commands (`run_command`). Access is governed by a permission policy.
 
-```json
-{
-  "tools.deny": [],
-  "tools.allow": [],
-  "tool_permission": {
-    "read": "allow",
-    "list": "allow",
-    "edit": "allow",
-    "bash": "ask",
-    "web": "allow"
-  }
-}
-```
-
-- `allow` — runs without prompting; `ask` — prompts y/N; `deny` — disabled (also hidden from the model).
-- `tools.deny` / `tools.allow` — exact tool-name policies (`deny` and allow-whitelist take precedence).
-- Reads/writes/lists **outside the project directory** always prompt for confirmation, even when the category is `allow`.
-- `bash` is `ask` by default — every shell command is confirmed. Set `"bash": "allow"` to skip prompting.
-
-Confirm prompts and tool status are ephemeral UI and are never written to session files.
 
 ## Sessions
 
-Sessions are complete logs: every message, tool call + result, reasoning (`thinking` metadata), and error is persisted. `errors` holds failed provider requests, and `created_at`/`updated_at` track the session lifetime.
-
-- `session_tool_max_chars` (default `0` = unlimited) caps how much of each tool result is written to disk — the in-memory context always keeps the full result.
-- `tool_analysis` (default `false`) stores a model-generated one-line insight summary on each tool result, so a log can be reconstructed without re-running the tool.
-- `show_context_size` (default `true`) prints `(ctx N msgs · K chars)` after each response so you can watch the context grow.
-- `/compact` summarizes the history (kept messages before the last `compact_keep`, default `4`) into a single summary message and trims the context.
-- `/session load` shows the loaded context size and offers to compact first when it exceeds `compact_prompt_chars` (default `20000`).
-
-## Project Structure
-
-```
-src/replio/
-├── chat.py           REPL loop + streaming display
-├── config.py         Config load/merge/save
-├── commands/         Slash command system
-├── providers/        LLM provider abstraction
-├── sessions/         Session CRUD
-├── tools/            Web search, page fetch, tool registry
-├── web/              DuckDuckGo search + formatting
-└── utils/            HTTP SSE streaming
-```
+Sessions are complete logs: every message, tool call + result, reasoning (`thinking` metadata), and error is persisted — entries are never removed, not even on compaction. `errors` holds failed provider requests, and `created_at`/`updated_at` track the session lifetime.
 
 ## Adding a Provider
 

@@ -32,18 +32,21 @@ class Session:
         self.errors.append({'code': code, 'message': message, 'timestamp': ts})
         self._touch()
 
-    def to_dict(self, tool_max_chars: int = 0):
-        messages = self.messages
-        if tool_max_chars > 0:
-            messages = []
-            for m in self.messages:
-                if m.get('role') == 'tool' and isinstance(m.get('content'), str):
-                    content = m['content']
-                    if len(content) > tool_max_chars:
-                        m = dict(m)
-                        m['content'] = content[:tool_max_chars] + (
-                            f'… (truncated from {len(content)} chars)')
-                messages.append(m)
+    def to_dict(self, tool_max_chars: int = 0, noise_tools: list[str] | None = None):
+        noise_tools = set(noise_tools or [])
+        messages = []
+        for m in self.messages:
+            m = m.copy() if tool_max_chars > 0 or noise_tools else m
+            role = m.get('role')
+            content = m.get('content')
+            if role == 'tool' and isinstance(content, str):
+                if m.get('tool') in noise_tools:
+                    m['content'] = (
+                        f'[{m["tool"]} result excluded from log; see tool call above for parameters]')
+                elif tool_max_chars > 0 and len(content) > tool_max_chars:
+                    m['content'] = content[:tool_max_chars] + (
+                        f'… (truncated from {len(content)} chars)')
+            messages.append(m)
         return {
             'name': self.name,
             'messages': messages,
@@ -76,20 +79,27 @@ class SessionManager:
         return self.current
 
     def load(self, name: str) -> Session | None:
+        s = self.read(name)
+        if s is not None:
+            self.current = s
+        return s
+
+    def read(self, name: str) -> Session | None:
         path = self.sessions_dir / f'{name}.json'
         if not path.exists():
             return None
         with open(path) as f:
             data = json.load(f)
-        self.current = Session.from_dict(data)
-        return self.current
+        return Session.from_dict(data)
 
-    def save(self, session: Session | None = None, tool_max_chars: int = 0):
+    def save(self, session: Session | None = None, tool_max_chars: int = 0,
+             noise_tools: list[str] | None = None):
         s = session or self.current
         if s is None:
             return
         with open(self.sessions_dir / f'{s.name}.json', 'w') as f:
-            json.dump(s.to_dict(tool_max_chars=tool_max_chars), f, indent=2)
+            json.dump(s.to_dict(tool_max_chars=tool_max_chars, noise_tools=noise_tools),
+                      f, indent=2)
 
     def list(self) -> list[str]:
         return sorted(p.stem for p in self.sessions_dir.glob('*.json'))

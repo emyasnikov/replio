@@ -198,6 +198,7 @@ def register_builtins(registry):
     @registry.register('session', description='Manage saved sessions', subcommands=[
         ('new', 'Start a new session'),
         ('list', 'List saved sessions'),
+        ('preview', 'Show a structural preview of a session'),
         ('load', 'Load a session'),
         ('delete', 'Delete a session'),
         ('save', 'Save the current session'),
@@ -222,6 +223,14 @@ def register_builtins(registry):
                     print(f'  {s}{marker}')
             else:
                 print('  No sessions found')
+        elif action == 'preview':
+            name = parts[1] if len(parts) > 1 else ''
+            if not name:
+                print('Usage: /session preview <name>')
+                return
+            s = chat.preview_session(name)
+            if s is None:
+                print(f'Session not found: {name}')
         elif action == 'load':
             name = parts[1] if len(parts) > 1 else ''
             if not name:
@@ -233,17 +242,17 @@ def register_builtins(registry):
                 n, chars = chat._context_size()
                 print(f'Loaded session: {name} — {n} messages · '
                       f'{chat._human_chars(chars)} context')
-                threshold = chat.config.get('compact_prompt_chars', 20000)
-                if chars > threshold:
-                    try:
-                        answer = input(
-                            '  Summarize the history before continuing? [y/N] '
-                        ).strip().lower()
-                    except (EOFError, KeyboardInterrupt):
-                        print()
-                        return
-                    if answer in ('y', 'yes'):
-                        chat.compact_session()
+                chat.preview_session(name, session=s)
+                chat.current_session.add_message('command', f'/session load {name}')
+                try:
+                    answer = input(
+                        '  Summarize & trim history before continuing? [y/N] '
+                    ).strip().lower()
+                except (EOFError, KeyboardInterrupt):
+                    print()
+                    return
+                if answer in ('y', 'yes'):
+                    chat.compact_session()
             else:
                 print(f'Session not found: {name}')
         elif action == 'delete':

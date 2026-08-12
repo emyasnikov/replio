@@ -93,16 +93,18 @@ class TestToolCommand(unittest.TestCase):
         s = self.chat.sessions.create('saved1')
         s.add_message('user', 'hello from saved session')
         self.chat.sessions.save(s)
-        self._dispatch('/session load saved1')
+        with patch('replio.commands.builtins.input', return_value='n'):
+            self._dispatch('/session load saved1')
         self.assertIsNot(self.chat.current_session, old)
         self.assertEqual([m['content'] for m in self.chat.current_session.messages],
-                         ['hello from saved session'])
+                         ['hello from saved session', '/session load saved1'])
 
     def test_session_load_shows_context_size(self):
         s = self.chat.sessions.create('saved2')
         s.add_message('user', 'hello world')
         self.chat.sessions.save(s)
-        output = self._dispatch('/session load saved2')
+        with patch('replio.commands.builtins.input', return_value='n'):
+            output = self._dispatch('/session load saved2')
         self.assertIn('1 messages', output)
         self.assertIn('context', output)
 
@@ -110,15 +112,41 @@ class TestToolCommand(unittest.TestCase):
         output = self._dispatch('/session load nosuch')
         self.assertIn('Session not found: nosuch', output)
 
-    def test_session_load_offers_compact_when_large(self):
+    def test_session_load_offers_compact(self):
         s = self.chat.sessions.create('big1')
-        for i in range(20):
-            s.add_message('user', 'x' * 2000)
+        s.add_message('user', 'x')
         self.chat.sessions.save(s)
         self.chat.compact_session = unittest.mock.MagicMock()
         with patch('replio.commands.builtins.input', return_value='y'):
             self._dispatch('/session load big1')
         self.chat.compact_session.assert_called_once()
+
+    def test_session_load_declines_compact(self):
+        s = self.chat.sessions.create('big2')
+        s.add_message('user', 'x')
+        self.chat.sessions.save(s)
+        self.chat.compact_session = unittest.mock.MagicMock()
+        with patch('replio.commands.builtins.input', return_value='n'):
+            self._dispatch('/session load big2')
+        self.chat.compact_session.assert_not_called()
+
+    def test_session_preview_does_not_switch_current(self):
+        old = self.chat.current_session
+        s = self.chat.sessions.create('pv1')
+        s.add_message('user', 'hello')
+        s.add_message('assistant', None, tool_calls=[{
+            'id': 'c1', 'type': 'function',
+            'function': {'name': 'web_search', 'arguments': '{}'},
+        }])
+        self.chat.sessions.save(s)
+        output = self._dispatch('/session preview pv1')
+        self.assertIs(self.chat.current_session, old)
+        self.assertIn('2 messages', output)
+        self.assertIn('web_search', output)
+
+    def test_session_preview_not_found(self):
+        output = self._dispatch('/session preview nosuch')
+        self.assertIn('Session not found: nosuch', output)
 
     def test_compact_dispatch_calls_compaction(self):
         self.chat.compact_session = unittest.mock.MagicMock()

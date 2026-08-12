@@ -22,7 +22,7 @@ DEFAULT_CONFIG = {
     'markdown_streaming': False,
     'show_context_size': True,
     'compact_keep': 4,
-    'compact_prompt_chars': 20000,
+    'noise_tools': ['fetch_page'],
     'web_search': False,
     'search_results': 5,
     'tools.allow': [],

@@ -103,6 +103,39 @@ class TestSessionModel(unittest.TestCase):
         finally:
             tmp.cleanup()
 
+    def test_to_dict_replaces_noise_tool_content(self):
+        s = Session('s1')
+        s.add_message('user', 'hi')
+        s.add_message('assistant', None, tool_calls=[{'id': 'c1'}])
+        s.add_message('tool', 'huge page content' * 50, tool_call_id='c1', tool='fetch_page')
+        d = s.to_dict(noise_tools=['fetch_page'])
+        tool = [m for m in d['messages'] if m['role'] == 'tool'][0]
+        self.assertIn('excluded from log', tool['content'])
+        self.assertEqual(s.messages[-1]['content'], 'huge page content' * 50)
+
+    def test_to_dict_keeps_non_noise_tool_content(self):
+        s = Session('s1')
+        s.add_message('assistant', None, tool_calls=[{'id': 'c1'}])
+        s.add_message('tool', 'search results', tool_call_id='c1', tool='web_search')
+        d = s.to_dict(noise_tools=['fetch_page'])
+        tool = [m for m in d['messages'] if m['role'] == 'tool'][0]
+        self.assertEqual(tool['content'], 'search results')
+
+    def test_read_does_not_switch_current(self):
+        tmp = tempfile.TemporaryDirectory()
+        try:
+            sm = SessionManager(Path(tmp.name))
+            s = sm.create('alpha')
+            s.add_message('user', 'hi')
+            sm.save(s)
+            sm.create('other')
+            current = sm.current
+            loaded = sm.read('alpha')
+            self.assertEqual(loaded.name, 'alpha')
+            self.assertIs(sm.current, current)
+        finally:
+            tmp.cleanup()
+
 
 class TestSessionLogLoop(unittest.TestCase):
 
@@ -198,7 +231,7 @@ class TestCompactSession(unittest.TestCase):
     def tearDown(self):
         self.chat._tmp.cleanup()
 
-    def test_compact_replaces_history_with_summary(self):
+    def test_compact_keeps_all_messages_and_stamps_record(self):
         for i in range(6):
             self.chat.current_session.add_message('user', f'msg {i}')
             self.chat.current_session.add_message('assistant', f'answer {i}')
@@ -210,10 +243,29 @@ class TestCompactSession(unittest.TestCase):
             self.chat.compact_session()
         self.chat.provider.chat_nonstreaming.assert_called_once()
         msgs = self.chat.current_session.messages
-        self.assertEqual(len(msgs), 5)
-        self.assertEqual(msgs[-1]['role'], 'system')
-        self.assertIn('COMPACTED SUMMARY', msgs[-1]['content'])
-        self.assertEqual([m['content'] for m in msgs[:4]],
+        self.assertEqual(len(msgs), 13)
+        record = msgs[-1]
+        self.assertEqual(record['role'], 'command')
+        self.assertEqual(record['content'], '/compact')
+        self.assertEqual(record['result'], 'COMPACTED SUMMARY')
+        self.assertEqual(record['compact_from'], 8)
+        self.assertEqual([m['content'] for m in msgs[:12]],
+                         [c for i in range(6) for c in (f'msg {i}', f'answer {i}')])
+
+    def test_provider_messages_uses_summary_and_boundary(self):
+        for i in range(6):
+            self.chat.current_session.add_message('user', f'msg {i}')
+            self.chat.current_session.add_message('assistant', f'answer {i}')
+        self.chat.provider.chat_nonstreaming.return_value = {
+            'role': 'assistant', 'content': 'COMPACTED SUMMARY',
+            'tool_calls': None, 'finish_reason': 'stop',
+        }
+        with patch('sys.stdout', new=io.StringIO()):
+            self.chat.compact_session()
+        msgs = self.chat._provider_messages()
+        self.assertEqual(msgs[0]['role'], 'system')
+        self.assertIn('COMPACTED SUMMARY', msgs[0]['content'])
+        self.assertEqual([m['content'] for m in msgs[1:]],
                          ['msg 4', 'answer 4', 'msg 5', 'answer 5'])
 
     def test_compact_nothing_when_no_history(self):
@@ -222,13 +274,54 @@ class TestCompactSession(unittest.TestCase):
         self.chat.provider.chat_nonstreaming.assert_not_called()
 
     def test_compact_failed_summary_keeps_context(self):
-        self.chat.current_session.add_message('user', 'hello')
+        for i in range(6):
+            self.chat.current_session.add_message('user', f'msg {i}')
+            self.chat.current_session.add_message('assistant', f'answer {i}')
         self.chat.provider.chat_nonstreaming.return_value = {
             'role': 'assistant', 'content': '', 'tool_calls': None, 'finish_reason': 'stop',
         }
         with patch('sys.stdout', new=io.StringIO()):
             self.chat.compact_session()
-        self.assertEqual(len(self.chat.current_session.messages), 1)
+        self.assertEqual(len(self.chat.current_session.messages), 12)
+
+    def test_compact_surfaces_provider_error(self):
+        for i in range(6):
+            self.chat.current_session.add_message('user', f'msg {i}')
+            self.chat.current_session.add_message('assistant', f'answer {i}')
+        self.chat.provider.chat_nonstreaming.return_value = {
+            'error': {'code': 400, 'message': 'invalid role command'},
+        }
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat.compact_session()
+        value = out.getvalue()
+        self.assertIn('400', value)
+        self.assertIn('invalid role command', value)
+        self.assertIn('Compaction failed', value)
+        self.assertEqual(len(self.chat.current_session.messages), 12)
+
+    def test_compact_sanitizes_summarize_batch(self):
+        self.chat.current_session.add_message('command', '/model foo')
+        self.chat.current_session.add_message('user', 'msg 0')
+        self.chat.current_session.add_message('assistant', None,
+            tool_calls=[{'id': 'c1', 'type': 'function',
+                         'function': {'name': 'fetch_page', 'arguments': '{"url": "x"}'}}])
+        self.chat.current_session.add_message('tool', 'PAGE CONTENT', tool_call_id='c1', tool='fetch_page')
+        self.chat.current_session.add_message('user', 'msg 1')
+        self.chat.current_session.add_message('assistant', 'answer 1')
+        self.chat.current_session.add_message('user', 'msg 2')
+        self.chat.current_session.add_message('assistant', 'answer 2')
+        self.chat.provider.chat_nonstreaming.return_value = {
+            'role': 'assistant', 'content': 'SUMMARY', 'tool_calls': None, 'finish_reason': 'stop',
+        }
+        with patch('sys.stdout', new=io.StringIO()):
+            self.chat.compact_session()
+        args = self.chat.provider.chat_nonstreaming.call_args[0][0]
+        self.assertEqual(args[0]['role'], 'system')
+        body = args[1:]
+        self.assertEqual([m['role'] for m in body], ['user', 'user'])
+        self.assertEqual([m['content'] for m in body],
+                         ['msg 0', '[tool result] PAGE CONTENT'])
 
     def test_compact_prints_generated_summary(self):
         for i in range(3):
@@ -244,6 +337,48 @@ class TestCompactSession(unittest.TestCase):
         value = out.getvalue()
         self.assertIn('Compacted —', value)
         self.assertIn('COMPACTED SUMMARY TEXT', value)
+
+
+class TestProviderMessages(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def test_command_messages_filtered(self):
+        self.chat.current_session.add_message('user', 'hi')
+        self.chat.current_session.add_message('command', '/model foo')
+        self.chat.current_session.add_message('assistant', 'answer')
+        msgs = self.chat._provider_messages()
+        self.assertEqual([m['role'] for m in msgs], ['user', 'assistant'])
+
+    def test_command_with_result_becomes_system_summary(self):
+        self.chat.current_session.add_message('user', 'hi')
+        self.chat.current_session.add_message(
+            'command', '/compact', result='THE SUMMARY', compact_from=1)
+        msgs = self.chat._provider_messages()
+        self.assertEqual(msgs[0]['role'], 'system')
+        self.assertIn('THE SUMMARY', msgs[0]['content'])
+        self.assertEqual(len(msgs), 1)
+
+    def test_dangling_leading_tool_message_skipped(self):
+        self.chat.current_session.add_message('user', 'hi')
+        self.chat.current_session.add_message(
+            'tool', 'dangling result', tool_call_id='gone', tool='fetch_page')
+        msgs = self.chat._provider_messages()
+        self.assertEqual([m['role'] for m in msgs], ['user'])
+
+    def test_tool_pair_preserved(self):
+        self.chat.current_session.add_message('user', 'hi')
+        self.chat.current_session.add_message('assistant', None,
+            tool_calls=[{'id': 'c1', 'type': 'function',
+                         'function': {'name': 'web_search', 'arguments': '{}'}}])
+        self.chat.current_session.add_message(
+            'tool', 'results', tool_call_id='c1', tool='web_search')
+        msgs = self.chat._provider_messages()
+        self.assertEqual([m['role'] for m in msgs], ['user', 'assistant', 'tool'])
 
 
 if __name__ == '__main__':

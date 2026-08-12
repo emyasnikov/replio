@@ -150,7 +150,7 @@ class ChatLoop:
 
     def _completer(self, text: str, state: int) -> str | None:
         line = readline.get_line_buffer()
-        for prefix in ('/session load ', '/session delete '):
+        for prefix in ('/session load ', '/session preview ', '/session delete '):
             if line.startswith(prefix):
                 names = [n for n in self.sessions.list() if n.startswith(text)]
                 if state < len(names):
@@ -168,6 +168,7 @@ class ChatLoop:
             self.sessions.save(
                 self.current_session,
                 tool_max_chars=self.config.get('session_tool_max_chars', 0),
+                noise_tools=self.config.get('noise_tools', []),
             )
 
     def run(self):
@@ -201,18 +202,19 @@ class ChatLoop:
         self._save_history()
 
     def _agent_loop(self):
-        messages = self.current_session.messages
         tools_schema = self._init_tooling()
         turn_start = datetime.now(timezone.utc)
         show_thinking = self.config.get('show_thinking', True)
         markdown = self.config.get('markdown_streaming')
         renderer: _StreamRenderer | None = None
         done = False
+        usage = None
 
         try:
             while True:
                 renderer = _StreamRenderer(show_thinking, markdown, self._render_token)
                 tool_calls_detected = False
+                messages = self._provider_messages()
                 for event in self.provider.chat(messages, tools=tools_schema):
                     t = event.get('type', '')
                     if t == 'thinking':
@@ -231,6 +233,7 @@ class ChatLoop:
                         return
                     elif t == 'done':
                         done = True
+                        usage = event.get('usage') or usage
                         reason = event.get('reason', '')
                         if reason == 'length':
                             msg = ('Assistant output truncated: max_tokens limit reached '
@@ -253,11 +256,15 @@ class ChatLoop:
                     provider=self.config.get('provider'),
                     thinking=renderer.thinking_text or None,
                 )
-                print(f'\001\033[90m\002({duration:.1f}s)\001\033[0m\002')
-                if self.config.get('show_context_size', True):
-                    n, chars = self._context_size()
-                    print(f'\001\033[90m\002(ctx {n} msgs · {self._human_chars(chars)})\001\033[0m\002')
+                self._print_turn_footer(duration, usage)
             self.session_auto_save()
+
+    def _print_turn_footer(self, duration: float, usage: dict | None = None):
+        if self.config.get('show_context_size', True):
+            tokens = self._context_tokens(usage)
+            print(f'\001\033[90m\002({duration:.1f}s, {tokens:,} tokens)\001\033[0m\002')
+        else:
+            print(f'\001\033[90m\002({duration:.1f}s)\001\033[0m\002')
 
     def _execute_tool_calls(self, tcs: list[dict], thinking: str = ''):
         self.current_session.add_message(
@@ -286,6 +293,7 @@ class ChatLoop:
             self.current_session.add_message(
                 'tool', output,
                 tool_call_id=tc['id'],
+                tool=name,
                 analysis=analysis,
             )
 
@@ -388,7 +396,7 @@ class ChatLoop:
 
     def _refine_query(self, query: str) -> str:
         context_count = self.config.get('query_refine_context', 4)
-        context_msgs = self.current_session.messages[-context_count:] if context_count > 0 else []
+        context_msgs = self._provider_messages()[-context_count:] if context_count > 0 else []
         refine_sys = "You are a search query optimizer. Rewrite the user's query to be more specific and standalone based on the conversation context. Return ONLY the rewritten query, nothing else."
         refined = self.provider.chat_nonstreaming(
             [{'role': 'system', 'content': refine_sys}] + context_msgs + [{'role': 'user', 'content': query}],
@@ -397,26 +405,67 @@ class ChatLoop:
         refined_query = (refined.get('content') or query).strip().strip('"\'')
         return refined_query if refined_query else query
 
-    def _context_size(self) -> tuple[int, int]:
+    def _provider_messages(self) -> list[dict]:
         msgs = self.current_session.messages
-        chars = sum(len(m.get('content') or '') for m in msgs)
-        return len(msgs), chars
+        boundary = 0
+        summary = None
+        for m in msgs:
+            if m.get('role') == 'command' and m.get('result'):
+                summary = m['result']
+                from_idx = m.get('compact_from')
+                if isinstance(from_idx, int) and from_idx > boundary:
+                    boundary = from_idx
+        out = []
+        if summary:
+            out.append({
+                'role': 'system',
+                'content': 'Summary of earlier conversation:\n\n' + summary,
+            })
+        declared: set[str] = set()
+        for m in msgs[boundary:]:
+            role = m.get('role')
+            if role == 'command':
+                continue
+            if role == 'assistant':
+                tcs = m.get('tool_calls') or []
+                if tcs:
+                    declared.update(tc.get('id') for tc in tcs if tc.get('id'))
+                    out.append(m)
+                else:
+                    out.append(m)
+            elif role == 'tool':
+                if m.get('tool_call_id') in declared:
+                    out.append(m)
+            else:
+                out.append(m)
+        return out
 
-    def _human_chars(self, n: int) -> str:
-        if n >= 1_000_000:
-            return f'{n / 1_000_000:.1f}M'
-        if n >= 1_000:
-            return f'{n / 1_000:.1f}k'
-        return str(n)
+    def _clean_messages(self, msgs: list[dict]) -> list[dict]:
+        out = []
+        for m in msgs:
+            role = m.get('role')
+            if role == 'command':
+                if m.get('result'):
+                    out.append({
+                        'role': 'system',
+                        'content': 'Summary of earlier conversation:\n\n' + m['result'],
+                    })
+                continue
+            if role == 'assistant':
+                content = m.get('content')
+                if m.get('tool_calls'):
+                    if content:
+                        out.append({'role': 'assistant', 'content': content})
+                    continue
+                out.append(m)
+            elif role == 'tool':
+                out.append({'role': 'user', 'content': f"[tool result] {m.get('content') or ''}"})
+            else:
+                out.append(m)
+        return out
 
-    def compact_session(self):
-        keep = max(0, int(self.config.get('compact_keep', 4)))
-        msgs = self.current_session.messages
-        keep_msgs = msgs[-keep:] if keep else []
-        summarize = msgs[:-keep] if keep else msgs
-        if not summarize:
-            print('Nothing to compact')
-            return
+    def _summarize(self, msgs: list[dict]) -> str | None:
+        clean = self._clean_messages(msgs)
         prompt = (
             "Summarize the conversation up to this point into a concise summary that "
             "preserves key facts, decisions, tool findings, and open questions. "
@@ -425,24 +474,90 @@ class ChatLoop:
         )
         try:
             result = self.provider.chat_nonstreaming(
-                [{'role': 'system', 'content': prompt}] + summarize,
+                [{'role': 'system', 'content': prompt}] + clean,
                 tools=None,
             )
         except Exception:
-            result = {}
+            result = {'error': {'code': 0, 'message': 'Compaction request failed'}}
+        if isinstance(result, dict) and result.get('error'):
+            err = result['error']
+            code = err.get('code', '')
+            msg = err.get('message', 'Unknown error')
+            print(f'\001\033[91m\002[Error {code}]\001\033[0m\002 {msg}')
+            print('Compaction failed — context unchanged')
+            return None
         summary = (result.get('content') or '').strip()
         if not summary:
             print('Compaction failed — context unchanged')
+            return None
+        return summary
+
+    def compact_session(self):
+        keep = max(0, int(self.config.get('compact_keep', 4)))
+        msgs = self.current_session.messages
+        if not msgs:
+            print('Nothing to compact')
             return
-        self.current_session.messages = keep_msgs
-        self.current_session.add_message(
-            'system', 'Summary of earlier conversation:\n\n' + summary
-        )
+        record_idx = len(msgs) - 1 if msgs[-1].get('role') == 'command' else None
+        base = msgs[:record_idx] if record_idx is not None else msgs
+        boundary = max(0, len(base) - keep) if keep else 0
+        summarize = base[:boundary]
+        if not summarize:
+            print('Nothing to compact')
+            return
+        summary = self._summarize(summarize)
+        if summary is None:
+            return
+        if record_idx is None:
+            self.current_session.add_message('command', '/compact')
+            record_idx = len(self.current_session.messages) - 1
+        record = self.current_session.messages[record_idx]
+        record['result'] = summary
+        record['compact_from'] = boundary
         n, chars = self._context_size()
         print(f'Compacted — context now {n} messages ({self._human_chars(chars)})')
         print('--- earlier conversation ---')
         print(summary)
         self.session_auto_save()
+
+    def _context_size(self) -> tuple[int, int]:
+        msgs = self._provider_messages()
+        chars = sum(len(m.get('content') or '') for m in msgs)
+        return len(msgs), chars
+
+    def _context_tokens(self, usage: dict | None = None) -> int:
+        if isinstance(usage, dict):
+            prompt = usage.get('prompt_tokens')
+            if isinstance(prompt, int) and prompt > 0:
+                return prompt
+        msgs = self._provider_messages()
+        chars = sum(len(m.get('content') or '') for m in msgs)
+        return max(1, chars // 4)
+
+    def _human_chars(self, n: int) -> str:
+        if n >= 1_000_000:
+            return f'{n / 1_000_000:.1f}M'
+        if n >= 1_000:
+            return f'{n / 1_000:.1f}k'
+        return str(n)
+
+    def preview_session(self, name: str, session=None):
+        s = session if session is not None else self.sessions.read(name)
+        if s is None:
+            return None
+        counts: dict[str, int] = {}
+        for m in s.messages:
+            role = m.get('role', '?')
+            counts[role] = counts.get(role, 0) + 1
+        tools = sorted({tc.get('function', {}).get('name', '?')
+                        for m in s.messages if m.get('tool_calls')
+                        for tc in m['tool_calls']})
+        print(f'  {s.name} — {len(s.messages)} messages')
+        print(f'    created {s.created_at} · updated {s.updated_at}')
+        print('    roles: ' + ' · '.join(f'{k} {v}' for k, v in counts.items()))
+        if tools:
+            print('    tools: ' + ', '.join(tools))
+        return s
 
     def _render_token(self, token: str, state: dict) -> list[tuple[str, str]]:
         segments = []

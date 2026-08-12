@@ -165,7 +165,7 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
   "session_tool_max_chars": 0,
   "show_context_size": true,
   "compact_keep": 4,
-  "compact_prompt_chars": 20000,
+  "noise_tools": ["fetch_page"],
   "web_search": false,
   "search_results": 5,
   "tools.allow": [],
@@ -199,7 +199,7 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
 
 ## Session JSON Format
 
-Sessions are complete logs — every message, tool call + result, reasoning, and error is persisted. `role: tool` messages are kept (with optional `session_tool_max_chars` truncation at serialization time only). `thinking` metadata holds reasoning before each tool call/answer and is excluded from `content`.
+Sessions are complete logs — every message, tool call + result, reasoning, and error is persisted, and entries are **never removed** (append-only; compaction only trims the provider context). `role: tool` messages are kept (with optional `session_tool_max_chars` truncation, and `noise_tools` results replaced by a marker, at serialization time only). `thinking` metadata holds reasoning before each tool call/answer and is excluded from `content`.
 
 ```json
 {
@@ -211,7 +211,8 @@ Sessions are complete logs — every message, tool call + result, reasoning, and
     {"role": "assistant", "content": "Hi! How can I help?", "timestamp": "2026-07-27T14:30:05+00:00", "duration": 4.8, "model": "llama3.2", "provider": "ollama"},
     {"role": "command", "content": "/model llama3.3", "timestamp": "2026-07-27T14:35:00+00:00"},
     {"role": "user", "content": "Now?", "timestamp": "2026-07-27T14:35:10+00:00"},
-    {"role": "assistant", "content": "Ready.", "timestamp": "2026-07-27T14:35:15+00:00", "duration": 3.1, "model": "llama3.3", "provider": "ollama", "thinking": "The user is switching models, just confirm."}
+    {"role": "assistant", "content": "Ready.", "timestamp": "2026-07-27T14:35:15+00:00", "duration": 3.1, "model": "llama3.3", "provider": "ollama", "thinking": "The user is switching models, just confirm."},
+    {"role": "command", "content": "/compact", "timestamp": "...", "result": "Summary of the earlier conversation…", "compact_from": 8}
   ],
   "errors": [
     {"code": 401, "message": "Unauthorized", "timestamp": "2026-07-27T14:40:00+00:00"}
@@ -219,10 +220,14 @@ Sessions are complete logs — every message, tool call + result, reasoning, and
 }
 ```
 
+A `command` message with a `result` is a compaction record: `result` holds the summary, `compact_from` is the index into `messages` where the kept portion starts. `ChatLoop._provider_messages()` prepares the log for the API — `command` role messages are dropped (records become `system` summaries), dangling tool messages are skipped.
+
 ## Tool Call Messages
 
 ```json
 {"role": "assistant", "tool_calls": [{"id": "call_xxx", "type": "function", "function": {"name": "web_search", "arguments": "{\"query\": \"latest Python\"}"}}], "timestamp": "...", "thinking": "..."},
-{"role": "tool", "tool_call_id": "call_xxx", "content": "Web search results...", "timestamp": "...", "analysis": "Pages about recent Python releases — 3.13 is the latest."},
+{"role": "tool", "tool_call_id": "call_xxx", "content": "Web search results...", "timestamp": "...", "tool": "web_search", "analysis": "Pages about recent Python releases — 3.13 is the latest."},
 ```
+
+`tool` messages carry the originating `tool` name (used to identify `noise_tools` at persistence time) and an optional `analysis` insight. The provider payload is prepared by `_provider_messages()` — `command` role messages are dropped, compaction records become `system` summaries, and dangling tool messages (e.g. at a `compact_from` boundary) are skipped.
 

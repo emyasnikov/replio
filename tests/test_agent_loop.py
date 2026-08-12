@@ -81,8 +81,21 @@ class TestAgentLoop(unittest.TestCase):
         out = io.StringIO()
         with patch('sys.stdout', new=out):
             self.chat._agent_loop()
-        self.assertIn('ctx ', out.getvalue())
-        self.assertIn('msgs', out.getvalue())
+        value = out.getvalue()
+        self.assertIn('s, ', value)
+        self.assertIn('tokens', value)
+
+    def test_footer_uses_provider_usage(self):
+        self.chat.provider.chat.return_value = [
+            {'type': 'token', 'content': 'Hello'},
+            {'type': 'done', 'reason': 'stop',
+             'usage': {'prompt_tokens': 29238, 'completion_tokens': 5,
+                       'total_tokens': 29243}},
+        ]
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat._agent_loop()
+        self.assertIn('29,238 tokens', out.getvalue())
 
 
 if __name__ == '__main__':
