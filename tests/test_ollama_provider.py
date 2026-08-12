@@ -18,7 +18,7 @@ class TestOllamaStreaming(unittest.TestCase):
         self.provider = OllamaProvider(base_url='https://test.api.com', model='test-model')
 
     def _chat(self, chunks, tools=None):
-        with patch('replio.providers.ollama.stream_sse', return_value=_sse(chunks)):
+        with patch('replio.providers.base.stream_sse', return_value=_sse(chunks)):
             return list(self.provider.chat(
                 [{'role': 'user', 'content': 'hi'}], tools=tools
             ))
@@ -57,7 +57,7 @@ class TestOllamaStreaming(unittest.TestCase):
 
     def test_tools_passed_to_stream_payload(self):
         schema = [{'type': 'function', 'function': {'name': 'web_search'}}]
-        with patch('replio.providers.ollama.stream_sse') as mock_sse:
+        with patch('replio.providers.base.stream_sse') as mock_sse:
             mock_sse.return_value = _sse([{'delta': {}, 'finish_reason': 'stop'}])
             list(self.provider.chat(
                 [{'role': 'user', 'content': 'hi'}], tools=schema
@@ -66,7 +66,7 @@ class TestOllamaStreaming(unittest.TestCase):
         self.assertEqual(payload['tools'], schema)
 
     def test_max_tokens_omitted_when_zero(self):
-        with patch('replio.providers.ollama.stream_sse') as mock_sse:
+        with patch('replio.providers.base.stream_sse') as mock_sse:
             mock_sse.return_value = _sse([{'delta': {}, 'finish_reason': 'stop'}])
             list(self.provider.chat([{'role': 'user', 'content': 'hi'}]))
         payload = mock_sse.call_args[0][2]
@@ -74,7 +74,7 @@ class TestOllamaStreaming(unittest.TestCase):
 
     def test_max_tokens_included_when_set(self):
         self.provider.max_tokens = 4096
-        with patch('replio.providers.ollama.stream_sse') as mock_sse:
+        with patch('replio.providers.base.stream_sse') as mock_sse:
             mock_sse.return_value = _sse([{'delta': {}, 'finish_reason': 'stop'}])
             list(self.provider.chat([{'role': 'user', 'content': 'hi'}]))
         payload = mock_sse.call_args[0][2]

@@ -125,9 +125,9 @@ repl.io/
 
 ### Adding a Provider
 1. Create `src/replio/providers/<name>.py`
-2. Subclass `BaseProvider`, implement the `chat()` event generator and `list_models()`
-3. Add import + mapping in `chat.py` `_reinit_provider()` method
-4. Add to `/connect` prompt flow if needed
+2. Subclass `OpenAICompatibleProvider`, set `DEFAULT_BASE_URL` / `DEFAULT_MODEL` (override `_headers()`/`_payload()` only for non-standard auth or bodies)
+3. Add the class to the `PROVIDERS` dict in `providers/__init__.py`
+4. Add a hostname match in `detect_provider()` so `/connect` auto-selects it
 
 ### Adding a Slash Command
 1. Open `commands/builtins.py`

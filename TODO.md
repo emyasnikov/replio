@@ -39,11 +39,11 @@
 ## Session Log Store
 
 - [ ] Hardening: agent-loop turn failures are always visible in the session log
-  - [ ] Persist streamed content when the SSE stream ends without a `done`/finish event (clean connection drop) — `_agent_loop` currently only saves on `done` + non-empty `renderer.content`, silently discarding streamed replies
-  - [ ] Record an `errors` entry for silent turn failures — stream ended before a completion event, empty/thinking-only `done` response, and non-normal `finish_reason` (`length`, …) all log instead of vanishing
+  - [x] Persist streamed content when the SSE stream ends without a `done`/finish event (clean connection drop) — `_agent_loop` currently only saves on `done` + non-empty `renderer.content`, silently discarding streamed replies
+  - [x] Record an `errors` entry for silent turn failures — stream ended before a completion event, empty/thinking-only `done` response, and non-normal `finish_reason` (`length`, …) all log instead of vanishing
   - [x] Non-normal `finish_reason` (`length`) logs a session `errors` entry and prints a warning — `max_tokens` truncation is no longer silent
-  - [ ] Catch unexpected exceptions escaping the agent loop (outside provider `error` events), log them to session `errors`, and keep the REPL alive instead of crashing — `run()` has no try/except around `_handle_message()`
-  - [ ] Tests: token-stream-then-EOF persists content + logs error; empty `done` logs error; streamed exception is caught and logged instead of crashing
+  - [x] Catch unexpected exceptions escaping the agent loop (outside provider `error` events), log them to session `errors`, and keep the REPL alive instead of crashing — `run()` has no try/except around `_handle_message()`
+  - [x] Tests: token-stream-then-EOF persists content + logs error; empty `done` logs error; streamed exception is caught and logged instead of crashing
 - [x] Sessions are complete logs — persist every message, tool call + result, reasoning, and error for later analysis
   - [x] Append-only: compaction and load never remove or rewrite session entries
   - [x] `Session.to_dict()` stops filtering `role: tool` — full tool results persisted (except `noise_tools` results, replaced by a marker that keeps the log reproducible)
@@ -99,10 +99,10 @@
 
 ## Providers
 
-- [ ] OpenAI provider
-- [ ] Groq provider
-- [ ] Anthropic provider (via OpenAI-compatible /messages endpoint)
-- [ ] Provider auto-detection from base_url
+- [x] OpenAI provider
+- [x] Groq provider
+- [x] Anthropic provider (via OpenAI-compatible /messages endpoint)
+- [x] Provider auto-detection from base_url
 - [x] Base provider (OpenAI-compatible interface)
 - [x] Ollama cloud provider
 

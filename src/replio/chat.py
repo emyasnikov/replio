@@ -5,7 +5,6 @@ import os
 from datetime import datetime, timezone
 
 from .config import Config
-from .providers.ollama import OllamaProvider
 from .sessions.manager import SessionManager
 from .commands.registry import CommandRegistry
 from .commands.builtins import register_builtins
@@ -113,19 +112,40 @@ class ChatLoop:
         self._setup_readline()
 
     def _reinit_provider(self):
+        from .providers import PROVIDERS, detect_provider
         provider_name = self.config.get('provider', 'ollama')
-        if provider_name == 'ollama':
-            self.provider = OllamaProvider(
-                base_url=self.config.get('base_url'),
-                api_key=self.config.get('api_key'),
-                model=self.config.get('model'),
-                temperature=self.config.get('temperature'),
-                max_tokens=self.config.get('max_tokens'),
-            )
-        else:
-            print(f'Unknown provider "{provider_name}", falling back to ollama')
-            self.config.set('provider', 'ollama')
-            self._reinit_provider()
+        factory = PROVIDERS.get(provider_name)
+        if factory is None:
+            detected = detect_provider(self.config.get('base_url'))
+            print(f'Unknown provider "{provider_name}" — using "{detected}" '
+                  '(detected from base_url)')
+            self.config.set('provider', detected)
+            factory = PROVIDERS[detected]
+
+        base_url = self.config.get('base_url')
+        model = self.config.get('model')
+        if factory.DEFAULT_BASE_URL and base_url:
+            for other in PROVIDERS.values():
+                if other is not factory and other.DEFAULT_BASE_URL and base_url == other.DEFAULT_BASE_URL:
+                    base_url = factory.DEFAULT_BASE_URL
+                    break
+        if factory.DEFAULT_MODEL and model:
+            for other in PROVIDERS.values():
+                if other is not factory and other.DEFAULT_MODEL and model == other.DEFAULT_MODEL:
+                    model = factory.DEFAULT_MODEL
+                    break
+        if base_url != self.config.get('base_url'):
+            self.config.set('base_url', base_url)
+        if model != self.config.get('model'):
+            self.config.set('model', model)
+
+        self.provider = factory(
+            base_url=base_url,
+            api_key=self.config.get('api_key'),
+            model=model,
+            temperature=self.config.get('temperature'),
+            max_tokens=self.config.get('max_tokens'),
+        )
 
     def _load_history(self, config):
         hist = config.local_path.parent / HISTFILE
@@ -192,12 +212,16 @@ class ChatLoop:
             if not line:
                 continue
 
-            if line.startswith('/'):
-                self.current_session.add_message('command', line)
-                self.registry.dispatch(line)
-                self.session_auto_save()
-            else:
-                self._handle_message(line)
+            try:
+                if line.startswith('/'):
+                    self.current_session.add_message('command', line)
+                    self.registry.dispatch(line)
+                    self.session_auto_save()
+                else:
+                    self._handle_message(line)
+            except Exception as e:
+                self.current_session.add_error(0, str(e))
+                print(f'\001\033[91m\002[Error]\001\033[0m\002 {e}')
 
         self._save_history()
 
@@ -207,45 +231,58 @@ class ChatLoop:
         show_thinking = self.config.get('show_thinking', True)
         markdown = self.config.get('markdown_streaming')
         renderer: _StreamRenderer | None = None
-        done = False
         usage = None
 
         try:
             while True:
                 renderer = _StreamRenderer(show_thinking, markdown, self._render_token)
                 tool_calls_detected = False
+                got_done = False
                 messages = self._provider_messages()
-                for event in self.provider.chat(messages, tools=tools_schema):
-                    t = event.get('type', '')
-                    if t == 'thinking':
-                        renderer.thinking_event(event['content'])
-                    elif t == 'token':
-                        renderer.token_event(event['content'])
-                    elif t == 'tool_calls':
-                        tool_calls_detected = True
-                        self._execute_tool_calls(event['tool_calls'], renderer.thinking_text)
-                        break
-                    elif t == 'error':
-                        code = event.get('code', '')
-                        msg = event.get('message', 'Unknown error')
-                        self.current_session.add_error(code, msg)
-                        print(f'\001\033[91m\002[Error {code}]\001\033[0m\002 {msg}')
-                        return
-                    elif t == 'done':
-                        done = True
-                        usage = event.get('usage') or usage
-                        reason = event.get('reason', '')
-                        if reason == 'length':
-                            msg = ('Assistant output truncated: max_tokens limit reached '
-                                   f'({self.config.get("max_tokens")})')
-                            self.current_session.add_error(0, msg)
-                            print('\001\033[93m\002[output truncated — max_tokens reached; '
-                                  'use /config max_tokens N]\001\033[0m\002')
-                        break
+                try:
+                    for event in self.provider.chat(messages, tools=tools_schema):
+                        t = event.get('type', '')
+                        if t == 'thinking':
+                            renderer.thinking_event(event['content'])
+                        elif t == 'token':
+                            renderer.token_event(event['content'])
+                        elif t == 'tool_calls':
+                            tool_calls_detected = True
+                            self._execute_tool_calls(event['tool_calls'], renderer.thinking_text)
+                            break
+                        elif t == 'error':
+                            code = event.get('code', '')
+                            msg = event.get('message', 'Unknown error')
+                            self.current_session.add_error(code, msg)
+                            print(f'\001\033[91m\002[Error {code}]\001\033[0m\002 {msg}')
+                            return
+                        elif t == 'done':
+                            got_done = True
+                            usage = event.get('usage') or usage
+                            reason = event.get('reason', '')
+                            if reason == 'length':
+                                msg = ('Assistant output truncated: max_tokens limit reached '
+                                       f'({self.config.get("max_tokens")})')
+                                self.current_session.add_error(0, msg)
+                                print('\001\033[93m\002[output truncated — max_tokens reached; '
+                                      'use /config max_tokens N]\001\033[0m\002')
+                            break
+                except Exception as e:
+                    self.current_session.add_error(0, f'Agent loop failed: {e}')
+                    print(f'\001\033[91m\002[Error]\001\033[0m\002 {e}')
+                    break
                 if not tool_calls_detected:
+                    if not got_done:
+                        msg = 'Stream ended before a completion event'
+                        self.current_session.add_error(0, msg)
+                        print('\001\033[93m\002[warning] ' + msg + '\001\033[0m\002')
+                    elif not renderer.content:
+                        msg = 'Assistant returned an empty response'
+                        self.current_session.add_error(0, msg)
+                        print('\001\033[93m\002[warning] ' + msg + '\001\033[0m\002')
                     break
         finally:
-            if done and renderer and renderer.content:
+            if renderer and renderer.content:
                 end = datetime.now(timezone.utc)
                 duration = round((end - turn_start).total_seconds(), 1)
                 self.current_session.add_message(

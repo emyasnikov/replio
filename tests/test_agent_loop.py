@@ -61,6 +61,41 @@ class TestAgentLoop(unittest.TestCase):
         self._run()
         self.assertEqual(self._assistant_msgs(), [])
         self.chat.session_auto_save.assert_called()
+        errors = self.chat.current_session.errors
+        self.assertEqual(len(errors), 1)
+        self.assertIn('Stream ended before a completion event', errors[0]['message'])
+
+    def test_token_stream_then_eof_persists_content_and_logs_error(self):
+        self.chat.provider.chat.return_value = [
+            {'type': 'token', 'content': 'Partial answer'},
+        ]
+        self._run()
+        self.assertEqual(self._assistant_msgs()[0]['content'], 'Partial answer')
+        errors = self.chat.current_session.errors
+        self.assertEqual(len(errors), 1)
+        self.assertIn('Stream ended before a completion event', errors[0]['message'])
+
+    def test_empty_done_logs_error(self):
+        self.chat.provider.chat.return_value = [
+            {'type': 'done', 'reason': 'stop'},
+        ]
+        self._run()
+        self.assertEqual(self._assistant_msgs(), [])
+        errors = self.chat.current_session.errors
+        self.assertEqual(len(errors), 1)
+        self.assertIn('empty response', errors[0]['message'])
+
+    def test_mid_stream_exception_is_caught_and_logged(self):
+        def _raising():
+            yield {'type': 'token', 'content': 'Partial'}
+            raise RuntimeError('boom')
+
+        self.chat.provider.chat.return_value = _raising()
+        self._run()
+        self.assertEqual(self._assistant_msgs()[0]['content'], 'Partial')
+        errors = self.chat.current_session.errors
+        self.assertEqual(len(errors), 1)
+        self.assertIn('Agent loop failed: boom', errors[0]['message'])
 
     def test_length_finish_logs_truncation_error(self):
         self.chat.provider.chat.return_value = [

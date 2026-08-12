@@ -74,7 +74,7 @@ Sessions are complete logs: every message, tool call + result, reasoning (`think
 
 ## Adding a Provider
 
-Create a subclass of `BaseProvider` implementing `chat()` and `list_models()` using the OpenAI-compatible `/v1/chat/completions` format, then register it in `ChatLoop._reinit_provider()`.
+Create a subclass of `OpenAICompatibleProvider` (in `src/replio/providers/`) implementing any provider-specific defaults (`DEFAULT_BASE_URL`, `DEFAULT_MODEL`), then add it to the `PROVIDERS` registry in `providers/__init__.py`. Providers speak the OpenAI-compatible `/v1/chat/completions` format. An unknown configured provider name is auto-detected from `base_url` — well-known hosts map automatically, anything else falls back to the generic `openai-compatible` provider.
 
 ## Contributing
 

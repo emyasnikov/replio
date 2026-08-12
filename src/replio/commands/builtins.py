@@ -106,6 +106,7 @@ def register_builtins(registry):
 
     @registry.register('connect', description='Set up provider connection interactively')
     def connect_cmd(_=None):
+        from ..providers import PROVIDERS, detect_provider
         print('Setting up provider connection:')
         provider = input(
             f'  Provider [{chat.config.get("provider")}]: '
@@ -118,8 +119,12 @@ def register_builtins(registry):
             f'  Model [{chat.config.get("model")}]: '
         ).strip() or chat.config.get('model')
 
-        chat.config.set('provider', provider)
         chat.config.set('base_url', base_url)
+        detected = detect_provider(base_url)
+        if detected in PROVIDERS and detected != 'openai-compatible' and detected != provider:
+            print(f'  Detected provider "{detected}" from base URL — switching')
+            provider = detected
+        chat.config.set('provider', provider)
         chat.config.set('model', model)
         if api_key:
             chat.config.set('api_key', api_key)

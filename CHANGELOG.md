@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.10.0
+
+### Added
+
+- OpenAI, Groq, and Anthropic providers (`providers/openai.py`, `providers/groq.py`, `providers/anthropic.py`) — OpenAI-compatible `/v1/chat/completions` subclasses of the shared `OpenAICompatibleProvider`, each with its own default `base_url` and default model (`gpt-4o-mini`, `llama-3.3-70b-versatile`, `claude-sonnet-4-20250514`)
+- Provider auto-detection — `detect_provider(base_url)` in `providers/__init__.py` matches well-known hosts (`openai.com`, `groq.com`, `anthropic.com`, `ollama.com`/`ollama.ai`) and falls back to the generic `openai-compatible` provider for any other OpenAI-compatible endpoint
+- `PROVIDERS` registry — `_reinit_provider()` resolves the configured provider name through the dict (`ollama`, `openai`, `groq`, `anthropic`, `openai-compatible`); unknown names are auto-detected from `base_url` with a printed note instead of silently falling back to ollama
+- `/connect` detects the provider from the entered base URL and switches automatically when it matches a known host
+- Agent-loop hardening — streamed content is persisted when the SSE stream ends without a `done` event, and session `errors` entries are recorded for silent failures: stream EOF before a completion event, empty/thinking-only `done`, and unexpected exceptions escaping the agent loop; unexpected exceptions in `run()` are caught, logged to the session `errors`, and the REPL stays alive instead of crashing
+- `tests/test_providers.py` — provider defaults, auth header, `detect_provider`, and registry coverage
+
+### Changed
+
+- `OllamaProvider` now subclasses the shared `OpenAICompatibleProvider` — the streaming/tool-call/error logic it previously owned moved to `providers/base.py`; behavior unchanged
+- Switching providers swaps in the new provider's default `base_url`/`model` when the configured values still match another provider's default (i.e. were never customized); explicit custom values are preserved
+- `tests/test_ollama_provider.py` — `stream_sse` patches retargeted to the base module where the streaming logic now lives
+
 ## v0.9.0 — 2026-08-12
 
 ### Added
