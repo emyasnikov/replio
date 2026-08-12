@@ -15,7 +15,9 @@
 - [x] `/config` structured values — JSON auto-parse, `-a`/`-r` list add/remove, `reload` from disk, unknown-key y/N confirm
 - [ ] Custom system prompts per session
 - [ ] Config validation (test connection on change)
-- [x] `/compact` session summarization — replaces summarized history with a `system` summary message, keeps last `compact_keep` messages verbatim
+- [x] `/compact` session summarization — replaces summarized history with a `system` summary message, keeps last `compact_keep` messages verbatim; prints the generated summary text
+- [x] `/session load` compaction offer prints the generated summary too
+- [x] Session-name tab completion — `/session load` and `/session delete` complete saved names bash-style
 - [x] Context-size display — dimmed `(ctx N msgs · K chars)` after each response (config `show_context_size`, default `true`), on `/session load`, and after `/compact`
 - [x] `max_tokens` optional (default `0` = unset) — no default truncation; `/config max_tokens N` re-enables a cap, and hitting it warns + logs to session `errors` instead of stopping silently
 - [ ] Multi-line input (detect `"""` or `'''` blocks)

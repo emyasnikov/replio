@@ -145,17 +145,23 @@ class ChatLoop:
             pass
 
     def _setup_readline(self):
-        commands = sorted(set(self.registry.commands.keys()))
-
-        def completer(text, state):
-            if text.startswith('/'):
-                options = [c for c in commands if c.startswith(text)]
-                if state < len(options):
-                    return options[state] + ' '
-            return None
-
-        readline.set_completer(completer)
+        readline.set_completer(self._completer)
         readline.parse_and_bind('tab: complete')
+
+    def _completer(self, text: str, state: int) -> str | None:
+        line = readline.get_line_buffer()
+        for prefix in ('/session load ', '/session delete '):
+            if line.startswith(prefix):
+                names = [n for n in self.sessions.list() if n.startswith(text)]
+                if state < len(names):
+                    return names[state] + ' '
+                return None
+        term = text[1:] if text.startswith('/') else text
+        options = sorted(c for c in self.registry.commands if c.startswith(term))
+        if state < len(options):
+            name = options[state]
+            return ('/' + name if text.startswith('/') else name) + ' '
+        return None
 
     def session_auto_save(self):
         if self.current_session and self.current_session.messages:
@@ -434,6 +440,8 @@ class ChatLoop:
         )
         n, chars = self._context_size()
         print(f'Compacted — context now {n} messages ({self._human_chars(chars)})')
+        print('--- earlier conversation ---')
+        print(summary)
         self.session_auto_save()
 
     def _render_token(self, token: str, state: dict) -> list[tuple[str, str]]:

@@ -4,6 +4,8 @@
 
 ### Added
 
+- Session-name tab completion — `/session load` and `/session delete` complete against saved session names (bash-style common-prefix completion, double-tab lists candidates)
+- `/compact` and `/session load` (when the compaction offer is accepted) print the generated summary text, so you can see exactly what was preserved from the earlier conversation
 - `/compact` command (alias `/c`) — summarizes the conversation via a lightweight non-streaming model call and replaces the summarized history with a single `system` summary message, keeping the last `compact_keep` messages verbatim; prints the new context size
 - Context-size visibility — dimmed `(ctx N msgs · K chars)` line after each response, on `/session load`, and after `/compact` (config `show_context_size`, default `true`)
 - `/session load` compaction offer — when the loaded context exceeds `compact_prompt_chars` (default `20000`), prompts `Summarize the history before continuing? [y/N]` and compacts if accepted
@@ -18,6 +20,7 @@
 
 ### Fixed
 
+- Tab completion for `/` commands never matched — readline passes the current word, and command names have no leading slash, so the prefix test always failed; the completer now strips the `/` when comparing and re-adds it on completion
 - `stream_sse` decoded each 4096-byte chunk with strict UTF-8, so a multi-byte character split across a chunk boundary raised `UnicodeDecodeError` — caught as a generic error that aborted the stream mid-output and killed the tool loop during long web research; buffering is now byte-based and each complete line is decoded with `errors='replace'`
 
 ## v0.8.0 — 2026-08-05

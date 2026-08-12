@@ -221,5 +221,61 @@ class TestToolCommand(unittest.TestCase):
         self.assertIn('read_file', names)
 
 
+class TestReadlineCompleter(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def _buffer(self, line):
+        return patch('replio.chat.readline.get_line_buffer', return_value=line)
+
+    def _make_sessions(self, *names):
+        for n in names:
+            s = self.chat.sessions.create(n)
+            s.add_message('user', 'x')
+            self.chat.sessions.save(s)
+
+    def test_session_load_completes_names(self):
+        self._make_sessions('alpha_01', 'alpha_02', 'beta_01')
+        with self._buffer('/session load alpha_'):
+            self.assertEqual(self.chat._completer('alpha_', 0), 'alpha_01 ')
+            self.assertEqual(self.chat._completer('alpha_', 1), 'alpha_02 ')
+            self.assertIsNone(self.chat._completer('alpha_', 2))
+
+    def test_session_delete_completes_names(self):
+        self._make_sessions('alpha_01')
+        with self._buffer('/session delete alpha_'):
+            self.assertEqual(self.chat._completer('alpha_', 0), 'alpha_01 ')
+            self.assertIsNone(self.chat._completer('alpha_', 1))
+
+    def test_session_load_empty_prefix_lists_all(self):
+        self._make_sessions('alpha_01', 'beta_01')
+        with self._buffer('/session load '):
+            matches = []
+            i = 0
+            while True:
+                m = self.chat._completer('', i)
+                if m is None:
+                    break
+                matches.append(m)
+                i += 1
+        self.assertEqual(matches, ['alpha_01 ', 'beta_01 '])
+
+    def test_command_completion_still_works(self):
+        with self._buffer('/se'):
+            self.assertEqual(self.chat._completer('/se', 0), '/session ')
+
+    def test_command_completion_without_slash_prefix(self):
+        with self._buffer('/se'):
+            self.assertEqual(self.chat._completer('se', 0), 'session ')
+
+    def test_command_completion_outside_session_context(self):
+        with self._buffer('/session'):
+            self.assertEqual(self.chat._completer('/session', 0), '/session ')
+
+
 if __name__ == '__main__':
     unittest.main()

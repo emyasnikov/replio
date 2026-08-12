@@ -230,6 +230,21 @@ class TestCompactSession(unittest.TestCase):
             self.chat.compact_session()
         self.assertEqual(len(self.chat.current_session.messages), 1)
 
+    def test_compact_prints_generated_summary(self):
+        for i in range(3):
+            self.chat.current_session.add_message('user', f'msg {i}')
+            self.chat.current_session.add_message('assistant', f'answer {i}')
+        self.chat.provider.chat_nonstreaming.return_value = {
+            'role': 'assistant', 'content': 'COMPACTED SUMMARY TEXT',
+            'tool_calls': None, 'finish_reason': 'stop',
+        }
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat.compact_session()
+        value = out.getvalue()
+        self.assertIn('Compacted —', value)
+        self.assertIn('COMPACTED SUMMARY TEXT', value)
+
 
 if __name__ == '__main__':
     unittest.main()

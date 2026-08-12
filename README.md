@@ -65,7 +65,7 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 >>> /exit            goodbye
 ```
 
-Type any message to chat. Tab-complete `/` commands. Arrow keys for history.
+Type any message to chat. Tab-complete `/` commands and session names (e.g. `/session load <Tab>`, bash-style). Arrow keys for history.
 
 ## Machine Access & Permissions
 
