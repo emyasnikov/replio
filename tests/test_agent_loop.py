@@ -132,6 +132,22 @@ class TestAgentLoop(unittest.TestCase):
             self.chat._agent_loop()
         self.assertIn('29,238 tokens', out.getvalue())
 
+    def test_clear_screen_on_repl_start_default(self):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            with patch('replio.chat.input', side_effect=EOFError):
+                self.chat.run()
+        self.assertIn('\033[3J\033[2J\033[H', out.getvalue())
+
+    def test_clear_screen_disabled_suppresses_escape(self):
+        self.chat.config.data['clear_screen'] = False
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            with patch('replio.chat.input', side_effect=EOFError):
+                self.chat.run()
+        self.assertNotIn('\033[3J\033[2J\033[H', out.getvalue())
+        self.assertIn('REPL.io', out.getvalue())
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -56,6 +56,10 @@ class ChatLoop(Engine):
         if system_prompt:
             self.current_session.add_message('system', system_prompt)
 
+        if self.config.get('clear_screen', True):
+            sys.stdout.write('\033[3J\033[2J\033[H')
+            sys.stdout.flush()
+
         model_str = self.config.get('model', '?')
         provider_str = self.config.get('provider', '?')
         print(f'REPL.io ({provider_str}: {model_str})  /help for commands')

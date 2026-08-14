@@ -21,6 +21,7 @@ DEFAULT_CONFIG = {
     'show_thinking': True,
     'markdown_streaming': False,
     'show_context_size': True,
+    'clear_screen': True,
     'compact_keep': 4,
     'noise_tools': ['fetch_page'],
     'web_search': False,

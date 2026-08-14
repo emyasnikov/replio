@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.12.0
+
+### Added
+
+- Clear screen on REPL start — the interactive REPL wipes scrollback + visible screen (`\033[3J\033[2J\033[H`) before printing the banner; gated by `clear_screen` config (default `true`), toggleable via `/config clear_screen false`. Headless `run`/`serve` modes are unaffected.
+
 ## v0.11.0 — 2026-08-14
 
 ### Added
@@ -17,7 +23,7 @@
 - `_handle_message()` replaced by `Engine.chat()`; `_StreamRenderer` moved into `ReplUI`, and the `<thinking>` marker split is owned by the engine so thinking stays separate from content in JSON results
 - The `input()` confirm prompt moved from `chat.py` to `ui.py` (tests patch `replio.ui.input`)
 
-## v0.10.0
+## v0.10.0 - 2026-08-13
 
 ### Added
 

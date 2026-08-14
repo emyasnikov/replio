@@ -168,6 +168,7 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
   "tool_analysis": false,
   "session_tool_max_chars": 0,
   "show_context_size": true,
+  "clear_screen": true,
   "compact_keep": 4,
   "noise_tools": ["fetch_page"],
   "web_search": false,

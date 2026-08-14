@@ -2,6 +2,10 @@
 
 ## Ideas
 
+- [ ] Web scraper plugin — full page scraping beyond `fetch_page`'s text extraction (structured content, links)
+- [ ] PDF-to-text converter plugin — extract text from local/remote PDFs
+- [ ] Auditor agents — sub-agents that review/check a produced output (tests, code review, fact-check)
+- [ ] Generate → check → correct orchestration — run a main agent, an auditor, and a fix pass in a loop until passing
 - [ ] Citations / source attribution — return URL + snippet with every answer
 - [ ] Bookmarks — `/bookmark add/remove/list` for session pinning
 - [ ] Interactive data analysis — CSV querying, SQL execution, code eval in REPL
@@ -14,6 +18,7 @@
 
 ## Polish
 
+- [x] Clear screen on REPL start — `clear_screen` config (default `true`), toggleable via `/config clear_screen false`; clears scrollback + visible screen before the banner
 - [x] `/config` structured values — JSON auto-parse, `-a`/`-r` list add/remove, `reload` from disk, unknown-key y/N confirm
 - [ ] Custom system prompts per session
 - [ ] Config validation (test connection on change)
