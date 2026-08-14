@@ -9,6 +9,8 @@
 - [ ] Hybrid web + local RAG — vector store (FAISS/Weaviate), embeddings, local document search
 - [ ] Command palette / fuzzy search — CTRL-P style history search
 - [ ] Topic-aware ranking — classifier for query intent to weight search results
+- [ ] Naming / positioning decision — "Replio" collides with commercial SaaS products (`replio.chat`, `repliohq.com`, `replio.eu`); decide branding before publicizing the headless direction
+- [ ] Competitor research — validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products
 
 ## Polish
 
@@ -26,6 +28,22 @@
 - [ ] Multi-line input (detect `"""` or `'''` blocks)
 
 ---
+
+## Headless Mode
+
+- [ ] `replio run` — one-shot CLI mode (JSON in/out) reusing `ChatLoop` + `SessionManager` for CI/CD, cron, and scripting
+  - [ ] Flags: `--prompt`, `--provider`, `--model`, `--output=json`, `--verbose`
+  - [ ] `--session-id` — address persistent sessions from headless mode
+  - [ ] Headless logging (`--verbose`) instead of visual activity lines
+- [ ] `replio serve` — stdlib `http.server` HTTP JSON API (`POST /chat`) over the same agent loop; richer frameworks only via the dependency plugin
+- [ ] Tests for headless entry points (mock provider, no network)
+
+## Coding Toolchain
+
+- [ ] `code_lint` / `code_format` / `code_test` / `code_debug` / `compile` — subprocess wrappers around existing CLIs (pylint, black, pytest, pdb, gcc/rustc), registered as tools with `category`/`permission`/`key_arg`
+- [ ] `git` — repository operations (status, diff, commit)
+- [ ] `docs_search` — local grep + DuckDuckGo for documentation lookups
+- [ ] Workspace sessions — tools write into a scoped `--workspace` dir; optional `--git` sync
 
 ## Activity Lines & Tool Status
 
@@ -96,6 +114,19 @@
 - [ ] Tools as installable plugins
 - [ ] Providers as installable plugins
 - [ ] Plugin manifest + docs
+- [ ] Optional per-plugin dependencies — manifest declares third-party packages (e.g. `fastapi`, `paho-mqtt`, `onnxruntime`, `ortools`); core stays stdlib-only, deps resolve only when the plugin is used
+- [ ] Headless web API plugin-first — stdlib `http.server` fallback, richer framework (FastAPI) via the dependency plugin
+- [ ] Enterprise plugins (stdlib-first, third-party deps optional):
+  - [ ] Data ingestion — `read_stream` / `write_stream` (MQTT, OPC-UA, Modbus)
+  - [ ] Time-series — `anomaly_detect` (z-score), `forecast`
+  - [ ] Model inference — `model_infer` / `predict_failure` (ONNX)
+  - [ ] Optimization — `optim_schedule` (scheduling / linear programming)
+  - [ ] SCADA control — `scada_command` (OPC-UA registers)
+  - [ ] Reporting — `report_gen` (Markdown/PDF, email/BI push)
+  - [ ] Audit logging + metrics (`/metrics`) for enterprise deployments
+  - [ ] Onboarding wizard (`replio wizard`) for data-source / MES interface setup
+  - [ ] RBAC — role-based access control for enterprise deployments
+  - [ ] Queue-based scaling — many concurrent sensor/chat feeds without blocking the loop
 
 ## Providers
 

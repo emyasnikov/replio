@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="Zero dependencies">
 </p>
 
-A zero-dependency AI chat REPL for your terminal.
+A lightweight, zero-dependency agentic tooling core with an interactive REPL chat.
 
 ## Why?
 
@@ -15,18 +15,15 @@ No dependencies and gigabytes of `node_modules`.
 
 ## Features
 
-- **Zero external dependencies** — Python stdlib only
-- **Multi-provider** — Ollama, OpenAI, Anthropic, Groq, any OpenAI-compatible API
-- **Streaming responses** — live token-by-token output via SSE
-- **Web search** — DuckDuckGo integration, page fetching, auto-query refinement
-- **Tool calling** — models search the web and fetch pages on the fly
-- **Machine access** — read, list, write, and run shell commands, gated by path-scoped permission prompts
-- **Sessions** — save, load, switch, and auto-name conversations
-- **Compaction** — `/compact` summarizes long conversations and trims the context
-- **Slash commands** — `/help`, `/model`, `/provider`, `/connect`, `/session`, `/compact`, `/config`, `/exit`
-- **Dual config** — global `~/.config/replio/` + per-project `.replio/` JSON merge
-- **Input history** — readline-based up/down recall + tab completion
-- **Thinking/reasoning display** — see model reasoning tokens (DeepSeek R1, o1, etc.)
+- **Zero dependencies, honest footprint** — Just clone and run, nothing to install
+- **Local-first & private** — Config and session logs live on your disk
+- **One process, two ways** — Same agent core for terminal REPL and headless mode
+- **Multi-provider by design** — Ollama, OpenAI, Anthropic etc.
+- **Streaming responses** — Token-by-token output via SSE
+- **Web search** — Auto web search, page fetching and query refinement
+- **Machine access** — Read/write files and run shell commands
+- **Sessions** — Full captured conversations, even on tool use
+- **Compaction** — Summarize long conversations and trim the context
 
 ## Quick Start
 
@@ -75,6 +72,15 @@ Sessions are complete logs: every message, tool call + result, reasoning (`think
 ## Adding a Provider
 
 Create a subclass of `OpenAICompatibleProvider` (in `src/replio/providers/`) implementing any provider-specific defaults (`DEFAULT_BASE_URL`, `DEFAULT_MODEL`), then add it to the `PROVIDERS` registry in `providers/__init__.py`. Providers speak the OpenAI-compatible `/v1/chat/completions` format. An unknown configured provider name is auto-detected from `base_url` — well-known hosts map automatically, anything else falls back to the generic `openai-compatible` provider.
+
+## Roadmap
+
+- **Headless core** — `replio run` (one-shot JSON in/out) and `replio serve` (stdlib HTTP API) over the same agent loop, for CI/CD, cron, and scripting
+- **Coding toolchain** — `code_lint`/`code_format`/`code_test`/`code_debug`, `git`, `docs_search` tools and workspace sessions
+- **Enterprise data** — ingestion, time-series analysis, model inference, optimization, and SCADA tools as plugins
+- **Action & reporting** — reporting/email push, audit logging, metrics, onboarding wizard
+
+Open tasks and details live in [TODO.md](TODO.md).
 
 ## Contributing
 

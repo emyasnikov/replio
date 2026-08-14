@@ -78,7 +78,7 @@ repl.io/
 ## Conventions
 
 ### Code Style
-- No external dependencies — stdlib only
+- No external dependencies — stdlib only; plugins may opt into third-party deps via their manifest, the core never depends on them
 - No comments in code
 - Type hints required for all function signatures
 - Use `from __future__ import annotations` if needed for `|` syntax
