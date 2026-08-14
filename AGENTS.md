@@ -18,13 +18,13 @@ Multi-provider chat, web search, sessions, slash commands, and (planned) machine
 
 The agentic core has three layers:
 
-1. **Agent loop** (`chat.py`) — the orchestration. Each turn runs a single streaming request. The provider's `chat()` is a generator yielding events, and the loop reacts:
-   - `thinking` / `token` — streamed to the terminal (dimmed thinking, optional markdown)
+1. **Agent loop** (`engine.py`) — the headless core. Each turn runs a single streaming request. The provider's `chat()` is a generator yielding events, and the engine reacts:
+   - `thinking` / `token` — streamed to the sink (`UISink`); `ReplUI` renders ANSI thinking + optional markdown, `HeadlessUI` logs to stderr / buffers for JSON
    - `tool_calls` — append the assistant message, execute each call, append `tool` results, then continue the loop
-   - `error` — print and bail
+   - `error` — record + print and bail
    - `done` — persist the assistant message (timestamp/duration/model) and stop
    
-   One stream, one round trip when no tools are used. `chat_nonstreaming()` is reserved for query refinement, not the main path.
+   One stream, one round trip when no tools are used. `chat_nonstreaming()` is reserved for query refinement, not the main path. The loop is front-end agnostic: `ChatLoop` (REPL), `replio run` (CLI), and `replio serve` (HTTP) all call `Engine.chat(text) -> TurnResult`. The `<thinking>` marker split lives in the engine so thinking stays separate from content.
 
 2. **ToolRegistry** (`tools/registry.py`) — the **single dispatch point**. The model invokes tools via OpenAI function calling; slash commands are thin wrappers that call the same `execute()`. The loop never special-cases tool names — per-tool behavior comes from registration metadata (`refine`, later `confirm`).
 
@@ -46,9 +46,13 @@ repl.io/
 ├── src/replio/
 │   ├── __init__.py
 │   ├── __main__.py          # python -m replio
-│   ├── main.py              # CLI arg parsing + bootstrap
+│   ├── main.py              # CLI arg parsing + bootstrap (default REPL, run, serve)
+│   ├── cli.py               # `replio run` / `replio serve` headless entry points
 │   ├── config.py            # JSON config (global + local merge)
-│   ├── chat.py              # Agent loop + REPL with readline
+│   ├── engine.py            # Headless agent core — Engine + TurnResult
+│   ├── chat.py              # ChatLoop(Engine) — REPL shell with readline
+│   ├── ui.py                # UISink — ReplUI / HeadlessUI / NullUI renderers
+│   ├── server.py            # stdlib HTTP JSON API (POST /chat, GET /sessions, GET /health)
 │   ├── providers/
 │   │   ├── __init__.py
 │   │   ├── base.py          # Abstract provider (OpenAI-compatible)

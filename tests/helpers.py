@@ -8,6 +8,7 @@ from replio.chat import ChatLoop
 from replio.sessions.manager import SessionManager
 from replio.commands.registry import CommandRegistry
 from replio.commands.builtins import register_builtins
+from replio.ui import ReplUI
 
 
 def make_chat(config_data: dict | None = None) -> ChatLoop:
@@ -38,6 +39,7 @@ def make_chat(config_data: dict | None = None) -> ChatLoop:
     chat.sessions = SessionManager(sessions_dir)
     chat.current_session = chat.sessions.create()
     chat._tool_registry = None
+    chat._ui = ReplUI(chat)
 
     chat._perform_search = MagicMock(return_value='Mocked search context.')
     chat._show_tool_status = MagicMock()

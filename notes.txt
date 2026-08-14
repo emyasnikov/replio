@@ -1,0 +1,6 @@
+Web Scrapper
+PDF to text
+Subagents
+Auditor Agents to check output
+On REPL clear screen
+

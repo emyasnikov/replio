@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.11.0 — 2026-08-14
+
+### Added
+
+- `Engine` headless agent core (`engine.py`) + `TurnResult` — the agent loop extracted from `ChatLoop` returns a structured `{content, thinking, tool_calls, errors, duration, usage, model, provider, session, status}` turn result; `Engine.chat(text, autoname=True)` and `Engine.load_or_create_session(name)` make sessions addressable from any front-end
+- `UISink` abstraction (`ui.py`) — the loop renders through `ReplUI` (terminal ANSI streaming, confirm prompts, footer), `HeadlessUI` (stderr diagnostics, auto-approve/deny confirm policy, never blocks on stdin), or `NullUI` (silent)
+- `replio run` — one-shot CLI mode (JSON or text output) over the same agent loop + session manager; flags `--prompt`, `--provider`, `--model`, `--base-url`, `--output`, `--verbose`, `--session-id`, `--yes`/`--no`; exits `0` on ok/truncated and `1` on error/empty
+- `replio serve` — stdlib `ThreadingHTTPServer` JSON API (`POST /chat`, `GET /sessions`, `GET /health`) with a shared engine serialized behind a lock; ask-gated tools are denied (fed back as `[cancelled]`), the server never blocks on stdin
+- Headless `ask` policy — tools gated by `ask` are denied by default in headless mode; `--yes`/`--no` override to approve or deny
+- Tests for headless entry points — `test_engine.py` (turn result, thinking split, session addressing, confirm policy), `test_cli.py` (mock provider, JSON/text output, session-id persistence, exit codes), `test_server.py` (ephemeral-port server against a mocked provider)
+
+### Changed
+
+- `ChatLoop` is now `ChatLoop(Engine)` — a thin REPL shell (readline, banner, prompt loop) inheriting the headless core; commands and session logic are unchanged
+- `_handle_message()` replaced by `Engine.chat()`; `_StreamRenderer` moved into `ReplUI`, and the `<thinking>` marker split is owned by the engine so thinking stays separate from content in JSON results
+- The `input()` confirm prompt moved from `chat.py` to `ui.py` (tests patch `replio.ui.input`)
+
 ## v0.10.0
 
 ### Added

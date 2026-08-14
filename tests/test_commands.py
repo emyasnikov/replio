@@ -227,7 +227,7 @@ class TestToolCommand(unittest.TestCase):
 
     def test_tool_ask_prompt_declined(self):
         self.chat.config.set('tool_permission', {'web': 'ask'})
-        with patch('replio.chat.input', return_value='n'):
+        with patch('replio.ui.input', return_value='n'):
             output = self._dispatch('/tool web_search {"query": "x"}')
         self.assertIn('[cancelled]', output)
 
@@ -235,7 +235,7 @@ class TestToolCommand(unittest.TestCase):
         self.chat.config.set('tool_permission', {'web': 'ask'})
         with patch('replio.web.search.search', return_value=[
             {'title': 'T', 'url': 'http://x.com', 'snippet': 'S'}
-        ]), patch('replio.chat.input', return_value='y'):
+        ]), patch('replio.ui.input', return_value='y'):
             output = self._dispatch('/tool web_search {"query": "python"}')
         self.assertNotIn('[cancelled]', output)
         self.assertIn('python', output)

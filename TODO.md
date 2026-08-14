@@ -31,12 +31,12 @@
 
 ## Headless Mode
 
-- [ ] `replio run` — one-shot CLI mode (JSON in/out) reusing `ChatLoop` + `SessionManager` for CI/CD, cron, and scripting
-  - [ ] Flags: `--prompt`, `--provider`, `--model`, `--output=json`, `--verbose`
-  - [ ] `--session-id` — address persistent sessions from headless mode
-  - [ ] Headless logging (`--verbose`) instead of visual activity lines
-- [ ] `replio serve` — stdlib `http.server` HTTP JSON API (`POST /chat`) over the same agent loop; richer frameworks only via the dependency plugin
-- [ ] Tests for headless entry points (mock provider, no network)
+- [x] `replio run` — one-shot CLI mode (JSON in/out) reusing `ChatLoop` + `SessionManager` for CI/CD, cron, and scripting
+  - [x] Flags: `--prompt`, `--provider`, `--model`, `--output=json`, `--verbose`
+  - [x] `--session-id` — address persistent sessions from headless mode
+  - [x] Headless logging (`--verbose`) instead of visual activity lines
+- [x] `replio serve` — stdlib `http.server` HTTP JSON API (`POST /chat`) over the same agent loop; richer frameworks only via the dependency plugin
+- [x] Tests for headless entry points (mock provider, no network)
 
 ## Coding Toolchain
 
