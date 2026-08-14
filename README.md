@@ -57,10 +57,9 @@ First-time setup using REPL:
 Type any message to chat. Tab-complete `/` commands and session names (e.g. `/session load <Tab>`, bash-style). Arrow keys for history.
 
 ```
->>> /help            list all commands
 >>> Hi
 <<< Hello! How can I help you today?
->>> /exit            goodbye
+>>> /exit
 ```
 
 ### CLI
@@ -106,10 +105,6 @@ The model can read and search your machine (`read_file`, `list_dir`, `glob`, `gr
 ## Sessions
 
 Sessions are complete logs: every message, tool call + result, reasoning (`thinking` metadata), and error is persisted — entries are never removed, not even on compaction. `errors` holds failed provider requests, and `created_at`/`updated_at` track the session lifetime. Both headless modes run the same agent core and session store as the REPL, so conversations are interchangeable across all three.
-
-## Adding a Provider
-
-Create a subclass of `OpenAICompatibleProvider` (in `src/replio/providers/`) implementing any provider-specific defaults (`DEFAULT_BASE_URL`, `DEFAULT_MODEL`), then add it to the `PROVIDERS` registry in `providers/__init__.py`. Providers speak the OpenAI-compatible `/v1/chat/completions` format. An unknown configured provider name is auto-detected from `base_url` — well-known hosts map automatically, anything else falls back to the generic `openai-compatible` provider.
 
 ## Roadmap
 

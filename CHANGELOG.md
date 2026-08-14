@@ -2,13 +2,9 @@
 
 ## v0.12.0
 
-### Added
-
 - Clear screen on REPL start — the interactive REPL wipes scrollback + visible screen (`\033[3J\033[2J\033[H`) before printing the banner; gated by `clear_screen` config (default `true`), toggleable via `/config clear_screen false`. Headless `run`/`serve` modes are unaffected.
 
 ## v0.11.0 — 2026-08-14
-
-### Added
 
 - `Engine` headless agent core (`engine.py`) + `TurnResult` — the agent loop extracted from `ChatLoop` returns a structured `{content, thinking, tool_calls, errors, duration, usage, model, provider, session, status}` turn result; `Engine.chat(text, autoname=True)` and `Engine.load_or_create_session(name)` make sessions addressable from any front-end
 - `UISink` abstraction (`ui.py`) — the loop renders through `ReplUI` (terminal ANSI streaming, confirm prompts, footer), `HeadlessUI` (stderr diagnostics, auto-approve/deny confirm policy, never blocks on stdin), or `NullUI` (silent)
@@ -16,16 +12,11 @@
 - `replio serve` — stdlib `ThreadingHTTPServer` JSON API (`POST /chat`, `GET /sessions`, `GET /health`) with a shared engine serialized behind a lock; ask-gated tools are denied (fed back as `[cancelled]`), the server never blocks on stdin
 - Headless `ask` policy — tools gated by `ask` are denied by default in headless mode; `--yes`/`--no` override to approve or deny
 - Tests for headless entry points — `test_engine.py` (turn result, thinking split, session addressing, confirm policy), `test_cli.py` (mock provider, JSON/text output, session-id persistence, exit codes), `test_server.py` (ephemeral-port server against a mocked provider)
-
-### Changed
-
 - `ChatLoop` is now `ChatLoop(Engine)` — a thin REPL shell (readline, banner, prompt loop) inheriting the headless core; commands and session logic are unchanged
 - `_handle_message()` replaced by `Engine.chat()`; `_StreamRenderer` moved into `ReplUI`, and the `<thinking>` marker split is owned by the engine so thinking stays separate from content in JSON results
 - The `input()` confirm prompt moved from `chat.py` to `ui.py` (tests patch `replio.ui.input`)
 
 ## v0.10.0 - 2026-08-13
-
-### Added
 
 - OpenAI, Groq, and Anthropic providers (`providers/openai.py`, `providers/groq.py`, `providers/anthropic.py`) — OpenAI-compatible `/v1/chat/completions` subclasses of the shared `OpenAICompatibleProvider`, each with its own default `base_url` and default model (`gpt-4o-mini`, `llama-3.3-70b-versatile`, `claude-sonnet-4-20250514`)
 - Provider auto-detection — `detect_provider(base_url)` in `providers/__init__.py` matches well-known hosts (`openai.com`, `groq.com`, `anthropic.com`, `ollama.com`/`ollama.ai`) and falls back to the generic `openai-compatible` provider for any other OpenAI-compatible endpoint
@@ -33,16 +24,11 @@
 - `/connect` detects the provider from the entered base URL and switches automatically when it matches a known host
 - Agent-loop hardening — streamed content is persisted when the SSE stream ends without a `done` event, and session `errors` entries are recorded for silent failures: stream EOF before a completion event, empty/thinking-only `done`, and unexpected exceptions escaping the agent loop; unexpected exceptions in `run()` are caught, logged to the session `errors`, and the REPL stays alive instead of crashing
 - `tests/test_providers.py` — provider defaults, auth header, `detect_provider`, and registry coverage
-
-### Changed
-
 - `OllamaProvider` now subclasses the shared `OpenAICompatibleProvider` — the streaming/tool-call/error logic it previously owned moved to `providers/base.py`; behavior unchanged
 - Switching providers swaps in the new provider's default `base_url`/`model` when the configured values still match another provider's default (i.e. were never customized); explicit custom values are preserved
 - `tests/test_ollama_provider.py` — `stream_sse` patches retargeted to the base module where the streaming logic now lives
 
 ## v0.9.0 — 2026-08-12
-
-### Added
 
 - `/session preview <name>` — read-only structural preview (name, created/updated, message counts by role, tools used) without switching the active session; shown on `/session load` too
 - `noise_tools` config (default `["fetch_page"]`) — results of these tools are replaced by a `[<tool> result excluded from log; see tool call above for parameters]` marker at persistence time only; the live turn still feeds the full result to the model, and the assistant `tool_calls` message keeps the query/URL so the log stays reproducible
@@ -51,9 +37,6 @@
 - Context-size visibility — dimmed `(Ns, N tokens)` line after each response, using the provider's `usage.prompt_tokens` when reported (fallback: char-based estimate); gated by `show_context_size` (default `true`)
 - `/session load` compaction offer — always prompts `Summarize & trim history before continuing? [y/N]`
 - `tests/test_http.py` — `stream_sse` survives a multi-byte UTF-8 character split across 4096-byte read chunks, normal data-line flow, and `[DONE]`/error passthrough
-
-### Changed
-
 - Sessions are **append-only logs** — compaction no longer removes or rewrites session entries; it only trims the provider context via the summary record and boundary, so the full history always stays in the file
 - Provider payload is prepared from the log — `role: command` messages are never sent as-is; compaction summary records convert to `system` messages, and dangling tool messages are skipped
 - `/session load` and `/session preview` print a structural preview; `/session load` records the load as a `command` message in the loaded session
@@ -62,16 +45,11 @@
 - If a configured `max_tokens` cap is hit (`finish_reason: length`), the loop now prints a visible truncation warning and records a session `errors` entry instead of stopping silently
 - `OllamaProvider.chat()` streaming captures `usage` from the final chunk and attaches it to the `done` event
 - `config.py` — new keys `show_context_size`, `compact_keep` (default `4`), `noise_tools` (default `["fetch_page"]`); removed `compact_prompt_chars`
-
-### Fixed
-
 - Compaction failed with sessions containing `command`/tool messages — the summarizer now sanitizes the batch (drops `command`, drops `tool_calls` declarations, converts `tool` → `user [tool result]`), and provider errors are printed instead of swallowed as a generic "Compaction failed"
 - Tab completion for `/` commands never matched — readline passes the current word, and command names have no leading slash, so the prefix test always failed; the completer now strips the `/` when comparing and re-adds it on completion
 - `stream_sse` decoded each 4096-byte chunk with strict UTF-8, so a multi-byte character split across a chunk boundary raised `UnicodeDecodeError` — caught as a generic error that aborted the stream mid-output and killed the tool loop during long web research; buffering is now byte-based and each complete line is decoded with `errors='replace'`
 
 ## v0.8.0 — 2026-08-05
-
-### Added
 
 - `Session` metadata — `created_at`/`updated_at` (bumped on every message) and a top-level `errors` array with `add_error()`; `to_dict()` now persists **every** message, including `role: tool`
 - `tool_analysis` config (default `false`) — optional model-generated one-line insight summary stored as `analysis` on each tool message, so a session log can be reconstructed without re-running the tool; skipped for `[cancelled]`/error results
@@ -79,16 +57,11 @@
 - `_StreamRenderer` captures `thinking_text`; `_agent_loop` persists per-round reasoning as `thinking` metadata on tool-call and final assistant messages (still excluded from `content`)
 - Provider `error` events now append to the session `errors` array before the loop bails, instead of being dropped
 - `tests/test_session_log.py` — session model, save/load round-trip, legacy-file loading, `tool_max_chars` truncation, thinking metadata, and `tool_analysis` behavior
-
-### Changed
-
 - `SessionManager.save()` accepts `tool_max_chars`; `session_auto_save()` forwards the config value
 - `_execute_tool_calls()` appends assistant tool-call and tool-result messages via `Session.add_message()` (single timestamp/`updated_at` path instead of direct list appends)
 - Docs updated to match: session files are now complete logs (tool results, thinking, errors); confirm prompts and tool status remain ephemeral UI
 
 ## v0.7.0 — 2026-08-03
-
-### Added
 
 - Tool `short=` registration metadata — human-readable one-line labels for the `/help` tools table (falls back to a truncated `description`)
 - `CommandRegistry.canonical()` and `ToolRegistry.info()` accessors backing the `/help <name>` detail views
@@ -103,9 +76,6 @@
 - Registration metadata — `category`, `permission`, `path_arg`, `key_arg` on `ToolRegistry.register()` plus `permission_for()`/`path_arg_for()`/`key_arg_for()`/`schema_filtered()`; retrofitted `web_search`/`fetch_page` (forward-compat for the deferred activity-lines glyph system)
 - `tests/test_tool_policy.py` (allow/deny, permission keys, external-directory escalation, precedence) and `tests/test_machine_tools.py` (read/list/write/exec against a temp dir, timeout, metadata)
 - `/tool` policy tests — deny rejection, `ask` accept/decline, schema filtering of denied tools
-
-### Changed
-
 - `/help` `Available tools` section renders a clean two-column table using new `short=` registration labels (`Run a shell command`, `Search the web`, …); category/permission/action now show only in `/help <tool>` details
 - `/help` is now the central help system — shows `Available commands` (aliases inline, subcommands at a standard 4-space indent) followed by `Available tools` (one per line with `[category · permission-key: action]`, policy-filtered)
 - `/help <name>` shows details for a specific command (aliases + subcommands) or tool (`category`, `permission: action`, full parameter schema with required/optional); commands take precedence
@@ -115,14 +85,9 @@
 - `/session` (no args) reuses the shared subcommand metadata instead of a hardcoded usage block
 - `/tool` command respects tool policy — listing shows only allowed tools, execution routes through `_run_tool()` (deny rejection + confirm prompts)
 - `Session.to_dict()` and the agent loop unchanged — confirm prompts and tool status remain ephemeral REPL UI, never persisted
-
-### Fixed
-
 - `Config` shallow-copied `DEFAULT_CONFIG`, sharing the nested `tools.deny`/`tool_permission` lists/dicts across instances — mutations (e.g. `/config tools.deny -a …`) leaked into later sessions; now deep-copied on load and reload
 
 ## v0.6.0 - 2026-08-02
-
-### Added
 
 - `/tool <name> <json-args>` slash command — generic thin wrapper executing any registered tool via the same `ToolRegistry` the model uses; no args lists registered tools
 - `tests/test_tool_registry.py` — registry metadata tests: `refine_required()` for `web_search` vs `fetch_page`/unknown
@@ -133,51 +98,30 @@
 - `tests/helpers.py` — shared `make_chat()` builder for ChatLoop tests
 - `tests/test_agent_loop.py` — loop-level tests: no-tools single round trip, thinking excluded from persisted content, error bail, empty stream
 - `tests/test_ollama_provider.py` — provider streaming tests: fragmented tool-call accumulation, `done`/`thinking` events, `tools` in payload, error passthrough
-
-### Changed
-
 - `ToolRegistry.register()` accepts `refine` metadata; `refine_required()` lookup added — `web_search` registered with `refine=True`, and `_execute_tool_calls()` now refines via metadata instead of special-casing the `web_search` name
 - `BaseProvider.chat()` signature gains `tools: list[dict] | None = None`
 - `_handle_message()` branches collapse onto `_agent_loop()`; `chat_nonstreaming()` is now used only by `_refine_query()`
 - `tests/test_tool_calling.py` rewritten against the streaming event generator
-
-### Removed
-
 - `_chat_with_tools()`, `_stream_response()`, `_output_content()` and `_response_start` from `chat.py`
 - `/search` and `/web` slash commands — model tool-calling and `web_search` auto mode cover searching
 
 ## v0.5.0 — 2026-07-28
 
-### Added
-
 - `_TextExtractor` class in `tools/builtins.py` — stdlib HTMLParser-based text extraction for `fetch_page`
 - Test `test_empty_stream_falls_back_to_nonstreaming_content` — verifies fallback saves non-streaming content when streaming returns empty
-
-### Changed
-
 - `Session.to_dict()` filters out `role: tool` messages — session files only contain REPL-visible messages (user, assistant, command, system)
-
-### Fixed
-
 - Final assistant response missing from session when streaming returned no tokens — fall back to non-streaming result content when `_stream_response()` returns empty
 - `fetch_page` returned raw HTML/JS/CSS noise — replaced regex tag-stripping with `_TextExtractor` (HTMLParser) that drops `<script>`, `<style>`, `<svg>`, `<noscript>` and extracts clean visible text
 - Session files stored raw tool-result content that was never displayed in the REPL — filtered `role: tool` messages from serialized output; assistant `tool_calls` (web_search, fetch_page declarations) still documented
 
 ## v0.4.0 — 2026-07-28
 
-### Added
-
 - 3 new test cases: empty-content, multiple tool calls, and API error path (now 7 tests total)
-
-### Fixed
-
 - Tool-call messages (assistant tool_calls + tool results) lost when streaming produced empty content or an exception occurred — wrapped `_chat_with_tools()` and `_stream_response()` in `try/finally` so session is always persisted
 - `_chat_with_tools()` no longer skips `_stream_response()` when `chat_nonstreaming` returns empty/null content — final response is always streamed
 - Session file rename left JSON `name` field stale — added `session_auto_save()` after rename so the file always has the correct session name
 
 ## v0.3.0 — 2026-07-28
-
-### Added
 
 - Auto-session naming: first user message auto-names the session (sanitized, truncated to 40 chars). Renames the `.json` file on disk
 - Markdown-aware streaming: code blocks in cyan, inline code in green, bold text rendered with ANSI bold. Disabled by default (`markdown_streaming: false`). Enable via config.
@@ -187,15 +131,10 @@
 - `query_refine` config system: when enabled, short web_search queries (≤ `query_refine_min_words` words) are auto-refined via a lightweight model call with `query_refine_context` recent messages as context. Configurable via `query_refine`, `query_refine_min_words` (default 3), `query_refine_context` (default 4)
 - `tool_status_visible` config option (default `true`): when `false`, hides dimmed `[tool: args]` status lines during tool execution
 - Mock test suite for tool calling (`tests/test_tool_calling.py`): 4 offline tests covering no-tools, single-tool, unknown-tool error, and force-search paths
-
-### Fixed
-
 - Markdown streaming now off by default; the state machine was unreliable on real streaming output
 - Removed `...` as thinking marker/closer (too many false positives in normal text)
 
 ## v0.2.0 — 2026-07-27
-
-### Added
 
 - Auto-search mode: set `web_search: true` in config to search on every message
 - Search results displayed as compact list, injected as AI context for grounded responses
@@ -214,8 +153,6 @@
 - Tool calling system: two-phase chat (non-streaming tool decision → stream final content)
 
 ## v0.1.0 — 2026-07-27
-
-### Added
 
 - `<<< ` prefix on streaming responses for clear user/AI separation
 - Command logging: all slash commands stored as `command`-role messages in session history

@@ -102,8 +102,8 @@ repl.io/
 - Tools registered via `@tool_registry.register()` decorator (OpenAI function calling format)
 
 ### Doc Conventions
-- `TODO.md` is grouped by **feature sections**. `## Ideas` sits at the top for visibility; current work and planned features follow; older feature groups stay below; `## REPL & Core` forms the ground (bottom) section — current state stays readable with `head`. Unfinished tasks remain in their group. Completed items are marked `[x]` **inline in their group** — do not flatten the list or move history into an archive section.
-- `CHANGELOG.md` is grouped by **versions**, newest at the top — new `## vX.Y.Z — YYYY-MM-DD` sections go above previous ones, so the latest changes are readable with `head`. Entries under each version are grouped by `### Added` / `### Changed` / `### Removed`, and **within each group the newest entry comes first**.
+- `TODO.md` is a **single flat list sorted newest-first** — open `[ ]` and completed `[x]` items are interleaved by recency, so new tasks can be added at the very top without reorganizing. Named subsections appear only for large coherent topics (e.g. `## Plugins`); completed items stay inline as `[x]` and are never moved to an archive.
+- `CHANGELOG.md` is grouped by **versions**, newest at the top — new `## vX.Y.Z — YYYY-MM-DD` sections go above previous ones, so the latest changes are readable with `head`. Entries under each version form a **single flat bullet list, newest first** (no `### Added`/`### Changed`/`### Removed` grouping).
 - After completing a planned task: mark it `[x]` in `TODO.md` and add entries under the current version section at the top of `CHANGELOG.md` (start a new version section first if none exists).
 - Keep both files in sync with actual project state.
 - Keep `version` in `pyproject.toml` in sync with the current version in `CHANGELOG.md` — bump it whenever a release section is started or finalized.

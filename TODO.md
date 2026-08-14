@@ -1,120 +1,39 @@
 # TODO
 
-## Ideas
+- Citations / source attribution — return URL + snippet with every answer
+- Bookmarks — `/bookmark add/remove/list` for session pinning
+- Interactive data analysis — CSV querying, SQL execution, code eval in REPL
+- Notebook mode — persistent editable cells with run outputs
+- Hybrid web + local RAG — vector store (FAISS/Weaviate), embeddings, local document search
+- Command palette / fuzzy search — CTRL-P style history search
+- Topic-aware ranking — classifier for query intent to weight search results
+- Naming / positioning decision — "Replio" collides with commercial SaaS products (`replio.chat`, `repliohq.com`, `replio.eu`); decide branding before publicizing the headless direction
+- Competitor research — validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products
+
+## Open
 
 - [ ] Web scraper plugin — full page scraping beyond `fetch_page`'s text extraction (structured content, links)
 - [ ] PDF-to-text converter plugin — extract text from local/remote PDFs
 - [ ] Auditor agents — sub-agents that review/check a produced output (tests, code review, fact-check)
 - [ ] Generate → check → correct orchestration — run a main agent, an auditor, and a fix pass in a loop until passing
-- [ ] Citations / source attribution — return URL + snippet with every answer
-- [ ] Bookmarks — `/bookmark add/remove/list` for session pinning
-- [ ] Interactive data analysis — CSV querying, SQL execution, code eval in REPL
-- [ ] Notebook mode — persistent editable cells with run outputs
-- [ ] Hybrid web + local RAG — vector store (FAISS/Weaviate), embeddings, local document search
-- [ ] Command palette / fuzzy search — CTRL-P style history search
-- [ ] Topic-aware ranking — classifier for query intent to weight search results
-- [ ] Naming / positioning decision — "Replio" collides with commercial SaaS products (`replio.chat`, `repliohq.com`, `replio.eu`); decide branding before publicizing the headless direction
-- [ ] Competitor research — validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products
-
-## Polish
-
-- [x] Clear screen on REPL start — `clear_screen` config (default `true`), toggleable via `/config clear_screen false`; clears scrollback + visible screen before the banner
-- [x] `/config` structured values — JSON auto-parse, `-a`/`-r` list add/remove, `reload` from disk, unknown-key y/N confirm
 - [ ] Custom system prompts per session
 - [ ] Config validation (test connection on change)
-- [x] `/compact` session summarization — **append-only**: never removes session entries; stores the summary as the `result` of the triggering `command` message with a `compact_from` boundary, trimming only the provider context; prints the generated summary text
-- [x] `/session load` compaction offer prints the generated summary too; `/session load` also shows a structural preview and records the load as a `command` message
-- [x] `/session preview <name>` — read-only structural preview (counts, tools, dates) without switching the active session
-- [x] Session-name tab completion — `/session load` and `/session delete` complete saved names bash-style
-- [x] Context-size display — dimmed `(Ns, N tokens)` after each response using provider `usage.prompt_tokens` (char-based estimate fallback); config `show_context_size`, default `true`
-- [x] `noise_tools` config (default `["fetch_page"]`) — noise tool results replaced with a marker in persisted sessions only; queries/URLs stay documented via the assistant `tool_calls` message
-- [x] `max_tokens` optional (default `0` = unset) — no default truncation; `/config max_tokens N` re-enables a cap, and hitting it warns + logs to session `errors` instead of stopping silently
-- [x] Provider payload is prepared from the log (`role: command` filtered, summary records → `system`, dangling tool messages skipped) — never sent as-is
 - [ ] Multi-line input (detect `"""` or `'''` blocks)
-
----
-
-## Headless Mode
-
-- [x] `replio run` — one-shot CLI mode (JSON in/out) reusing `ChatLoop` + `SessionManager` for CI/CD, cron, and scripting
-  - [x] Flags: `--prompt`, `--provider`, `--model`, `--output=json`, `--verbose`
-  - [x] `--session-id` — address persistent sessions from headless mode
-  - [x] Headless logging (`--verbose`) instead of visual activity lines
-- [x] `replio serve` — stdlib `http.server` HTTP JSON API (`POST /chat`) over the same agent loop; richer frameworks only via the dependency plugin
-- [x] Tests for headless entry points (mock provider, no network)
-
-## Coding Toolchain
-
 - [ ] `code_lint` / `code_format` / `code_test` / `code_debug` / `compile` — subprocess wrappers around existing CLIs (pylint, black, pytest, pdb, gcc/rustc), registered as tools with `category`/`permission`/`key_arg`
 - [ ] `git` — repository operations (status, diff, commit)
 - [ ] `docs_search` — local grep + DuckDuckGo for documentation lookups
 - [ ] Workspace sessions — tools write into a scoped `--workspace` dir; optional `--git` sync
-
-## Activity Lines & Tool Status
-
 - [ ] Deterministic activity lines — typed status lines printed as the loop executes tools, replacing the mechanical `[tool: args]` status
   - [ ] Six-category glyph set from tool registration metadata (`category` + `status` template): `*` search, `→` read, `←` write/edit, `~` ask, `- [ ]` todo, `$` exec (ask/todo/exec reserved for Phase 2 tools)
   - [ ] OpenCode-style tool call notation as reference: `% WebFetch https://...` — prefix glyph + tool name + key argument
   - [ ] `ToolRegistry.activity(name, args)` returns `(glyph, label)`; the loop renders `  ↳ <glyph> <label>` dimmed — no name special-casing
 - [ ] Spinner — animated `⠧`-style indicator as liveness feedback when narration/thinking is hidden (`show_thinking: false`); folded into `show_thinking`, no new config key; stdlib `threading` daemon, cleared with `\r\033[K`
 - [ ] Activity lines are ephemeral UI — never persisted to session files (tool calls are already recorded there)
-
-## Session Log Store
-
-- [ ] Hardening: agent-loop turn failures are always visible in the session log
-  - [x] Persist streamed content when the SSE stream ends without a `done`/finish event (clean connection drop) — `_agent_loop` currently only saves on `done` + non-empty `renderer.content`, silently discarding streamed replies
-  - [x] Record an `errors` entry for silent turn failures — stream ended before a completion event, empty/thinking-only `done` response, and non-normal `finish_reason` (`length`, …) all log instead of vanishing
-  - [x] Non-normal `finish_reason` (`length`) logs a session `errors` entry and prints a warning — `max_tokens` truncation is no longer silent
-  - [x] Catch unexpected exceptions escaping the agent loop (outside provider `error` events), log them to session `errors`, and keep the REPL alive instead of crashing — `run()` has no try/except around `_handle_message()`
-  - [x] Tests: token-stream-then-EOF persists content + logs error; empty `done` logs error; streamed exception is caught and logged instead of crashing
-- [x] Sessions are complete logs — persist every message, tool call + result, reasoning, and error for later analysis
-  - [x] Append-only: compaction and load never remove or rewrite session entries
-  - [x] `Session.to_dict()` stops filtering `role: tool` — full tool results persisted (except `noise_tools` results, replaced by a marker that keeps the log reproducible)
-  - [x] Per-round `thinking` metadata on assistant messages (reasoning before each tool call/answer); excluded from `content`
-  - [x] Session-level `errors` array — `error` events persisted instead of lost
-  - [x] Session `created_at` / `updated_at` metadata (bumped on every message)
-  - [x] `tool_analysis` (default `false`): model-generated one-line analysis of each tool result, log-only (e.g. "A page about the Replio project which lists features x, y…")
-  - [x] `session_tool_max_chars` (default 0 = unlimited): cap persisted tool-result content
-  - [x] No `index.json` — session names already carry timestamp + first-message slug; `/session list` keeps directory scan
-  - [x] Flat message list retained (maps 1:1 to provider context); turns-with-parts structure documented as an optional future refactor
-
-## Agentic Core
-
-- [x] Unified streaming agent loop
-  - [x] Single SSE stream, detect `tool_calls` vs content from the first delta
-  - [x] Eliminates double-call cost when no tools are used
-- [x] Unified dispatch
-  - [x] Slash commands call the same `ToolRegistry` as the model
-  - [x] Generic query refinement via tool metadata; collapse `_handle_message` branches
-
-## Machine Access
-
-- [x] Machine tools (`tools/machine.py`) — `read_file`, `list_dir`, `write_file`, `run_command`
-  - [x] `read_file` — numbered lines, `offset`/`limit`, truncation, binary/permission error handling
-  - [x] `list_dir` — sorted entries, trailing `/` for subdirs, file sizes
-  - [x] `write_file` — parent-dir creation, `w`/`a` modes
-  - [x] `run_command` — subprocess exec with timeout, stdout/stderr capture, exit code, 8k output cap
-  - [x] Registered with `category`/`permission`/`path_arg`/`key_arg` metadata (forward-compat for the activity-lines glyph set)
-- [x] Discovery tools — `glob` (recursive pattern lookup, noise-dir skip) and `grep` (regex content search with `file:line:` results) so the model locates files without guessing paths
-- [x] `read_file` always reports total line count in its header so the model knows when a file is fully read
-- [x] Tool permission model (`tools/policy.py` + config)
-  - [x] `tools.allow` / `tools.deny` name-level policies — `deny` and allow-whitelist take precedence
-  - [x] `tool_permission` category actions — `read`/`list`/`edit`/`bash`/`web` → `allow`/`ask`/`deny`
-  - [x] Path-scoped confirm — read/write/list outside the project worktree escalate to `ask` (opencode-style `external_directory`); in-worktree ops run unattended
-  - [x] `bash: ask` default — every `run_command` prompts y/N; opt out via `tool_permission.bash = "allow"`
-- [x] Confirm prompts in the loop (`_run_tool`/`_confirm_tool`) — denied tools are filtered from the provider schema entirely; cancelled calls feed `[cancelled]` tool results back to the model
-- [x] `/tool` command routes through the same policy — listing shows only allowed tools, execution prompts on `ask`
 - [ ] Sandboxed exec — namespace/container isolation for `run_command` (documented, planned for a later version)
 - [ ] Per-agent permission profiles — `tool_permission` becomes per-agent when `/agent` personas land (Phase 3)
-
-## Personas & Delegation
-
 - [ ] `/agent` personas — per-agent system prompt, session namespace, optional model override
 - [ ] `delegate(persona, task)` tool → sub-agent loop returning a result
 - [ ] PM/dev/tester team orchestration as a user-facing pattern
-
-## Plugins
-
 - [ ] Directory-based plugin loading (`.replio/plugins/`, `~/.config/replio/plugins/`)
 - [ ] Tools as installable plugins
 - [ ] Providers as installable plugins
@@ -132,37 +51,83 @@
   - [ ] Onboarding wizard (`replio wizard`) for data-source / MES interface setup
   - [ ] RBAC — role-based access control for enterprise deployments
   - [ ] Queue-based scaling — many concurrent sensor/chat feeds without blocking the loop
+- [ ] Session export to Markdown
+- [ ] Session import from Markdown/JSON
+- [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
+- [ ] Streaming with thinking/reasoning block toggle
 
-## Providers
+## Done
 
+- [x] Clear screen on REPL start — `clear_screen` config (default `true`), toggleable via `/config clear_screen false`; clears scrollback + visible screen before the banner
+- [x] `/config` structured values — JSON auto-parse, `-a`/`-r` list add/remove, `reload` from disk, unknown-key y/N confirm
+- [x] `/compact` session summarization — **append-only**: never removes session entries; stores the summary as the `result` of the triggering `command` message with a `compact_from` boundary, trimming only the provider context; prints the generated summary text
+- [x] `/session load` compaction offer prints the generated summary too; `/session load` also shows a structural preview and records the load as a `command` message
+- [x] `/session preview <name>` — read-only structural preview (counts, tools, dates) without switching the active session
+- [x] Session-name tab completion — `/session load` and `/session delete` complete saved names bash-style
+- [x] Context-size display — dimmed `(Ns, N tokens)` after each response using provider `usage.prompt_tokens` (char-based estimate fallback); config `show_context_size`, default `true`
+- [x] `noise_tools` config (default `["fetch_page"]`) — noise tool results replaced with a marker in persisted sessions only; queries/URLs stay documented via the assistant `tool_calls` message
+- [x] `max_tokens` optional (default `0` = unset) — no default truncation; `/config max_tokens N` re-enables a cap, and hitting it warns + logs to session `errors` instead of stopping silently
+- [x] Provider payload is prepared from the log (`role: command` filtered, summary records → `system`, dangling tool messages skipped) — never sent as-is
+- [x] `replio run` — one-shot CLI mode (JSON in/out) reusing `ChatLoop` + `SessionManager` for CI/CD, cron, and scripting
+  - [x] Flags: `--prompt`, `--provider`, `--model`, `--output=json`, `--verbose`
+  - [x] `--session-id` — address persistent sessions from headless mode
+  - [x] Headless logging (`--verbose`) instead of visual activity lines
+- [x] `replio serve` — stdlib `http.server` HTTP JSON API (`POST /chat`) over the same agent loop; richer frameworks only via the dependency plugin
+- [x] Tests for headless entry points (mock provider, no network)
+- [x] Hardening: agent-loop turn failures are always visible in the session log
+  - [x] Persist streamed content when the SSE stream ends without a `done`/finish event (clean connection drop) — `_agent_loop` currently only saves on `done` + non-empty `renderer.content`, silently discarding streamed replies
+  - [x] Record an `errors` entry for silent turn failures — stream ended before a completion event, empty/thinking-only `done` response, and non-normal `finish_reason` (`length`, …) all log instead of vanishing
+  - [x] Non-normal `finish_reason` (`length`) logs a session `errors` entry and prints a warning — `max_tokens` truncation is no longer silent
+  - [x] Catch unexpected exceptions escaping the agent loop (outside provider `error` events), log them to session `errors`, and keep the REPL alive instead of crashing — `run()` has no try/except around `_handle_message()`
+  - [x] Tests: token-stream-then-EOF persists content + logs error; empty `done` logs error; streamed exception is caught and logged instead of crashing
+- [x] Sessions are complete logs — persist every message, tool call + result, reasoning, and error for later analysis
+  - [x] Append-only: compaction and load never remove or rewrite session entries
+  - [x] `Session.to_dict()` stops filtering `role: tool` — full tool results persisted (except `noise_tools` results, replaced by a marker that keeps the log reproducible)
+  - [x] Per-round `thinking` metadata on assistant messages (reasoning before each tool call/answer); excluded from `content`
+  - [x] Session-level `errors` array — `error` events persisted instead of lost
+  - [x] Session `created_at` / `updated_at` metadata (bumped on every message)
+  - [x] `tool_analysis` (default `false`): model-generated one-line analysis of each tool result, log-only (e.g. "A page about the Replio project which lists features x, y…")
+  - [x] `session_tool_max_chars` (default 0 = unlimited): cap persisted tool-result content
+  - [x] No `index.json` — session names already carry timestamp + first-message slug; `/session list` keeps directory scan
+  - [x] Flat message list retained (maps 1:1 to provider context); turns-with-parts structure documented as an optional future refactor
+- [x] Unified streaming agent loop
+  - [x] Single SSE stream, detect `tool_calls` vs content from the first delta
+  - [x] Eliminates double-call cost when no tools are used
+- [x] Unified dispatch
+  - [x] Slash commands call the same `ToolRegistry` as the model
+  - [x] Generic query refinement via tool metadata; collapse `_handle_message` branches
+- [x] Machine tools (`tools/machine.py`) — `read_file`, `list_dir`, `write_file`, `run_command`
+  - [x] `read_file` — numbered lines, `offset`/`limit`, truncation, binary/permission error handling
+  - [x] `list_dir` — sorted entries, trailing `/` for subdirs, file sizes
+  - [x] `write_file` — parent-dir creation, `w`/`a` modes
+  - [x] `run_command` — subprocess exec with timeout, stdout/stderr capture, exit code, 8k output cap
+  - [x] Registered with `category`/`permission`/`path_arg`/`key_arg` metadata (forward-compat for the activity-lines glyph set)
+- [x] Discovery tools — `glob` (recursive pattern lookup, noise-dir skip) and `grep` (regex content search with `file:line:` results) so the model locates files without guessing paths
+- [x] `read_file` always reports total line count in its header so the model knows when a file is fully read
+- [x] Tool permission model (`tools/policy.py` + config)
+  - [x] `tools.allow` / `tools.deny` name-level policies — `deny` and allow-whitelist take precedence
+  - [x] `tool_permission` category actions — `read`/`list`/`edit`/`bash`/`web` → `allow`/`ask`/`deny`
+  - [x] Path-scoped confirm — read/write/list outside the project worktree escalate to `ask` (opencode-style `external_directory`); in-worktree ops run unattended
+  - [x] `bash: ask` default — every `run_command` prompts y/N; opt out via `tool_permission.bash = "allow"`
+- [x] Confirm prompts in the loop (`_run_tool`/`_confirm_tool`) — denied tools are filtered from the provider schema entirely; cancelled calls feed `[cancelled]` tool results back to the model
+- [x] `/tool` command routes through the same policy — listing shows only allowed tools, execution prompts on `ask`
 - [x] OpenAI provider
 - [x] Groq provider
 - [x] Anthropic provider (via OpenAI-compatible /messages endpoint)
 - [x] Provider auto-detection from base_url
 - [x] Base provider (OpenAI-compatible interface)
 - [x] Ollama cloud provider
-
-## Sessions & Import/Export
-
-- [ ] Session export to Markdown
-- [ ] Session import from Markdown/JSON
 - [x] Session manager (JSON CRUD)
 - [x] `/session new` and `/session load` actually switch the active session — loaded messages now reach the provider context and autosave (were left stale on `SessionManager.current` only)
 - [x] Session save after file rename — JSON `name` field matches filename
 - [x] Auto-session naming with first user message as context hint
 - [x] Tool results and assistant `tool_calls` persisted in session files (full logs)
-
-## Web Search
-
 - [x] DuckDuckGo Lite search via `html.parser` (`web/search.py`)
 - [x] Terminal + AI context formatting (`web/display.py`)
 - [x] `/search <query>` and `/web <query>` commands
 - [x] Auto-search mode (`web_search: true` config)
 - [x] `fetch_page` returns HTML/JS noise — `_TextExtractor` (HTMLParser) for clean text extraction
 - [x] Search term extraction — `query_refine` config: auto-refines short web_search queries via a lightweight model call, injecting recent conversation context
-
-## Tool Calling
-
 - [x] `tools/registry.py` — decorator-based tool registration
 - [x] `tools/builtins.py` — `web_search` and `fetch_page` tools
 - [x] `BaseProvider.chat_nonstreaming()` — non-streaming tool decision round
@@ -172,11 +137,6 @@
 - [x] Config default: `tool_calling: true`
 - [x] Add `tool_status_visible` config flag (default `true`)
 - [x] Verify tool calling integration end-to-end
-
-## Streaming
-
-- [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
-- [ ] Streaming with thinking/reasoning block toggle
 - [x] Thinking/reasoning token detection and dimmed display
 - [x] SSE streaming survives multi-byte UTF-8 characters split across 4096-byte read chunks — byte-buffered line decoding in `stream_sse` (was aborting long streams and tool loops)
 - [x] Markdown-aware streaming (basic formatting, disabled by default via `markdown_streaming` config)
@@ -184,9 +144,6 @@
 - [x] Edge cases: streaming when `tool_calling=true` but no tools used
 - [x] Tool-call messages lost on exception — `try/finally` in `_chat_with_tools` and `_stream_response`
 - [x] Final assistant response missing when streaming returns empty — fallback to non-streaming content
-
-## REPL & Core
-
 - [x] Project scaffolding (pyproject.toml, venv, dir structure)
 - [x] Config module (global + local JSON merge)
 - [x] HTTP SSE streaming utility (urllib)
