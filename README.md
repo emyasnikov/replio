@@ -40,7 +40,11 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 .venv/bin/replio
 ```
 
-### First-time setup
+## Usage
+
+### REPL
+
+First-time setup using REPL:
 
 ```
 >>> /connect
@@ -50,15 +54,49 @@ python3 -m venv .venv && .venv/bin/pip install -e .
   Model [gpt-oss:20b-cloud]:
 ```
 
-## Usage
+Type any message to chat. Tab-complete `/` commands and session names (e.g. `/session load <Tab>`, bash-style). Arrow keys for history.
 
 ```
 >>> /help            list all commands
->>> /connect         connect to a model
+>>> Hi
+<<< Hello! How can I help you today?
 >>> /exit            goodbye
 ```
 
-Type any message to chat. Tab-complete `/` commands and session names (e.g. `/session load <Tab>`, bash-style). Arrow keys for history.
+### CLI
+
+Stream plain text with `--output text` or return the results as JSON, log tool status and diagnostics to stderr with `--verbose`, and address a persistent session with `--session-id <id>`. Tools that require confirmation are auto-denied in by default, just pass `--yes` to approve them.
+
+```bash
+replio run --prompt "Hi"
+{
+  "content": "Hello! How can I help you today?",
+  "thinking": null,
+  "tool_calls": [],
+  "errors": [],
+  "duration": 7.0,
+  "usage": null,
+  "model": "gpt-oss:20b-cloud",
+  "provider": "ollama",
+  "session": "20260814_192251_hi",
+  "status": "ok"
+}
+```
+
+### API
+
+Server exposes three JSON endpoints — `POST /chat` (`{"prompt": ...}`, optionally `{"session_id": ...}`) returns the same turn result as the CLI, `GET /sessions` lists saved sessions, and `GET /health` is a liveness check.
+
+```bash
+replio serve
+replio serve - http://127.0.0.1:8787 (POST /chat, GET /sessions, GET /health)
+[replio] "POST /chat HTTP/1.1" 200 -
+```
+
+```bash
+curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
+{"content": "Hello! 👋 How can I help you today?", "thinking": null, "tool_calls": [], "errors": [], "duration": 7.0, "usage": null, "model": "gpt-oss:20b-cloud", "provider": "ollama", "session": "20260814_192711_hi", "status": "ok"}
+```
 
 ## Machine Access & Permissions
 
@@ -67,7 +105,7 @@ The model can read and search your machine (`read_file`, `list_dir`, `glob`, `gr
 
 ## Sessions
 
-Sessions are complete logs: every message, tool call + result, reasoning (`thinking` metadata), and error is persisted — entries are never removed, not even on compaction. `errors` holds failed provider requests, and `created_at`/`updated_at` track the session lifetime.
+Sessions are complete logs: every message, tool call + result, reasoning (`thinking` metadata), and error is persisted — entries are never removed, not even on compaction. `errors` holds failed provider requests, and `created_at`/`updated_at` track the session lifetime. Both headless modes run the same agent core and session store as the REPL, so conversations are interchangeable across all three.
 
 ## Adding a Provider
 
