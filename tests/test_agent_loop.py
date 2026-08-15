@@ -148,6 +148,23 @@ class TestAgentLoop(unittest.TestCase):
         self.assertNotIn('\033[3J\033[2J\033[H', out.getvalue())
         self.assertIn('REPL.io', out.getvalue())
 
+    def test_banner_shows_version_by_default(self):
+        from replio import get_version
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            with patch('replio.chat.input', side_effect=EOFError):
+                self.chat.run()
+        self.assertIn(f'v{get_version()}', out.getvalue())
+
+    def test_banner_version_omitted_when_disabled(self):
+        from replio import get_version
+        self.chat.config.data['show_version'] = False
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            with patch('replio.chat.input', side_effect=EOFError):
+                self.chat.run()
+        self.assertNotIn(f'v{get_version()}', out.getvalue())
+
 
 if __name__ == '__main__':
     unittest.main()

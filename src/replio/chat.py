@@ -4,6 +4,7 @@ import readline
 from .config import Config
 from .engine import Engine
 from .ui import ReplUI
+from . import get_version
 
 HISTFILE = '.replio_history'
 
@@ -62,7 +63,10 @@ class ChatLoop(Engine):
 
         model_str = self.config.get('model', '?')
         provider_str = self.config.get('provider', '?')
-        print(f'REPL.io ({provider_str}: {model_str})  /help for commands')
+        if self.config.get('show_version', True):
+            print(f'REPL.io v{get_version()} ({provider_str}: {model_str})  /help for commands')
+        else:
+            print(f'REPL.io ({provider_str}: {model_str})  /help for commands')
 
         while True:
             try:

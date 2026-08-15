@@ -84,11 +84,11 @@ replio run --prompt "Hi"
 
 ### API
 
-Server exposes three JSON endpoints — `POST /chat` (`{"prompt": ...}`, optionally `{"session_id": ...}`) returns the same turn result as the CLI, `GET /sessions` lists saved sessions, and `GET /health` is a liveness check.
+Server exposes different JSON endpoints like `POST /chat` (`{"prompt": ...}`, optionally `{"session_id": ...}`) returns the same turn result as the CLI, `GET /sessions` lists saved sessions.
 
 ```bash
 replio serve
-replio serve - http://127.0.0.1:8787 (POST /chat, GET /sessions, GET /health)
+replio serve - http://127.0.0.1:8787 (POST /chat, GET /sessions, GET /health, GET /version)
 [replio] "POST /chat HTTP/1.1" 200 -
 ```
 

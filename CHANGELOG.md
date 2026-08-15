@@ -2,6 +2,7 @@
 
 ## v0.12.0
 
+- REPL banner shows the version — `REPL.io v0.12.0 (provider: model)` on startup; gated by `show_version` config (default `true`), toggleable via `/config show_version false`
 - `GET /version` endpoint — the serve API exposes the installed version as `{"version": ...}`, alongside `/health` and `/sessions`
 - `/version` slash command (alias `/v`) — prints `REPL.io <version>` in the REPL; version lookup centralized in `replio.get_version()` and shared with the CLI `--version` flag
 - `--version` / `-v` CLI flag — `replio --version` prints the installed version (from package metadata) and exits

@@ -52,7 +52,7 @@ repl.io/
 │   ├── engine.py            # Headless agent core — Engine + TurnResult
 │   ├── chat.py              # ChatLoop(Engine) — REPL shell with readline
 │   ├── ui.py                # UISink — ReplUI / HeadlessUI / NullUI renderers
-│   ├── server.py            # stdlib HTTP JSON API (POST /chat, GET /sessions, GET /health)
+│   ├── server.py            # stdlib HTTP JSON API (POST /chat, GET /sessions, GET /health, GET /version)
 │   ├── providers/
 │   │   ├── __init__.py
 │   │   ├── base.py          # Abstract provider (OpenAI-compatible)
@@ -165,10 +165,17 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
   "max_tokens": 0,
   "system_prompt": "",
   "tool_calling": true,
+  "tool_status_visible": true,
   "tool_analysis": false,
   "session_tool_max_chars": 0,
+  "query_refine": false,
+  "query_refine_min_words": 3,
+  "query_refine_context": 4,
+  "show_thinking": true,
+  "markdown_streaming": false,
   "show_context_size": true,
   "clear_screen": true,
+  "show_version": true,
   "compact_keep": 4,
   "noise_tools": ["fetch_page"],
   "web_search": false,

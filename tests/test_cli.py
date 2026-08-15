@@ -7,6 +7,8 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from replio.cli import cmd_run
+from replio.main import main
+from replio import get_version
 
 
 def _factory(rounds):
@@ -114,6 +116,25 @@ class TestCliRun(unittest.TestCase):
         self.assertEqual(rc, 0)
         data = json.loads(out)
         self.assertEqual(len(data['tool_calls']), 1)
+
+
+class TestCliVersion(unittest.TestCase):
+
+    def test_version_long_flag(self):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            with self.assertRaises(SystemExit) as ctx:
+                main(['--version'])
+        self.assertEqual(ctx.exception.code, 0)
+        self.assertIn(get_version(), out.getvalue())
+
+    def test_version_short_flag(self):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            with self.assertRaises(SystemExit) as ctx:
+                main(['-v'])
+        self.assertEqual(ctx.exception.code, 0)
+        self.assertIn(get_version(), out.getvalue())
 
 
 if __name__ == '__main__':
