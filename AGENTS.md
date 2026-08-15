@@ -102,7 +102,7 @@ repl.io/
 - Tools registered via `@tool_registry.register()` decorator (OpenAI function calling format)
 
 ### Doc Conventions
-- `TODO.md` is a **single flat list sorted newest-first** — open `[ ]` and completed `[x]` items are interleaved by recency, so new tasks can be added at the very top without reorganizing. Named subsections appear only for large coherent topics (e.g. `## Plugins`); completed items stay inline as `[x]` and are never moved to an archive.
+- `TODO.md` has three zones. Ideas are plain bullets at the very top (no header, no checkbox — they evolve over time), followed by `## Open` (defined `[ ]` tasks) and `## Done` (`[x]` items, separated by `---`). Within `## Open` and `## Done`, items are sorted newest-first so new tasks are added at the top of their zone without reorganizing; nested sub-bullets are preserved (e.g. machine tools, tool policy). Completed items stay in `## Done` and are never moved to an archive.
 - `CHANGELOG.md` is grouped by **versions**, newest at the top — new `## vX.Y.Z — YYYY-MM-DD` sections go above previous ones, so the latest changes are readable with `head`. Entries under each version form a **single flat bullet list, newest first** (no `### Added`/`### Changed`/`### Removed` grouping).
 - After completing a planned task: mark it `[x]` in `TODO.md` and add entries under the current version section at the top of `CHANGELOG.md` (start a new version section first if none exists).
 - Keep both files in sync with actual project state.

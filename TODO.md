@@ -1,5 +1,6 @@
 # TODO
 
+- Add ReadTheDocs documentation and GitHub Pages website
 - Citations / source attribution — return URL + snippet with every answer
 - Bookmarks — `/bookmark add/remove/list` for session pinning
 - Interactive data analysis — CSV querying, SQL execution, code eval in REPL
@@ -12,6 +13,7 @@
 
 ## Open
 
+- [x] PyPI proper configuration and documentation
 - [ ] Web scraper plugin — full page scraping beyond `fetch_page`'s text extraction (structured content, links)
 - [ ] PDF-to-text converter plugin — extract text from local/remote PDFs
 - [ ] Auditor agents — sub-agents that review/check a produced output (tests, code review, fact-check)
