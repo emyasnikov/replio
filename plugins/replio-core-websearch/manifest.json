@@ -1,0 +1,9 @@
+{
+  "name": "replio-core-websearch",
+  "version": "0.13.0",
+  "description": "Web search (DuckDuckGo) and page fetching — bundled with replio",
+  "replio_version": ">=0.13.0,<1.0",
+  "python": ">=3.10",
+  "entry": "plugin.py",
+  "provides": {"tools": ["web_search", "fetch_page"], "providers": [], "commands": []}
+}

@@ -72,6 +72,12 @@ def register_tools(registry):
         return 'secret'
 '''
 
+SERVICE_PLUGIN = '''
+def register_services(services):
+    services['greet'] = lambda: 'hello from service'
+'''
+
+
 SIMPLE_MANIFEST = {
     'name': 'hello',
     'version': '1.2.3',
@@ -118,6 +124,8 @@ class PluginTestBase(unittest.TestCase):
         self.root = Path(self.tmp.name)
         self.plugins_dir = self.root / '.replio' / 'plugins'
         self.plugins_dir.mkdir(parents=True, exist_ok=True)
+        with open(self.root / '.replio' / 'config.json', 'w') as f:
+            json.dump({'plugins': []}, f)
         self.config = Config(path=self.root)
         self.pm = PluginManager(self.config)
 
@@ -125,9 +133,11 @@ class PluginTestBase(unittest.TestCase):
         self.tmp.cleanup()
 
     def make_pm(self, config_data=None):
+        data = {'plugins': []}
         if config_data:
-            with open(self.root / '.replio' / 'config.json', 'w') as f:
-                json.dump(config_data, f)
+            data.update(config_data)
+        with open(self.root / '.replio' / 'config.json', 'w') as f:
+            json.dump(data, f)
         self.config = Config(path=self.root)
         return PluginManager(self.config)
 
@@ -208,23 +218,31 @@ class TestCompatibility(PluginTestBase):
         self.assertEqual(self.pm.get('py').status, 'incompatible')
 
 
-class TestEnableDeny(PluginTestBase):
+class TestPluginsConfig(PluginTestBase):
 
-    def test_deny_list(self):
+    def test_allowlist(self):
         write_plugin(self.plugins_dir, 'a', SIMPLE_TOOL_PLUGIN, {'name': 'a'})
         write_plugin(self.plugins_dir, 'b', SIMPLE_TOOL_PLUGIN, {'name': 'b'})
-        pm = self.make_pm({'plugins.deny': ['a']})
+        pm = self.make_pm({'plugins': ['b']})
         pm.load()
         self.assertEqual(pm.get('a').status, 'disabled')
         self.assertEqual(pm.get('b').status, 'loaded')
 
-    def test_enabled_allowlist(self):
+    def test_empty_means_all(self):
         write_plugin(self.plugins_dir, 'a', SIMPLE_TOOL_PLUGIN, {'name': 'a'})
         write_plugin(self.plugins_dir, 'b', SIMPLE_TOOL_PLUGIN, {'name': 'b'})
-        pm = self.make_pm({'plugins.enabled': ['b']})
+        pm = self.make_pm({'plugins': []})
         pm.load()
-        self.assertEqual(pm.get('a').status, 'disabled')
+        self.assertEqual(pm.get('a').status, 'loaded')
         self.assertEqual(pm.get('b').status, 'loaded')
+
+    def test_legacy_enabled_deny_migrated(self):
+        write_plugin(self.plugins_dir, 'a', SIMPLE_TOOL_PLUGIN, {'name': 'a'})
+        write_plugin(self.plugins_dir, 'b', SIMPLE_TOOL_PLUGIN, {'name': 'b'})
+        pm = self.make_pm({'plugins.enabled': ['a'], 'plugins.deny': ['b']})
+        pm.load()
+        self.assertEqual(pm.get('a').status, 'loaded')
+        self.assertEqual(pm.get('b').status, 'disabled')
 
 
 class TestEntryErrors(PluginTestBase):
@@ -270,6 +288,12 @@ class TestRegistration(PluginTestBase):
         classes = self.pm.provider_classes()
         self.assertIn('myprovider', classes)
         self.assertEqual(classes['myprovider'].DEFAULT_MODEL, 'my-model')
+
+    def test_register_services_hook(self):
+        write_plugin(self.plugins_dir, 'svc', SERVICE_PLUGIN, {'name': 'svc'})
+        self.pm.load()
+        self.assertEqual(self.pm.service('greet')(), 'hello from service')
+        self.assertIsNone(self.pm.service('nonexistent'))
 
     def test_register_commands_hook(self):
         write_plugin(self.plugins_dir, 'cmd', COMMAND_PLUGIN, {'name': 'cmd'})

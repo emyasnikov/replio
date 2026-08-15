@@ -140,10 +140,11 @@ class TestCliPlugins(unittest.TestCase):
             rc = cmd_plugins(args)
         return rc, out.getvalue(), err.getvalue()
 
-    def test_plugins_list_empty(self):
+    def test_plugins_list_shows_bundled(self):
         rc, out, _ = self._capture(self._args())
         self.assertEqual(rc, 0)
-        self.assertIn('no plugins installed', out)
+        self.assertIn('replio-core-websearch', out)
+        self.assertIn('bundled', out)
 
     def test_plugins_install_list_uninstall(self):
         src = Path(self.path) / 'src_plugin'

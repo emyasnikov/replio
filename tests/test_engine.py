@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 from replio.config import Config
 from replio.engine import Engine
+from replio.plugins.manager import PluginManager
 from replio.sessions.manager import SessionManager
 from replio.ui import HeadlessUI
 
@@ -36,6 +37,8 @@ def make_engine(config_data: dict | None = None) -> Engine:
     engine.sessions = SessionManager(sessions_dir)
     engine.current_session = engine.sessions.create()
     engine._tool_registry = None
+    engine._plugin_manager = PluginManager(config)
+    engine._plugin_manager.load()
     engine._tmp = temp_dir
     return engine
 

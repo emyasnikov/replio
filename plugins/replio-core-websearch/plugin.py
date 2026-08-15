@@ -1,6 +1,8 @@
-import json
-from html.parser import HTMLParser
 import re
+from html.parser import HTMLParser
+
+import search
+import display
 
 
 class _TextExtractor(HTMLParser):
@@ -40,10 +42,25 @@ class _TextExtractor(HTMLParser):
         return text.strip()
 
 
-def register_tools(registry):
-    from ..web.search import search as web_search_fn
-    from ..web.display import format_context
+class _SearchService:
+    def search(self, query: str, num: int = 5) -> list[dict]:
+        return search.search(query, num)
 
+    def display(self, query: str, results: list[dict]) -> str:
+        return display.format_results(query, results)
+
+    def context(self, query: str, results: list[dict]) -> str:
+        return display.format_context(query, results)
+
+
+SERVICE = _SearchService()
+
+
+def register_services(services):
+    services['search'] = SERVICE
+
+
+def register_tools(registry):
     @registry.register(
         name='web_search',
         description='Search the web for current information. Use this to find recent news, facts, documentation, and any information that may be time-sensitive or outside the model\'s training data.',
@@ -64,10 +81,10 @@ def register_tools(registry):
         short='Search the web',
     )
     def web_search(query: str) -> str:
-        results = web_search_fn(query)
+        results = SERVICE.search(query)
         if not results:
             return 'No search results found.'
-        return format_context(query, results)
+        return SERVICE.context(query, results)
 
     @registry.register(
         name='fetch_page',

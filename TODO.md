@@ -17,7 +17,7 @@
 
 ## Open
 
-- [ ] Migrate `web_search`/`fetch_page` out of the core into an external plugin — web tools become optional, activated via `plugins.enabled`
+- [ ] Externalize the bundled plugins (`replio-core-websearch`/`fs`/`exec`) into separate versioned repositories — the bundled copies stay the shipped defaults; global/local plugins of the same name already override them
 - [ ] PyPI plugin source — discover installed plugin packages via `importlib.metadata` entry points (`replio.plugins` group)
 - [ ] Shared plugin virtualenv — one venv for all plugin dependencies, injected at import
 - [ ] Per-plugin virtualenv isolation — `~/.config/replio/plugins/<name>/.venv`; loader injects its site-packages at import (strongest dependency separation)
@@ -63,6 +63,11 @@
 
 ## Done
 
+- [x] Built-in web + machine features moved to bundled plugins (`plugins/`, shipped as `replio.plugins.bundled`) — `replio-core-websearch` (web_search, fetch_page + search service), `replio-core-fs` (read_file, list_dir, write_file, glob, grep), `replio-core-exec` (run_command); packaged via `package-dir` mapping so the repo-root `plugins/` folder is canonical
+  - [x] Discovery precedence bundled < global < local; `PluginInfo.origin` (`bundled`/`global`/`local`); bundled plugins cannot be updated/uninstalled (disable instead)
+  - [x] `register_services` entry hook — `replio-core-websearch` powers the `web_search: true` search-then-answer mode (`engine._perform_search` routes through the `search` service)
+  - [x] `plugins` config list replaces `plugins.enabled`/`plugins.deny` (auto-migrated); default config lists the bundled plugins so they are active out of the box; empty = all load
+  - [x] `tests/test_bundled_plugins.py` (10 tests); web/machine test files reworked to load bundled plugins
 - [x] Plugin system — directory-based external plugins for tools, providers, and commands
   - [x] `PluginManager` (`src/replio/plugins/`) — discovery from `~/.config/replio/plugins/` and `.replio/plugins/` (local wins), manifest parse + `replio_version`/`python` compat ranges, single entry-module import, per-plugin load status
   - [x] Tools as installable plugins — `register_tools(registry)` hook; plugin tools inherit tool policy, `/tool`, `/help`, refinement, and session logging
@@ -70,7 +75,7 @@
   - [x] Commands as installable plugins — `register_commands(commands)` hook, registered after builtins at engine init
   - [x] Plugin manifest + docs — `docs/plugins.md` (schema, compatibility contract, security, future paths)
   - [x] Optional per-plugin dependencies — manifest `requires`; imported lazily inside plugin functions so the core stays stdlib-only; `--deps` pip-installs them
-  - [x] Activation via config — `plugins.enabled` allowlist (empty = all) + `plugins.deny` blocklist
+  - [x] Activation via config — `plugins` list (bundled plugins in the default; empty = all); enable/disable/install/uninstall maintain it
   - [x] `/plugins` command — list/detail/enable/disable/install/update/uninstall with plugin-name tab completion
   - [x] `replio plugins` CLI — `list`/`install`/`update`/`uninstall` headless management
   - [x] `tests/test_plugins.py` (30 tests)

@@ -30,6 +30,9 @@ class TestToolCalling(unittest.TestCase):
     def _tool_msgs(self):
         return [m for m in self.chat.current_session.messages if m['role'] == 'tool']
 
+    def _search_service(self):
+        return self.chat._plugin_manager.service('search')
+
     def test_single_tool_then_final(self):
         self.chat.provider.chat.side_effect = [
             [{'type': 'tool_calls', 'tool_calls': self._make_tool_call()}],
@@ -38,7 +41,7 @@ class TestToolCalling(unittest.TestCase):
                 {'type': 'done', 'reason': 'stop'},
             ],
         ]
-        with patch('replio.web.search.search', return_value=[
+        with patch.object(self._search_service(), 'search', return_value=[
             {'title': 'T', 'url': 'http://x.com', 'snippet': 'S'}
         ]):
             self._run()
@@ -61,7 +64,7 @@ class TestToolCalling(unittest.TestCase):
                 {'type': 'done', 'reason': 'stop'},
             ],
         ]
-        with patch('replio.web.search.search', return_value=[
+        with patch.object(self._search_service(), 'search', return_value=[
             {'title': 'T', 'url': 'http://x.com', 'snippet': 'S'}
         ]):
             self._run()
@@ -96,7 +99,7 @@ class TestToolCalling(unittest.TestCase):
                 {'type': 'done', 'reason': 'stop'},
             ],
         ]
-        with patch('replio.web.search.search', return_value=[
+        with patch.object(self._search_service(), 'search', return_value=[
             {'title': 'T', 'url': 'http://x.com', 'snippet': 'S'}
         ]) as search_mock:
             self._run()

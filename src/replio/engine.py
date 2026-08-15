@@ -345,11 +345,15 @@ class Engine:
         return content or None
 
     def _perform_search(self, query: str, silent: bool = False) -> str | None:
-        from .web.search import search as web_search
-        from .web.display import format_results, format_context
+        pm = getattr(self, '_plugin_manager', None)
+        service = pm.service('search') if pm is not None else None
+        if service is None:
+            if not silent:
+                self.ui.info('(web search unavailable — replio-core-websearch plugin not loaded)')
+            return None
 
         num = self.config.get('search_results', 5)
-        results = web_search(query, num)
+        results = service.search(query, num)
 
         if not results:
             if not silent:
@@ -358,9 +362,9 @@ class Engine:
 
         if not silent:
             self.ui.info('')
-            self.ui.info(format_results(query, results))
+            self.ui.info(service.display(query, results))
 
-        return format_context(query, results)
+        return service.context(query, results)
 
     def _init_tooling(self):
         if not self.config.get('tool_calling'):
@@ -368,12 +372,8 @@ class Engine:
             self._tool_policy = None
             return None
         from .tools.registry import ToolRegistry
-        from .tools.builtins import register_tools
-        from .tools.machine import register_machine_tools
         from .tools.policy import ToolPolicy
         self._tool_registry = ToolRegistry()
-        register_tools(self._tool_registry)
-        register_machine_tools(self._tool_registry)
         plugin_manager = getattr(self, '_plugin_manager', None)
         if plugin_manager is not None:
             plugin_manager.register_tools(self._tool_registry)

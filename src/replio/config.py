@@ -36,8 +36,7 @@ DEFAULT_CONFIG = {
         'bash': 'ask',
         'web': 'allow',
     },
-    'plugins.enabled': [],
-    'plugins.deny': [],
+    'plugins': ['replio-core-websearch', 'replio-core-fs', 'replio-core-exec'],
 }
 
 
@@ -56,6 +55,19 @@ class Config:
             if p.exists():
                 with open(p) as f:
                     self.data.update(json.load(f))
+        self._migrate()
+
+    def _migrate(self):
+        if 'plugins.enabled' in self.data or 'plugins.deny' in self.data:
+            plugins = list(self.data.get('plugins') or DEFAULT_CONFIG['plugins'])
+            enabled = self.data.pop('plugins.enabled', None)
+            denied = self.data.pop('plugins.deny', None)
+            if enabled is not None:
+                plugins = [str(n) for n in enabled] if enabled else []
+            if denied:
+                blocked = set(str(n) for n in denied)
+                plugins = [n for n in plugins if n not in blocked]
+            self.data['plugins'] = plugins
 
     def reload(self):
         self.data = copy.deepcopy(DEFAULT_CONFIG)

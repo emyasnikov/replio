@@ -23,7 +23,7 @@ The agentic core has three layers:
    - `tool_calls` — append the assistant message, execute each call, append `tool` results, then continue the loop
    - `error` — record + print and bail
    - `done` — persist the assistant message (timestamp/duration/model) and stop
-   
+
    One stream, one round trip when no tools are used. `chat_nonstreaming()` is reserved for query refinement, not the main path. The loop is front-end agnostic: `ChatLoop` (REPL), `replio run` (CLI), and `replio serve` (HTTP) all call `Engine.chat(text) -> TurnResult`. The `<thinking>` marker split lives in the engine so thinking stays separate from content.
 
 2. **ToolRegistry** (`tools/registry.py`) — the **single dispatch point**. The model invokes tools via OpenAI function calling; slash commands are thin wrappers that call the same `execute()`. The loop never special-cases tool names — per-tool behavior comes from registration metadata (`refine`, later `confirm`).
@@ -67,19 +67,17 @@ repl.io/
 │   ├── tools/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Tool registration + dispatch (OpenAI function calling)
-│   │   ├── policy.py        # ToolPolicy — allow/ask/deny permissions + path scoping
-│   │   ├── builtins.py      # web_search, fetch_page tools
-│   │   └── machine.py       # read_file, list_dir, write_file, run_command, glob, grep tools
+│   │   └── policy.py        # ToolPolicy — allow/ask/deny permissions + path scoping
 │   ├── plugins/
 │   │   ├── __init__.py
 │   │   └── manager.py       # PluginManager — discovery, manifest/compat, install/update/uninstall
-│   ├── web/
-│   │   ├── __init__.py
-│   │   ├── search.py        # DuckDuckGo Lite search via html.parser
-│   │   └── display.py       # Terminal formatting + context injection
 │   └── utils/
 │       ├── __init__.py
 │       └── http.py          # urllib-based SSE streaming
+└── plugins/                 # bundled plugins (shipped as replio.plugins.bundled)
+    └── replio-core-exec/        # run_command
+    ├── replio-core-fs/          # read_file, list_dir, write_file, glob, grep
+    ├── replio-core-websearch/   # web_search, fetch_page + search service
 ```
 
 ## Conventions
@@ -145,10 +143,11 @@ repl.io/
 ### Adding a Plugin
 Plugins are external repositories — never modify the core to add optional functionality:
 1. Create a plugin directory with a `manifest.json` (`name`, `version`, `replio_version` semver range, `python` range, `entry` default `plugin.py`, `requires` third-party deps, `provides`) and an entry module
-2. The entry module may define `register_tools(registry)`, `register_providers(providers: dict)`, and `register_commands(commands)` — same decorators as core builtins
+2. The entry module may define `register_tools(registry)`, `register_providers(providers: dict)`, `register_commands(commands)`, and `register_services(services)` — same decorators as core builtins
 3. Import third-party deps lazily **inside** tool functions; the core never imports them
-4. Install via `/plugins install <git-url|path>` or `replio plugins install`; activate via `plugins.enabled`/`plugins.deny`
+4. Install via `/plugins install <git-url|path>` or `replio plugins install`; activation is the `plugins` config list (empty = all), and `install`/`uninstall`/`enable`/`disable` maintain it automatically
 5. See `docs/plugins.md` for the full manifest schema, compatibility contract, and management commands
+6. Bundled plugins live in the repo `plugins/` dir (shipped as `replio.plugins.bundled`) — add a new bundled plugin there + to the `plugins` config default, never to the core
 
 ### Future: Plugin sources
 Plugins currently install from git URLs or local paths into the plugin roots. Shared/per-plugin virtualenv dependency isolation and a PyPI entry-point source are planned future work (see TODO).
@@ -161,10 +160,10 @@ Plugins currently install from git URLs or local paths into the plugin roots. Sh
 - **Phase 3** — Personas (`/agent` with per-agent prompt, sessions, model)
 - **Phase 4** — Delegation (`delegate` tool → sub-agent loops; team orchestration)
 - **Phase 5** — Plugins (tools + providers + commands installable, directory-based) ✅
-  - `PluginManager` discovers plugins in `~/.config/replio/plugins/` and `.replio/plugins/` (local wins), validates the manifest (`replio_version`/`python` ranges), imports entry modules once, and hooks tools/providers/commands into the live registries
-  - Management: `/plugins` and `replio plugins` — `install`/`update`/`uninstall`/`enable`/`disable`; activation via `plugins.enabled`/`plugins.deny` config
+  - `PluginManager` discovers plugins in bundled `replio.plugins.bundled`, `~/.config/replio/plugins/`, and `.replio/plugins/` (local wins), validates the manifest (`replio_version`/`python` ranges), imports entry modules once, and hooks tools/providers/commands/services into the live registries
+  - Management: `/plugins` and `replio plugins` — `install`/`update`/`uninstall`/`enable`/`disable`; activation via the `plugins` config list (empty = all)
   - Plugin third-party deps are lazy (imported inside plugin functions) — the core stays stdlib-only
-  - Future: per-plugin venv isolation, PyPI entry-point source, migrating `web_search`/`fetch_page` to external plugins
+  - Built-in web + machine tools ship as bundled plugins (`replio-core-websearch`, `replio-core-fs`, `replio-core-exec`); future: per-plugin venv isolation, PyPI entry-point source, externalizing the bundled plugins
 
 Implement one phase at a time. Docs-first: restructure planning docs, then build the phase, mark it `[x]`, and log it in `CHANGELOG.md`.
 
@@ -204,12 +203,11 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
     "bash": "ask",
     "web": "allow"
   },
-  "plugins.enabled": [],
-  "plugins.deny": []
+  "plugins": ["replio-core-websearch", "replio-core-fs", "replio-core-exec"]
 }
 ```
 
-`max_tokens` defaults to `0` = unset (omitted from the provider payload, so the provider's own default applies). Set a positive value to re-enable a cap; hitting it prints a warning and logs a session `errors` entry. `plugins.enabled` empty = all installed plugins load; `plugins.deny` always excludes by name.
+`max_tokens` defaults to `0` = unset (omitted from the provider payload, so the provider's own default applies). Set a positive value to re-enable a cap; hitting it prints a warning and logs a session `errors` entry. `plugins` lists the plugins to load (the bundled plugins are in the default); empty = all discovered plugins load. `plugins.enabled`/`plugins.deny` from earlier versions are migrated automatically.
 
 ## Testing
 
@@ -259,4 +257,3 @@ A `command` message with a `result` is a compaction record: `result` holds the s
 ```
 
 `tool` messages carry the originating `tool` name (used to identify `noise_tools` at persistence time) and an optional `analysis` insight. The provider payload is prepared by `_provider_messages()` — `command` role messages are dropped, compaction records become `system` summaries, and dangling tool messages (e.g. at a `compact_from` boundary) are skipped.
-

@@ -2,8 +2,9 @@ import unittest
 import tempfile
 from pathlib import Path
 
+from replio.config import Config
+from replio.plugins.manager import PluginManager
 from replio.tools.registry import ToolRegistry
-from replio.tools.machine import register_machine_tools
 
 
 class TestMachineTools(unittest.TestCase):
@@ -11,11 +12,15 @@ class TestMachineTools(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
+        self._cfg_tmp = tempfile.TemporaryDirectory()
+        self.pm = PluginManager(Config(path=self._cfg_tmp.name))
+        self.pm.load()
         self.registry = ToolRegistry()
-        register_machine_tools(self.registry)
+        self.pm.register_tools(self.registry)
 
     def tearDown(self):
         self._tmp.cleanup()
+        self._cfg_tmp.cleanup()
 
     def run_tool(self, name, **args):
         return self.registry.execute(name, args)

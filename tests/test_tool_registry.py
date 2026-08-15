@@ -1,14 +1,22 @@
+import tempfile
 import unittest
 
+from replio.config import Config
+from replio.plugins.manager import PluginManager
 from replio.tools.registry import ToolRegistry
-from replio.tools.builtins import register_tools
 
 
 class TestToolRegistry(unittest.TestCase):
 
     def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.pm = PluginManager(Config(path=self._tmp.name))
+        self.pm.load()
         self.registry = ToolRegistry()
-        register_tools(self.registry)
+        self.pm.register_tools(self.registry)
+
+    def tearDown(self):
+        self._tmp.cleanup()
 
     def test_web_search_requires_refine(self):
         self.assertTrue(self.registry.refine_required('web_search'))
@@ -25,7 +33,9 @@ class TestToolRegistry(unittest.TestCase):
 
     def test_schema(self):
         names = [s['function']['name'] for s in self.registry.schema()]
-        self.assertEqual(names, ['web_search', 'fetch_page'])
+        self.assertEqual(names, ['run_command', 'read_file', 'list_dir',
+                                 'write_file', 'glob', 'grep',
+                                 'web_search', 'fetch_page'])
 
     def test_custom_refine_metadata(self):
         reg = ToolRegistry()

@@ -19,6 +19,9 @@ class TestToolCommand(unittest.TestCase):
             self.chat.registry.dispatch(line)
         return out.getvalue()
 
+    def _search_service(self):
+        return self.chat._plugin_manager.service('search')
+
     def test_tool_lists_names_without_args(self):
         output = self._dispatch('/tool')
         self.assertIn('web_search', output)
@@ -203,7 +206,7 @@ class TestToolCommand(unittest.TestCase):
             other._tmp.cleanup()
 
     def test_tool_executes_via_registry(self):
-        with patch('replio.web.search.search', return_value=[
+        with patch.object(self._search_service(), 'search', return_value=[
             {'title': 'T', 'url': 'http://x.com', 'snippet': 'S'}
         ]) as search_mock:
             output = self._dispatch('/tool web_search {"query": "python news"}')
@@ -238,7 +241,7 @@ class TestToolCommand(unittest.TestCase):
 
     def test_tool_ask_prompt_accepted(self):
         self.chat.config.set('tool_permission', {'web': 'ask'})
-        with patch('replio.web.search.search', return_value=[
+        with patch.object(self._search_service(), 'search', return_value=[
             {'title': 'T', 'url': 'http://x.com', 'snippet': 'S'}
         ]), patch('replio.ui.input', return_value='y'):
             output = self._dispatch('/tool web_search {"query": "python"}')

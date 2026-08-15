@@ -21,4 +21,4 @@ Tool execution (`run_command`) runs with the permissions of the launching user. 
 
 ## Plugins
 
-Plugins are arbitrary Python code from the plugin roots (`~/.config/replio/plugins/`, `.replio/plugins/`) and run with the permissions of the launching user. Only install plugins you trust; review a plugin's source before installing it. The core itself stays zero-dependency — plugin third-party packages are only imported when their tools are actually called.
+Plugins are arbitrary Python code from the plugin roots (bundled `replio.plugins.bundled`, `~/.config/replio/plugins/`, `.replio/plugins/`) and run with the permissions of the launching user. Only install plugins you trust; review a plugin's source before installing it. The core itself stays zero-dependency — plugin third-party packages are only imported when their tools are actually called.

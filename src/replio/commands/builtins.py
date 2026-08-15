@@ -366,8 +366,7 @@ def _render_plugins(pm):
         print('  Install one from a git URL or local path: /plugins install <source>')
         return
     for info in infos:
-        loc = 'global' if info.global_ else 'local'
-        parts = [f'{info.name} v{info.version}', loc, info.status]
+        parts = [f'{info.name} v{info.version}', info.origin, info.status]
         if info.error:
             parts.append(info.error)
         if info.requires:
@@ -379,6 +378,7 @@ def _render_plugins(pm):
 
 def _render_plugin_detail(pm, info):
     print(f'{info.name} v{info.version} ({info.status})')
+    print(f'  origin: {info.origin}')
     print(f'  description: {info.description or "(none)"}')
     print(f'  source: {info.source or "(none)"}')
     print(f'  entry: {info.entry}')
@@ -404,20 +404,16 @@ def _toggle_plugin(chat, pm, name, action):
     if info is None:
         print(f'Plugin not installed: {name}')
         return
-    enabled = list(chat.config.get('plugins.enabled') or [])
-    denied = list(chat.config.get('plugins.deny') or [])
+    plugins = [str(n) for n in (chat.config.get('plugins') or [])]
     if action == 'enable':
-        if name in denied:
-            denied.remove(name)
-        if enabled and name not in enabled:
-            enabled.append(name)
+        if name not in plugins:
+            plugins.append(name)
         print(f'Plugin {name} enabled (applies on next start)')
     else:
-        if name not in denied:
-            denied.append(name)
+        if name in plugins:
+            plugins.remove(name)
         print(f'Plugin {name} disabled (applies on next start)')
-    chat.config.set('plugins.enabled', enabled)
-    chat.config.set('plugins.deny', denied)
+    chat.config.set('plugins', plugins)
 
 
 def _install_plugin(chat, pm, rest):
@@ -433,6 +429,10 @@ def _install_plugin(chat, pm, rest):
     except PluginError as e:
         print(f'Error installing plugin: {e}')
         return
+    plugins = [str(n) for n in (chat.config.get('plugins') or [])]
+    if info.name not in plugins:
+        plugins.append(info.name)
+        chat.config.set('plugins', plugins)
     print(f'Installed {info.name} v{info.version} — restart to activate')
     if info.status in ('incompatible', 'error', 'disabled'):
         print(f'  {info.status}: {info.error or "not loaded"}')
@@ -458,8 +458,6 @@ def _uninstall_plugin(chat, pm, name):
     except PluginError as e:
         print(f'Error uninstalling plugin: {e}')
         return
-    enabled = [n for n in (chat.config.get('plugins.enabled') or []) if n != name]
-    denied = [n for n in (chat.config.get('plugins.deny') or []) if n != name]
-    chat.config.set('plugins.enabled', enabled)
-    chat.config.set('plugins.deny', denied)
+    plugins = [n for n in (chat.config.get('plugins') or []) if n != name]
+    chat.config.set('plugins', plugins)
     print(f'Uninstalled plugin: {name}')

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "replio"
-version = "0.12.0"
+version = "0.13.0"
 description = "A lightweight agentic tooling core with API, CLI and REPL interfaces"
 requires-python = ">=3.10"
 authors = [{name = "Contributors"}]
@@ -21,5 +21,18 @@ Repository = "https://github.com/emyasnikov/replio"
 Issues = "https://github.com/emyasnikov/replio/issues"
 Changelog = "https://github.com/emyasnikov/replio/blob/main/CHANGELOG.md"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+package-dir = {"" = "src", "replio.plugins.bundled" = "plugins"}
+packages = [
+  "replio",
+  "replio.providers",
+  "replio.sessions",
+  "replio.commands",
+  "replio.tools",
+  "replio.plugins",
+  "replio.plugins.bundled",
+  "replio.utils",
+]
+
+[tool.setuptools.package-data]
+"replio.plugins.bundled" = ["*/*.py", "*/*.json"]

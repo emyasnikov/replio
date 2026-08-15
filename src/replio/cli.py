@@ -57,8 +57,7 @@ def cmd_plugins(args) -> int:
             print('(no plugins installed)')
             return 0
         for info in infos:
-            loc = 'global' if info.global_ else 'local'
-            parts = [f'{info.name} v{info.version}', loc, info.status]
+            parts = [f'{info.name} v{info.version}', info.origin, info.status]
             if info.error:
                 parts.append(info.error)
             missing = [p for p, ok in pm.dep_status(info) if not ok]
@@ -70,6 +69,10 @@ def cmd_plugins(args) -> int:
         if args.action == 'install':
             info = pm.install(args.source, global_=getattr(args, 'global_', False),
                               deps=getattr(args, 'deps', False))
+            plugins = [str(n) for n in (config.get('plugins') or [])]
+            if info.name not in plugins:
+                plugins.append(info.name)
+                config.set('plugins', plugins)
             print(f'Installed {info.name} v{info.version} ({info.status})')
             if info.status in ('incompatible', 'error', 'disabled'):
                 print(f'{info.status}: {info.error or "not loaded"}', file=sys.stderr)
@@ -78,6 +81,8 @@ def cmd_plugins(args) -> int:
             print(f'Updated {info.name} to v{info.version} ({info.status})')
         elif args.action == 'uninstall':
             pm.uninstall(args.name)
+            plugins = [n for n in (config.get('plugins') or []) if n != args.name]
+            config.set('plugins', plugins)
             print(f'Uninstalled plugin: {args.name}')
     except PluginError as e:
         print(f'Error: {e}', file=sys.stderr)

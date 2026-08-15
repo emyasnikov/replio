@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.13.0
+
+- **Built-in features ship as bundled plugins** — `web_search`/`fetch_page` and the machine tools (read_file, list_dir, write_file, glob, grep, run_command) moved out of the core (`src/replio/web/`, `tools/builtins.py`, `tools/machine.py` deleted) into three first-party bundled plugins under `plugins/` (shipped as `replio.plugins.bundled`): `replio-core-websearch`, `replio-core-fs`, `replio-core-exec`. Packaged via `package-dir` mapping, so the repo-root `plugins/` directory is the canonical source; discovery adds a bundled root with precedence bundled < global < local (local/global overrides win)
+- **`plugins` config list** — replaces `plugins.enabled`/`plugins.deny` (migrated automatically). The default config lists the bundled plugins so they are active out of the box; empty list = all discovered plugins load; `/plugins enable/disable` and `install`/`uninstall` maintain the list
+- **`register_services` entry hook** — plugins can power core non-tool features. `replio-core-websearch` registers the `search` service backing the `web_search: true` search-then-answer mode (`engine._perform_search` now routes through it and degrades gracefully when the plugin is absent)
+- `PluginInfo.origin` (`bundled`/`global`/`local`) shown in `/plugins` and `replio plugins list`; bundled plugins cannot be `update`d or `uninstall`ed (disable instead)
+- `tests/test_bundled_plugins.py` (10 tests) — bundled discovery, tool registration, search service, bundled uninstall/update blocking, local override, config disable, default-config membership; `test_tool_registry.py`/`test_machine_tools.py`/`test_commands.py`/`test_tool_calling.py`/`test_session_log.py` reworked to load bundled plugins and patch the search service instead of `replio.web.search`
+
 ## v0.12.0 — 2026-08-15
 
 - Plugin system (`src/replio/plugins/`) — external repositories register **tools, providers, and slash commands** without changing the core; `PluginManager` discovers plugins in `~/.config/replio/plugins/` and `.replio/plugins/` (local wins), validates `manifest.json` (`replio_version`/`python` semver ranges), imports entry modules once, and hooks them into the live registries

@@ -18,7 +18,7 @@ class PluginError(Exception):
 class PluginInfo:
     name: str
     directory: Path
-    global_: bool
+    origin: str = 'local'
     version: str = '0.0.0'
     description: str = ''
     entry: str = 'plugin.py'
@@ -29,6 +29,10 @@ class PluginInfo:
     python: str = ''
     status: str = 'loaded'
     error: str = ''
+
+    @property
+    def global_(self):
+        return self.origin == 'global'
 
 
 DEFAULT_PROVIDES = {'tools': [], 'providers': [], 'commands': []}
@@ -91,23 +95,33 @@ def _dep_installed(package: str) -> bool:
 class PluginManager:
     def __init__(self, config: Config):
         self.config = config
+        self.bundled_dir = self._bundled_dir()
         self.global_dir = Path.home() / '.config' / 'replio' / 'plugins'
         self.local_dir = config.local_path.parent / 'plugins'
         self._modules: dict[str, object] = {}
         self._plugins: dict[str, PluginInfo] = {}
         self._provider_classes: dict[str, type] = {}
+        self._services: dict[str, object] = {}
+
+    @staticmethod
+    def _bundled_dir() -> Path:
+        try:
+            from . import bundled
+            return Path(bundled.__path__[0])
+        except Exception:
+            return Path(__file__).resolve().parent / 'bundled'
 
     def load(self):
         self._plugins = {}
         self._modules = {}
         self._provider_classes = {}
-        for base in (self.global_dir, self.local_dir):
+        self._services = {}
+        for base in (self.bundled_dir, self.global_dir, self.local_dir):
             if base.exists():
                 self._discover(base)
-        enabled = [str(n) for n in (self.config.get('plugins.enabled') or [])]
-        denied = set(str(n) for n in (self.config.get('plugins.deny') or []))
+        cfg = [str(n) for n in (self.config.get('plugins') or [])]
         for name, info in list(self._plugins.items()):
-            if name in denied or (enabled and name not in enabled):
+            if cfg and name not in cfg:
                 info.status = 'disabled'
                 continue
             if info.status == 'error':
@@ -116,9 +130,12 @@ class PluginManager:
                 info.status = 'incompatible'
                 continue
             self._import(info)
+        self._collect_services()
 
     def _discover(self, base: Path):
         for entry in sorted(base.iterdir()):
+            if entry.name == '__init__.py':
+                continue
             if entry.is_dir():
                 manifest = entry / 'manifest.json'
                 if not manifest.exists():
@@ -161,7 +178,7 @@ class PluginManager:
         info = PluginInfo(
             name=name,
             directory=directory,
-            global_=directory.is_relative_to(self.global_dir),
+            origin=self._origin(directory),
             version=str(data.get('version') or '0.0.0'),
             description=str(data.get('description') or ''),
             entry=str(data.get('entry') or 'plugin.py'),
@@ -175,6 +192,13 @@ class PluginManager:
             info.status = 'error'
             info.error = error
         return info
+
+    def _origin(self, directory: Path) -> str:
+        if directory.is_relative_to(self.bundled_dir):
+            return 'bundled'
+        if directory.is_relative_to(self.global_dir):
+            return 'global'
+        return 'local'
 
     def _compatible(self, info: PluginInfo) -> bool:
         current = get_version()
@@ -224,6 +248,20 @@ class PluginManager:
             info.status = 'error'
             info.error = str(e)
 
+    def _collect_services(self):
+        for name, module in self._modules.items():
+            if self._plugins[name].status != 'loaded':
+                continue
+            hook = getattr(module, 'register_services', None)
+            if not hook:
+                continue
+            try:
+                hook(self._services)
+            except Exception as e:
+                info = self._plugins[name]
+                info.status = 'error'
+                info.error = f'register_services failed: {e}'
+
     def register_tools(self, registry):
         for name, module in self._modules.items():
             if self._plugins[name].status != 'loaded':
@@ -255,6 +293,12 @@ class PluginManager:
     def provider_classes(self) -> dict[str, type]:
         return dict(self._provider_classes)
 
+    def service(self, name: str):
+        return self._services.get(name)
+
+    def module(self, name: str):
+        return self._modules.get(name)
+
     def status(self) -> list[PluginInfo]:
         return list(self._plugins.values())
 
@@ -281,6 +325,9 @@ class PluginManager:
         info = self._plugins.get(name)
         if info is None:
             raise PluginError(f'plugin not installed: {name}')
+        if info.origin == 'bundled':
+            raise PluginError(
+                f'{name} is bundled with replio — disable it with /plugins disable instead of updating')
         if not info.source:
             raise PluginError(f'plugin {name} has no recorded source to update from')
         if self._is_url(info.source):
@@ -306,6 +353,9 @@ class PluginManager:
         info = self._plugins.get(name)
         if info is None:
             raise PluginError(f'plugin not installed: {name}')
+        if info.origin == 'bundled':
+            raise PluginError(
+                f'{name} is bundled with replio — disable it with /plugins disable instead of uninstalling')
         if info.directory.exists():
             shutil.rmtree(info.directory)
         self.load()

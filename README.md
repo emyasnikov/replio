@@ -93,7 +93,7 @@ curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
 
 ## Roadmap
 
-Personas and delegation are planned next. The directory-based plugin system is in place — see [docs/plugins.md](docs/plugins.md) for building and managing plugins. Open tasks live in [TODO.md](TODO.md).
+Personas and delegation are planned next. The plugin system is in place (web and machine tools now ship as bundled plugins), and third-party plugins install from git or a path. See [docs/plugins.md](docs/plugins.md). Open tasks live in [TODO.md](TODO.md).
 
 ## Contributing
 

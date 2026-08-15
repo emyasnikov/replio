@@ -43,8 +43,7 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `tools.allow`               | `[]`                   | Name-level allowlist; empty means no restriction                       |
 | `tools.deny`                | `[]`                   | Name-level deny list (takes precedence over allow)                     |
 | `tool_permission`           | *(see below)*          | Category permission actions                                            |
-| `plugins.enabled`           | `[]`                   | Plugin allowlist; empty = all installed plugins load                   |
-| `plugins.deny`              | `[]`                   | Plugin deny list (takes precedence)                                    |
+| `plugins`                   | *(bundled)*            | Plugins to load; empty = all discovered plugins load                   |
 
 ### `tool_permission`
 
