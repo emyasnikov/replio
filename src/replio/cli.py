@@ -44,3 +44,42 @@ def cmd_serve(args) -> int:
     finally:
         server.server_close()
     return 0
+
+
+def cmd_plugins(args) -> int:
+    from .plugins.manager import PluginManager, PluginError
+    config = Config(path=getattr(args, 'path', None))
+    pm = PluginManager(config)
+    pm.load()
+    if args.action == 'list':
+        infos = sorted(pm.status(), key=lambda i: i.name)
+        if not infos:
+            print('(no plugins installed)')
+            return 0
+        for info in infos:
+            loc = 'global' if info.global_ else 'local'
+            parts = [f'{info.name} v{info.version}', loc, info.status]
+            if info.error:
+                parts.append(info.error)
+            missing = [p for p, ok in pm.dep_status(info) if not ok]
+            if missing:
+                parts.append('needs: ' + ', '.join(missing))
+            print('  ' + ' — '.join(parts))
+        return 0
+    try:
+        if args.action == 'install':
+            info = pm.install(args.source, global_=getattr(args, 'global_', False),
+                              deps=getattr(args, 'deps', False))
+            print(f'Installed {info.name} v{info.version} ({info.status})')
+            if info.status in ('incompatible', 'error', 'disabled'):
+                print(f'{info.status}: {info.error or "not loaded"}', file=sys.stderr)
+        elif args.action == 'update':
+            info = pm.update(args.name)
+            print(f'Updated {info.name} to v{info.version} ({info.status})')
+        elif args.action == 'uninstall':
+            pm.uninstall(args.name)
+            print(f'Uninstalled plugin: {args.name}')
+    except PluginError as e:
+        print(f'Error: {e}', file=sys.stderr)
+        return 1
+    return 0

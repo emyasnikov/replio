@@ -113,6 +113,10 @@ def register_builtins(registry):
     @registry.register('connect', description='Set up provider connection interactively')
     def connect_cmd(_=None):
         from ..providers import PROVIDERS, detect_provider
+        providers = dict(PROVIDERS)
+        pm = getattr(chat, '_plugin_manager', None)
+        if pm is not None:
+            providers.update(pm.provider_classes())
         print('Setting up provider connection:')
         provider = input(
             f'  Provider [{chat.config.get("provider")}]: '
@@ -127,7 +131,7 @@ def register_builtins(registry):
 
         chat.config.set('base_url', base_url)
         detected = detect_provider(base_url)
-        if detected in PROVIDERS and detected != 'openai-compatible' and detected != provider:
+        if detected in providers and detected != 'openai-compatible' and detected != provider:
             print(f'  Detected provider "{detected}" from base URL — switching')
             provider = detected
         chat.config.set('provider', provider)
@@ -310,3 +314,152 @@ def register_builtins(registry):
             print('Usage: /tool <name> {"key": "value"}')
             return
         print(chat._run_tool(name, arguments))
+
+    @registry.register('plugins', aliases=['plugin'],
+                       description='Manage plugins', subcommands=[
+        ('list', 'List installed plugins'),
+        ('enable', 'Enable a plugin'),
+        ('disable', 'Disable a plugin'),
+        ('install', 'Install a plugin from a git URL or local path'),
+        ('update', 'Update an installed plugin'),
+        ('uninstall', 'Remove an installed plugin'),
+    ])
+    def plugins_cmd(arg=''):
+        from ..plugins.manager import PluginManager, PluginError
+        pm = getattr(chat, '_plugin_manager', None)
+        if pm is None:
+            pm = PluginManager(chat.config)
+            pm.load()
+        parts = arg.strip().split(maxsplit=2)
+        if not arg or (parts and parts[0] == 'list'):
+            _render_plugins(pm)
+            return
+        action = parts[0]
+        if action in ('enable', 'disable'):
+            if len(parts) < 2:
+                print(f'Usage: /plugins {action} <name>')
+                return
+            _toggle_plugin(chat, pm, parts[1], action)
+        elif action == 'install':
+            _install_plugin(chat, pm, parts[1:])
+        elif action == 'update':
+            if len(parts) < 2:
+                print('Usage: /plugins update <name>')
+                return
+            _update_plugin(pm, parts[1])
+        elif action == 'uninstall':
+            if len(parts) < 2:
+                print('Usage: /plugins uninstall <name>')
+                return
+            _uninstall_plugin(chat, pm, parts[1])
+        elif pm.get(action):
+            _render_plugin_detail(pm, pm.get(action))
+        else:
+            print(f'Unknown /plugins action or plugin: {action}')
+            print('Usage: /plugins [list|enable|disable|install|update|uninstall|<name>]')
+
+
+def _render_plugins(pm):
+    infos = sorted(pm.status(), key=lambda i: i.name)
+    if not infos:
+        print('  (no plugins installed)')
+        print('  Install one from a git URL or local path: /plugins install <source>')
+        return
+    for info in infos:
+        loc = 'global' if info.global_ else 'local'
+        parts = [f'{info.name} v{info.version}', loc, info.status]
+        if info.error:
+            parts.append(info.error)
+        if info.requires:
+            missing = [p for p, ok in pm.dep_status(info) if not ok]
+            if missing:
+                parts.append('needs: ' + ', '.join(missing))
+        print('  ' + ' — '.join(parts))
+
+
+def _render_plugin_detail(pm, info):
+    print(f'{info.name} v{info.version} ({info.status})')
+    print(f'  description: {info.description or "(none)"}')
+    print(f'  source: {info.source or "(none)"}')
+    print(f'  entry: {info.entry}')
+    if info.replio_version:
+        print(f'  replio_version: {info.replio_version}')
+    if info.python:
+        print(f'  python: {info.python}')
+    if info.requires:
+        print('  requires:')
+        for pkg, ok in pm.dep_status(info):
+            print(f'    {pkg} — {"installed" if ok else "missing"}')
+    provides = info.provides or {}
+    for kind in ('tools', 'providers', 'commands'):
+        items = provides.get(kind, [])
+        if items:
+            print(f'  {kind}: ' + ', '.join(items))
+    if info.error:
+        print(f'  error: {info.error}')
+
+
+def _toggle_plugin(chat, pm, name, action):
+    info = pm.get(name)
+    if info is None:
+        print(f'Plugin not installed: {name}')
+        return
+    enabled = list(chat.config.get('plugins.enabled') or [])
+    denied = list(chat.config.get('plugins.deny') or [])
+    if action == 'enable':
+        if name in denied:
+            denied.remove(name)
+        if enabled and name not in enabled:
+            enabled.append(name)
+        print(f'Plugin {name} enabled (applies on next start)')
+    else:
+        if name not in denied:
+            denied.append(name)
+        print(f'Plugin {name} disabled (applies on next start)')
+    chat.config.set('plugins.enabled', enabled)
+    chat.config.set('plugins.deny', denied)
+
+
+def _install_plugin(chat, pm, rest):
+    if not rest:
+        print('Usage: /plugins install <git-url|path> [--global] [--deps]')
+        return
+    from ..plugins.manager import PluginError
+    source = rest[0]
+    global_ = '--global' in rest
+    deps = '--deps' in rest
+    try:
+        info = pm.install(source, global_=global_, deps=deps)
+    except PluginError as e:
+        print(f'Error installing plugin: {e}')
+        return
+    print(f'Installed {info.name} v{info.version} — restart to activate')
+    if info.status in ('incompatible', 'error', 'disabled'):
+        print(f'  {info.status}: {info.error or "not loaded"}')
+    if deps and info.requires:
+        for pkg in info.requires:
+            print(f'  dependency installed: {pkg}')
+
+
+def _update_plugin(pm, name):
+    from ..plugins.manager import PluginError
+    try:
+        info = pm.update(name)
+    except PluginError as e:
+        print(f'Error updating plugin: {e}')
+        return
+    print(f'Updated {info.name} to v{info.version} — restart to apply')
+
+
+def _uninstall_plugin(chat, pm, name):
+    from ..plugins.manager import PluginError
+    try:
+        pm.uninstall(name)
+    except PluginError as e:
+        print(f'Error uninstalling plugin: {e}')
+        return
+    enabled = [n for n in (chat.config.get('plugins.enabled') or []) if n != name]
+    denied = [n for n in (chat.config.get('plugins.deny') or []) if n != name]
+    chat.config.set('plugins.enabled', enabled)
+    chat.config.set('plugins.deny', denied)
+    print(f'Uninstalled plugin: {name}')

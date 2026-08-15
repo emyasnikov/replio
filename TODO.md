@@ -17,9 +17,13 @@
 
 ## Open
 
+- [ ] Migrate `web_search`/`fetch_page` out of the core into an external plugin — web tools become optional, activated via `plugins.enabled`
+- [ ] PyPI plugin source — discover installed plugin packages via `importlib.metadata` entry points (`replio.plugins` group)
+- [ ] Shared plugin virtualenv — one venv for all plugin dependencies, injected at import
+- [ ] Per-plugin virtualenv isolation — `~/.config/replio/plugins/<name>/.venv`; loader injects its site-packages at import (strongest dependency separation)
 - [x] PyPI proper configuration and documentation
-- [ ] Web scraper plugin — full page scraping beyond `fetch_page`'s text extraction (structured content, links)
-- [ ] PDF-to-text converter plugin — extract text from local/remote PDFs
+- [ ] Web scraper plugin — full page scraping beyond `fetch_page`'s text extraction (structured content, links), shipped as an external plugin repository
+- [ ] PDF-to-text converter plugin — extract text from local/remote PDFs, shipped as an external plugin repository
 - [ ] Auditor agents — sub-agents that review/check a produced output (tests, code review, fact-check)
 - [ ] Generate → check → correct orchestration — run a main agent, an auditor, and a fix pass in a loop until passing
 - [ ] Custom system prompts per session
@@ -30,21 +34,16 @@
 - [ ] `docs_search` — local grep + DuckDuckGo for documentation lookups
 - [ ] Workspace sessions — tools write into a scoped `--workspace` dir; optional `--git` sync
 - [ ] Deterministic activity lines — typed status lines printed as the loop executes tools, replacing the mechanical `[tool: args]` status
-  - [ ] Six-category glyph set from tool registration metadata (`category` + `status` template): `*` search, `→` read, `←` write/edit, `~` ask, `- [ ]` todo, `$` exec (ask/todo/exec reserved for Phase 2 tools)
+  - [ ] Six-category glyph set from tool registration metadata (`category` + `status` template): `*` search, `→` read, `←` write/edit, `~` ask, `- [ ]` todo, `$` exec (ask/todo/exec reserved for other tools)
   - [ ] OpenCode-style tool call notation as reference: `% WebFetch https://...` — prefix glyph + tool name + key argument
   - [ ] `ToolRegistry.activity(name, args)` returns `(glyph, label)`; the loop renders `  ↳ <glyph> <label>` dimmed — no name special-casing
 - [ ] Spinner — animated `⠧`-style indicator as liveness feedback when narration/thinking is hidden (`show_thinking: false`); folded into `show_thinking`, no new config key; stdlib `threading` daemon, cleared with `\r\033[K`
 - [ ] Activity lines are ephemeral UI — never persisted to session files (tool calls are already recorded there)
 - [ ] Sandboxed exec — namespace/container isolation for `run_command` (documented, planned for a later version)
-- [ ] Per-agent permission profiles — `tool_permission` becomes per-agent when `/agent` personas land (Phase 3)
+- [ ] Per-agent permission profiles — `tool_permission` becomes per-agent when `/agent` personas land
 - [ ] `/agent` personas — per-agent system prompt, session namespace, optional model override
 - [ ] `delegate(persona, task)` tool → sub-agent loop returning a result
 - [ ] PM/dev/tester team orchestration as a user-facing pattern
-- [ ] Directory-based plugin loading (`.replio/plugins/`, `~/.config/replio/plugins/`)
-- [ ] Tools as installable plugins
-- [ ] Providers as installable plugins
-- [ ] Plugin manifest + docs
-- [ ] Optional per-plugin dependencies — manifest declares third-party packages (e.g. `fastapi`, `paho-mqtt`, `onnxruntime`, `ortools`); core stays stdlib-only, deps resolve only when the plugin is used
 - [ ] Headless web API plugin-first — stdlib `http.server` fallback, richer framework (FastAPI) via the dependency plugin
 - [ ] Enterprise plugins (stdlib-first, third-party deps optional):
   - [ ] Data ingestion — `read_stream` / `write_stream` (MQTT, OPC-UA, Modbus)
@@ -64,6 +63,17 @@
 
 ## Done
 
+- [x] Plugin system — directory-based external plugins for tools, providers, and commands
+  - [x] `PluginManager` (`src/replio/plugins/`) — discovery from `~/.config/replio/plugins/` and `.replio/plugins/` (local wins), manifest parse + `replio_version`/`python` compat ranges, single entry-module import, per-plugin load status
+  - [x] Tools as installable plugins — `register_tools(registry)` hook; plugin tools inherit tool policy, `/tool`, `/help`, refinement, and session logging
+  - [x] Providers as installable plugins — `register_providers(providers)` hook merged into the provider registry in `_reinit_provider` and `/connect`
+  - [x] Commands as installable plugins — `register_commands(commands)` hook, registered after builtins at engine init
+  - [x] Plugin manifest + docs — `docs/plugins.md` (schema, compatibility contract, security, future paths)
+  - [x] Optional per-plugin dependencies — manifest `requires`; imported lazily inside plugin functions so the core stays stdlib-only; `--deps` pip-installs them
+  - [x] Activation via config — `plugins.enabled` allowlist (empty = all) + `plugins.deny` blocklist
+  - [x] `/plugins` command — list/detail/enable/disable/install/update/uninstall with plugin-name tab completion
+  - [x] `replio plugins` CLI — `list`/`install`/`update`/`uninstall` headless management
+  - [x] `tests/test_plugins.py` (30 tests)
 - [x] Clear screen on REPL start — `clear_screen` config (default `true`), toggleable via `/config clear_screen false`; clears scrollback + visible screen before the banner
 - [x] `/config` structured values — JSON auto-parse, `-a`/`-r` list add/remove, `reload` from disk, unknown-key y/N confirm
 - [x] `/compact` session summarization — **append-only**: never removes session entries; stores the summary as the `result` of the triggering `command` message with a `compact_from` boundary, trimming only the provider context; prints the generated summary text

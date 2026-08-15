@@ -23,14 +23,34 @@ def _add_run_parser(sub):
     g.add_argument('--no', dest='approve', action='store_false',
                    help='Auto-deny tools that require confirmation (default)')
     p.set_defaults(approve=None)
-    p.add_argument('--path', help='Project path (default: current directory)')
+    p.add_argument('--path', default=argparse.SUPPRESS,
+                   help='Project path (default: current directory)')
 
 
 def _add_serve_parser(sub):
     p = sub.add_parser('serve', help='HTTP JSON API server (stdlib http.server)')
     p.add_argument('--host', default='127.0.0.1')
     p.add_argument('--port', type=int, default=8787)
-    p.add_argument('--path', help='Project path (default: current directory)')
+    p.add_argument('--path', default=argparse.SUPPRESS,
+                   help='Project path (default: current directory)')
+
+
+def _add_plugins_parser(sub):
+    p = sub.add_parser('plugins', help='Manage plugins (list, install, update, uninstall)')
+    p.add_argument('--path', default=argparse.SUPPRESS,
+                   help='Project path (default: current directory)')
+    g = p.add_subparsers(dest='action', required=True)
+    g.add_parser('list', help='List installed plugins')
+    pi = g.add_parser('install', help='Install a plugin from a git URL or local path')
+    pi.add_argument('source', help='Git URL or local path of the plugin')
+    pi.add_argument('--global', dest='global_', action='store_true',
+                    help='Install into the global plugins dir')
+    pi.add_argument('--deps', action='store_true',
+                    help='pip install the plugin\'s declared dependencies')
+    pu = g.add_parser('update', help='Update an installed plugin')
+    pu.add_argument('name', help='Plugin name')
+    pun = g.add_parser('uninstall', help='Remove an installed plugin')
+    pun.add_argument('name', help='Plugin name')
 
 
 def _version():
@@ -47,6 +67,7 @@ def main(argv=None):
     sub = parser.add_subparsers(dest='command')
     _add_run_parser(sub)
     _add_serve_parser(sub)
+    _add_plugins_parser(sub)
     args = parser.parse_args(argv)
 
     if args.command == 'run':
@@ -55,6 +76,9 @@ def main(argv=None):
     if args.command == 'serve':
         from .cli import cmd_serve
         return cmd_serve(args)
+    if args.command == 'plugins':
+        from .cli import cmd_plugins
+        return cmd_plugins(args)
 
     config = Config(path=args.path)
     chat = ChatLoop(config)

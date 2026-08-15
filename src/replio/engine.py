@@ -6,6 +6,7 @@ from .config import Config
 from .sessions.manager import SessionManager
 from .commands.registry import CommandRegistry
 from .commands.builtins import register_builtins
+from .plugins.manager import PluginManager
 from .ui import NullUI
 
 
@@ -41,12 +42,15 @@ class Engine:
     def __init__(self, config: Config, ui=None):
         self.config = config
         self._ui = ui
+        self._plugin_manager = PluginManager(config)
+        self._plugin_manager.load()
         self._reinit_provider()
         sessions_dir = config.local_path.parent / 'sessions'
         self.sessions = SessionManager(sessions_dir)
         self.current_session = self.sessions.create()
         self.registry = CommandRegistry(self)
         register_builtins(self.registry)
+        self._plugin_manager.register_commands(self.registry)
 
     @property
     def ui(self):
@@ -56,24 +60,28 @@ class Engine:
 
     def _reinit_provider(self):
         from .providers import PROVIDERS, detect_provider
+        merged = dict(PROVIDERS)
+        plugin_manager = getattr(self, '_plugin_manager', None)
+        if plugin_manager is not None:
+            merged.update(plugin_manager.provider_classes())
         provider_name = self.config.get('provider', 'ollama')
-        factory = PROVIDERS.get(provider_name)
+        factory = merged.get(provider_name)
         if factory is None:
             detected = detect_provider(self.config.get('base_url'))
             self.ui.info(f'Unknown provider "{provider_name}" — using "{detected}" '
                          '(detected from base_url)')
             self.config.set('provider', detected)
-            factory = PROVIDERS[detected]
+            factory = merged[detected]
 
         base_url = self.config.get('base_url')
         model = self.config.get('model')
         if factory.DEFAULT_BASE_URL and base_url:
-            for other in PROVIDERS.values():
+            for other in merged.values():
                 if other is not factory and other.DEFAULT_BASE_URL and base_url == other.DEFAULT_BASE_URL:
                     base_url = factory.DEFAULT_BASE_URL
                     break
         if factory.DEFAULT_MODEL and model:
-            for other in PROVIDERS.values():
+            for other in merged.values():
                 if other is not factory and other.DEFAULT_MODEL and model == other.DEFAULT_MODEL:
                     model = factory.DEFAULT_MODEL
                     break
@@ -366,6 +374,9 @@ class Engine:
         self._tool_registry = ToolRegistry()
         register_tools(self._tool_registry)
         register_machine_tools(self._tool_registry)
+        plugin_manager = getattr(self, '_plugin_manager', None)
+        if plugin_manager is not None:
+            plugin_manager.register_tools(self._tool_registry)
         self._tool_policy = ToolPolicy(
             permissions=self.config.get('tool_permission', {}),
             allow=self.config.get('tools.allow', []),

@@ -6,7 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from replio.cli import cmd_run
+from replio.cli import cmd_run, cmd_plugins
 from replio.main import main
 from replio import get_version
 
@@ -116,6 +116,60 @@ class TestCliRun(unittest.TestCase):
         self.assertEqual(rc, 0)
         data = json.loads(out)
         self.assertEqual(len(data['tool_calls']), 1)
+
+
+class TestCliPlugins(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.path = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _args(self, **kw):
+        base = dict(path=self.path, action='list', source=None,
+                    global_=False, deps=False, name=None)
+        base.update(kw)
+        return SimpleNamespace(**base)
+
+    def _capture(self, args):
+        out = io.StringIO()
+        err = io.StringIO()
+        with patch('sys.stdout', new=out), patch('sys.stderr', new=err):
+            rc = cmd_plugins(args)
+        return rc, out.getvalue(), err.getvalue()
+
+    def test_plugins_list_empty(self):
+        rc, out, _ = self._capture(self._args())
+        self.assertEqual(rc, 0)
+        self.assertIn('no plugins installed', out)
+
+    def test_plugins_install_list_uninstall(self):
+        src = Path(self.path) / 'src_plugin'
+        (src / 'manifest.json').parent.mkdir(parents=True, exist_ok=True)
+        with open(src / 'manifest.json', 'w') as f:
+            json.dump({'name': 'hello', 'version': '1.0.0'}, f)
+        with open(src / 'plugin.py', 'w') as f:
+            f.write('def register_tools(registry):\n    pass\n')
+
+        rc, out, _ = self._capture(self._args(action='install', source=str(src)))
+        self.assertEqual(rc, 0)
+        self.assertIn('hello', out)
+
+        rc, out, _ = self._capture(self._args(action='list'))
+        self.assertEqual(rc, 0)
+        self.assertIn('hello', out)
+
+        rc, _, _ = self._capture(self._args(action='uninstall', name='hello'))
+        self.assertEqual(rc, 0)
+        self.assertFalse((Path(self.path) / '.replio' / 'plugins' / 'hello').exists())
+
+    def test_plugins_install_missing_source_errors(self):
+        rc, _, err = self._capture(self._args(action='install',
+                                              source='/nonexistent/path'))
+        self.assertEqual(rc, 1)
+        self.assertIn('Error', err)
 
 
 class TestCliVersion(unittest.TestCase):

@@ -63,13 +63,16 @@ repl.io/
 │   ├── commands/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Command registration + dispatch
-│   │   └── builtins.py      # /help, /connect, /model, /session, etc.
+│   │   └── builtins.py      # /help, /connect, /model, /session, /plugins, etc.
 │   ├── tools/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Tool registration + dispatch (OpenAI function calling)
 │   │   ├── policy.py        # ToolPolicy — allow/ask/deny permissions + path scoping
 │   │   ├── builtins.py      # web_search, fetch_page tools
 │   │   └── machine.py       # read_file, list_dir, write_file, run_command, glob, grep tools
+│   ├── plugins/
+│   │   ├── __init__.py
+│   │   └── manager.py       # PluginManager — discovery, manifest/compat, install/update/uninstall
 │   ├── web/
 │   │   ├── __init__.py
 │   │   ├── search.py        # DuckDuckGo Lite search via html.parser
@@ -139,8 +142,16 @@ repl.io/
 3. Handler receives one string argument (the text after the command name)
 4. If the command performs a tool action, call `chat_loop._tool_registry.execute(name, args)` rather than reimplementing it
 
-### Future: Plugins
-Tools and providers are planned to become installable plugins (roadmap Phase 5) via directory-based loading from `~/.config/replio/plugins/` and `.replio/plugins/` — plain Python modules that register into the existing registries, keeping the core lean and flexible.
+### Adding a Plugin
+Plugins are external repositories — never modify the core to add optional functionality:
+1. Create a plugin directory with a `manifest.json` (`name`, `version`, `replio_version` semver range, `python` range, `entry` default `plugin.py`, `requires` third-party deps, `provides`) and an entry module
+2. The entry module may define `register_tools(registry)`, `register_providers(providers: dict)`, and `register_commands(commands)` — same decorators as core builtins
+3. Import third-party deps lazily **inside** tool functions; the core never imports them
+4. Install via `/plugins install <git-url|path>` or `replio plugins install`; activate via `plugins.enabled`/`plugins.deny`
+5. See `docs/plugins.md` for the full manifest schema, compatibility contract, and management commands
+
+### Future: Plugin sources
+Plugins currently install from git URLs or local paths into the plugin roots. Shared/per-plugin virtualenv dependency isolation and a PyPI entry-point source are planned future work (see TODO).
 
 ## Roadmap
 
@@ -149,7 +160,11 @@ Tools and providers are planned to become installable plugins (roadmap Phase 5) 
 - **Phase 2** — Machine access (read/write/exec tools, tool policies, `confirm`-gated exec)
 - **Phase 3** — Personas (`/agent` with per-agent prompt, sessions, model)
 - **Phase 4** — Delegation (`delegate` tool → sub-agent loops; team orchestration)
-- **Phase 5** — Plugins (tools + providers installable, directory-based)
+- **Phase 5** — Plugins (tools + providers + commands installable, directory-based) ✅
+  - `PluginManager` discovers plugins in `~/.config/replio/plugins/` and `.replio/plugins/` (local wins), validates the manifest (`replio_version`/`python` ranges), imports entry modules once, and hooks tools/providers/commands into the live registries
+  - Management: `/plugins` and `replio plugins` — `install`/`update`/`uninstall`/`enable`/`disable`; activation via `plugins.enabled`/`plugins.deny` config
+  - Plugin third-party deps are lazy (imported inside plugin functions) — the core stays stdlib-only
+  - Future: per-plugin venv isolation, PyPI entry-point source, migrating `web_search`/`fetch_page` to external plugins
 
 Implement one phase at a time. Docs-first: restructure planning docs, then build the phase, mark it `[x]`, and log it in `CHANGELOG.md`.
 
@@ -188,11 +203,13 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
     "edit": "allow",
     "bash": "ask",
     "web": "allow"
-  }
+  },
+  "plugins.enabled": [],
+  "plugins.deny": []
 }
 ```
 
-`max_tokens` defaults to `0` = unset (omitted from the provider payload, so the provider's own default applies). Set a positive value to re-enable a cap; hitting it prints a warning and logs a session `errors` entry.
+`max_tokens` defaults to `0` = unset (omitted from the provider payload, so the provider's own default applies). Set a positive value to re-enable a cap; hitting it prints a warning and logs a session `errors` entry. `plugins.enabled` empty = all installed plugins load; `plugins.deny` always excludes by name.
 
 ## Testing
 

@@ -36,6 +36,8 @@ DEFAULT_CONFIG = {
         'bash': 'ask',
         'web': 'allow',
     },
+    'plugins.enabled': [],
+    'plugins.deny': [],
 }
 
 

@@ -16,11 +16,12 @@ Run `replio` and type `/` — commands tab-complete. Use `/help` or `/help <cmd>
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save` |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
 | `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
+| `/plugins`              | `/plugin`      | Manage plugins: `list`, `enable`, `disable`, `install`, `update`, `uninstall` |
 
 ## CLI
 
 ```
-usage: replio [-h] [--path PATH] [-v] {run,serve} ...
+usage: replio [-h] [--path PATH] [-v] {run,serve,plugins} ...
 ```
 
 Global:
@@ -56,3 +57,16 @@ HTTP JSON API server. See [api.md](api.md).
 | `--host`      | `127.0.0.1`  | Bind address                 |
 | `--port`      | `8787`       | Bind port                    |
 | `--path`      |              | Project path                 |
+
+### `replio plugins`
+
+Manage plugins headlessly. See [plugins.md](plugins.md).
+
+| Subcommand    | Description                                                     |
+|---------------|-----------------------------------------------------------------|
+| `list`        | List installed plugins and their load status                    |
+| `install`     | `replio plugins install <git-url|path> [--global] [--deps]` — install a plugin |
+| `update`      | `replio plugins update <name>` — re-fetch from the recorded source |
+| `uninstall`   | `replio plugins uninstall <name>` — remove a plugin             |
+
+`--path` may be given either before the subcommand (`replio --path X plugins list`) or after it (`replio plugins --path X list`).

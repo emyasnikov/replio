@@ -45,6 +45,15 @@ class ChatLoop(Engine):
                 if state < len(names):
                     return names[state] + ' '
                 return None
+        for prefix in ('/plugins enable ', '/plugins disable ',
+                       '/plugins update ', '/plugins uninstall '):
+            if line.startswith(prefix):
+                pm = getattr(self, '_plugin_manager', None)
+                names = [i.name for i in pm.status()] if pm else []
+                options = sorted(n for n in names if n.startswith(text))
+                if state < len(options):
+                    return options[state] + ' '
+                return None
         term = text[1:] if text.startswith('/') else text
         options = sorted(c for c in self.registry.commands if c.startswith(term))
         if state < len(options):

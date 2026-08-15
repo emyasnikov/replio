@@ -22,7 +22,8 @@ REPL.io is deliberately small and auditable zero-dependency agentic core built o
 
 - **Agentic REPL** — streaming token-by-token output, dimmed thinking, markdown-aware rendering, readline history and tab completion
 - **Tool calling** — web search, page fetching, file read/write/search, and shell execution via OpenAI-compatible function calling
-- **Permission policy** — every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmations for anything outside your worktree
+- **Permissions** — every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmations for anything outside your worktree
+- **Plugins** — external repositories register tools, providers, and slash commands; the core stays zero-dependency and plugin deps are imported lazily, only when you activate a plugin
 - **Multi-provider** — Ollama, OpenAI, Groq, Anthropic, plus any OpenAI-compatible endpoint, with automatic detection from the base URL
 - **Sessions** — complete append-only conversation logs, including every tool call and its result
 - **Compaction** — summarize long conversations and trim the provider context without losing history
@@ -92,7 +93,7 @@ curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
 
 ## Roadmap
 
-Personas, delegation, and directory-based plugins are planned next. Open tasks live in [TODO.md](TODO.md).
+Personas and delegation are planned next. The directory-based plugin system is in place — see [docs/plugins.md](docs/plugins.md) for building and managing plugins. Open tasks live in [TODO.md](TODO.md).
 
 ## Contributing
 
@@ -105,6 +106,7 @@ Detailed references are in the [docs](docs/):
 - [API endpoints](docs/api.md)
 - [Configuration](docs/config.md)
 - [Commands & CLI](docs/commands.md)
+- [Plugins](docs/plugins.md)
 
 ## License
 

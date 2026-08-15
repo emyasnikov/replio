@@ -1,7 +1,15 @@
 # Changelog
 
-## v0.12.0
+## v0.12.0 — 2026-08-15
 
+- Plugin system (`src/replio/plugins/`) — external repositories register **tools, providers, and slash commands** without changing the core; `PluginManager` discovers plugins in `~/.config/replio/plugins/` and `.replio/plugins/` (local wins), validates `manifest.json` (`replio_version`/`python` semver ranges), imports entry modules once, and hooks them into the live registries
+- Plugin entry contract — optional `register_tools(registry)` / `register_providers(providers)` / `register_commands(commands)` hooks on the entry module, matching the core's `register_*` conventions; plugin tools automatically inherit tool policy, `/tool`, `/help`, refinement, and session logging
+- Lazy plugin dependencies — third-party packages are imported inside plugin functions (never by the core), so the stdlib-only guarantee holds and a missing dep surfaces as a tool error with `pip install` guidance
+- `/plugins` command (`/plugins list`, `/plugins <name>` detail with per-dep status, `enable`/`disable`, `install`/`update`/`uninstall`) plus tab completion for plugin names; `/connect` now offers plugin providers
+- `replio plugins` CLI (`list`/`install`/`update`/`uninstall`) — headless plugin management so `replio run`/CI can use freshly installed plugins; `install` clones a git URL or copies a local path, records `source`, and `--deps` pip-installs the declared `requires`
+- Config keys `plugins.enabled` (allowlist; empty = all) and `plugins.deny` (always excluded) — activation is explicit and applies on the next start
+- `docs/plugins.md` — plugin layout, manifest schema, compatibility contract, entry hooks, management, security, and future paths (per-plugin venv isolation, PyPI entry-point source, migrating core web tools out)
+- `tests/test_plugins.py` (30 tests) — manifest parsing, `replio_version`/`python` compat skipping, enable/deny filtering, global/local precedence, entry load-error isolation, all three registration hooks, lazy-dep pip guidance, tool-policy filtering, install/update/uninstall from a local path, and Engine integration (tools + commands + `/plugins`)
 - REPL banner shows the version — `REPL.io v0.12.0 (provider: model)` on startup; gated by `show_version` config (default `true`), toggleable via `/config show_version false`
 - `GET /version` endpoint — the serve API exposes the installed version as `{"version": ...}`, alongside `/health` and `/sessions`
 - `/version` slash command (alias `/v`) — prints `REPL.io <version>` in the REPL; version lookup centralized in `replio.get_version()` and shared with the CLI `--version` flag
