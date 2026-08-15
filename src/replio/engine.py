@@ -167,12 +167,6 @@ class Engine:
 
         try:
             while True:
-                content = ''
-                thinking = ''
-                in_thinking = False
-                tool_calls_detected = False
-                got_done = False
-                aborted = False
                 think_start: datetime | None = None
 
                 def feed_thinking(text):
@@ -191,95 +185,109 @@ class Engine:
                         self.ui.thinking_end(dur)
 
                 messages = self._provider_messages()
-                try:
-                    for event in self.provider.chat(messages, tools=tools_schema):
-                        t = event.get('type', '')
-                        if t == 'thinking':
-                            thinking += event['content']
-                            feed_thinking(event['content'])
-                        elif t == 'token':
-                            token = event['content']
-                            while token:
-                                if not in_thinking:
-                                    marker = '<thinking>'
-                                    idx = token.find(marker)
-                                    if idx != -1:
-                                        before = token[:idx]
-                                        if before:
+                for attempt in (1, 2):
+                    content = ''
+                    thinking = ''
+                    in_thinking = False
+                    tool_calls_detected = False
+                    got_done = False
+                    aborted = False
+                    try:
+                        for event in self.provider.chat(messages, tools=tools_schema):
+                            t = event.get('type', '')
+                            if t == 'thinking':
+                                thinking += event['content']
+                                feed_thinking(event['content'])
+                            elif t == 'token':
+                                token = event['content']
+                                while token:
+                                    if not in_thinking:
+                                        marker = '<thinking>'
+                                        idx = token.find(marker)
+                                        if idx != -1:
+                                            before = token[:idx]
+                                            if before:
+                                                end_thinking()
+                                                content += before
+                                                self.ui.token(before)
+                                            thinking += marker
+                                            feed_thinking(marker)
+                                            token = token[idx + len(marker):]
+                                            in_thinking = True
+                                        else:
                                             end_thinking()
-                                            content += before
-                                            self.ui.token(before)
-                                        thinking += marker
-                                        feed_thinking(marker)
-                                        token = token[idx + len(marker):]
-                                        in_thinking = True
+                                            content += token
+                                            self.ui.token(token)
+                                            token = ''
                                     else:
-                                        end_thinking()
-                                        content += token
-                                        self.ui.token(token)
-                                        token = ''
-                                else:
-                                    closer = '</thinking>'
-                                    idx = token.find(closer)
-                                    if idx != -1:
-                                        before = token[:idx]
-                                        if before:
-                                            thinking += before
-                                            feed_thinking(before)
-                                        end_thinking()
-                                        token = token[idx + len(closer):]
-                                        in_thinking = False
-                                    else:
-                                        thinking += token
-                                        feed_thinking(token)
-                                        token = ''
-                        elif t == 'tool_calls':
-                            tool_calls_detected = True
-                            end_thinking()
-                            executed_tool_calls += self._execute_tool_calls(
-                                event['tool_calls'], thinking or None)
-                            break
-                        elif t == 'error':
-                            code = event.get('code', '')
-                            msg = event.get('message', 'Unknown error')
-                            end_thinking()
-                            self.current_session.add_error(code, msg)
-                            self.ui.error(code, msg)
-                            status = 'error'
-                            aborted = True
-                            break
-                        elif t == 'done':
-                            got_done = True
-                            usage = event.get('usage') or usage
-                            reason = event.get('reason', '')
-                            end_thinking()
-                            if reason == 'length':
-                                msg = ('Assistant output truncated: max_tokens limit reached '
-                                       f'({self.config.get("max_tokens")})')
-                                self.current_session.add_error(0, msg)
-                                self.ui.warning('Assistant output truncated (max_tokens reached); '
-                                                'use /config max_tokens N')
-                                status = 'truncated'
-                            break
-                except Exception as e:
-                    end_thinking()
-                    self.current_session.add_error(0, f'Agent loop failed: {e}')
-                    self.ui.error(0, str(e))
-                    status = 'error'
-                    aborted = True
-                if aborted:
-                    break
-                if not tool_calls_detected:
-                    if not got_done:
-                        msg = 'Stream ended before a completion event'
-                        self.current_session.add_error(0, msg)
-                        self.ui.warning(msg)
+                                        closer = '</thinking>'
+                                        idx = token.find(closer)
+                                        if idx != -1:
+                                            before = token[:idx]
+                                            if before:
+                                                thinking += before
+                                                feed_thinking(before)
+                                            end_thinking()
+                                            token = token[idx + len(closer):]
+                                            in_thinking = False
+                                        else:
+                                            thinking += token
+                                            feed_thinking(token)
+                                            token = ''
+                            elif t == 'tool_calls':
+                                tool_calls_detected = True
+                                end_thinking()
+                                executed_tool_calls += self._execute_tool_calls(
+                                    event['tool_calls'], thinking or None)
+                                break
+                            elif t == 'error':
+                                code = event.get('code', '')
+                                msg = event.get('message', 'Unknown error')
+                                end_thinking()
+                                self.current_session.add_error(code, msg)
+                                self.ui.error(code, msg)
+                                status = 'error'
+                                aborted = True
+                                break
+                            elif t == 'done':
+                                got_done = True
+                                usage = event.get('usage') or usage
+                                reason = event.get('reason', '')
+                                end_thinking()
+                                if reason == 'length':
+                                    msg = ('Assistant output truncated: max_tokens limit reached '
+                                           f'({self.config.get("max_tokens")})')
+                                    self.current_session.add_error(0, msg)
+                                    self.ui.warning('Assistant output truncated (max_tokens reached); '
+                                                    'use /config max_tokens N')
+                                    status = 'truncated'
+                                break
+                    except Exception as e:
+                        end_thinking()
+                        self.current_session.add_error(0, f'Agent loop failed: {e}')
+                        self.ui.error(0, str(e))
                         status = 'error'
-                    elif not content:
-                        msg = 'Assistant returned an empty response'
-                        self.current_session.add_error(0, msg)
-                        self.ui.warning(msg)
-                        status = 'empty'
+                        aborted = True
+                    if aborted:
+                        break
+                    if tool_calls_detected:
+                        break
+                    if got_done:
+                        if not content:
+                            msg = 'Assistant returned an empty response'
+                            self.current_session.add_error(0, msg)
+                            self.ui.warning(msg)
+                            status = 'empty'
+                        break
+                    if not content and attempt == 1:
+                        self.ui.info('(stream ended before a completion event — retrying)')
+                        continue
+                    msg = 'Stream ended before a completion event'
+                    self.current_session.add_error(0, msg)
+                    self.ui.warning(msg)
+                    status = 'error'
+                    break
+                if aborted or not tool_calls_detected:
                     break
         finally:
             if content:

@@ -2,7 +2,8 @@
 
 ## v0.13.0
 
-- `write_file` status preview ends with a dimmed parenthesized summary — resolved absolute path, line count, char count, and created/overwritten/appended action (the tool result string stays minimal)
+- One-shot retry for empty/truncated streams — a provider stream that ends without a completion event and with no streamed content is requested once more (with a "retrying" note) before the "Stream ended before a completion event" error is surfaced; masks transient provider drops such as Ollama cloud returning an empty follow-up stream after a tool call
+- `write_file` status preview ends with a dimmed parenthesized summary — resolved absolute path, line count, char count, and created/overwritten/appended action (tool result string stays minimal)
 - Thinking announce — `+ Thinking` on its own line before streamed reasoning when `show_thinking: true`; when hidden, `+ Thought 12.3s` (thinking duration) is printed instead and the reasoning text stays out of the terminal. The engine times the thinking window (`thinking_begin`/`thinking_end` UI hooks), `HeadlessUI` mirrors it in `--verbose` mode, and a spinner (`⠧ Thinking`) can replace the static markers later
 - Human-readable tool status — default oneliner is now `[tool: key_arg]` (e.g. `[write_file: test.md]`, `[run_command: echo hi]`) instead of the raw args dump (`content='...\n...', mode='w'`); detail lines follow dimmed: `write_file` shows the written text via a registered `status` callback (new-file `+ line` preview, or a `difflib` unified diff of existing files — works for append too), and `run_command` echoes its output (`echo` registration metadata)
 - `list_dir` gains `depth` (default 1) — higher values render an indented recursive tree (`tree -L` style), skipping `SKIP_DIRS` during descent; `depth=1` output is unchanged

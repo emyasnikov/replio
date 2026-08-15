@@ -64,6 +64,20 @@ class TestAgentLoop(unittest.TestCase):
         errors = self.chat.current_session.errors
         self.assertEqual(len(errors), 1)
         self.assertIn('Stream ended before a completion event', errors[0]['message'])
+        self.assertEqual(self.chat.provider.chat.call_count, 2)
+
+    def test_empty_stream_retried_once_then_succeeds(self):
+        self.chat.provider.chat.side_effect = [
+            [],
+            [
+                {'type': 'token', 'content': 'Recovered answer'},
+                {'type': 'done', 'reason': 'stop'},
+            ],
+        ]
+        self._run()
+        self.assertEqual(self.chat.provider.chat.call_count, 2)
+        self.assertEqual(self.chat.current_session.errors, [])
+        self.assertEqual(self._assistant_msgs()[0]['content'], 'Recovered answer')
 
     def test_token_stream_then_eof_persists_content_and_logs_error(self):
         self.chat.provider.chat.return_value = [

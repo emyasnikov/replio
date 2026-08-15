@@ -74,6 +74,7 @@
 
 ## Done
 
+- [x] One-shot retry for empty/truncated streams — a provider stream that ends without a completion event and with no streamed content is requested once more before the "Stream ended before a completion event" error is surfaced (masks transient provider drops, e.g. Ollama cloud returning an empty follow-up stream after a tool call)
 - [x] `write_file` human-readable output — the status preview ends with a dimmed parenthesized summary: resolved absolute path, line count, char count, and created/overwritten/appended action (the tool result string stays minimal)
 - [x] Thinking announce — `+ Thinking` on its own line before streamed reasoning when `show_thinking: true`; `+ Thought 12.3s` (thinking duration) instead when hidden, keeping the reasoning text out of the terminal. The engine times the thinking window (`thinking_begin`/`thinking_end` UI hooks); `HeadlessUI` mirrors it in `--verbose`
 - [x] Human-readable tool status — default oneliner is `[tool: key_arg]` (e.g. `[write_file: test.md]`, `[run_command: echo hi]`) instead of the raw args dump; detail lines render dimmed below: `write_file` shows the written text via a registered `status` callback (new-file `+ line` preview, or a `difflib` unified diff for existing files — works for append too), and `run_command` echoes its output (`echo` registration metadata)
