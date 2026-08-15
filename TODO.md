@@ -1,5 +1,9 @@
 # TODO
 
+- README terminal screenshot — generate with codeshot.io *Terminal Session* (SVG), REPL interface (banner, streaming reply, tool status); embed via `<img>` in the README placeholder
+- Publish 0.12.0 to PyPI — sync description/metadata, then build + upload (manual, needs credentials); current PyPI is 0.11.0
+- Community presence — decide on Discord/X channels and fill the README community link slots
+- Add multiuser capability or queue for API requests
 - Add ReadTheDocs documentation and GitHub Pages website
 - Citations / source attribution — return URL + snippet with every answer
 - Bookmarks — `/bookmark add/remove/list` for session pinning
@@ -8,7 +12,7 @@
 - Hybrid web + local RAG — vector store (FAISS/Weaviate), embeddings, local document search
 - Command palette / fuzzy search — CTRL-P style history search
 - Topic-aware ranking — classifier for query intent to weight search results
-- Naming / positioning decision — "Replio" collides with commercial SaaS products (`replio.chat`, `repliohq.com`, `replio.eu`); decide branding before publicizing the headless direction
+- Naming / positioning decision — "Replio" collides with commercial SaaS products (`replio.chat`, `repliohq.com`, `replio.eu`); kept for now (PyPI + repo claimed), revisit before any promotion push; candidate free names: `pypelio`, `replcore`, `replkit`
 - Competitor research — validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products
 
 ## Open

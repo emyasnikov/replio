@@ -8,24 +8,25 @@
   <img src="https://img.shields.io/github/actions/workflow/status/emyasnikov/replio/ci.yml?branch=main" alt="CI">
 </p>
 
-A lightweight, zero-dependency agentic tooling core with an interactive REPL chat.
+**A lightweight agentic tooling core with API, CLI and REPL interfaces.**
 
-## Why?
+REPL.io is deliberately small and auditable zero-dependency agentic core built on a single streaming agent loop. The model plans, the tool registry acts, and one loop serves three front-ends: an interactive REPL, a headless one-shot CLI, and an HTTP API.
 
-REPL.io uses **nothing but the Python standard library**.
-No dependencies and gigabytes of `node_modules`.
+## Why
+
+- **Zero dependencies** — everything is Python standard library. No dependency tree to audit, no supply-chain surface, no lockfile churn
+- **One agent loop** — a single SSE stream per turn powers the REPL, the CLI, and the API. No duplicated logic across front-ends
+- **Local-first** — config and session logs live on your disk. Bring your own provider key, or run fully local
 
 ## Features
 
-- **Zero dependencies, honest footprint** — Just clone and run, nothing to install
-- **Local-first & private** — Config and session logs live on your disk
-- **One process, two ways** — Same agent core for terminal REPL and headless mode
-- **Multi-provider by design** — Ollama, OpenAI, Anthropic etc.
-- **Streaming responses** — Token-by-token output via SSE
-- **Web search** — Auto web search, page fetching and query refinement
-- **Machine access** — Read/write files and run shell commands
-- **Sessions** — Full captured conversations, even on tool use
-- **Compaction** — Summarize long conversations and trim the context
+- **Agentic REPL** — streaming token-by-token output, dimmed thinking, markdown-aware rendering, readline history and tab completion
+- **Tool calling** — web search, page fetching, file read/write/search, and shell execution via OpenAI-compatible function calling
+- **Permission policy** — every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmations for anything outside your worktree
+- **Multi-provider** — Ollama, OpenAI, Groq, Anthropic, plus any OpenAI-compatible endpoint, with automatic detection from the base URL
+- **Sessions** — complete append-only conversation logs, including every tool call and its result
+- **Compaction** — summarize long conversations and trim the provider context without losing history
+- **Headless modes** — `replio run` for scripting and `replio serve` for an HTTP JSON API
 
 ## Quick Start
 
@@ -46,7 +47,7 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 
 ### REPL
 
-First-time setup using REPL:
+First-time setup with `/connect`, then type any message. Tab-complete `/` commands and session names. Use arrow keys to navigate history.
 
 ```
 >>> /connect
@@ -54,11 +55,6 @@ First-time setup using REPL:
   Base URL [https://ollama.com]:
   API key: ...
   Model [gpt-oss:20b-cloud]:
-```
-
-Type any message to chat. Tab-complete `/` commands and session names (e.g. `/session load <Tab>`, bash-style). Arrow keys for history.
-
-```
 >>> Hi
 <<< Hello! How can I help you today?
 >>> /exit
@@ -86,42 +82,19 @@ replio run --prompt "Hi"
 
 ### API
 
-Server exposes different JSON endpoints like `POST /chat` (`{"prompt": ...}`, optionally `{"session_id": ...}`) returns the same turn result as the CLI, `GET /sessions` lists saved sessions.
+Server exposes different JSON endpoints like `POST /chat` (`{"prompt": ...}`, optionally `{"session_id": ...}`) returns the same turn result as the CLI etc.
 
 ```bash
-replio serve
-replio serve - http://127.0.0.1:8787 (POST /chat, GET /sessions, GET /health, GET /version)
-[replio] "POST /chat HTTP/1.1" 200 -
-```
-
-```bash
+replio serve &
 curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
 {"content": "Hello! 👋 How can I help you today?", "thinking": null, "tool_calls": [], "errors": [], "duration": 7.0, "usage": null, "model": "gpt-oss:20b-cloud", "provider": "ollama", "session": "20260814_192711_hi", "status": "ok"}
 ```
 
-## Machine Access & Permissions
-
-The model can read and search your machine (`read_file`, `list_dir`, `glob`, `grep`), write (`write_file`), and execute shell commands (`run_command`). Access is governed by a permission policy.
-
-
-## Sessions
-
-Sessions are complete logs: every message, tool call + result, reasoning (`thinking` metadata), and error is persisted — entries are never removed, not even on compaction. `errors` holds failed provider requests, and `created_at`/`updated_at` track the session lifetime. Both headless modes run the same agent core and session store as the REPL, so conversations are interchangeable across all three.
-
 ## Roadmap
 
-- **Headless core** — `replio run` (one-shot JSON in/out) and `replio serve` (stdlib HTTP API) over the same agent loop, for CI/CD, cron, and scripting
-- **Coding toolchain** — `code_lint`/`code_format`/`code_test`/`code_debug`, `git`, `docs_search` tools and workspace sessions
-- **Enterprise data** — ingestion, time-series analysis, model inference, optimization, and SCADA tools as plugins
-- **Action & reporting** — reporting/email push, audit logging, metrics, onboarding wizard
-
-Open tasks and details live in [TODO.md](TODO.md).
+Personas, delegation, and directory-based plugins are planned next. Open tasks live in [TODO.md](TODO.md).
 
 ## Contributing
-
-```bash
-python -m unittest discover tests
-```
 
 The project is stdlib-only with no external dependencies. See [AGENTS.md](AGENTS.md) for architecture and conventions, and [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow.
 
@@ -135,4 +108,4 @@ Detailed references are in the [docs](docs/):
 
 ## License
 
-MIT
+[MIT](LICENSE)
