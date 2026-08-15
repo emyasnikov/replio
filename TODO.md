@@ -13,9 +13,20 @@
 - Command palette / fuzzy search — CTRL-P style history search
 - Topic-aware ranking — classifier for query intent to weight search results
 - Naming / positioning decision — "Replio" collides with commercial SaaS products (`replio.chat`, `repliohq.com`, `replio.eu`); kept for now (PyPI + repo claimed), revisit before any promotion push; candidate free names: `pypelio`, `replcore`, `replkit`
-- Competitor research — validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products
+- Competitor research — validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products; comparison notes now live in `docs/comparison/` and feed the feature backlog (Plan/Build modes, Web Control UI, plugin marketplace, telemetry, binary builds, sharing)
+- Self-update — `replio update` (Pi `pi update --self` analogue)
+- Standalone binary build — Pi-style release script producing a single executable (contentious for a zero-dep Python package)
+- Opt-in telemetry contracts — vendor-neutral event schema (OpenCode, Pi `@earendil-works/pi-telemetry`); decide whether it fits the no-telemetry stance
+- Conversation sharing — web-shareable session links (OpenCode `/share`) or published sessions (Pi `pi-share-hf`), building on the planned Markdown export
+- Plugin registry / marketplace — discoverable plugin sharing (OpenClaw ClawHub analogue); PyPI entry-point source is a prerequisite
 
 ## Open
+
+- [ ] `write_file` human-readable output — return the resolved absolute path, line count, char count, and created/overwritten/appended status instead of only `Wrote N chars to ...`
+- [ ] Restore tab completion for commands and paths — regression: diagnose why the readline completer no longer fires (likely macOS libedit `tab: complete` binding or completer registration after the Engine refactor), then extend to filesystem path completion after command arguments
+- [ ] Show per-turn stats on their own line — the `(Ns, N tokens)` footer currently lands at the end of the last content line; emit a separating newline in `ReplUI.footer` (or pass a content-ended-without-newline flag from the engine)
+- [ ] Plan/Build modes — read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery
+- [ ] Minimal web Control UI — stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue); richer frameworks stay plugin-first
 
 - [ ] Externalize the bundled plugins (`replio-core-websearch`/`fs`/`exec`) into separate versioned repositories — the bundled copies stay the shipped defaults; global/local plugins of the same name already override them
 - [ ] PyPI plugin source — discover installed plugin packages via `importlib.metadata` entry points (`replio.plugins` group)
