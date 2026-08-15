@@ -1,100 +1,96 @@
 # REPL.io vs. Pi
 
-This document compares the two open‑source personal AI assistant projects **REPL.io** and **Pi Agent Harness** (earendil‑works/pi).  The goal is to highlight key design choices, runtime models, and ecosystem differences.
+This document compares two open-source personal AI assistant / coding-agent projects: **REPL.io** (github.com/emyasnikov/replio) and **Pi Agent Harness** (github.com/earendil-works/pi). It highlights key design choices, runtime models, and ecosystem differences.
 
-## 1. Project Overview
+## Project Overview
 
-| Project | Primary Language | Repo | License | Core
-|---------|------------------|------|---------|------
-| REPL.io | Python | https://github.com/emyasnikov/replio | MIT | Lightweight REPL + CLI + HTTP API with zero external dependencies
-| Pi | TypeScript/JavaScript (Node + Bun) | https://github.com/earendil-works/pi | MIT | Monorepo with agent core, unified LLM API, coding‑agent CLI, telemetry, and TUI
+| Project | Primary Language | Repo | License | Core Focus |
+|---------|------------------|------|---------|------------|
+| REPL.io | Python | https://github.com/emyasnikov/replio | MIT | Lightweight REPL + CLI + HTTP API with zero external dependencies |
+| Pi | TypeScript/JavaScript (Node + Bun) | https://github.com/earendil-works/pi | MIT | Monorepo with agent core, unified LLM API, coding-agent CLI, telemetry, and TUI |
 
-## 2. Architecture & Runtime Model
+## Architecture & Runtime Model
 
-| Feature | REPL.io | Pi
-|---------|---------|----
-| Core runtime | Single Python process with streaming loop | CLI that spawns the agent core in the same process
-| Entry‑point | `replio` command | `pi` command
-| Runtime dependencies | None beyond stdlib | Node.js + Bun, npm
-| Deployment | Single binary, no daemon | CLI can run directly; builds standalone binaries for release
-| Multi‑process | No | No, but monorepo can run services separately
+| Feature | REPL.io | Pi |
+|---------|---------|----|
+| Core runtime | Single Python process with a streaming agent loop | CLI that runs the agent core in the same process |
+| Entry point | `replio` | `pi` |
+| Runtime dependencies | None beyond stdlib | Node.js + Bun, npm |
+| Deployment | Python package installed via `pipx`, no daemon | CLI run directly; standalone binaries built for releases |
+| Multi-process | No | No, but the monorepo can run services separately |
 
-### REPL.io
-A tight‑coupled loop that handles REPL, CLI, and HTTP API. Tools are loaded lazily and can be extended by Python plugins.
+REPL.io runs a tight-coupled loop that handles the REPL, CLI, and HTTP API; tools load lazily and are extended by Python plugins. Pi is a monorepo: `@earendil-works/pi-agent-core` provides the agent runtime, `@earendil-works/pi-ai` a unified LLM provider layer, and `@earendil-works/pi-coding-agent` ships an interactive CLI that runs the agent runtime in the same process.
 
-### Pi
-Monorepo architecture: `@earendil-works/pi-agent-core` provides the agent runtime, `@earendil-works/pi-ai` offers a unified LLM provider layer, and `@earendil-works/pi-coding-agent` ships an interactive CLI. The CLI runs the agent runtime in the same process.
+## Tooling & Function Calling
 
-## 3. Tooling & Function Calling
+| Aspect | REPL.io | Pi |
+|--------|---------|----|
+| Built-in tools | web search, fetch page, file I/O, shell, permission gating (`allow`/`ask`/`deny`) | web search, fetch page, file I/O, shell, and custom `!` command syntax |
+| Permission model | Path-scoped `allow`/`ask`/`deny` with runtime prompts | No built-in permission system; relies on OS sandboxing or Docker |
+| Function-calling scheme | OpenAI-compatible JSON schema | OpenAI-compatible JSON schema |
+| Extensibility | Python plugins register tools via a simple registry | Packages expose `@tool`/`@skill` decorators; monorepo architecture |
 
-| Aspect | REPL.io | Pi
-|--------|---------|----
-| Built‑in tools | web search, fetch page, file I/O, shell, permission gating (`allow/ask/deny`) | web search, fetch page, file I/O, shell, and custom `!` command syntax
-| Permission model | Path‑scoped `allow/ask/deny` with runtime prompts | No built‑in permission system; rely on OS sandboxing or Docker
-| Function‑calling scheme | OpenAI‑compatible JSON schema | OpenAI‑compatible JSON schema
-| Extensibility | Python plugins register tools via a simple registry | Packages expose `@tool`/`@skill` decorators; monorepo architecture
+## Channels & UI
 
-## 4. Channels & UI
+| Feature | REPL.io | Pi |
+|---------|---------|----|
+| Built-in UI | Terminal REPL only | Terminal UI library (`@earendil-works/pi-tui`), CLI only |
+| Messaging channels | None | None (CLI only); `pi-chat` for Slack/chat automation |
+| Web UI | None | None |
+| TUI | Yes (basic REPL) | Yes (differential rendering) |
 
-| Feature | REPL.io | Pi
-|---------|---------|----
-| Built‑in UI | Terminal REPL only | Terminal UI library (`@earendil-works/pi-tui`), CLI only
-| Messaging channels | None | None (CLI only)
-| Web UI | None | None
-| TUI | Yes (basic REPL) | Yes (differential rendering)
+## Provider & Model Support
 
-## 5. Provider & Model Support
+| Aspect | REPL.io | Pi |
+|--------|---------|----|
+| LLM providers | Ollama (default), OpenAI, Groq, Anthropic, and any OpenAI-compatible endpoint | OpenAI, Anthropic, Google, and more via the unified API (`@earendil-works/pi-ai`) |
+| Local model support | Built-in via Ollama | Built-in local providers via `@earendil-works/pi-ai` |
 
-| Aspect | REPL.io | Pi
-|--------|---------|----
-| LLM providers | OpenAI (default) | OpenAI, Anthropic, Google, etc. via unified API (`@earendil-works/pi-ai`)
-| Local model support | Not built‑in (needs custom provider) | Built‑in local providers via `@earendil-works/pi-ai`
+## Persistence & Telemetry
 
-## 6. Persistence & Telemetry
+| Feature | REPL.io | Pi |
+|---------|---------|----|
+| Session persistence | Append-only JSON session logs, compaction | Telemetry contracts (`@earendil-works/pi-telemetry`), logs in workspace |
+| State management | Simple conversation context | Agent runtime has a state stack; structured conversation state |
+| Telemetry | None | Vendor-neutral telemetry contracts, reference adapter, conformance tests |
 
-| Feature | REPL.io | Pi
-|---------|---------|----
-| Session persistence | Append‑only JSON logs, compaction | Telemetry contracts (`@earendil-works/pi-telemetry`), logs in workspace
-| State management | Simple conversation context | Agent runtime has state stack; supports structured conversation state
-| Telemetry | None | Vendor‑neutral telemetry contracts, reference adapter, conformance tests
+## Security & Isolation
 
-## 7. Security & Isolation
+| Project | Default isolation | Sandbox options | Notes |
+|---------|-------------------|----------------|-------|
+| REPL.io | Runs with user permissions | None (relies on permission prompts) | Path-scoped `allow`/`ask`/`deny` gates every tool |
+| Pi | Runs with user permissions | Docker, micro-VM (Gondolin), OpenShell policy sandbox | Containerization recommended for stronger boundaries |
 
-| Project | Default isolation | Sandbox options | Notes
-|---------|-------------------|----------------|-------
-| REPL.io | Runs with user permissions | Permission gating per path | No OS sandboxing; relies on prompts
-| Pi | Runs with user permissions | Docker, micro‑VM (Gondolin), OpenShell policy sandbox | Recommendation to use containerization for stronger boundaries
+## Community & Ecosystem
 
-## 8. Community & Ecosystem
+| Project | License | Community | Plugin Ecosystem | Docs |
+|---------|---------|-----------|-----------------|------|
+| REPL.io | MIT | Small, GitHub-centric | Python plugins | Docs in repo; minimal |
+| Pi | MIT | Active, GitHub + X | npm packages in the monorepo | Docs on pi.dev; extensive containerization guide |
 
-| Project | License | Community | Plugin Ecosystem | Docs
-|---------|---------|-----------|-----------------|------
-| REPL.io | MIT | Small, GitHub‑centric | Python plugins | Docs in repo; minimal
-| Pi | MIT | Active, GitHub + X | NPM packages in monorepo | Docs on pi.dev; extensive guide on containerization
+## When to Choose Which
 
-## 9. When to Choose Which
+| Scenario | Recommended Project | Why |
+|----------|---------------------|-----|
+| You need a lightweight, zero-dependency REPL you can embed or expose via a tiny HTTP API | REPL.io | Minimal Python runtime, no external deps |
+| You need a coding agent with a unified LLM API, telemetry, and standalone binaries | Pi | Rich ecosystem, telemetry support, CLI or standalone binaries |
+| You want stronger isolation out of the box | Pi | Built-in containerization and sandboxing docs |
 
-| Scenario | Recommended Project | Why
-|----------|---------------------|-----
-| You need a lightweight, zero‑dependency REPL that can be embedded or exposed via a tiny HTTP API | REPL.io | Minimal Python runtime, no external deps
-| You need a coding‑agent with a unified LLM API, telemetry, and the ability to build standalone binaries | Pi | Rich plugin ecosystem, telemetry support, ability to run as CLI or build standalone binaries
-| You want strong isolation out of the box | Pi (via Docker or micro‑VM) | Built‑in docs for containerization
+## Summary Table
 
-## 10. Summary Table
+| Feature | REPL.io | Pi |
+|---------|---------|----|
+| Language | Python | TypeScript/JS + Bun |
+| Runtime | Single process | CLI + core runtime |
+| Extensibility | Python plugins | npm packages in monorepo |
+| Channels | None | None (CLI only) |
+| LLM providers | Ollama (default), OpenAI, Groq, Anthropic, OpenAI-compatible | OpenAI, Anthropic, Google, and more |
+| UI | Terminal REPL | Terminal TUI |
+| Persistence | JSON session logs | Telemetry contracts |
+| Isolation | Permission prompts | Docker / micro-VM recommended |
+| Use case | Lightweight REPL + HTTP API | Coding agent with telemetry |
 
-| Feature | REPL.io | Pi
-|---------|---------|----
-| Language | Python | TypeScript/JS + Bun
-| Runtime | Single process | CLI + core runtime
-| Extensibility | Python plugins | NPM packages in monorepo
-| Channels | None | None (CLI only)
-| LLM providers | OpenAI (default) | OpenAI, Anthropic, Google, etc.
-| UI | Terminal REPL | Terminal TUI
-| Persistence | JSON logs | Telemetry contracts
-| Isolation | Permissions prompts | Docker / micro‑VM recommended
-| Use case | Quick REPL & HTTP API | Coding agent with telemetry
-
-## 11. References
+## References
 
 - REPL.io: https://github.com/emyasnikov/replio
 - Pi: https://github.com/earendil-works/pi

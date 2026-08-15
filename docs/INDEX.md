@@ -6,3 +6,4 @@ Detailed reference for REPL.io. For an overview, features, and quick start, see 
 - [Configuration](config.md) — config schema and keys
 - [Commands & CLI](commands.md) — slash commands and headless CLI flags
 - [Plugins](plugins.md) — plugins: bundled, layout, manifest, management
+- [Comparisons](comparison/) — REPL.io vs. OpenClaw, OpenCode, and Pi, plus the broader landscape
