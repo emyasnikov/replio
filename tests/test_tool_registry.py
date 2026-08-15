@@ -37,6 +37,15 @@ class TestToolRegistry(unittest.TestCase):
                                  'write_file', 'glob', 'grep',
                                  'web_search', 'fetch_page'])
 
+    def test_execute_drops_undeclared_args(self):
+        out = self.registry.execute('list_dir',
+                                    {'path': '.', 'depth': None, 'bogus': 1})
+        self.assertNotIn('Error', out)
+
+    def test_execute_unknown_tool(self):
+        out = self.registry.execute('nonexistent', {})
+        self.assertIn('unknown tool', out)
+
     def test_custom_refine_metadata(self):
         reg = ToolRegistry()
 

@@ -124,8 +124,10 @@ repl.io/
 - `ToolPolicy` (`tools/policy.py`) is the single permission resolution point; the loop and `/tool` both route through it — never special-case tool names for permission logic
 - Actions: `allow` (no prompt), `ask` (y/N confirm in the loop via `_confirm_tool`), `deny` (tool filtered from the provider schema and refused on direct calls)
 - Precedence: name-level `deny` / allow-whitelist → category action from `tool_permission` → `external_directory` escalation (read/write/list outside the project worktree becomes `ask`)
+- The worktree is the directory holding the local `.replio/` — i.e. the launch directory, or `--path`. Launching from `~` makes the whole home directory the worktree, so subdirectories (including other projects) do **not** escalate; launch inside the project or pass `--path` for project-scoped prompting
 - `bash: ask` by default — every `run_command` confirms; set `tool_permission.bash = "allow"` to disable prompting
 - Confirm prompts and tool status are ephemeral REPL UI — never persisted to session files
+- `ToolRegistry.execute()` passes only args declared in the tool's schema — model-supplied extras (e.g. a hallucinated `depth` on `list_dir`) are dropped, not forwarded to the handler
 - Sandboxed exec (namespace/container isolation) and per-agent permission profiles are planned future work (see TODO)
 
 ### Adding a Provider
