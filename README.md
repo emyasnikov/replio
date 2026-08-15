@@ -123,6 +123,14 @@ python -m unittest discover tests
 
 The project is stdlib-only with no external dependencies. See [AGENTS.md](AGENTS.md) for architecture and conventions, and [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow.
 
+## Documentation
+
+Detailed references are in the [docs](docs/):
+
+- [API endpoints](docs/api.md)
+- [Configuration](docs/config.md)
+- [Commands & CLI](docs/commands.md)
+
 ## License
 
 MIT
