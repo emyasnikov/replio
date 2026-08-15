@@ -95,11 +95,22 @@ class ReplUI:
         else:
             self._write(text)
 
+    def thinking_begin(self):
+        if not self._loop.config.get('show_thinking', True):
+            return
+        self._emit('- Thinking', '\033[90m')
+
     def thinking(self, text):
         if not self._loop.config.get('show_thinking', True):
             return
-        self._prefix()
         self._write(text, '\033[90m')
+
+    def thinking_end(self, duration):
+        if self._loop.config.get('show_thinking', True):
+            sys.stdout.write('\n')
+            sys.stdout.flush()
+        else:
+            self._emit(f'+ Thought {duration:.1f}s', '\033[90m')
 
     def warning(self, msg):
         self._emit(f'[warning] {msg}', '\033[93m')
@@ -108,9 +119,14 @@ class ReplUI:
         label = f'[Error {code}]' if code else '[Error]'
         self._emit(f'{label} {msg}', '\033[91m')
 
-    def tool_status(self, name, args):
-        args_str = ', '.join(f'{k}={v!r}' for k, v in args.items())
-        self._emit(f'[{name}: {args_str}]', '\033[90m')
+    def tool_status(self, name, value, body):
+        self._emit(f'[{name}: {value}]', '\033[90m')
+        for line in body:
+            self._emit(line, '\033[90m')
+
+    def tool_result(self, output):
+        for line in output.splitlines():
+            self._emit(line, '\033[90m')
 
     def tool_refine(self, old, new):
         self._emit(f'[refine: "{old}" → "{new}"]', '\033[90m')
@@ -142,13 +158,22 @@ class NullUI:
     def thinking(self, text):
         pass
 
+    def thinking_begin(self):
+        pass
+
+    def thinking_end(self, duration):
+        pass
+
     def warning(self, msg):
         pass
 
     def error(self, code, msg):
         pass
 
-    def tool_status(self, name, args):
+    def tool_status(self, name, value, body):
+        pass
+
+    def tool_result(self, output):
         pass
 
     def tool_refine(self, old, new):
@@ -165,10 +190,12 @@ class NullUI:
 
 
 class HeadlessUI:
-    def __init__(self, auto: str = 'deny', verbose: bool = False, stream: bool = True):
+    def __init__(self, auto: str = 'deny', verbose: bool = False, stream: bool = True,
+                 show_thinking: bool = True):
         self.auto = auto
         self.verbose = verbose
         self.stream = stream
+        self.show_thinking = show_thinking
 
     def token(self, text):
         if self.stream:
@@ -180,6 +207,18 @@ class HeadlessUI:
             sys.stderr.write(text)
             sys.stderr.flush()
 
+    def thinking_begin(self):
+        if self.verbose and self.stream and self.show_thinking:
+            sys.stderr.write('- Thinking\n')
+
+    def thinking_end(self, duration):
+        if not (self.verbose and self.stream):
+            return
+        if self.show_thinking:
+            sys.stderr.write('\n')
+        else:
+            sys.stderr.write(f'+ Thought {duration:.1f}s\n')
+
     def warning(self, msg):
         sys.stderr.write(f'[warning] {msg}\n')
 
@@ -187,10 +226,15 @@ class HeadlessUI:
         label = f'[Error {code}]' if code else '[Error]'
         sys.stderr.write(f'{label} {msg}\n')
 
-    def tool_status(self, name, args):
+    def tool_status(self, name, value, body):
         if self.verbose:
-            args_str = ', '.join(f'{k}={v!r}' for k, v in args.items())
-            sys.stderr.write(f'[{name}: {args_str}]\n')
+            sys.stderr.write(f'[{name}: {value}]\n')
+            for line in body:
+                sys.stderr.write(f'{line}\n')
+
+    def tool_result(self, output):
+        if self.verbose:
+            sys.stderr.write(output.rstrip('\n') + '\n')
 
     def tool_refine(self, old, new):
         if self.verbose:

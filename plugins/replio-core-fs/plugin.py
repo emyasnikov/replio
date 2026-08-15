@@ -1,3 +1,4 @@
+import difflib
 import fnmatch
 import os
 import re
@@ -31,6 +32,31 @@ def _walk(p, entries, indent, depth_left, lines):
             except OSError:
                 size = 0
             lines.append(f'{pad}{e.name}  {size}')
+
+
+def _write_file_status(args):
+    path = args.get('path')
+    content = args.get('content', '')
+    if not path:
+        return ''
+    p = Path(path).expanduser()
+    try:
+        old = p.read_text(encoding='utf-8', errors='replace') if p.exists() else None
+    except OSError:
+        old = None
+    if old is None:
+        lines = content.splitlines() or ['(empty file)']
+        body = [f'+ {l}' for l in lines[:20]]
+        if len(lines) > 20:
+            body.append(f'+ … ({len(lines)} lines total)')
+        return '\n'.join([path] + body)
+    diff = list(difflib.unified_diff(
+        old.splitlines(), content.splitlines(),
+        fromfile=f'a/{path}', tofile=f'b/{path}', lineterm=''))
+    body = [l for l in diff if not l.startswith(('--- ', '+++ '))]
+    if len(body) > 40:
+        body = body[:40] + [f'… ({len(body) - 40} more diff lines)']
+    return '\n'.join([path] + body)
 
 
 def register_tools(registry):
@@ -151,6 +177,7 @@ def register_tools(registry):
         path_arg='path',
         key_arg='path',
         short='Write content to a file',
+        status=_write_file_status,
     )
     def write_file(path: str, content: str, mode: str = 'w') -> str:
         p = Path(path).expanduser()

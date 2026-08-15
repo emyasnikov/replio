@@ -108,6 +108,35 @@ class TestToolCalling(unittest.TestCase):
         search_mock.assert_called_once_with('latest AI news')
         self.assertEqual(self._assistant_msgs()[-1]['content'], 'Done.')
 
+    def test_shown_thinking_announces_and_streams(self):
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'thinking', 'content': 'reasoning...'},
+             {'type': 'token', 'content': 'Visible'},
+             {'type': 'done', 'reason': 'stop'}],
+        ]
+        buf = io.StringIO()
+        with patch('sys.stdout', new=buf):
+            self.chat._agent_loop()
+        out = buf.getvalue()
+        self.assertIn('- Thinking', out)
+        self.assertIn('reasoning...', out)
+        self.assertIn('Visible', out)
+
+    def test_hidden_thinking_announces_duration_only(self):
+        self.chat.config.data['show_thinking'] = False
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'thinking', 'content': 'secret reasoning'},
+             {'type': 'token', 'content': 'Visible'},
+             {'type': 'done', 'reason': 'stop'}],
+        ]
+        buf = io.StringIO()
+        with patch('sys.stdout', new=buf):
+            self.chat._agent_loop()
+        out = buf.getvalue()
+        self.assertNotIn('secret reasoning', out)
+        self.assertRegex(out, r'\+ Thought \d+\.\ds')
+        self.assertIn('Visible', out)
+
 
 if __name__ == '__main__':
     unittest.main()

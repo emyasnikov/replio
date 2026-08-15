@@ -1,5 +1,6 @@
 import tempfile
 import unittest
+from pathlib import Path
 
 from replio.config import Config
 from replio.plugins.manager import PluginManager
@@ -65,6 +66,61 @@ class TestToolRegistry(unittest.TestCase):
         schema = self.registry.schema_filtered({'web_search'})
         names = [s['function']['name'] for s in schema]
         self.assertEqual(names, ['web_search'])
+
+    def test_status_parts_uses_key_arg_value(self):
+        value, body = self.registry.status_parts(
+            'web_search', {'query': 'latest python', 'junk': 1})
+        self.assertEqual(value, 'latest python')
+        self.assertEqual(body, [])
+
+    def test_status_parts_truncates_long_value(self):
+        value, body = self.registry.status_parts('run_command', {'command': 'x' * 200})
+        self.assertEqual(len(value), 80)
+        self.assertEqual(body, [])
+
+    def test_status_parts_unknown_tool(self):
+        value, body = self.registry.status_parts('nonexistent', {})
+        self.assertEqual(value, 'nonexistent')
+        self.assertEqual(body, [])
+
+    def test_write_file_new_file_preview(self):
+        path = str(Path(self._tmp.name) / 'new.md')
+        value, body = self.registry.status_parts(
+            'write_file', {'path': path, 'content': 'First line\nSecond line\n'})
+        self.assertEqual(value, path)
+        self.assertEqual(body, ['+ First line', '+ Second line'])
+
+    def test_write_file_existing_file_diff(self):
+        p = Path(self._tmp.name) / 'edit.md'
+        p.write_text('old line\n')
+        value, body = self.registry.status_parts(
+            'write_file', {'path': str(p), 'content': 'new line\n'})
+        self.assertEqual(value, str(p))
+        self.assertIn('-old line', body)
+        self.assertIn('+new line', body)
+
+    def test_echo_metadata(self):
+        self.assertTrue(self.registry.echo_for('run_command'))
+        self.assertFalse(self.registry.echo_for('write_file'))
+        self.assertFalse(self.registry.echo_for('nonexistent'))
+
+    def test_custom_status_callback(self):
+        reg = ToolRegistry()
+        params = {
+            'type': 'object',
+            'properties': {'path': {'type': 'string'},
+                           'content': {'type': 'string'}},
+            'required': ['path', 'content'],
+        }
+
+        @reg.register('do_stuff', 'Do', params, key_arg='path',
+                      status=lambda args: f"{args['path']}\n+ {args['content']}")
+        def do_stuff(path, content):
+            return 'ok'
+
+        value, body = reg.status_parts('do_stuff', {'path': 'p', 'content': 'c'})
+        self.assertEqual(value, 'p')
+        self.assertEqual(body, ['+ c'])
 
 
 if __name__ == '__main__':

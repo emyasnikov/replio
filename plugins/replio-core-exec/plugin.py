@@ -35,6 +35,7 @@ def register_tools(registry):
         permission='bash',
         key_arg='command',
         short='Run a shell command',
+        echo=True,
     )
     def run_command(command: str, cwd: str | None = None,
                     timeout: int = 30) -> str:

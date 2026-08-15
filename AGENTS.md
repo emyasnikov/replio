@@ -119,6 +119,7 @@ repl.io/
 5. Return a string (the tool result injected into the conversation)
 6. Add optional metadata for loop behavior — e.g. `refine=True` to auto-refine short query args via a lightweight model call (gated by the `query_refine` config)
 7. Optional permission/display metadata: `category` (`search`/`read`/`write`/`exec`/`ask`/`todo`), `permission` (`read`/`list`/`edit`/`bash`/`web` — the `tool_permission` key that gates it), `path_arg` (which parameter is a filesystem path, for `external_directory` scope checks), `key_arg` (which argument to show in status/confirm labels, and for the future activity-lines glyph system)
+8. Optional status metadata: `status` (a `Callable[[dict], str]` receiving the cleaned args and returning a block whose first line becomes the `[tool: <value>]` oneliner and the rest render as dimmed detail lines — used by `write_file` to preview/diff the written text), `echo` (bool — when true, the tool's result is printed dimmed below the status oneliner; used by `run_command` to show exec output)
 
 ### Machine Access & Permissions
 - `ToolPolicy` (`tools/policy.py`) is the single permission resolution point; the loop and `/tool` both route through it — never special-case tool names for permission logic

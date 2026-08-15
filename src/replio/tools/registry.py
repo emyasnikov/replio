@@ -1,3 +1,6 @@
+from typing import Callable
+
+
 class ToolRegistry:
     def __init__(self):
         self._tools: dict[str, dict] = {}
@@ -6,7 +9,9 @@ class ToolRegistry:
     def register(self, name: str, description: str, parameters: dict,
                  refine: bool = False, category: str = 'tool',
                  permission: str = 'web', path_arg: str | None = None,
-                 key_arg: str | None = None, short: str = ''):
+                 key_arg: str | None = None, short: str = '',
+                 status: Callable[[dict], str] | None = None,
+                 echo: bool = False):
         def wrapper(fn):
             entry = {
                 'name': name,
@@ -17,6 +22,8 @@ class ToolRegistry:
                 'path_arg': path_arg,
                 'key_arg': key_arg,
                 'short': short,
+                'status': status,
+                'echo': echo,
                 'schema': {
                     'type': 'function',
                     'function': {
@@ -31,17 +38,45 @@ class ToolRegistry:
             return fn
         return wrapper
 
+    def _clean_args(self, name: str, arguments: dict) -> dict:
+        tool = self._tools.get(name)
+        if not tool:
+            return {}
+        props = tool['schema']['function']['parameters'].get('properties', {})
+        return {k: v for k, v in arguments.items()
+                if k in props and v is not None}
+
     def execute(self, name: str, arguments: dict) -> str:
         tool = self._tools.get(name)
         if not tool:
             return f'Error: unknown tool "{name}"'
-        props = tool['schema']['function']['parameters'].get('properties', {})
-        args = {k: v for k, v in arguments.items()
-                if k in props and v is not None}
+        args = self._clean_args(name, arguments)
         try:
             return tool['fn'](**args)
         except Exception as e:
             return f'Error executing {name}: {e}'
+
+    def status_parts(self, name: str, arguments: dict) -> tuple[str, list[str]]:
+        tool = self._tools.get(name)
+        args = self._clean_args(name, arguments)
+        if not tool:
+            return name, []
+        status_fn = tool.get('status')
+        if status_fn:
+            try:
+                block = status_fn(args) or ''
+                lines = block.split('\n')
+                return lines[0], lines[1:]
+            except Exception:
+                pass
+        key_arg = tool.get('key_arg')
+        if key_arg and args.get(key_arg):
+            return str(args[key_arg])[:80], []
+        return name, []
+
+    def echo_for(self, name: str) -> bool:
+        tool = self._tools.get(name)
+        return bool(tool and tool.get('echo'))
 
     def refine_required(self, name: str) -> bool:
         tool = self._tools.get(name)

@@ -44,11 +44,12 @@
 - [ ] `git` — repository operations (status, diff, commit)
 - [ ] `docs_search` — local grep + DuckDuckGo for documentation lookups
 - [ ] Workspace sessions — tools write into a scoped `--workspace` dir; optional `--git` sync
-- [ ] Deterministic activity lines — typed status lines printed as the loop executes tools, replacing the mechanical `[tool: args]` status
-  - [ ] Six-category glyph set from tool registration metadata (`category` + `status` template): `*` search, `→` read, `←` write/edit, `~` ask, `- [ ]` todo, `$` exec (ask/todo/exec reserved for other tools)
-  - [ ] OpenCode-style tool call notation as reference: `% WebFetch https://...` — prefix glyph + tool name + key argument
-  - [ ] `ToolRegistry.activity(name, args)` returns `(glyph, label)`; the loop renders `  ↳ <glyph> <label>` dimmed — no name special-casing
-- [ ] Spinner — animated `⠧`-style indicator as liveness feedback when narration/thinking is hidden (`show_thinking: false`); folded into `show_thinking`, no new config key; stdlib `threading` daemon, cleared with `\r\033[K`
+- [ ] Glyph activity lines — optional (config-gated) replacement of the default `[tool: key_arg]` status with typed glyph lines; the arrow shows payload flow: `←` content leaves the target (read), `→` content enters the target (write)
+  - [ ] Category → glyph + verb defaults: `read` `←` Read, `write` `→` Write, `search` `%` Search, `exec` `$` Run, `ask` `~` Ask, `todo` `-` Todo, `delegate` `↳` Call; per-tool overrides (glob `*` Search)
+  - [ ] Render `  <glyph> <verb> <key_arg>` dimmed — e.g. `← Read src/foo.py`, `→ Write test.md`, `% Search "latest python"`, `* Glob **/*.py`, `$ Run pytest`, `↳ Call agent-x`; no name special-casing
+  - [ ] `ToolRegistry.activity(name, args)` returns `(glyph, verb, label)`; unmapped categories fall back to the default `[tool: key_arg]` oneliner
+  - [ ] Config key (default off) — default stays `[tool: key_arg]` oneliner + detail lines
+- [ ] Spinner — animated `⠧ Thinking` replaces the static `- Thinking` / `+ Thought 12.3s` announce while thinking is in progress (`show_thinking: false`); folded into `show_thinking`, no new config key; stdlib `threading` daemon, cleared with `\r\033[K`
 - [ ] Activity lines are ephemeral UI — never persisted to session files (tool calls are already recorded there)
 - [ ] Sandboxed exec — namespace/container isolation for `run_command` (documented, planned for a later version)
 - [ ] Per-agent permission profiles — `tool_permission` becomes per-agent when `/agent` personas land
@@ -74,6 +75,8 @@
 
 ## Done
 
+- [x] Thinking announce — `- Thinking` on its own line before streamed reasoning when `show_thinking: true`; `+ Thought 12.3s` (thinking duration) instead when hidden, keeping the reasoning text out of the terminal. The engine times the thinking window (`thinking_begin`/`thinking_end` UI hooks); `HeadlessUI` mirrors it in `--verbose`
+- [x] Human-readable tool status — default oneliner is `[tool: key_arg]` (e.g. `[write_file: test.md]`, `[run_command: echo hi]`) instead of the raw args dump; detail lines render dimmed below: `write_file` shows the written text via a registered `status` callback (new-file `+ line` preview, or a `difflib` unified diff for existing files — works for append too), and `run_command` echoes its output (`echo` registration metadata)
 - [x] Built-in web + machine features moved to bundled plugins (`plugins/`, shipped as `replio.plugins.bundled`) — `replio-core-websearch` (web_search, fetch_page + search service), `replio-core-fs` (read_file, list_dir, write_file, glob, grep), `replio-core-exec` (run_command); packaged via `package-dir` mapping so the repo-root `plugins/` folder is canonical
   - [x] Discovery precedence bundled < global < local; `PluginInfo.origin` (`bundled`/`global`/`local`); bundled plugins cannot be updated/uninstalled (disable instead)
   - [x] `register_services` entry hook — `replio-core-websearch` powers the `web_search: true` search-then-answer mode (`engine._perform_search` routes through the `search` service)

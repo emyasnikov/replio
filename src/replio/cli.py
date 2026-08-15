@@ -16,7 +16,8 @@ def _engine_from_args(args) -> Engine:
         config.set('base_url', args.base_url)
     auto = 'allow' if getattr(args, 'approve', None) is True else 'deny'
     ui = HeadlessUI(auto=auto, verbose=getattr(args, 'verbose', False),
-                    stream=getattr(args, 'output', 'json') == 'text')
+                    stream=getattr(args, 'output', 'json') == 'text',
+                    show_thinking=config.get('show_thinking', True))
     return Engine(config, ui=ui)
 
 
@@ -32,7 +33,8 @@ def cmd_run(args) -> int:
 def cmd_serve(args) -> int:
     from .server import HeadlessServer, ChatHandler
     config = Config(path=args.path)
-    ui = HeadlessUI(auto='deny', verbose=False, stream=False)
+    ui = HeadlessUI(auto='deny', verbose=False, stream=False,
+                    show_thinking=config.get('show_thinking', True))
     engine = Engine(config, ui=ui)
     server = HeadlessServer((args.host, args.port), ChatHandler, engine=engine)
     print(f'replio serve — http://{args.host}:{args.port} '

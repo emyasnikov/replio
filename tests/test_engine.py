@@ -8,7 +8,7 @@ from replio.config import Config
 from replio.engine import Engine
 from replio.plugins.manager import PluginManager
 from replio.sessions.manager import SessionManager
-from replio.ui import HeadlessUI
+from replio.ui import HeadlessUI, NullUI
 
 
 def make_engine(config_data: dict | None = None) -> Engine:
@@ -147,6 +147,20 @@ class TestEngine(unittest.TestCase):
         json.dumps(d)
 
 
+class _RecordUI(NullUI):
+    def __init__(self):
+        self.calls = []
+
+    def thinking(self, text):
+        self.calls.append(('thinking', text))
+
+    def thinking_begin(self):
+        self.calls.append(('begin',))
+
+    def thinking_end(self, duration):
+        self.calls.append(('end', duration))
+
+
 class TestEngineSinks(unittest.TestCase):
 
     def test_null_ui_confirm_denies(self):
@@ -156,6 +170,37 @@ class TestEngineSinks(unittest.TestCase):
     def test_headless_ui_auto(self):
         self.assertEqual(HeadlessUI(auto='allow').confirm('x', 'x'), True)
         self.assertEqual(HeadlessUI(auto='deny').confirm('x', 'x'), False)
+
+    def test_thinking_window_begin_and_end(self):
+        engine = make_engine()
+        try:
+            engine._ui = _RecordUI()
+            engine.provider.chat.return_value = [
+                {'type': 'thinking', 'content': 'reasoning'},
+                {'type': 'token', 'content': 'Answer'},
+                {'type': 'done', 'reason': 'stop'},
+            ]
+            engine.chat('q')
+            kinds = [c[0] for c in engine._ui.calls]
+            self.assertEqual(kinds, ['begin', 'thinking', 'end'])
+            self.assertEqual(engine._ui.calls[1], ('thinking', 'reasoning'))
+            self.assertEqual(engine._ui.calls[2][0], 'end')
+            self.assertGreaterEqual(engine._ui.calls[2][1], 0)
+        finally:
+            engine._tmp.cleanup()
+
+    def test_thinking_window_skipped_without_thinking(self):
+        engine = make_engine()
+        try:
+            engine._ui = _RecordUI()
+            engine.provider.chat.return_value = [
+                {'type': 'token', 'content': 'Answer'},
+                {'type': 'done', 'reason': 'stop'},
+            ]
+            engine.chat('q')
+            self.assertEqual(engine._ui.calls, [])
+        finally:
+            engine._tmp.cleanup()
 
 
 if __name__ == '__main__':
