@@ -88,7 +88,8 @@ class TestToolRegistry(unittest.TestCase):
         value, body = self.registry.status_parts(
             'write_file', {'path': path, 'content': 'First line\nSecond line\n'})
         self.assertEqual(value, path)
-        self.assertEqual(body, ['+ First line', '+ Second line'])
+        self.assertEqual(body[:2], ['+ First line', '+ Second line'])
+        self.assertEqual(body[-1], f'({Path(path).resolve()} — 2 lines, 23 chars, created)')
 
     def test_write_file_existing_file_diff(self):
         p = Path(self._tmp.name) / 'edit.md'
@@ -98,6 +99,14 @@ class TestToolRegistry(unittest.TestCase):
         self.assertEqual(value, str(p))
         self.assertIn('-old line', body)
         self.assertIn('+new line', body)
+        self.assertEqual(body[-1], f'({p.resolve()} — 1 lines, 9 chars, overwritten)')
+
+    def test_write_file_append_summary(self):
+        p = Path(self._tmp.name) / 'append.md'
+        p.write_text('a\n')
+        value, body = self.registry.status_parts(
+            'write_file', {'path': str(p), 'content': 'b\n', 'mode': 'a'})
+        self.assertEqual(body[-1], f'({p.resolve()} — 1 lines, 2 chars, appended)')
 
     def test_echo_metadata(self):
         self.assertTrue(self.registry.echo_for('run_command'))

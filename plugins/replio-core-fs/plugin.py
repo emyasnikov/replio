@@ -44,19 +44,23 @@ def _write_file_status(args):
         old = p.read_text(encoding='utf-8', errors='replace') if p.exists() else None
     except OSError:
         old = None
+    count = len(content)
+    lines = content.splitlines()
+    action = ('appended' if args.get('mode') == 'a'
+              else 'created' if old is None else 'overwritten')
+    summary = f'({p.resolve()} — {len(lines)} lines, {count} chars, {action})'
     if old is None:
-        lines = content.splitlines() or ['(empty file)']
         body = [f'+ {l}' for l in lines[:20]]
         if len(lines) > 20:
             body.append(f'+ … ({len(lines)} lines total)')
-        return '\n'.join([path] + body)
+        return '\n'.join([path] + body + [summary])
     diff = list(difflib.unified_diff(
         old.splitlines(), content.splitlines(),
         fromfile=f'a/{path}', tofile=f'b/{path}', lineterm=''))
     body = [l for l in diff if not l.startswith(('--- ', '+++ '))]
     if len(body) > 40:
         body = body[:40] + [f'… ({len(body) - 40} more diff lines)']
-    return '\n'.join([path] + body)
+    return '\n'.join([path] + body + [summary])
 
 
 def register_tools(registry):

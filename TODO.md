@@ -22,7 +22,6 @@
 
 ## Open
 
-- [ ] `write_file` human-readable output — return the resolved absolute path, line count, char count, and created/overwritten/appended status instead of only `Wrote N chars to ...`
 - [ ] Restore tab completion for commands and paths — regression: diagnose why the readline completer no longer fires (likely macOS libedit `tab: complete` binding or completer registration after the Engine refactor), then extend to filesystem path completion after command arguments
 - [ ] Show per-turn stats on their own line — the `(Ns, N tokens)` footer currently lands at the end of the last content line; emit a separating newline in `ReplUI.footer` (or pass a content-ended-without-newline flag from the engine)
 - [ ] Plan/Build modes — read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery
@@ -75,7 +74,8 @@
 
 ## Done
 
-- [x] Thinking announce — `- Thinking` on its own line before streamed reasoning when `show_thinking: true`; `+ Thought 12.3s` (thinking duration) instead when hidden, keeping the reasoning text out of the terminal. The engine times the thinking window (`thinking_begin`/`thinking_end` UI hooks); `HeadlessUI` mirrors it in `--verbose`
+- [x] `write_file` human-readable output — the status preview ends with a dimmed parenthesized summary: resolved absolute path, line count, char count, and created/overwritten/appended action (the tool result string stays minimal)
+- [x] Thinking announce — `+ Thinking` on its own line before streamed reasoning when `show_thinking: true`; `+ Thought 12.3s` (thinking duration) instead when hidden, keeping the reasoning text out of the terminal. The engine times the thinking window (`thinking_begin`/`thinking_end` UI hooks); `HeadlessUI` mirrors it in `--verbose`
 - [x] Human-readable tool status — default oneliner is `[tool: key_arg]` (e.g. `[write_file: test.md]`, `[run_command: echo hi]`) instead of the raw args dump; detail lines render dimmed below: `write_file` shows the written text via a registered `status` callback (new-file `+ line` preview, or a `difflib` unified diff for existing files — works for append too), and `run_command` echoes its output (`echo` registration metadata)
 - [x] Built-in web + machine features moved to bundled plugins (`plugins/`, shipped as `replio.plugins.bundled`) — `replio-core-websearch` (web_search, fetch_page + search service), `replio-core-fs` (read_file, list_dir, write_file, glob, grep), `replio-core-exec` (run_command); packaged via `package-dir` mapping so the repo-root `plugins/` folder is canonical
   - [x] Discovery precedence bundled < global < local; `PluginInfo.origin` (`bundled`/`global`/`local`); bundled plugins cannot be updated/uninstalled (disable instead)
