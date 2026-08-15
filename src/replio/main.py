@@ -1,5 +1,6 @@
 import sys
 import argparse
+from importlib.metadata import version, PackageNotFoundError
 
 from .config import Config
 from .chat import ChatLoop
@@ -32,11 +33,20 @@ def _add_serve_parser(sub):
     p.add_argument('--path', help='Project path (default: current directory)')
 
 
+def _version():
+    try:
+        return version('replio')
+    except PackageNotFoundError:
+        return 'unknown'
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description='REPL.io — a terminal-based agentic REPL with headless CLI and API modes'
     )
     parser.add_argument('--path', '-p', help='Project path (default: current directory)')
+    parser.add_argument('--version', '-v', action='version',
+                        help='Print version and exit', version=_version())
     sub = parser.add_subparsers(dest='command')
     _add_run_parser(sub)
     _add_serve_parser(sub)
