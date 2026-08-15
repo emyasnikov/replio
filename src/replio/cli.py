@@ -36,7 +36,7 @@ def cmd_serve(args) -> int:
     engine = Engine(config, ui=ui)
     server = HeadlessServer((args.host, args.port), ChatHandler, engine=engine)
     print(f'replio serve — http://{args.host}:{args.port} '
-          f'(POST /chat, GET /sessions, GET /health)', file=sys.stderr)
+          f'(POST /chat, GET /sessions, GET /health, GET /version)', file=sys.stderr)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

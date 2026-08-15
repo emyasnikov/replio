@@ -1,9 +1,9 @@
 import sys
 import argparse
-from importlib.metadata import version, PackageNotFoundError
 
 from .config import Config
 from .chat import ChatLoop
+from . import get_version
 
 
 def _add_run_parser(sub):
@@ -34,10 +34,7 @@ def _add_serve_parser(sub):
 
 
 def _version():
-    try:
-        return version('replio')
-    except PackageNotFoundError:
-        return 'unknown'
+    return get_version()
 
 
 def main(argv=None):

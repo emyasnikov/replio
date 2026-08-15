@@ -50,6 +50,12 @@ class TestServer(unittest.TestCase):
             self.assertEqual(resp.status, 200)
             self.assertEqual(json.loads(resp.read()), {'status': 'ok'})
 
+    def test_version(self):
+        from replio import get_version
+        with urlopen(f'http://127.0.0.1:{self.port}/version') as resp:
+            self.assertEqual(resp.status, 200)
+            self.assertEqual(json.loads(resp.read()), {'version': get_version()})
+
     def test_sessions_list(self):
         self._post('/chat', {'prompt': 'hello', 'session_id': 'api'})
         with urlopen(f'http://127.0.0.1:{self.port}/sessions') as resp:

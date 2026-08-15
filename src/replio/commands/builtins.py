@@ -1,6 +1,8 @@
 import sys
 import json
 
+from .. import get_version
+
 SUB_INDENT = 4
 
 
@@ -85,6 +87,10 @@ def register_builtins(registry):
     def exit_cmd(_=None):
         chat.session_auto_save()
         sys.exit(0)
+
+    @registry.register('version', aliases=['v'], description='Show the REPL.io version')
+    def version_cmd(_=None):
+        print(f'REPL.io {get_version()}')
 
     @registry.register('model', description='Show or switch the active model')
     def model_cmd(arg=''):

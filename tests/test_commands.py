@@ -153,6 +153,11 @@ class TestToolCommand(unittest.TestCase):
         self._dispatch('/compact')
         self.chat.compact_session.assert_called_once()
 
+    def test_version_prints_version(self):
+        from replio import get_version
+        output = self._dispatch('/version')
+        self.assertIn(get_version(), output)
+
     def test_config_parses_json_list(self):
         self._dispatch('/config tools.deny ["run_command", "web_search"]')
         self.assertEqual(self.chat.config.get('tools.deny'),

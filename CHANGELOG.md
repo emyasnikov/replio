@@ -2,6 +2,8 @@
 
 ## v0.12.0
 
+- `GET /version` endpoint — the serve API exposes the installed version as `{"version": ...}`, alongside `/health` and `/sessions`
+- `/version` slash command (alias `/v`) — prints `REPL.io <version>` in the REPL; version lookup centralized in `replio.get_version()` and shared with the CLI `--version` flag
 - `--version` / `-v` CLI flag — `replio --version` prints the installed version (from package metadata) and exits
 - Clear screen on REPL start — the interactive REPL wipes scrollback + visible screen (`\033[3J\033[2J\033[H`) before printing the banner; gated by `clear_screen` config (default `true`), toggleable via `/config clear_screen false`. Headless `run`/`serve` modes are unaffected.
 

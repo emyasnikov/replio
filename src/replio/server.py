@@ -3,6 +3,8 @@ import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+from . import get_version
+
 
 class HeadlessServer(ThreadingHTTPServer):
     daemon_threads = True
@@ -48,6 +50,8 @@ class ChatHandler(BaseHTTPRequestHandler):
         server = self.server
         if self.path == '/health':
             self._send(200, {'status': 'ok'})
+        elif self.path == '/version':
+            self._send(200, {'version': get_version()})
         elif self.path == '/sessions':
             with server.lock:
                 names = server.engine.sessions.list()
