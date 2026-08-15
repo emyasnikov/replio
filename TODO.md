@@ -22,6 +22,12 @@
 
 ## Open
 
+- [ ] MCP support — Model Context Protocol integration, plugin-first (third-party `mcp` lib as a lazy plugin dep; the core stays stdlib-only):
+  - [ ] MCP client plugin — connect to external MCP servers (stdio/HTTP), register their tools into the ToolRegistry so the model can call them like any Replio tool (tool policy, status, session logging apply)
+  - [ ] MCP server — expose Replio's registered tools + sessions over MCP for external agents (Claude, opencode, …) to drive
+- [ ] `write_file` reports the resolved absolute path to the model — the tool result currently echoes the raw `path` arg (e.g. `Wrote 36 chars to test2.md`), so when a relative path resolves to an unexpected directory (launched from `~`, `test2.md` lands at `/Users/emyasnikov/test2.md`) the model can't see where the file actually went and may write twice or leave a stray file. Return `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)` and note in the tool description that relative paths resolve against the launch/current directory. The terminal status summary already shows the resolved path — this is about the model-visible tool result (observed: two `write_file` calls, one stray file in home)
+- [ ] Docker packaging — Dockerfile (+ `.dockerignore`, optional docker-compose.yml) to run `replio serve` (and `replio run`) inside a container: python slim base, install the package, volume-mount config (`~/.config/replio`) and the sessions dir for persistence
+- [ ] systemd unit — `replio.service` template to run the container (or `replio serve` directly) as a managed service: `ExecStart`, config/session paths, `Restart=on-failure`, environment for the API key
 - [ ] Restore tab completion for commands and paths — regression: diagnose why the readline completer no longer fires (likely macOS libedit `tab: complete` binding or completer registration after the Engine refactor), then extend to filesystem path completion after command arguments
 - [ ] Show per-turn stats on their own line — the `(Ns, N tokens)` footer currently lands at the end of the last content line; emit a separating newline in `ReplUI.footer` (or pass a content-ended-without-newline flag from the engine)
 - [ ] Plan/Build modes — read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery
@@ -48,7 +54,7 @@
   - [ ] Render `  <glyph> <verb> <key_arg>` dimmed — e.g. `← Read src/foo.py`, `→ Write test.md`, `% Search "latest python"`, `* Glob **/*.py`, `$ Run pytest`, `↳ Call agent-x`; no name special-casing
   - [ ] `ToolRegistry.activity(name, args)` returns `(glyph, verb, label)`; unmapped categories fall back to the default `[tool: key_arg]` oneliner
   - [ ] Config key (default off) — default stays `[tool: key_arg]` oneliner + detail lines
-- [ ] Spinner — animated `⠧ Thinking` replaces the static `- Thinking` / `+ Thought 12.3s` announce while thinking is in progress (`show_thinking: false`); folded into `show_thinking`, no new config key; stdlib `threading` daemon, cleared with `\r\033[K`
+- [ ] Spinner — animated `⠧ Thinking` replaces the static `+ Thinking` / `+ Thought 12.3s` announce while thinking is in progress (`show_thinking: false`); folded into `show_thinking`, no new config key; stdlib `threading` daemon, cleared with `\r\033[K`
 - [ ] Activity lines are ephemeral UI — never persisted to session files (tool calls are already recorded there)
 - [ ] Sandboxed exec — namespace/container isolation for `run_command` (documented, planned for a later version)
 - [ ] Per-agent permission profiles — `tool_permission` becomes per-agent when `/agent` personas land
