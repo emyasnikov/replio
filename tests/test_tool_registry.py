@@ -37,7 +37,7 @@ class TestToolRegistry(unittest.TestCase):
                                  'write_file', 'glob', 'grep',
                                  'web_search', 'fetch_page'])
 
-    def test_execute_drops_undeclared_args(self):
+    def test_execute_drops_undeclared_and_none_args(self):
         out = self.registry.execute('list_dir',
                                     {'path': '.', 'depth': None, 'bogus': 1})
         self.assertNotIn('Error', out)

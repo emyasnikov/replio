@@ -36,7 +36,8 @@ class ToolRegistry:
         if not tool:
             return f'Error: unknown tool "{name}"'
         props = tool['schema']['function']['parameters'].get('properties', {})
-        args = {k: v for k, v in arguments.items() if k in props}
+        args = {k: v for k, v in arguments.items()
+                if k in props and v is not None}
         try:
             return tool['fn'](**args)
         except Exception as e:

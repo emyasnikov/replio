@@ -14,6 +14,25 @@ def _truncate(text: str) -> str:
     return text
 
 
+def _walk(p, entries, indent, depth_left, lines):
+    pad = '  ' * indent
+    for e in entries:
+        if e.is_dir():
+            lines.append(f'{pad}{e.name}/')
+            if depth_left > 1 and e.name not in SKIP_DIRS:
+                try:
+                    sub = sorted(e.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
+                except OSError:
+                    sub = []
+                _walk(e, sub, indent + 1, depth_left - 1, lines)
+        else:
+            try:
+                size = e.stat().st_size
+            except OSError:
+                size = 0
+            lines.append(f'{pad}{e.name}  {size}')
+
+
 def register_tools(registry):
     @registry.register(
         name='read_file',
@@ -67,13 +86,17 @@ def register_tools(registry):
 
     @registry.register(
         name='list_dir',
-        description='List the immediate contents of a directory. Returns sorted entries with a trailing / for subdirectories and file sizes. Use glob for recursive search.',
+        description='List a directory\'s contents. Returns sorted entries with a trailing / for subdirectories and file sizes. depth=1 lists only the immediate contents; higher values recurse into subdirectories as an indented tree. Use glob for finding files by pattern.',
         parameters={
             'type': 'object',
             'properties': {
                 'path': {
                     'type': 'string',
                     'description': 'Directory to list (relative to the project or absolute)',
+                },
+                'depth': {
+                    'type': 'integer',
+                    'description': 'How many levels deep to recurse; 1 = immediate contents only',
                 },
             },
             'required': ['path'],
@@ -84,12 +107,13 @@ def register_tools(registry):
         key_arg='path',
         short="List a directory's contents",
     )
-    def list_dir(path: str = '.') -> str:
+    def list_dir(path: str = '.', depth: int = 1) -> str:
         p = Path(path).expanduser()
         if not p.exists():
             return f'Error: path not found: {path}'
         if not p.is_dir():
             return f'Error: {path} is not a directory (use read_file instead)'
+        level = max(1, int(depth))
         try:
             entries = sorted(p.iterdir(), key=lambda e: (not e.is_dir(), e.name.lower()))
         except OSError as e:
@@ -97,15 +121,7 @@ def register_tools(registry):
         if not entries:
             return '(empty directory)'
         lines = [f'{p}:']
-        for e in entries:
-            if e.is_dir():
-                lines.append(f'  {e.name}/')
-            else:
-                try:
-                    size = e.stat().st_size
-                except OSError:
-                    size = 0
-                lines.append(f'  {e.name}  {size}')
+        _walk(p, entries, 1, level, lines)
         return _truncate('\n'.join(lines))
 
     @registry.register(

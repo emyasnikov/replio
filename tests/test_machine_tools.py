@@ -71,6 +71,40 @@ class TestMachineTools(unittest.TestCase):
         out = self.run_tool('list_dir', path=str(self.root / 'nope'))
         self.assertIn('not found', out)
 
+    def test_list_dir_depth_recursive(self):
+        (self.root / 'src' / 'deep').mkdir(parents=True)
+        (self.root / 'src' / 'mod.py').write_text('x')
+        (self.root / 'src' / 'deep' / 'leaf.py').write_text('y')
+        out = self.run_tool('list_dir', path=str(self.root), depth=3)
+        self.assertIn('src/', out)
+        self.assertIn('  mod.py', out)
+        self.assertIn('  deep/', out)
+        self.assertIn('    leaf.py', out)
+
+    def test_list_dir_depth_two_stops_below(self):
+        (self.root / 'src' / 'deep').mkdir(parents=True)
+        (self.root / 'src' / 'deep' / 'leaf.py').write_text('y')
+        out = self.run_tool('list_dir', path=str(self.root), depth=2)
+        self.assertIn('src/', out)
+        self.assertIn('  deep/', out)
+        self.assertNotIn('leaf.py', out)
+
+    def test_list_dir_depth_skips_noise_dirs(self):
+        (self.root / '.venv').mkdir()
+        (self.root / '.venv' / 'lib.py').write_text('y')
+        (self.root / 'a.txt').write_text('x')
+        out = self.run_tool('list_dir', path=str(self.root), depth=3)
+        self.assertIn('.venv/', out)
+        self.assertNotIn('lib.py', out)
+        self.assertIn('a.txt', out)
+
+    def test_list_dir_depth_one_matches_flat(self):
+        (self.root / 'b.txt').write_text('x')
+        (self.root / 'sub').mkdir()
+        flat = self.run_tool('list_dir', path=str(self.root))
+        explicit = self.run_tool('list_dir', path=str(self.root), depth=1)
+        self.assertEqual(flat, explicit)
+
     def test_write_file_creates(self):
         out = self.run_tool('write_file', path=str(self.root / 'new.txt'), content='hello')
         self.assertIn('Wrote 5 chars', out)
