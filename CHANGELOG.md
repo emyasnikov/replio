@@ -2,8 +2,8 @@
 
 ## v0.14.0
 
+- Tab completion extended — filesystem path completion after command arguments (directories get a trailing `/` for continued descent), tool-name completion for `/tool <prefix>`, and subcommand completion for commands declaring `subcommands` (`/session lo` → `load`, `/plugins dis` → `disable`)
 - Fixed tab completion — the completer no longer fires on macOS libedit (`readline.parse_and_bind('tab: complete')` is GNU-only and silently inserts a literal tab; libedit needs `bind ^I rl_complete`). `/` is removed from the completer delimiters so the model-facing word keeps its slash and paths complete correctly
-- Tab completion extended to filesystem paths after command arguments (`/tool read_file <path>`, etc.) with a trailing `/` on directories for continued descent, plus tool-name completion for `/tool <prefix>`
 
 ## v0.13.0 - 2026-08-16
 

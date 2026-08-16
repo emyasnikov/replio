@@ -37,6 +37,14 @@ class TestCompletion(unittest.TestCase):
         self.chat._init_tooling()
         self.assertEqual(self._complete('/tool read_', 'read_'), 'read_file ')
 
+    def test_subcommand_completion(self):
+        self.assertEqual(self._complete('/session lo', 'lo'), 'load ')
+        self.assertEqual(self._complete('/plugins dis', 'dis'), 'disable ')
+
+    def test_subcommand_completion_exhausts(self):
+        with patch('replio.chat.readline.get_line_buffer', return_value='/session zz'):
+            self.assertIsNone(self.chat._completer('zz', 0))
+
     def test_plain_input_no_completion(self):
         self.assertIsNone(self._complete('hello', 'hello'))
 

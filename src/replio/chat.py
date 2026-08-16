@@ -66,6 +66,14 @@ class ChatLoop(Engine):
                 return options[state] + ' '
             return None
         if head.lstrip().startswith('/'):
+            cmd = head.lstrip()[1:].strip().split(maxsplit=1)[0]
+            meta = self.registry.meta.get(cmd)
+            if meta and meta.get('subcommands'):
+                options = sorted(n for n, _ in meta['subcommands']
+                                 if n.startswith(text))
+                if state < len(options):
+                    return options[state] + ' '
+                return None
             return self._path_complete(text, state)
         if text.startswith('/'):
             term = text[1:]

@@ -79,7 +79,7 @@
 
 ## Done
 
-- [x] Tab completion restored + extended — libedit `bind ^I rl_complete` binding with `/` removed from the completer delimiters (GNU readline keeps `tab: complete`); filesystem path completion after command arguments, tool-name completion for `/tool`, subcommand completion for `/session`/`/plugins`
+- [x] Tab completion restored (libedit binding) + extended to paths, tool names, and subcommands
 - [x] README terminal screenshot as SVG
 - [x] `deploy/` fleet templates — `Dockerfile` + entrypoint + `.dockerignore`, `docker-compose.yml.example`, systemd `replio@.service` template unit, launchd `com.replio.agent.plist.example`; repo-held generic templates, per-agent values configured per project
 - [x] `docs/fleet.md` — single-purpose agent fleet pattern (one scoped process per agent, responsibilities & permissions, doc-agent composition, deployment)
