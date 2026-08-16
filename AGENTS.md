@@ -162,7 +162,7 @@ Plugins currently install from git URLs or local paths into the plugin roots. Sh
 - **Phase 2** — Machine access (read/write/exec tools, tool policies, `confirm`-gated exec)
 - **Phase 3** — Personas (`/agent` with per-agent prompt, sessions, model)
 - **Phase 4** — Delegation (`delegate` tool → sub-agent loops; team orchestration)
-- **Phase 5** — Plugins (tools + providers + commands installable, directory-based) ✅
+- **Phase 5** — Plugins (tools + providers + commands installable, directory-based)
   - `PluginManager` discovers plugins in bundled `replio.plugins.bundled`, `~/.config/replio/plugins/`, and `.replio/plugins/` (local wins), validates the manifest (`replio_version`/`python` ranges), imports entry modules once, and hooks tools/providers/commands/services into the live registries
   - Management: `/plugins` and `replio plugins` — `install`/`update`/`uninstall`/`enable`/`disable`; activation via the `plugins` config list (empty = all)
   - Plugin third-party deps are lazy (imported inside plugin functions) — the core stays stdlib-only

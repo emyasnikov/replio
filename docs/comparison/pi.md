@@ -19,7 +19,7 @@ This document compares two open-source personal AI assistant / coding-agent proj
 | Deployment | Python package installed via `pipx`, no daemon | CLI run directly; standalone binaries built for releases |
 | Multi-process | No | No, but the monorepo can run services separately |
 
-REPL.io runs a tight-coupled loop that handles the REPL, CLI, and HTTP API; tools load lazily and are extended by Python plugins. Pi is a monorepo: `@earendil-works/pi-agent-core` provides the agent runtime, `@earendil-works/pi-ai` a unified LLM provider layer, and `@earendil-works/pi-coding-agent` ships an interactive CLI that runs the agent runtime in the same process.
+REPL.io runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load lazily and are extended by Python plugins. Pi is a monorepo. `@earendil-works/pi-agent-core` provides the agent runtime, `@earendil-works/pi-ai` a unified LLM provider layer, and `@earendil-works/pi-coding-agent` ships an interactive CLI that runs the agent runtime in the same process.
 
 ## Tooling & Function Calling
 

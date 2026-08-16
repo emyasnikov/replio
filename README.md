@@ -8,26 +8,28 @@
   <img src="https://img.shields.io/github/actions/workflow/status/emyasnikov/replio/ci.yml?branch=main" alt="CI">
 </p>
 
-**A lightweight agentic tooling core with API, CLI and REPL interfaces.**
+**An lightweight tooling core for fleets of single-purpose agents.**
 
-REPL.io is deliberately small and auditable zero-dependency agentic core built on a single streaming agent loop. The model plans, the tool registry acts, and one loop serves three front-ends: an interactive REPL, a headless one-shot CLI, and an HTTP API.
+REPL.io is deliberately small and auditable zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, headless CLI or HTTP API. Each process is a self-contained, scoped agent in one folder with its config, model and tool permissions. Light enough for one machine to hold a fleet of focused agents.
 
 ## Why
 
-- **Zero dependencies** — everything is Python standard library. No dependency tree to audit, no supply-chain surface, no lockfile churn
-- **One agent loop** — a single SSE stream per turn powers the REPL, the CLI, and the API. No duplicated logic across front-ends
-- **Local-first** — config and session logs live on your disk. Bring your own provider key, or run fully local
+- **Zero dependencies**: everything is Python standard library. Nothing to audit, no supply chain, no lockfile churn
+- **One agent loop**: a single SSE stream per turn powers the REPL, the CLI and the API. No duplicated logic across front-ends
+- **Local-first**: config and session logs live on your disk. Bring your own provider key, or run fully local
+- **Isolated**: each `replio serve` instance is scoped to its folder, so a fleet of focused agents runs on one machine
 
 ## Features
 
-- **Agentic REPL** — streaming token-by-token output, dimmed thinking, markdown-aware rendering, readline history and tab completion
-- **Tool calling** — web search, page fetching, file read/write/search, and shell execution via OpenAI-compatible function calling
-- **Permissions** — every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmations for anything outside your worktree
-- **Plugins** — external repositories register tools, providers, and slash commands; the core stays zero-dependency and plugin deps are imported lazily, only when you activate a plugin
-- **Multi-provider** — Ollama, OpenAI, Groq, Anthropic, plus any OpenAI-compatible endpoint, with automatic detection from the base URL
-- **Sessions** — complete append-only conversation logs, including every tool call and its result
-- **Compaction** — summarize long conversations and trim the provider context without losing history
-- **Headless modes** — `replio run` for scripting and `replio serve` for an HTTP JSON API
+- **Agentic REPL** - streaming token-by-token output, dimmed thinking, markdown-aware rendering, readline history and tab completion
+- **Tool calling** - web search, page fetching, file read/write/search and shell execution via OpenAI-compatible function calling
+- **Permissions** - every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmations for anything outside your worktree
+- **Plugins** - external repositories register tools, providers and slash commands. The core stays zero-dependency, and plugin deps are imported lazily, only when you activate a plugin
+- **Multi-provider** - Ollama, OpenAI, Groq, Anthropic, plus any OpenAI-compatible endpoint, with automatic detection from the base URL
+- **Sessions** - complete append-only conversation logs, including every tool call and its result
+- **Compaction** - summarize long conversations and trim the provider context without losing history
+- **Headless modes** - `replio run` for scripting and `replio serve` for an HTTP JSON API
+- **Agent fleets** - one process per single-purpose agent, scoped to its own folder, config and permissions
 
 ## Quick Start
 
@@ -83,7 +85,7 @@ replio run --prompt "Hi"
 
 ### API
 
-Server exposes different JSON endpoints like `POST /chat` (`{"prompt": ...}`, optionally `{"session_id": ...}`) returns the same turn result as the CLI etc.
+Server exposes JSON endpoints like `POST /chat {"prompt": "..."}` (optionally `{"session_id": ...}`) returns the same turn result as the CLI.
 
 ```bash
 replio serve &
@@ -91,9 +93,20 @@ curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
 {"content": "Hello! 👋 How can I help you today?", "thinking": null, "tool_calls": [], "errors": [], "duration": 7.0, "usage": null, "model": "gpt-oss:20b-cloud", "provider": "ollama", "session": "20260814_192711_hi", "status": "ok"}
 ```
 
+### Agent fleets
+
+Each `replio serve` process is an agent scoped to its folder. The tool policy confines file access to that folder, and headless agents auto-deny anything that asks for confirmation, so an agent can only reach its own worktree.
+
+```bash
+replio serve --path docs --port 8781 &
+replio serve --path src --port 8782 &
+```
+
+Agents talk to each other through the same `POST /chat` API. See [docs/fleet.md](docs/fleet.md) for the full pattern and deployment templates.
+
 ## Roadmap
 
-Personas and delegation are planned next. The plugin system is in place (web and machine tools now ship as bundled plugins), and third-party plugins install from git or a path. See [docs/plugins.md](docs/plugins.md). Open tasks live in [TODO.md](TODO.md).
+Personas and delegation are planned next. Fleet orchestration, a supervisor that runs and health-checks many scoped agents, is the next goal. Open tasks live in [TODO.md](TODO.md).
 
 ## Contributing
 
@@ -107,6 +120,7 @@ Detailed references are in the [docs](docs/):
 - [Configuration](docs/config.md)
 - [Commands & CLI](docs/commands.md)
 - [Plugins](docs/plugins.md)
+- [Agent fleets](docs/fleet.md)
 
 ## License
 

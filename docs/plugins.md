@@ -1,6 +1,6 @@
 # Plugins
 
-Plugins extend REPL.io with **tools**, **providers**, **slash commands**, and **services** without changing the core. The core stays stdlib-only; any third-party dependencies live inside the plugin and are imported lazily — they only matter when *you* install and use that plugin.
+Plugins extend REPL.io with **tools**, **providers**, **slash commands**, and **services** without changing the core. The core stays stdlib-only. Any third-party dependencies live inside the plugin and are imported lazily, so they only matter when you install and use that plugin.
 
 ## Installation locations
 
@@ -10,7 +10,7 @@ Plugins extend REPL.io with **tools**, **providers**, **slash commands**, and **
 | `~/.config/replio/plugins/` | global, all projects | middle |
 | `.replio/plugins/` | local to a project | highest (wins on name collision) |
 
-The three bundled first-party plugins ship with replio and are listed in the default `plugins` config so they are active out of the box: **`replio-core-websearch`** (web_search, fetch_page), **`replio-core-fs`** (read_file, list_dir, write_file, glob, grep), and **`replio-core-exec`** (run_command). They behave like any other plugin — disable them by removing their name from `plugins` (or `/plugins disable`), but they cannot be uninstalled or updated (they version with replio). A global or local plugin with the same name overrides the bundled one.
+Three first-party plugins ship with replio and are listed in the default `plugins` config, so they are active out of the box. `replio-core-websearch` provides `web_search` and `fetch_page`. `replio-core-fs` provides `read_file`, `list_dir`, `write_file`, `glob`, and `grep`. `replio-core-exec` provides `run_command`. They behave like any other plugin. Remove their name from `plugins` (or use `/plugins disable`) to stop them loading, but they cannot be uninstalled or updated, since they version with replio. A global or local plugin with the same name overrides the bundled one.
 
 ## Plugin layout
 
@@ -47,7 +47,7 @@ A plugin is a directory with a `manifest.json` and an entry module, or a bare `.
 | `replio_version` | `""`          | Semver range the plugin is compatible with (`>=0.12.0,<1.0`). Incompatible plugins are skipped at load |
 | `python`         | `""`          | Minimum/maximum Python, same range syntax (`>=3.10`) |
 | `entry`          | `"plugin.py"` | Module to load |
-| `requires`       | `[]`          | Third-party packages; metadata for status + `--deps` install, never imported by the core |
+| `requires`       | `[]`          | Third-party packages; metadata for status and `--deps` install, never imported by the core |
 | `provides`       | `{}`          | Declared tools/providers/commands for `/plugins` display |
 | `source`         | `""`          | Origin recorded on install; used by `update` |
 
@@ -62,11 +62,11 @@ def register_commands(commands) -> None: ...     # @commands.register(...) — s
 def register_services(services) -> None: ...     # services["name"] = service object for core features
 ```
 
-Plugin tools automatically inherit the tool permission policy, `/tool`, `/help`, query refinement, `noise_tools`, and session logging — the loop never special-cases plugin names.
+Plugin tools automatically inherit the tool permission policy, `/tool`, `/help`, query refinement, `noise_tools`, and session logging. The loop never special-cases plugin names.
 
 ### Services
 
-`register_services` lets a plugin power a **core** feature that is not tool-calling. Today the only service is the web search-then-answer mode (`web_search: true`): the bundled `replio-core-websearch` registers `services['search']` with `search(query, num)`, `display(query, results)`, and `context(query, results)` methods. If no plugin registers the service, that mode reports that it is unavailable instead of erroring.
+`register_services` lets a plugin power a core feature that is not tool-calling. Today the only service is the web search-then-answer mode (`web_search: true`). The bundled `replio-core-websearch` registers `services['search']` with `search(query, num)`, `display(query, results)`, and `context(query, results)` methods. If no plugin registers the service, that mode reports that it is unavailable instead of erroring.
 
 ### Lazy dependencies
 
@@ -85,7 +85,7 @@ def register_tools(registry):
         ...
 ```
 
-This is why the core stays zero-dependency: plugin packages are only imported in the process that runs your configured plugins, and only when their tools are actually called.
+This is why the core stays zero-dependency. Plugin packages are only imported in the process that runs your configured plugins, and only when their tools are actually called.
 
 ## Managing plugins
 
@@ -98,8 +98,8 @@ This is why the core stays zero-dependency: plugin packages are only imported in
 ```
 
 - `plugins` is the list of plugins to load. **Empty (`[]`) = all discovered plugins load.**
-- The default config lists the bundled plugins so they are active by default; remove a name (or `/plugins disable`) to stop that plugin loading.
-- `/plugins enable <name>` appends a name; `/plugins install` and `/plugins uninstall` add/remove the name automatically.
+- The default config lists the bundled plugins so they are active by default. Remove a name (or `/plugins disable`) to stop that plugin loading.
+- `/plugins enable <name>` appends a name. `/plugins install` and `/plugins uninstall` add or remove the name automatically.
 - Changes apply on the next start (plugins load once at engine init). `plugins.enabled` / `plugins.deny` from earlier versions are migrated automatically.
 
 ### REPL
@@ -116,7 +116,7 @@ This is why the core stays zero-dependency: plugin packages are only imported in
 
 ### CLI
 
-The same operations are available headless (e.g. before a CI `replio run`):
+The same operations are available headless (for example before a CI `replio run`):
 
 ```
 replio plugins list
@@ -125,9 +125,9 @@ replio plugins update <name>
 replio plugins uninstall <name>
 ```
 
-- `install` clones a git URL or copies a local directory into `.replio/plugins/` (or `~/.config/replio/plugins/` with `--global`), records `source`, and (with `--deps`) runs `pip install` on the declared `requires`.
+- `install` clones a git URL or copies a local directory into `.replio/plugins/` (or `~/.config/replio/plugins/` with `--global`), records `source`, and with `--deps` runs `pip install` on the declared `requires`.
 - `update` runs `git pull` for remote sources or re-copies a local path.
-- Bundled plugins report an error for `update`/`uninstall` — disable them instead.
+- Bundled plugins report an error for `update` and `uninstall`. Disable them instead.
 
 ## Status
 
@@ -140,10 +140,10 @@ replio plugins uninstall <name>
 
 ## Security
 
-Plugins are arbitrary Python code that run with your user's privileges — install only plugins you trust. A plugin's `register_providers` hook runs at load; its tools run on demand like any built-in tool.
+Plugins are arbitrary Python code that run with your user's privileges. Install only plugins you trust. A plugin's `register_providers` hook runs at load. Its tools run on demand like any built-in tool.
 
 ## Future paths
 
-- **Dependency isolation** — today plugin deps install into the same Python environment (lazy imports keep the core clean). Shared-plugin and per-plugin virtualenvs are planned for stronger separation.
-- **PyPI source** — the same hooks will be discoverable through `importlib.metadata` entry points, so plugins can be distributed as regular packages.
-- **Externalizing bundled plugins** — the bundled `replio-core-*` plugins are the migration path for optional features; web and machine tools now ship through them, and they can be forked or superseded by global/local plugins of the same name.
+- **Dependency isolation**: today plugin deps install into the same Python environment (lazy imports keep the core clean). Shared-plugin and per-plugin virtualenvs are planned for stronger separation.
+- **PyPI source**: the same hooks will be discoverable through `importlib.metadata` entry points, so plugins can be distributed as regular packages.
+- **Externalizing bundled plugins**: the bundled `replio-core-*` plugins are the migration path for optional features. Web and machine tools now ship through them, and they can be forked or superseded by global/local plugins of the same name.

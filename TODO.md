@@ -1,5 +1,7 @@
 # TODO
 
+- Single-purpose agent fleet — "one agent per process, scoped to a folder" as the headline pattern; README + `docs/fleet.md` set the niche
+- Fleet orchestration as the final goal — supervisor that runs many scoped `replio serve` instances with port allocation, health checks, restart policy, and per-agent config generation
 - README terminal screenshot — generate with codeshot.io *Terminal Session* (SVG), REPL interface (banner, streaming reply, tool status); embed via `<img>` in the README placeholder
 - Publish 0.12.0 to PyPI — sync description/metadata, then build + upload (manual, needs credentials); current PyPI is 0.11.0
 - Community presence — decide on Discord/X channels and fill the README community link slots
@@ -22,12 +24,14 @@
 
 ## Open
 
+- [ ] Fleet orchestration — supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation); the final goal of the fleet story in `docs/fleet.md`
+- [ ] Grep text index — internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
+- [ ] Agent folder watcher — internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival); scoped capability, no deps
+
 - [ ] MCP support — Model Context Protocol integration, plugin-first (third-party `mcp` lib as a lazy plugin dep; the core stays stdlib-only):
   - [ ] MCP client plugin — connect to external MCP servers (stdio/HTTP), register their tools into the ToolRegistry so the model can call them like any Replio tool (tool policy, status, session logging apply)
   - [ ] MCP server — expose Replio's registered tools + sessions over MCP for external agents (Claude, opencode, …) to drive
 - [ ] `write_file` reports the resolved absolute path to the model — the tool result currently echoes the raw `path` arg (e.g. `Wrote 36 chars to test2.md`), so when a relative path resolves to an unexpected directory (launched from `~`, `test2.md` lands at `/Users/emyasnikov/test2.md`) the model can't see where the file actually went and may write twice or leave a stray file. Return `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)` and note in the tool description that relative paths resolve against the launch/current directory. The terminal status summary already shows the resolved path — this is about the model-visible tool result (observed: two `write_file` calls, one stray file in home)
-- [ ] Docker packaging — Dockerfile (+ `.dockerignore`, optional docker-compose.yml) to run `replio serve` (and `replio run`) inside a container: python slim base, install the package, volume-mount config (`~/.config/replio`) and the sessions dir for persistence
-- [ ] systemd unit — `replio.service` template to run the container (or `replio serve` directly) as a managed service: `ExecStart`, config/session paths, `Restart=on-failure`, environment for the API key
 - [ ] Restore tab completion for commands and paths — regression: diagnose why the readline completer no longer fires (likely macOS libedit `tab: complete` binding or completer registration after the Engine refactor), then extend to filesystem path completion after command arguments
 - [ ] Plan/Build modes — read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery
 - [ ] Minimal web Control UI — stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue); richer frameworks stay plugin-first
@@ -79,6 +83,9 @@
 
 ## Done
 
+- [x] `deploy/` fleet templates — `Dockerfile` + entrypoint + `.dockerignore`, `docker-compose.yml.example`, systemd `replio@.service` template unit, launchd `com.replio.agent.plist.example`; repo-held generic templates, per-agent values configured per project
+- [x] `docs/fleet.md` — single-purpose agent fleet pattern (one scoped process per agent, responsibilities & permissions, doc-agent composition, deployment)
+- [x] README fleet positioning — tagline, Features bullet, "Single-purpose agent fleets" section, Roadmap names fleet orchestration as the final goal
 - [x] Per-turn stats on their own line — `ReplUI.footer` emits a separating newline when streamed output didn't end with one
 - [x] One-shot retry for empty/truncated streams — re-request once before surfacing "Stream ended before a completion event"
 - [x] `write_file` status preview ends with a dimmed parenthesized summary (resolved path, line/char counts, action)
