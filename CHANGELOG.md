@@ -25,9 +25,9 @@
 - Config keys `plugins.enabled` (allowlist; empty = all) and `plugins.deny` (always excluded) — activation is explicit and applies on the next start
 - `docs/plugins.md` — plugin layout, manifest schema, compatibility contract, entry hooks, management, security, and future paths (per-plugin venv isolation, PyPI entry-point source, migrating core web tools out)
 - `tests/test_plugins.py` (30 tests) — manifest parsing, `replio_version`/`python` compat skipping, enable/deny filtering, global/local precedence, entry load-error isolation, all three registration hooks, lazy-dep pip guidance, tool-policy filtering, install/update/uninstall from a local path, and Engine integration (tools + commands + `/plugins`)
-- REPL banner shows the version — `REPL.io v0.12.0 (provider: model)` on startup; gated by `show_version` config (default `true`), toggleable via `/config show_version false`
+- REPL banner shows the version — `Replio v0.12.0 (provider: model)` on startup; gated by `show_version` config (default `true`), toggleable via `/config show_version false`
 - `GET /version` endpoint — the serve API exposes the installed version as `{"version": ...}`, alongside `/health` and `/sessions`
-- `/version` slash command (alias `/v`) — prints `REPL.io <version>` in the REPL; version lookup centralized in `replio.get_version()` and shared with the CLI `--version` flag
+- `/version` slash command (alias `/v`) — prints `Replio <version>` in the REPL; version lookup centralized in `replio.get_version()` and shared with the CLI `--version` flag
 - `--version` / `-v` CLI flag — `replio --version` prints the installed version (from package metadata) and exits
 - Clear screen on REPL start — the interactive REPL wipes scrollback + visible screen (`\033[3J\033[2J\033[H`) before printing the banner; gated by `clear_screen` config (default `true`), toggleable via `/config clear_screen false`. Headless `run`/`serve` modes are unaffected.
 

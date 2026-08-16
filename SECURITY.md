@@ -1,6 +1,6 @@
 # Security
 
-REPL.io has a deliberately small surface: zero dependencies and a ~2.5k LOC core of Python standard library.
+Replio has a deliberately small surface: zero dependencies and a ~2.5k LOC core of Python standard library.
 
 ## Reporting vulnerabilities
 
@@ -17,7 +17,7 @@ Contact: open an issue on GitHub with the `security` label, or reach out directl
 
 ## Scope
 
-Tool execution (`run_command`) runs with the permissions of the launching user. Read/write/list outside the project worktree escalate to `ask`; `run_command` is `ask` by default. Do not run REPL.io as root or with an API server exposed without authentication.
+Tool execution (`run_command`) runs with the permissions of the launching user. Read/write/list outside the project worktree escalate to `ask`; `run_command` is `ask` by default. Do not run Replio as root or with an API server exposed without authentication.
 
 ## Plugins
 

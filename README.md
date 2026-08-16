@@ -1,4 +1,4 @@
-# REPL.io
+# Replio
 
 **An lightweight tooling core for fleets of single-purpose agents.**
 
@@ -10,9 +10,9 @@
   <img src="https://img.shields.io/github/actions/workflow/status/emyasnikov/replio/ci.yml?branch=main" alt="CI">
 </p>
 
-REPL.io is deliberately small and auditable zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, headless CLI or HTTP API. Each process is a self-contained, scoped agent in one folder with its config, model and tool permissions. Light enough for one machine to hold a fleet of focused agents.
+Replio is deliberately small and auditable zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, headless CLI or HTTP API. Each process is a self-contained, scoped agent in one folder with its config, model and tool permissions. Light enough for one machine to hold a fleet of focused agents.
 
-<p align="center"><img src="replio.svg" width="540" alt="REPL.io terminal session"></p>
+<p align="center"><img src="replio.svg" width="540" alt="Replio terminal session"></p>
 
 ## Features
 

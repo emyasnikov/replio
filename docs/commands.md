@@ -8,7 +8,7 @@ Run `replio` and type `/` — commands tab-complete. Use `/help` or `/help <cmd>
 |-------------------------|----------------|----------------------------------------------------------------|
 | `/help`                 | `/h`           | Show available commands and tools (`/help <cmd|tool>` for detail) |
 | `/exit`                 | `/quit`, `/q`  | Save and exit                                                  |
-| `/version`              | `/v`           | Show the REPL.io version                                       |
+| `/version`              | `/v`           | Show the Replio version                                       |
 | `/model`                |                | Show or switch the active model (`/model gpt-4o`)              |
 | `/provider`             |                | Show or switch the active provider                             |
 | `/connect`              |                | Interactive provider connection setup                          |

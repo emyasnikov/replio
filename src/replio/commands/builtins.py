@@ -88,9 +88,9 @@ def register_builtins(registry):
         chat.session_auto_save()
         sys.exit(0)
 
-    @registry.register('version', aliases=['v'], description='Show the REPL.io version')
+    @registry.register('version', aliases=['v'], description='Show the Replio version')
     def version_cmd(_=None):
-        print(f'REPL.io {get_version()}')
+        print(f'Replio {get_version()}')
 
     @registry.register('model', description='Show or switch the active model')
     def model_cmd(arg=''):

@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for contributing to REPL.io.
+Thanks for contributing to Replio.
 
 ## Getting started
 

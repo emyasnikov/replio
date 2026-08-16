@@ -73,9 +73,9 @@ class ChatLoop(Engine):
         model_str = self.config.get('model', '?')
         provider_str = self.config.get('provider', '?')
         if self.config.get('show_version', True):
-            print(f'REPL.io v{get_version()} ({provider_str}: {model_str})  /help for commands')
+            print(f'Replio v{get_version()} ({provider_str}: {model_str})  /help for commands')
         else:
-            print(f'REPL.io ({provider_str}: {model_str})  /help for commands')
+            print(f'Replio ({provider_str}: {model_str})  /help for commands')
 
         while True:
             try:

@@ -1,17 +1,17 @@
-# REPL.io vs. Pi
+# Replio vs. Pi
 
-This document compares two open-source personal AI assistant / coding-agent projects: **REPL.io** (github.com/emyasnikov/replio) and **Pi Agent Harness** (github.com/earendil-works/pi). It highlights key design choices, runtime models, and ecosystem differences.
+This document compares two open-source personal AI assistant / coding-agent projects: **Replio** (github.com/emyasnikov/replio) and **Pi Agent Harness** (github.com/earendil-works/pi). It highlights key design choices, runtime models, and ecosystem differences.
 
 ## Project Overview
 
 | Project | Primary Language | Repo | License | Core Focus |
 |---------|------------------|------|---------|------------|
-| REPL.io | Python | https://github.com/emyasnikov/replio | MIT | Lightweight REPL + CLI + HTTP API with zero external dependencies |
+| Replio | Python | https://github.com/emyasnikov/replio | MIT | Lightweight REPL + CLI + HTTP API with zero external dependencies |
 | Pi | TypeScript/JavaScript (Node + Bun) | https://github.com/earendil-works/pi | MIT | Monorepo with agent core, unified LLM API, coding-agent CLI, telemetry, and TUI |
 
 ## Architecture & Runtime Model
 
-| Feature | REPL.io | Pi |
+| Feature | Replio | Pi |
 |---------|---------|----|
 | Core runtime | Single Python process with a streaming agent loop | CLI that runs the agent core in the same process |
 | Entry point | `replio` | `pi` |
@@ -19,11 +19,11 @@ This document compares two open-source personal AI assistant / coding-agent proj
 | Deployment | Python package installed via `pipx`, no daemon | CLI run directly; standalone binaries built for releases |
 | Multi-process | No | No, but the monorepo can run services separately |
 
-REPL.io runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load lazily and are extended by Python plugins. Pi is a monorepo. `@earendil-works/pi-agent-core` provides the agent runtime, `@earendil-works/pi-ai` a unified LLM provider layer, and `@earendil-works/pi-coding-agent` ships an interactive CLI that runs the agent runtime in the same process.
+Replio runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load lazily and are extended by Python plugins. Pi is a monorepo. `@earendil-works/pi-agent-core` provides the agent runtime, `@earendil-works/pi-ai` a unified LLM provider layer, and `@earendil-works/pi-coding-agent` ships an interactive CLI that runs the agent runtime in the same process.
 
 ## Tooling & Function Calling
 
-| Aspect | REPL.io | Pi |
+| Aspect | Replio | Pi |
 |--------|---------|----|
 | Built-in tools | web search, fetch page, file I/O, shell, permission gating (`allow`/`ask`/`deny`) | web search, fetch page, file I/O, shell, and custom `!` command syntax |
 | Permission model | Path-scoped `allow`/`ask`/`deny` with runtime prompts | No built-in permission system; relies on OS sandboxing or Docker |
@@ -32,7 +32,7 @@ REPL.io runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load l
 
 ## Channels & UI
 
-| Feature | REPL.io | Pi |
+| Feature | Replio | Pi |
 |---------|---------|----|
 | Built-in UI | Terminal REPL only | Terminal UI library (`@earendil-works/pi-tui`), CLI only |
 | Messaging channels | None | None (CLI only); `pi-chat` for Slack/chat automation |
@@ -41,14 +41,14 @@ REPL.io runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load l
 
 ## Provider & Model Support
 
-| Aspect | REPL.io | Pi |
+| Aspect | Replio | Pi |
 |--------|---------|----|
 | LLM providers | Ollama (default), OpenAI, Groq, Anthropic, and any OpenAI-compatible endpoint | OpenAI, Anthropic, Google, and more via the unified API (`@earendil-works/pi-ai`) |
 | Local model support | Built-in via Ollama | Built-in local providers via `@earendil-works/pi-ai` |
 
 ## Persistence & Telemetry
 
-| Feature | REPL.io | Pi |
+| Feature | Replio | Pi |
 |---------|---------|----|
 | Session persistence | Append-only JSON session logs, compaction | Telemetry contracts (`@earendil-works/pi-telemetry`), logs in workspace |
 | State management | Simple conversation context | Agent runtime has a state stack; structured conversation state |
@@ -58,27 +58,27 @@ REPL.io runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load l
 
 | Project | Default isolation | Sandbox options | Notes |
 |---------|-------------------|----------------|-------|
-| REPL.io | Runs with user permissions | None (relies on permission prompts) | Path-scoped `allow`/`ask`/`deny` gates every tool |
+| Replio | Runs with user permissions | None (relies on permission prompts) | Path-scoped `allow`/`ask`/`deny` gates every tool |
 | Pi | Runs with user permissions | Docker, micro-VM (Gondolin), OpenShell policy sandbox | Containerization recommended for stronger boundaries |
 
 ## Community & Ecosystem
 
 | Project | License | Community | Plugin Ecosystem | Docs |
 |---------|---------|-----------|-----------------|------|
-| REPL.io | MIT | Small, GitHub-centric | Python plugins | Docs in repo; minimal |
+| Replio | MIT | Small, GitHub-centric | Python plugins | Docs in repo; minimal |
 | Pi | MIT | Active, GitHub + X | npm packages in the monorepo | Docs on pi.dev; extensive containerization guide |
 
 ## When to Choose Which
 
 | Scenario | Recommended Project | Why |
 |----------|---------------------|-----|
-| You need a lightweight, zero-dependency REPL you can embed or expose via a tiny HTTP API | REPL.io | Minimal Python runtime, no external deps |
+| You need a lightweight, zero-dependency REPL you can embed or expose via a tiny HTTP API | Replio | Minimal Python runtime, no external deps |
 | You need a coding agent with a unified LLM API, telemetry, and standalone binaries | Pi | Rich ecosystem, telemetry support, CLI or standalone binaries |
 | You want stronger isolation out of the box | Pi | Built-in containerization and sandboxing docs |
 
 ## Summary Table
 
-| Feature | REPL.io | Pi |
+| Feature | Replio | Pi |
 |---------|---------|----|
 | Language | Python | TypeScript/JS + Bun |
 | Runtime | Single process | CLI + core runtime |
@@ -92,7 +92,7 @@ REPL.io runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load l
 
 ## References
 
-- REPL.io: https://github.com/emyasnikov/replio
+- Replio: https://github.com/emyasnikov/replio
 - Pi: https://github.com/earendil-works/pi
 - Pi docs: https://pi.dev/docs/latest
-- REPL.io docs: https://github.com/emyasnikov/replio/tree/main/docs
+- Replio docs: https://github.com/emyasnikov/replio/tree/main/docs

@@ -160,7 +160,7 @@ class TestAgentLoop(unittest.TestCase):
             with patch('replio.chat.input', side_effect=EOFError):
                 self.chat.run()
         self.assertNotIn('\033[3J\033[2J\033[H', out.getvalue())
-        self.assertIn('REPL.io', out.getvalue())
+        self.assertIn('Replio', out.getvalue())
 
     def test_banner_shows_version_by_default(self):
         from replio import get_version

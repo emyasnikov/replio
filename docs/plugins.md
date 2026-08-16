@@ -1,6 +1,6 @@
 # Plugins
 
-Plugins extend REPL.io with **tools**, **providers**, **slash commands**, and **services** without changing the core. The core stays stdlib-only. Any third-party dependencies live inside the plugin and are imported lazily, so they only matter when you install and use that plugin.
+Plugins extend Replio with **tools**, **providers**, **slash commands**, and **services** without changing the core. The core stays stdlib-only. Any third-party dependencies live inside the plugin and are imported lazily, so they only matter when you install and use that plugin.
 
 ## Installation locations
 

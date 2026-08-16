@@ -1,4 +1,4 @@
-# REPL.io — Agent Guide
+# Replio — Agent Guide
 
 ## Project
 
@@ -35,7 +35,7 @@ Providers (`providers/`) are OpenAI-compatible `/v1/chat/completions` backends t
 ### Project Structure
 
 ```
-repl.io/
+Replio/
 ├── pyproject.toml
 ├── AGENTS.md
 ├── README.md

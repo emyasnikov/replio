@@ -1,6 +1,6 @@
 # Other Personal Assistant / Coding Agent Projects
 
-The personal AI assistant / coding-agent landscape is rapidly evolving. Below is an up-to-date (2026-08) snapshot of notable open-source projects worth exploring if you are looking for alternatives to REPL.io. For detailed side-by-side comparisons, see [OpenClaw](openclaw.md), [OpenCode](opencode.md), and [Pi](pi.md).
+The personal AI assistant / coding-agent landscape is rapidly evolving. Below is an up-to-date (2026-08) snapshot of notable open-source projects worth exploring if you are looking for alternatives to Replio. For detailed side-by-side comparisons, see [OpenClaw](openclaw.md), [OpenCode](opencode.md), and [Pi](pi.md).
 
 > **Tip** - For each project, check the repository for the latest release notes, documentation, and compatibility with your preferred LLM provider.
 
@@ -19,7 +19,7 @@ The personal AI assistant / coding-agent landscape is rapidly evolving. Below is
 | 11 | **OpenCode** | https://github.com/anomalyco/opencode | TS/JS | Full-stack AI coding agent | Terminal UI, desktop app, multi-agent workflow | Actively maintained, large plugin ecosystem |
 | 12 | **Pi** | https://github.com/earendil-works/pi | TS/JS | Monorepo with agent core | Unified LLM API, telemetry, TUI | Active, frequent releases |
 | 13 | **OpenClaw** | https://github.com/openclaw/openclaw | TS/JS | Multi-channel personal assistant | Gateway, UI, channel adapters (Slack, Discord, etc.) | Actively maintained, expanding ecosystem |
-| 14 | **REPL.io** | https://github.com/emyasnikov/replio | Python | Lightweight REPL + CLI + HTTP API | Zero-dependency, tool registry, permission gating | Actively maintained, minimal footprint |
+| 14 | **Replio** | https://github.com/emyasnikov/replio | Python | Lightweight REPL + CLI + HTTP API | Zero-dependency, tool registry, permission gating | Actively maintained, minimal footprint |
 
 ## How to Choose
 
