@@ -2,8 +2,6 @@
 
 - Single-purpose agent fleet — "one agent per process, scoped to a folder" as the headline pattern; README + `docs/fleet.md` set the niche
 - Fleet orchestration as the final goal — supervisor that runs many scoped `replio serve` instances with port allocation, health checks, restart policy, and per-agent config generation
-- README terminal screenshot — generate with codeshot.io *Terminal Session* (SVG), REPL interface (banner, streaming reply, tool status); embed via `<img>` in the README placeholder
-- Publish 0.12.0 to PyPI — sync description/metadata, then build + upload (manual, needs credentials); current PyPI is 0.11.0
 - Community presence — decide on Discord/X channels and fill the README community link slots
 - Add multiuser capability or queue for API requests
 - Add ReadTheDocs documentation and GitHub Pages website
@@ -83,6 +81,7 @@
 
 ## Done
 
+- [x] README terminal screenshot as SVG
 - [x] `deploy/` fleet templates — `Dockerfile` + entrypoint + `.dockerignore`, `docker-compose.yml.example`, systemd `replio@.service` template unit, launchd `com.replio.agent.plist.example`; repo-held generic templates, per-agent values configured per project
 - [x] `docs/fleet.md` — single-purpose agent fleet pattern (one scoped process per agent, responsibilities & permissions, doc-agent composition, deployment)
 - [x] README fleet positioning — tagline, Features bullet, "Single-purpose agent fleets" section, Roadmap names fleet orchestration as the final goal
