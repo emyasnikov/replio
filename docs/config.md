@@ -26,6 +26,7 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `system_prompt`             | `""`                   | Optional system prompt                                                 |
 | `tool_calling`              | `true`                 | Enable OpenAI-compatible function calling                              |
 | `tool_status_visible`       | `true`                 | Show dimmed tool status in the REPL                                    |
+| `glyph_lines`               | `true`                 | Typed `<glyph> <verb> <arg>` status lines for mapped categories. When off, or for unmapped categories, the `[tool: arg]` oneliner is used |
 | `tool_analysis`             | `false`                | Model-generated one-line analysis of each tool result (log-only)      |
 | `session_tool_max_chars`    | `0`                    | `0` = unlimited. Caps persisted tool-result content                    |
 | `query_refine`              | `false`                | Auto-refine short web-search queries via a lightweight model call      |

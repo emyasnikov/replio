@@ -222,6 +222,8 @@ def register_tools(registry):
         path_arg='path',
         key_arg='pattern',
         short='Find files matching a glob pattern',
+        glyph='*',
+        verb='Glob',
     )
     def glob(pattern: str, path: str = '.') -> str:
         base = Path(path).expanduser()

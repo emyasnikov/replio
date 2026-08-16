@@ -447,7 +447,12 @@ class Engine:
 
     def _show_tool_status(self, name, arguments):
         value, body = self._tool_registry.status_parts(name, arguments)
-        self.ui.tool_status(name, value, body)
+        activity = self._tool_registry.activity(name, arguments)
+        if activity is not None and self.config.get('glyph_lines', True):
+            glyph, verb, label = activity
+            self.ui.activity(glyph, verb, label, body)
+        else:
+            self.ui.tool_status(name, value, body)
 
     def _refine_query(self, query: str) -> str:
         context_count = self.config.get('query_refine_context', 4)

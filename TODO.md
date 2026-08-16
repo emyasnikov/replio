@@ -48,11 +48,6 @@
 - [ ] `git` - repository operations (status, diff, commit)
 - [ ] `docs_search` - local grep + DuckDuckGo for documentation lookups
 - [ ] Workspace sessions - tools write into a scoped `--workspace` dir, optional `--git` sync
-- [ ] Glyph activity lines - optional (config-gated) replacement of the default `[tool: key_arg]` status with typed glyph lines. The arrow shows payload flow: `←` content leaves the target (read), `→` content enters the target (write)
-  - [ ] Category → glyph + verb defaults: `read` `←` Read, `write` `→` Write, `search` `%` Search, `exec` `$` Run, `ask` `~` Ask, `todo` `-` Todo, `delegate` `↳` Call. Per-tool overrides (glob `*` Search)
-  - [ ] Render `  <glyph> <verb> <key_arg>` dimmed - e.g. `← Read src/foo.py`, `→ Write test.md`, `% Search "latest python"`, `* Glob **/*.py`, `$ Run pytest`, `↳ Call agent-x`. No name special-casing
-  - [ ] `ToolRegistry.activity(name, args)` returns `(glyph, verb, label)`, unmapped categories fall back to the default `[tool: key_arg]` oneliner
-  - [ ] Config key (default off) - default stays `[tool: key_arg]` oneliner + detail lines
 - [ ] Spinner - animated `⠧ Thinking` replaces the static `+ Thinking` / `+ Thought 12.3s` announce while thinking is in progress (`show_thinking: false`). Folded into `show_thinking`, no new config key. stdlib `threading` daemon, cleared with `\r\033[K`
 - [ ] Activity lines are ephemeral UI - never persisted to session files (tool calls are already recorded there)
 - [ ] Sandboxed exec - namespace/container isolation for `run_command` (documented, planned for a later version)
@@ -79,6 +74,8 @@
 
 ## Done
 
+- [x] Glyph activity lines - typed `<glyph> <verb> <key_arg>` status (dimmed) replaces the `[tool: key_arg]` oneliner for mapped categories, gated by `glyph_lines` config (default `true`); unmapped categories fall back to the `[tool: key_arg]` oneliner + detail lines
+  - [x] `ToolRegistry.activity(name, args)` returns `(glyph, verb, label)` from category defaults (`read` `←` Read, `write` `→` Write, `search` `%` Search, `exec` `$` Run, `ask` `~` Ask, `todo` `-` Todo, `delegate` `↳` Call). Per-tool `glyph`/`verb` overrides (glob `*` Glob), fall back on unmapped categories
 - [x] `write_file` reports the resolved absolute path to the model - result returns `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)`. The description notes relative paths resolve against the current directory
 - [x] Tab completion restored (libedit binding) + extended to paths, tool names, and subcommands
 - [x] README terminal screenshot as SVG

@@ -113,6 +113,56 @@ class TestToolRegistry(unittest.TestCase):
         self.assertFalse(self.registry.echo_for('write_file'))
         self.assertFalse(self.registry.echo_for('nonexistent'))
 
+    def test_activity_category_defaults(self):
+        self.assertEqual(self.registry.activity('web_search', {'query': 'hi there'}),
+                         ('%', 'Search', 'hi there'))
+        self.assertEqual(self.registry.activity('run_command', {'command': 'echo hi'}),
+                         ('$', 'Run', 'echo hi'))
+        self.assertEqual(self.registry.activity('write_file', {'path': 'a.md', 'content': 'x'}),
+                         ('→', 'Write', 'a.md'))
+        self.assertEqual(self.registry.activity('read_file', {'path': 'a.py'}),
+                         ('←', 'Read', 'a.py'))
+
+    def test_activity_per_tool_override(self):
+        self.assertEqual(self.registry.activity('glob', {'pattern': '**/*.py'}),
+                         ('*', 'Glob', '**/*.py'))
+
+    def test_activity_truncates_long_value(self):
+        glyph, verb, label = self.registry.activity('run_command', {'command': 'x' * 200})
+        self.assertEqual((glyph, verb), ('$', 'Run'))
+        self.assertEqual(len(label), 80)
+
+    def test_activity_missing_key_arg_falls_back_to_name(self):
+        self.assertEqual(self.registry.activity('run_command', {}),
+                         ('$', 'Run', 'run_command'))
+
+    def test_activity_unknown_tool(self):
+        self.assertIsNone(self.registry.activity('nonexistent', {}))
+
+    def test_activity_unmapped_category(self):
+        reg = ToolRegistry()
+        params = {'type': 'object', 'properties': {}, 'required': []}
+
+        @reg.register('do_stuff', 'Do something', params, category='custom')
+        def do_stuff():
+            return 'ok'
+
+        self.assertIsNone(reg.activity('do_stuff', {}))
+
+    def test_activity_partial_override_keeps_category_default(self):
+        reg = ToolRegistry()
+        params = {'type': 'object',
+                  'properties': {'path': {'type': 'string'}},
+                  'required': ['path']}
+
+        @reg.register('peek_dir', 'Peek', params, category='read', key_arg='path',
+                      verb='Scan')
+        def peek_dir(path):
+            return 'ok'
+
+        self.assertEqual(reg.activity('peek_dir', {'path': '/x'}),
+                         ('←', 'Scan', '/x'))
+
     def test_custom_status_callback(self):
         reg = ToolRegistry()
         params = {

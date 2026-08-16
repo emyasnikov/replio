@@ -118,7 +118,7 @@ Replio/
 4. Handler receives keyword arguments matching the schema
 5. Return a string (the tool result injected into the conversation)
 6. Add optional metadata for loop behavior - e.g. `refine=True` to auto-refine short query args via a lightweight model call (gated by the `query_refine` config)
-7. Optional permission/display metadata: `category` (`search`/`read`/`write`/`exec`/`ask`/`todo`), `permission` (`read`/`list`/`edit`/`bash`/`web` - the `tool_permission` key that gates it), `path_arg` (which parameter is a filesystem path, for `external_directory` scope checks), `key_arg` (which argument to show in status/confirm labels, and for the future activity-lines glyph system)
+7. Optional permission/display metadata: `category` (`search`/`read`/`write`/`exec`/`ask`/`todo`), `permission` (`read`/`list`/`edit`/`bash`/`web` - the `tool_permission` key that gates it), `path_arg` (which parameter is a filesystem path, for `external_directory` scope checks), `key_arg` (which argument to show in status/confirm labels/glyph activity lines), `glyph`/`verb` (per-tool activity-line overrides, e.g. `glob` uses `glyph='*', verb='Glob'`, instead of the category default)
 8. Optional status metadata: `status` (a `Callable[[dict], str]` receiving the cleaned args and returning a block whose first line becomes the `[tool: <value>]` oneliner and the rest render as dimmed detail lines - used by `write_file` to preview/diff the written text), `echo` (bool - when true, the tool's result is printed dimmed below the status oneliner, used by `run_command` to show exec output)
 
 ### Machine Access & Permissions
@@ -183,6 +183,7 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
   "system_prompt": "",
   "tool_calling": true,
   "tool_status_visible": true,
+  "glyph_lines": true,
   "tool_analysis": false,
   "session_tool_max_chars": 0,
   "query_refine": false,

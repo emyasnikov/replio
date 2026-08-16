@@ -129,6 +129,11 @@ class ReplUI:
         for line in body:
             self._emit(line, '\033[90m')
 
+    def activity(self, glyph, verb, label, body):
+        self._emit(f'{glyph} {verb} {label}', '\033[90m')
+        for line in body:
+            self._emit(line, '\033[90m')
+
     def tool_result(self, output):
         for line in output.splitlines():
             self._emit(line, '\033[90m')
@@ -180,6 +185,9 @@ class NullUI:
         pass
 
     def tool_status(self, name, value, body):
+        pass
+
+    def activity(self, glyph, verb, label, body):
         pass
 
     def tool_result(self, output):
@@ -238,6 +246,12 @@ class HeadlessUI:
     def tool_status(self, name, value, body):
         if self.verbose:
             sys.stderr.write(f'[{name}: {value}]\n')
+            for line in body:
+                sys.stderr.write(f'{line}\n')
+
+    def activity(self, glyph, verb, label, body):
+        if self.verbose:
+            sys.stderr.write(f'{glyph} {verb} {label}\n')
             for line in body:
                 sys.stderr.write(f'{line}\n')
 

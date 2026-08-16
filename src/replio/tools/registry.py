@@ -1,6 +1,17 @@
 from typing import Callable
 
 
+ACTIVITY_DEFAULTS: dict[str, tuple[str, str]] = {
+    'read': ('←', 'Read'),
+    'write': ('→', 'Write'),
+    'search': ('%', 'Search'),
+    'exec': ('$', 'Run'),
+    'ask': ('~', 'Ask'),
+    'todo': ('-', 'Todo'),
+    'delegate': ('↳', 'Call'),
+}
+
+
 class ToolRegistry:
     def __init__(self):
         self._tools: dict[str, dict] = {}
@@ -11,7 +22,7 @@ class ToolRegistry:
                  permission: str = 'web', path_arg: str | None = None,
                  key_arg: str | None = None, short: str = '',
                  status: Callable[[dict], str] | None = None,
-                 echo: bool = False):
+                 echo: bool = False, glyph: str = '', verb: str = ''):
         def wrapper(fn):
             entry = {
                 'name': name,
@@ -24,6 +35,8 @@ class ToolRegistry:
                 'short': short,
                 'status': status,
                 'echo': echo,
+                'glyph': glyph,
+                'verb': verb,
                 'schema': {
                     'type': 'function',
                     'function': {
@@ -93,6 +106,24 @@ class ToolRegistry:
     def key_arg_for(self, name: str) -> str | None:
         tool = self._tools.get(name)
         return tool['key_arg'] if tool else None
+
+    def activity(self, name: str, arguments: dict) -> tuple[str, str, str] | None:
+        tool = self._tools.get(name)
+        if not tool:
+            return None
+        args = self._clean_args(name, arguments)
+        glyph = tool.get('glyph')
+        verb = tool.get('verb')
+        if not glyph or not verb:
+            defaults = ACTIVITY_DEFAULTS.get(tool['category'])
+            if defaults is None:
+                return None
+            d_glyph, d_verb = defaults
+            glyph = glyph or d_glyph
+            verb = verb or d_verb
+        key_arg = tool.get('key_arg')
+        label = str(args[key_arg])[:80] if key_arg and args.get(key_arg) else name
+        return glyph, verb, label
 
     def info(self, name: str) -> dict | None:
         tool = self._tools.get(name)

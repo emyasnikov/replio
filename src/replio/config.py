@@ -13,6 +13,7 @@ DEFAULT_CONFIG = {
     'system_prompt': '',
     'tool_calling': True,
     'tool_status_visible': True,
+    'glyph_lines': True,
     'tool_analysis': False,
     'session_tool_max_chars': 0,
     'query_refine': False,
