@@ -1,5 +1,7 @@
 # REPL.io
 
+**An lightweight tooling core for fleets of single-purpose agents.**
+
 <p>
   <img src="https://img.shields.io/badge/python-%3E%3D3.10-blue" alt="Python >=3.10">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
@@ -8,19 +10,15 @@
   <img src="https://img.shields.io/github/actions/workflow/status/emyasnikov/replio/ci.yml?branch=main" alt="CI">
 </p>
 
-**An lightweight tooling core for fleets of single-purpose agents.**
-
 REPL.io is deliberately small and auditable zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, headless CLI or HTTP API. Each process is a self-contained, scoped agent in one folder with its config, model and tool permissions. Light enough for one machine to hold a fleet of focused agents.
 
-## Why
-
-- **Zero dependencies**: everything is Python standard library. Nothing to audit, no supply chain, no lockfile churn
-- **One agent loop**: a single SSE stream per turn powers the REPL, the CLI and the API. No duplicated logic across front-ends
-- **Local-first**: config and session logs live on your disk. Bring your own provider key, or run fully local
-- **Isolated**: each `replio serve` instance is scoped to its folder, so a fleet of focused agents runs on one machine
+<p align="center"><img src="replio.svg" width="540" alt="REPL.io terminal session"></p>
 
 ## Features
 
+- **Zero dependencies** - everything is Python standard library. Nothing to audit, no supply chain, no lockfile churn
+- **One agent loop** - a single SSE stream per turn powers the REPL, the CLI and the API. No duplicated logic across front-ends
+- **Local-first** - config and session logs live on your disk. Bring your own provider key, or run fully local
 - **Agentic REPL** - streaming token-by-token output, dimmed thinking, markdown-aware rendering, readline history and tab completion
 - **Tool calling** - web search, page fetching, file read/write/search and shell execution via OpenAI-compatible function calling
 - **Permissions** - every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmations for anything outside your worktree
@@ -90,7 +88,7 @@ Server exposes JSON endpoints like `POST /chat {"prompt": "..."}` (optionally `{
 ```bash
 replio serve &
 curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
-{"content": "Hello! 👋 How can I help you today?", "thinking": null, "tool_calls": [], "errors": [], "duration": 7.0, "usage": null, "model": "gpt-oss:20b-cloud", "provider": "ollama", "session": "20260814_192711_hi", "status": "ok"}
+{"content": "Hello! How can I help you today?", "thinking": null, "tool_calls": [], "errors": [], "duration": 7.0, "usage": null, "model": "gpt-oss:20b-cloud", "provider": "ollama", "session": "20260814_192711_hi", "status": "ok"}
 ```
 
 ### Agent fleets
