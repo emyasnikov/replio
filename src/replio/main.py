@@ -59,7 +59,7 @@ def _version():
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        description='Replio — a terminal-based agentic REPL with headless CLI and API modes'
+        description='Replio - a terminal-based agentic REPL with headless CLI and API modes'
     )
     parser.add_argument('--path', '-p', help='Project path (default: current directory)')
     parser.add_argument('--version', '-v', action='version',

@@ -338,7 +338,7 @@ class TestCompactSession(unittest.TestCase):
         with patch('sys.stdout', new=out):
             self.chat.compact_session()
         value = out.getvalue()
-        self.assertIn('Compacted —', value)
+        self.assertIn('Compacted -', value)
         self.assertIn('COMPACTED SUMMARY TEXT', value)
 
 

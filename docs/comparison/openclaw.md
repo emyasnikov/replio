@@ -16,10 +16,10 @@ This document compares two open-source personal AI assistant projects: **Replio*
 | Core runtime | Single Python process with a streaming agent loop | Gateway daemon (control plane) that manages sessions, tools, events, and channel connections |
 | Entry point | `replio` | `openclaw onboard --install-daemon`, `openclaw gateway status`, `openclaw dashboard` |
 | Runtime dependencies | None beyond stdlib | Node.js 22.22.3+ (or 24.15+, 25.9+) |
-| Deployment | Python package installed via `pipx`, no daemon | Gateway daemon plus optional Control UI, TUI, or CLI; Docker and Nix supported |
-| Front-ends | Terminal REPL, `replio run` (CLI), `replio serve` (HTTP API) | Control UI (web), TUI, and CLI — all front-ends talk to the gateway |
+| Deployment | Python package installed via `pipx`, no daemon | Gateway daemon plus optional Control UI, TUI, or CLI, Docker and Nix supported |
+| Front-ends | Terminal REPL, `replio run` (CLI), `replio serve` (HTTP API) | Control UI (web), TUI, and CLI - all front-ends talk to the gateway |
 | Configuration | JSON: global `~/.config/replio/config.json` merged with local `.replio/config.json` | Workspace directory with configuration, logs, and plugin storage |
-| Extensibility | Python plugins register tools, providers, and commands; core stays dependency-free | npm plugin SDK (`@tool`, `@skill`, `@channel`); plugins shared via ClawHub |
+| Extensibility | Python plugins register tools, providers, and commands, core stays dependency-free | npm plugin SDK (`@tool`, `@skill`, `@channel`), plugins shared via ClawHub |
 
 The two projects make different trade-offs. Replio bundles everything into a single Python process with a minimal footprint, while OpenClaw splits the control plane from its front-ends and leans on the Node ecosystem for extensibility.
 
@@ -29,9 +29,9 @@ The two projects make different trade-offs. Replio bundles everything into a sin
 |--------|---------|----------|
 | Built-in tools | web search, fetch page, file read/write/search, shell execution | web search, fetch page, file I/O, shell, voice, canvas, camera, screen capture, and more |
 | Tool delivery | Ship as bundled plugins (`replio-core-websearch`, `replio-core-fs`, `replio-core-exec`) | Built into the gateway and extensible via plugins |
-| Permission model | Path-scoped `allow`/`ask`/`deny` with confirmation prompts | Tools run on the host by default; sandboxing is configurable |
+| Permission model | Path-scoped `allow`/`ask`/`deny` with confirmation prompts | Tools run on the host by default, sandboxing is configurable |
 | Function calling | OpenAI-compatible JSON schema | OpenAI-compatible function calling |
-| Extensibility | Plugins register tools via a simple Python registry | Plugins expose `@tool`, `@skill`, `@channel` decorators; SDK enforces the API contract |
+| Extensibility | Plugins register tools via a simple Python registry | Plugins expose `@tool`, `@skill`, `@channel` decorators, SDK enforces the API contract |
 
 ## Channels & UI
 
@@ -66,8 +66,8 @@ The two projects make different trade-offs. Replio bundles everything into a sin
 
 | Project | License | Community | Plugin Ecosystem | Docs |
 |---------|---------|-----------|-----------------|------|
-| Replio | MIT | Small, GitHub-centric | Python plugins | Docs in repo; minimal |
-| OpenClaw | MIT | Developed in the open by the OpenClaw Foundation; active on GitHub, Discord, and ClawHub | npm plugin SDK; plugins shared via ClawHub | docs.openclaw.ai; extensive |
+| Replio | MIT | Small, GitHub-centric | Python plugins | Docs in repo, minimal |
+| OpenClaw | MIT | Developed in the open by the OpenClaw Foundation, active on GitHub, Discord, and ClawHub | npm plugin SDK, plugins shared via ClawHub | docs.openclaw.ai, extensive |
 
 ## When to Choose Which
 

@@ -37,7 +37,7 @@ def cmd_serve(args) -> int:
                     show_thinking=config.get('show_thinking', True))
     engine = Engine(config, ui=ui)
     server = HeadlessServer((args.host, args.port), ChatHandler, engine=engine)
-    print(f'replio serve — http://{args.host}:{args.port} '
+    print(f'replio serve - http://{args.host}:{args.port} '
           f'(POST /chat, GET /sessions, GET /health, GET /version)', file=sys.stderr)
     try:
         server.serve_forever()
@@ -65,7 +65,7 @@ def cmd_plugins(args) -> int:
             missing = [p for p, ok in pm.dep_status(info) if not ok]
             if missing:
                 parts.append('needs: ' + ', '.join(missing))
-            print('  ' + ' — '.join(parts))
+            print('  ' + ' - '.join(parts))
         return 0
     try:
         if args.action == 'install':

@@ -16,7 +16,7 @@ This document compares two open-source AI coding-agent / personal assistant proj
 | Core runtime | Single Python process with a streaming agent loop | Node.js + Bun CLI that launches an agent core and a web/desktop UI in separate processes |
 | Entry point | `replio` | `opencode` (CLI) or `opencode-ai` (npm) |
 | Runtime dependencies | None beyond stdlib | Node.js + Bun, npm, optional desktop bundler |
-| Deployment | Python package installed via `pipx`, no daemon | CLI plus optional desktop app; Docker, Homebrew, Scoop, or Chocolatey |
+| Deployment | Python package installed via `pipx`, no daemon | CLI plus optional desktop app, Docker, Homebrew, Scoop, or Chocolatey |
 | Multi-process | No | Yes (CLI + UI + optional desktop) |
 
 ## Tooling & Function Calling
@@ -24,7 +24,7 @@ This document compares two open-source AI coding-agent / personal assistant proj
 | Aspect | Replio | OpenCode |
 |--------|---------|----------|
 | Built-in tools | web search, fetch page, file I/O, shell, permission gating | web search, fetch page, file I/O, shell, Git, Docker, npm, and more (rich toolset) |
-| Permission model | Path-scoped `allow`/`ask`/`deny` with runtime prompts | Plan mode is read-only; build mode makes changes; permissions requested at runtime |
+| Permission model | Path-scoped `allow`/`ask`/`deny` with runtime prompts | Plan mode is read-only, build mode makes changes, permissions requested at runtime |
 | Function-calling scheme | OpenAI-compatible JSON schema | OpenAI-compatible JSON schema |
 | Extensibility | Python plugins via a simple registry | npm packages and a plugin SDK (`opencode-plugin`) for custom tools, agents, and UI extensions |
 
@@ -48,8 +48,8 @@ This document compares two open-source AI coding-agent / personal assistant proj
 
 | Feature | Replio | OpenCode |
 |---------|---------|----------|
-| Session persistence | Append-only JSON session logs, compaction | Logs under `~/.opencode/logs`; telemetry contracts |
-| State management | Simple conversation context | Agent context stack; multi-agent workflow (build, plan) |
+| Session persistence | Append-only JSON session logs, compaction | Logs under `~/.opencode/logs`, telemetry contracts |
+| State management | Simple conversation context | Agent context stack, multi-agent workflow (build, plan) |
 | Telemetry | None | Vendor-neutral telemetry contracts, optional integration with external backends |
 
 ## Security & Isolation
@@ -57,14 +57,14 @@ This document compares two open-source AI coding-agent / personal assistant proj
 | Project | Default isolation | Sandbox options | Notes |
 |---------|-------------------|----------------|-------|
 | Replio | Runs with user permissions | None (relies on permission prompts) | Path-scoped `allow`/`ask`/`deny` gates every tool |
-| OpenCode | Runs with user permissions; plan mode is read-only | Docker, optional policy-based sandboxing | Desktop app runs sandboxed |
+| OpenCode | Runs with user permissions, plan mode is read-only | Docker, optional policy-based sandboxing | Desktop app runs sandboxed |
 
 ## Community & Ecosystem
 
 | Project | License | Community | Plugin Ecosystem | Docs |
 |---------|---------|-----------|-----------------|------|
-| Replio | MIT | Small, GitHub-centric | Python plugins | Docs in repo; minimal |
-| OpenCode | MIT | Active on GitHub and Discord | npm packages; plugin SDK | Docs on opencode.ai; extensive developer guide |
+| Replio | MIT | Small, GitHub-centric | Python plugins | Docs in repo, minimal |
+| OpenCode | MIT | Active on GitHub and Discord | npm packages, plugin SDK | Docs on opencode.ai, extensive developer guide |
 
 ## When to Choose Which
 

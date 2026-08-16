@@ -4,7 +4,7 @@
 
 ```bash
 replio serve
-# replio serve — http://127.0.0.1:8787 (POST /chat, GET /sessions, GET /health, GET /version)
+# replio serve - http://127.0.0.1:8787 (POST /chat, GET /sessions, GET /health, GET /version)
 ```
 
 All responses are JSON with `Content-Type: application/json`.

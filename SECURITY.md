@@ -17,8 +17,8 @@ Contact: open an issue on GitHub with the `security` label, or reach out directl
 
 ## Scope
 
-Tool execution (`run_command`) runs with the permissions of the launching user. Read/write/list outside the project worktree escalate to `ask`; `run_command` is `ask` by default. Do not run Replio as root or with an API server exposed without authentication.
+Tool execution (`run_command`) runs with the permissions of the launching user. Read/write/list outside the project worktree escalate to `ask`. `run_command` is `ask` by default. Do not run Replio as root or with an API server exposed without authentication.
 
 ## Plugins
 
-Plugins are arbitrary Python code from the plugin roots (bundled `replio.plugins.bundled`, `~/.config/replio/plugins/`, `.replio/plugins/`) and run with the permissions of the launching user. Only install plugins you trust; review a plugin's source before installing it. The core itself stays zero-dependency — plugin third-party packages are only imported when their tools are actually called.
+Plugins are arbitrary Python code from the plugin roots (bundled `replio.plugins.bundled`, `~/.config/replio/plugins/`, `.replio/plugins/`) and run with the permissions of the launching user. Only install plugins you trust, and review a plugin's source before installing it. The core itself stays zero-dependency - plugin third-party packages are only imported when their tools are actually called.

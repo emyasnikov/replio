@@ -114,13 +114,13 @@ The project is stdlib-only with no external dependencies. See [AGENTS.md](AGENTS
 
 Detailed references are in the [docs](docs/):
 
-- [API endpoints](docs/api.md)
-- [Configuration](docs/config.md)
-- [Commands & CLI](docs/commands.md)
-- [Plugins](docs/plugins.md)
 - [Agent fleets](docs/fleet.md)
 - [Agent swarms](docs/swarm.md)
+- [API endpoints](docs/api.md)
+- [Commands & CLI](docs/commands.md)
+- [Configuration](docs/config.md)
 - [Deployment](docs/deploy.md)
+- [Plugins](docs/plugins.md)
 
 ## License
 

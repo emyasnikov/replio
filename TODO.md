@@ -1,77 +1,77 @@
 # TODO
 
-- Single-purpose agent fleet — "one agent per process, scoped to a folder" as the headline pattern; README + `docs/fleet.md` set the niche
-- Fleet and swarm orchestration as the two layers — fleet: supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation); swarm: `/agent` personas, `delegate` tool, auditor agents, generate→check→correct
-- Community presence — decide on Discord/X channels and fill the README community link slots
+- Single-purpose agent fleet with "one agent per process, scoped to a folder" as the headline pattern. README + `docs/fleet.md` set the niche
+- Fleet and swarm orchestration as the two layers - fleet: supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), swarm: `/agent` personas, `delegate` tool, auditor agents, generate→check→correct
+- Community presence - decide on Discord/X channels and fill the README community link slots
 - Add multiuser capability or queue for API requests
 - Add ReadTheDocs documentation and GitHub Pages website
-- Citations / source attribution — return URL + snippet with every answer
-- Bookmarks — `/bookmark add/remove/list` for session pinning
-- Interactive data analysis — CSV querying, SQL execution, code eval in REPL
-- Notebook mode — persistent editable cells with run outputs
-- Hybrid web + local RAG — vector store (FAISS/Weaviate), embeddings, local document search
-- Command palette / fuzzy search — CTRL-P style history search
-- Topic-aware ranking — classifier for query intent to weight search results
-- Naming / positioning decision — "Replio" collides with commercial SaaS products (`replio.chat`, `repliohq.com`, `replio.eu`); kept for now (PyPI + repo claimed), revisit before any promotion push; candidate free names: `pypelio`, `replcore`, `replkit`
-- Competitor research — validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products; comparison notes now live in `docs/comparison/` and feed the feature backlog (Plan/Build modes, Web Control UI, plugin marketplace, telemetry, binary builds, sharing)
-- Self-update — `replio update` (Pi `pi update --self` analogue)
-- Standalone binary build — Pi-style release script producing a single executable (contentious for a zero-dep Python package)
-- Opt-in telemetry contracts — vendor-neutral event schema (OpenCode, Pi `@earendil-works/pi-telemetry`); decide whether it fits the no-telemetry stance
-- Conversation sharing — web-shareable session links (OpenCode `/share`) or published sessions (Pi `pi-share-hf`), building on the planned Markdown export
-- Plugin registry / marketplace — discoverable plugin sharing (OpenClaw ClawHub analogue); PyPI entry-point source is a prerequisite
+- Citations / source attribution - return URL + snippet with every answer
+- Bookmarks - `/bookmark add/remove/list` for session pinning
+- Interactive data analysis - CSV querying, SQL execution, code eval in REPL
+- Notebook mode - persistent editable cells with run outputs
+- Hybrid web + local RAG - vector store (FAISS/Weaviate), embeddings, local document search
+- Command palette / fuzzy search - CTRL-P style history search
+- Topic-aware ranking - classifier for query intent to weight search results
+- Naming / positioning decision - "Replio" collides with commercial SaaS products (`replio.chat`, `repliohq.com`, `replio.eu`), kept for now (PyPI + repo claimed), revisit before any promotion push. Candidate free names: `pypelio`, `replcore`, `replkit`
+- Competitor research - validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products. Comparison notes now live in `docs/comparison/` and feed the feature backlog (Plan/Build modes, Web Control UI, plugin marketplace, telemetry, binary builds, sharing)
+- Self-update - `replio update` (Pi `pi update --self` analogue)
+- Standalone binary build - Pi-style release script producing a single executable (contentious for a zero-dep Python package)
+- Opt-in telemetry contracts - vendor-neutral event schema (OpenCode, Pi `@earendil-works/pi-telemetry`). Decide whether it fits the no-telemetry stance
+- Conversation sharing - web-shareable session links (OpenCode `/share`) or published sessions (Pi `pi-share-hf`), building on the planned Markdown export
+- Plugin registry / marketplace - discoverable plugin sharing (OpenClaw ClawHub analogue). PyPI entry-point source is a prerequisite
 
 ## Open
 
-- [ ] Swarm orchestration — agent cooperation layer (`docs/swarm.md`): `/agent` personas, `delegate` tool, auditor agents, generate→check→correct, and team patterns as sub-tasks below
-- [ ] Fleet orchestration — supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation); the fleet orchestration layer in `docs/fleet.md`
-- [ ] Grep text index — internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
-- [ ] Agent folder watcher — internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival); scoped capability, no deps
+- [ ] Swarm orchestration - agent cooperation layer (`docs/swarm.md`): `/agent` personas, `delegate` tool, auditor agents, generate→check→correct, and team patterns as sub-tasks below
+- [ ] Fleet orchestration - supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), the fleet orchestration layer in `docs/fleet.md`
+- [ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
+- [ ] Agent folder watcher - internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps
 
-- [ ] MCP support — Model Context Protocol integration, plugin-first (third-party `mcp` lib as a lazy plugin dep; the core stays stdlib-only):
-  - [ ] MCP client plugin — connect to external MCP servers (stdio/HTTP), register their tools into the ToolRegistry so the model can call them like any Replio tool (tool policy, status, session logging apply)
-  - [ ] MCP server — expose Replio's registered tools + sessions over MCP for external agents (Claude, opencode, …) to drive
-- [ ] Plan/Build modes — read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery
-- [ ] Minimal web Control UI — stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue); richer frameworks stay plugin-first
+- [ ] MCP support - Model Context Protocol integration, plugin-first (third-party `mcp` lib as a lazy plugin dep, so the core stays stdlib-only):
+  - [ ] MCP client plugin - connect to external MCP servers (stdio/HTTP), register their tools into the ToolRegistry so the model can call them like any Replio tool (tool policy, status, session logging apply)
+  - [ ] MCP server - expose Replio's registered tools + sessions over MCP for external agents (Claude, opencode, …) to drive
+- [ ] Plan/Build modes - read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery
+- [ ] Minimal web Control UI - stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue). Richer frameworks stay plugin-first
 
-- [ ] Externalize the bundled plugins (`replio-core-websearch`/`fs`/`exec`) into separate versioned repositories — the bundled copies stay the shipped defaults; global/local plugins of the same name already override them
-- [ ] PyPI plugin source — discover installed plugin packages via `importlib.metadata` entry points (`replio.plugins` group)
-- [ ] Shared plugin virtualenv — one venv for all plugin dependencies, injected at import
-- [ ] Per-plugin virtualenv isolation — `~/.config/replio/plugins/<name>/.venv`; loader injects its site-packages at import (strongest dependency separation)
-- [ ] Web scraper plugin — full page scraping beyond `fetch_page`'s text extraction (structured content, links), shipped as an external plugin repository
-- [ ] PDF-to-text converter plugin — extract text from local/remote PDFs, shipped as an external plugin repository
-- [ ] Auditor agents — sub-agents that review/check a produced output (tests, code review, fact-check)
-- [ ] Generate → check → correct orchestration — run a main agent, an auditor, and a fix pass in a loop until passing
+- [ ] Externalize the bundled plugins (`replio-core-websearch`/`fs`/`exec`) into separate versioned repositories - the bundled copies stay the shipped defaults. Global/local plugins of the same name already override them
+- [ ] PyPI plugin source - discover installed plugin packages via `importlib.metadata` entry points (`replio.plugins` group)
+- [ ] Shared plugin virtualenv - one venv for all plugin dependencies, injected at import
+- [ ] Per-plugin virtualenv isolation - `~/.config/replio/plugins/<name>/.venv`. The loader injects its site-packages at import (strongest dependency separation)
+- [ ] Web scraper plugin - full page scraping beyond `fetch_page`'s text extraction (structured content, links), shipped as an external plugin repository
+- [ ] PDF-to-text converter plugin - extract text from local/remote PDFs, shipped as an external plugin repository
+- [ ] Auditor agents - sub-agents that review/check a produced output (tests, code review, fact-check)
+- [ ] Generate → check → correct orchestration - run a main agent, an auditor, and a fix pass in a loop until passing
 - [ ] Custom system prompts per session
 - [ ] Config validation (test connection on change)
 - [ ] Multi-line input (detect `"""` or `'''` blocks)
-- [ ] `code_lint` / `code_format` / `code_test` / `code_debug` / `compile` — subprocess wrappers around existing CLIs (pylint, black, pytest, pdb, gcc/rustc), registered as tools with `category`/`permission`/`key_arg`
-- [ ] `git` — repository operations (status, diff, commit)
-- [ ] `docs_search` — local grep + DuckDuckGo for documentation lookups
-- [ ] Workspace sessions — tools write into a scoped `--workspace` dir; optional `--git` sync
-- [ ] Glyph activity lines — optional (config-gated) replacement of the default `[tool: key_arg]` status with typed glyph lines; the arrow shows payload flow: `←` content leaves the target (read), `→` content enters the target (write)
-  - [ ] Category → glyph + verb defaults: `read` `←` Read, `write` `→` Write, `search` `%` Search, `exec` `$` Run, `ask` `~` Ask, `todo` `-` Todo, `delegate` `↳` Call; per-tool overrides (glob `*` Search)
-  - [ ] Render `  <glyph> <verb> <key_arg>` dimmed — e.g. `← Read src/foo.py`, `→ Write test.md`, `% Search "latest python"`, `* Glob **/*.py`, `$ Run pytest`, `↳ Call agent-x`; no name special-casing
-  - [ ] `ToolRegistry.activity(name, args)` returns `(glyph, verb, label)`; unmapped categories fall back to the default `[tool: key_arg]` oneliner
-  - [ ] Config key (default off) — default stays `[tool: key_arg]` oneliner + detail lines
-- [ ] Spinner — animated `⠧ Thinking` replaces the static `+ Thinking` / `+ Thought 12.3s` announce while thinking is in progress (`show_thinking: false`); folded into `show_thinking`, no new config key; stdlib `threading` daemon, cleared with `\r\033[K`
-- [ ] Activity lines are ephemeral UI — never persisted to session files (tool calls are already recorded there)
-- [ ] Sandboxed exec — namespace/container isolation for `run_command` (documented, planned for a later version)
-- [ ] Per-agent permission profiles — `tool_permission` becomes per-agent when `/agent` personas land
-- [ ] `/agent` personas — per-agent system prompt, session namespace, optional model override
+- [ ] `code_lint` / `code_format` / `code_test` / `code_debug` / `compile` - subprocess wrappers around existing CLIs (pylint, black, pytest, pdb, gcc/rustc), registered as tools with `category`/`permission`/`key_arg`
+- [ ] `git` - repository operations (status, diff, commit)
+- [ ] `docs_search` - local grep + DuckDuckGo for documentation lookups
+- [ ] Workspace sessions - tools write into a scoped `--workspace` dir, optional `--git` sync
+- [ ] Glyph activity lines - optional (config-gated) replacement of the default `[tool: key_arg]` status with typed glyph lines. The arrow shows payload flow: `←` content leaves the target (read), `→` content enters the target (write)
+  - [ ] Category → glyph + verb defaults: `read` `←` Read, `write` `→` Write, `search` `%` Search, `exec` `$` Run, `ask` `~` Ask, `todo` `-` Todo, `delegate` `↳` Call. Per-tool overrides (glob `*` Search)
+  - [ ] Render `  <glyph> <verb> <key_arg>` dimmed - e.g. `← Read src/foo.py`, `→ Write test.md`, `% Search "latest python"`, `* Glob **/*.py`, `$ Run pytest`, `↳ Call agent-x`. No name special-casing
+  - [ ] `ToolRegistry.activity(name, args)` returns `(glyph, verb, label)`, unmapped categories fall back to the default `[tool: key_arg]` oneliner
+  - [ ] Config key (default off) - default stays `[tool: key_arg]` oneliner + detail lines
+- [ ] Spinner - animated `⠧ Thinking` replaces the static `+ Thinking` / `+ Thought 12.3s` announce while thinking is in progress (`show_thinking: false`). Folded into `show_thinking`, no new config key. stdlib `threading` daemon, cleared with `\r\033[K`
+- [ ] Activity lines are ephemeral UI - never persisted to session files (tool calls are already recorded there)
+- [ ] Sandboxed exec - namespace/container isolation for `run_command` (documented, planned for a later version)
+- [ ] Per-agent permission profiles - `tool_permission` becomes per-agent when `/agent` personas land
+- [ ] `/agent` personas - per-agent system prompt, session namespace, optional model override
 - [ ] `delegate(persona, task)` tool → sub-agent loop returning a result
 - [ ] PM/dev/tester team orchestration as a user-facing pattern
-- [ ] Headless web API plugin-first — stdlib `http.server` fallback, richer framework (FastAPI) via the dependency plugin
+- [ ] Headless web API plugin-first - stdlib `http.server` fallback, richer framework (FastAPI) via the dependency plugin
 - [ ] Enterprise plugins (stdlib-first, third-party deps optional):
-  - [ ] Data ingestion — `read_stream` / `write_stream` (MQTT, OPC-UA, Modbus)
-  - [ ] Time-series — `anomaly_detect` (z-score), `forecast`
-  - [ ] Model inference — `model_infer` / `predict_failure` (ONNX)
-  - [ ] Optimization — `optim_schedule` (scheduling / linear programming)
-  - [ ] SCADA control — `scada_command` (OPC-UA registers)
-  - [ ] Reporting — `report_gen` (Markdown/PDF, email/BI push)
+  - [ ] Data ingestion - `read_stream` / `write_stream` (MQTT, OPC-UA, Modbus)
+  - [ ] Time-series - `anomaly_detect` (z-score), `forecast`
+  - [ ] Model inference - `model_infer` / `predict_failure` (ONNX)
+  - [ ] Optimization - `optim_schedule` (scheduling / linear programming)
+  - [ ] SCADA control - `scada_command` (OPC-UA registers)
+  - [ ] Reporting - `report_gen` (Markdown/PDF, email/BI push)
   - [ ] Audit logging + metrics (`/metrics`) for enterprise deployments
   - [ ] Onboarding wizard (`replio wizard`) for data-source / MES interface setup
-  - [ ] RBAC — role-based access control for enterprise deployments
-  - [ ] Queue-based scaling — many concurrent sensor/chat feeds without blocking the loop
+  - [ ] RBAC - role-based access control for enterprise deployments
+  - [ ] Queue-based scaling - many concurrent sensor/chat feeds without blocking the loop
 - [ ] Session export to Markdown
 - [ ] Session import from Markdown/JSON
 - [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
@@ -79,49 +79,49 @@
 
 ## Done
 
-- [x] `write_file` reports the resolved absolute path to the model — result returns `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)`; description notes relative paths resolve against the current directory
+- [x] `write_file` reports the resolved absolute path to the model - result returns `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)`. The description notes relative paths resolve against the current directory
 - [x] Tab completion restored (libedit binding) + extended to paths, tool names, and subcommands
 - [x] README terminal screenshot as SVG
-- [x] `deploy/` fleet templates — `Dockerfile` + entrypoint + `.dockerignore`, `docker-compose.yml.example`, systemd `replio@.service` template unit, launchd `com.replio.agent.plist.example`; repo-held generic templates, per-agent values configured per project
-- [x] `docs/fleet.md` — single-purpose agent fleet pattern (one scoped process per agent, responsibilities & permissions, doc-agent composition, deployment)
-- [x] README fleet positioning — tagline, Features bullet, "Single-purpose agent fleets" section, Roadmap names fleet orchestration as the final goal
-- [x] Per-turn stats on their own line — `ReplUI.footer` emits a separating newline when streamed output didn't end with one
-- [x] One-shot retry for empty/truncated streams — re-request once before surfacing "Stream ended before a completion event"
+- [x] `deploy/` fleet templates - `Dockerfile` + entrypoint + `.dockerignore`, `docker-compose.yml.example`, systemd `replio@.service` template unit, launchd `com.replio.agent.plist.example`. Repo-held generic templates, per-agent values configured per project
+- [x] `docs/fleet.md` - single-purpose agent fleet pattern (one scoped process per agent, responsibilities & permissions, doc-agent composition, deployment)
+- [x] README fleet positioning - tagline, Features bullet, "Single-purpose agent fleets" section, Roadmap names fleet orchestration as the final goal
+- [x] Per-turn stats on their own line - `ReplUI.footer` emits a separating newline when streamed output didn't end with one
+- [x] One-shot retry for empty/truncated streams - re-request once before surfacing "Stream ended before a completion event"
 - [x] `write_file` status preview ends with a dimmed parenthesized summary (resolved path, line/char counts, action)
-- [x] Thinking announce — `+ Thinking` on its own line (or `+ Thought 12.3s` when hidden); `HeadlessUI` mirrors it in `--verbose`
-- [x] Human-readable tool status — `[tool: key_arg]` oneliner + dimmed detail lines (write_file diff preview, run_command echo)
+- [x] Thinking announce - `+ Thinking` on its own line (or `+ Thought 12.3s` when hidden). `HeadlessUI` mirrors it in `--verbose`
+- [x] Human-readable tool status - `[tool: key_arg]` oneliner + dimmed detail lines (write_file diff preview, run_command echo)
 - [x] Built-in web + machine features moved to bundled plugins (`replio-core-websearch`/`fs`/`exec`, shipped as `replio.plugins.bundled`)
-  - [x] Discovery precedence bundled < global < local; `PluginInfo.origin`; bundled plugins can't be updated/uninstalled (disable instead)
-  - [x] `register_services` entry hook — powers the `web_search: true` search-then-answer mode
-  - [x] `plugins` config list replaces `plugins.enabled`/`plugins.deny` (auto-migrated); empty = all load
+  - [x] Discovery precedence bundled < global < local, with `PluginInfo.origin`. Bundled plugins can't be updated/uninstalled (disable instead)
+  - [x] `register_services` entry hook - powers the `web_search: true` search-then-answer mode
+  - [x] `plugins` config list replaces `plugins.enabled`/`plugins.deny` (auto-migrated), empty = all load
   - [x] `tests/test_bundled_plugins.py` (10 tests)
-- [x] Plugin system — directory-based external plugins for tools, providers, and commands
-  - [x] `PluginManager` — discovery from global + local plugin roots, manifest compat ranges, single entry-module import
-  - [x] `register_tools(registry)` hook — plugin tools inherit policy, `/tool`, `/help`, refinement, session logging
+- [x] Plugin system - directory-based external plugins for tools, providers, and commands
+  - [x] `PluginManager` - discovery from global + local plugin roots, manifest compat ranges, single entry-module import
+  - [x] `register_tools(registry)` hook - plugin tools inherit policy, `/tool`, `/help`, refinement, session logging
   - [x] `register_providers(providers)` hook merged into the provider registry (`_reinit_provider`, `/connect`)
   - [x] `register_commands(commands)` hook, registered after builtins at engine init
-  - [x] Plugin manifest + docs — `docs/plugins.md` (schema, compatibility contract, security)
-  - [x] Optional per-plugin dependencies — manifest `requires`, lazily imported (core stays stdlib-only), `--deps` pip-installs
-  - [x] Activation via config — `plugins` list; enable/disable/install/uninstall maintain it
-  - [x] `/plugins` command — list/detail/enable/disable/install/update/uninstall with name completion
-  - [x] `replio plugins` CLI — headless list/install/update/uninstall
+  - [x] Plugin manifest + docs - `docs/plugins.md` (schema, compatibility contract, security)
+  - [x] Optional per-plugin dependencies - manifest `requires`, lazily imported (core stays stdlib-only), `--deps` pip-installs
+  - [x] Activation via config - `plugins` list, enable/disable/install/uninstall maintain it
+  - [x] `/plugins` command - list/detail/enable/disable/install/update/uninstall with name completion
+  - [x] `replio plugins` CLI - headless list/install/update/uninstall
   - [x] `tests/test_plugins.py` (30 tests)
 - [x] PyPI proper configuration and documentation
 - [x] Clear screen on REPL start (`clear_screen` config, default `true`)
-- [x] `/config` structured values — JSON auto-parse, `-a`/`-r` list add/remove, `reload`, unknown-key y/N
-- [x] `/compact` session summarization — append-only; summary stored as `result` of a `command` message with `compact_from` boundary
-- [x] `/session load` compaction offer prints the summary; load records a `command` message
-- [x] `/session preview <name>` — read-only structural preview without switching sessions
+- [x] `/config` structured values - JSON auto-parse, `-a`/`-r` list add/remove, `reload`, unknown-key y/N
+- [x] `/compact` session summarization - append-only, summary stored as `result` of a `command` message with `compact_from` boundary
+- [x] `/session load` compaction offer prints the summary, load records a `command` message
+- [x] `/session preview <name>` - read-only structural preview without switching sessions
 - [x] Session-name tab completion for `/session load`/`delete`
-- [x] Context-size display — dimmed `(Ns, N tokens)` after each response (`show_context_size`, default `true`)
-- [x] `noise_tools` config (default `["fetch_page"]`) — noise tool results replaced with a marker in persisted sessions
-- [x] `max_tokens` optional (default `0` = unset); hitting a cap warns + logs a session `errors` entry
-- [x] Provider payload prepared from the log — `command` filtered, summaries → `system`, dangling tool messages skipped
-- [x] `replio run` — one-shot CLI mode (JSON/text) reusing the agent loop + session manager for CI/CD
+- [x] Context-size display - dimmed `(Ns, N tokens)` after each response (`show_context_size`, default `true`)
+- [x] `noise_tools` config (default `["fetch_page"]`) - noise tool results replaced with a marker in persisted sessions
+- [x] `max_tokens` optional (default `0` = unset). Hitting a cap warns + logs a session `errors` entry
+- [x] Provider payload prepared from the log - `command` filtered, summaries → `system`, dangling tool messages skipped
+- [x] `replio run` - one-shot CLI mode (JSON/text) reusing the agent loop + session manager for CI/CD
   - [x] Flags: `--prompt`, `--provider`, `--model`, `--output=json`, `--verbose`
-  - [x] `--session-id` — address persistent sessions from headless mode
+  - [x] `--session-id` - address persistent sessions from headless mode
   - [x] Headless logging (`--verbose`) instead of visual activity lines
-- [x] `replio serve` — stdlib `http.server` HTTP JSON API (`POST /chat`) over the same agent loop
+- [x] `replio serve` - stdlib `http.server` HTTP JSON API (`POST /chat`) over the same agent loop
 - [x] Tests for headless entry points (mock provider, no network)
 - [x] Hardening: agent-loop turn failures always visible in the session log
   - [x] Persist streamed content when the SSE stream ends without a `done` event
@@ -129,36 +129,36 @@
   - [x] Non-normal `finish_reason` (`length`) logs an `errors` entry + prints a warning
   - [x] Catch unexpected exceptions escaping the agent loop, log them, keep the REPL alive
   - [x] Tests: token-stream-then-EOF, empty `done`, streamed exception
-- [x] Sessions are complete logs — every message, tool call + result, reasoning, error persisted
-  - [x] Append-only — compaction and load never remove or rewrite entries
-  - [x] `Session.to_dict()` keeps `role: tool` (full results; `noise_tools` replaced by a marker)
+- [x] Sessions are complete logs - every message, tool call + result, reasoning, error persisted
+  - [x] Append-only - compaction and load never remove or rewrite entries
+  - [x] `Session.to_dict()` keeps `role: tool` (full results, `noise_tools` replaced by a marker)
   - [x] Per-round `thinking` metadata on assistant messages, excluded from `content`
   - [x] Session-level `errors` array
   - [x] `created_at` / `updated_at` metadata (bumped on every message)
-  - [x] `tool_analysis` (default `false`) — model-generated one-line analysis on each tool message
-  - [x] `session_tool_max_chars` (default 0 = unlimited) — caps persisted tool-result content
-  - [x] No `index.json` — session names carry timestamp + first-message slug
+  - [x] `tool_analysis` (default `false`) - model-generated one-line analysis on each tool message
+  - [x] `session_tool_max_chars` (default 0 = unlimited) - caps persisted tool-result content
+  - [x] No `index.json` - session names carry timestamp + first-message slug
   - [x] Flat message list retained (maps 1:1 to provider context)
 - [x] Unified streaming agent loop
   - [x] Single SSE stream, detect `tool_calls` vs content from the first delta
   - [x] Eliminates double-call cost when no tools are used
 - [x] Unified dispatch
   - [x] Slash commands call the same `ToolRegistry` as the model
-  - [x] Generic query refinement via tool metadata; `_handle_message` branches collapsed
-- [x] Machine tools (`tools/machine.py`) — `read_file`, `list_dir`, `write_file`, `run_command`
-  - [x] `read_file` — numbered lines, `offset`/`limit`, truncation, binary/permission errors
-  - [x] `list_dir` — sorted entries, trailing `/` for subdirs, file sizes
-  - [x] `write_file` — parent-dir creation, `w`/`a` modes
-  - [x] `run_command` — subprocess exec with timeout, stdout/stderr capture, exit code, 8k cap
+  - [x] Generic query refinement via tool metadata and collapsed `_handle_message` branches
+- [x] Machine tools (`tools/machine.py`) - `read_file`, `list_dir`, `write_file`, `run_command`
+  - [x] `read_file` - numbered lines, `offset`/`limit`, truncation, binary/permission errors
+  - [x] `list_dir` - sorted entries, trailing `/` for subdirs, file sizes
+  - [x] `write_file` - parent-dir creation, `w`/`a` modes
+  - [x] `run_command` - subprocess exec with timeout, stdout/stderr capture, exit code, 8k cap
   - [x] `category`/`permission`/`path_arg`/`key_arg` registration metadata
-- [x] Discovery tools — `glob` (recursive pattern lookup, noise-dir skip) and `grep` (regex content search, `file:line:` results)
+- [x] Discovery tools - `glob` (recursive pattern lookup, noise-dir skip) and `grep` (regex content search, `file:line:` results)
 - [x] `read_file` always reports total line count in its header
 - [x] Tool permission model (`tools/policy.py` + config)
   - [x] `tools.allow` / `tools.deny` name-level policies (deny + allow-whitelist take precedence)
-  - [x] `tool_permission` category actions — `read`/`list`/`edit`/`bash`/`web` → `allow`/`ask`/`deny`
-  - [x] Path-scoped confirm — outside-worktree read/write/list escalate to `ask`
-  - [x] `bash: ask` default — every `run_command` prompts y/N
-- [x] Confirm prompts in the loop — denied tools filtered from the schema; cancelled calls feed `[cancelled]` results
+  - [x] `tool_permission` category actions - `read`/`list`/`edit`/`bash`/`web` → `allow`/`ask`/`deny`
+  - [x] Path-scoped confirm - outside-worktree read/write/list escalate to `ask`
+  - [x] `bash: ask` default - every `run_command` prompts y/N
+- [x] Confirm prompts in the loop - denied tools filtered from the schema, cancelled calls feed `[cancelled]` results
 - [x] `/tool` command routes through the same policy
 - [x] OpenAI / Groq / Anthropic providers
 - [x] Provider auto-detection from base_url
@@ -166,20 +166,20 @@
 - [x] Ollama cloud provider
 - [x] Session manager (JSON CRUD)
 - [x] `/session new` and `/session load` actually switch the active session
-- [x] Session save after file rename — JSON `name` field matches filename
+- [x] Session save after file rename - JSON `name` field matches filename
 - [x] Auto-session naming with first user message as context hint
 - [x] Tool results and assistant `tool_calls` persisted in session files
 - [x] DuckDuckGo Lite search via `html.parser`
 - [x] Terminal + AI context formatting
 - [x] `/search <query>` and `/web <query>` commands
 - [x] Auto-search mode (`web_search: true` config)
-- [x] `fetch_page` — `_TextExtractor` (HTMLParser) for clean text extraction
-- [x] Search term extraction — `query_refine` config auto-refines short queries
-- [x] `tools/registry.py` — decorator-based tool registration
-- [x] `tools/builtins.py` — `web_search` and `fetch_page` tools
-- [x] `BaseProvider.chat_nonstreaming()` — non-streaming tool decision round
+- [x] `fetch_page` - `_TextExtractor` (HTMLParser) for clean text extraction
+- [x] Search term extraction - `query_refine` config auto-refines short queries
+- [x] `tools/registry.py` - decorator-based tool registration
+- [x] `tools/builtins.py` - `web_search` and `fetch_page` tools
+- [x] `BaseProvider.chat_nonstreaming()` - non-streaming tool decision round
 - [x] Two-phase chat: non-streaming tool decision → stream final content
-- [x] `_show_tool_status()` — dimmed status during tool execution
+- [x] `_show_tool_status()` - dimmed status during tool execution
 - [x] `/search` command integration with tool calling
 - [x] Config default: `tool_calling: true`
 - [x] `tool_status_visible` config flag (default `true`)
@@ -189,8 +189,8 @@
 - [x] Markdown-aware streaming (disabled by default via `markdown_streaming`)
 - [x] Error handling improvements (network timeout, auth errors)
 - [x] Edge cases: streaming when `tool_calling=true` but no tools used
-- [x] Tool-call messages lost on exception — `try/finally` persists session
-- [x] Final assistant response missing when streaming returns empty — non-streaming fallback
+- [x] Tool-call messages lost on exception - `try/finally` persists session
+- [x] Final assistant response missing when streaming returns empty - non-streaming fallback
 - [x] Project scaffolding (pyproject.toml, venv, dir structure)
 - [x] Config module (global + local JSON merge)
 - [x] HTTP SSE streaming utility (urllib)

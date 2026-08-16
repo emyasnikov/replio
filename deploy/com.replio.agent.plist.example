@@ -4,7 +4,7 @@
      Copy to ~/Library/LaunchAgents/com.replio.<name>.plist, replace <NAME>
      and the project path, then load it:
        launchctl load ~/Library/LaunchAgents/com.replio.<NAME>.plist
-     KeepAlive keeps the agent running; the API key comes from the agent's own
+     KeepAlive keeps the agent running. The API key comes from the agent's own
      ~/.config/replio/config.json or .replio/config.json. -->
 <plist version="1.0">
 <dict>

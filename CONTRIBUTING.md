@@ -10,7 +10,7 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 .venv/bin/replio
 ```
 
-The project is Python >=3.10, stdlib only — no external dependencies.
+The project is Python >=3.10, stdlib only - no external dependencies.
 
 ## Running tests
 
@@ -26,7 +26,7 @@ See [AGENTS.md](AGENTS.md) for the architecture and conventions (agent loop, too
 
 ## Pull requests
 
-- Keep changes focused; one logical change per PR
+- Keep changes focused, with one logical change per PR
 - Type hints required on all function signatures
 - No comments in code
 - Add or update tests for the change

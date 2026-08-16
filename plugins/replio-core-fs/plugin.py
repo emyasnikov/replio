@@ -48,7 +48,7 @@ def _write_file_status(args):
     lines = content.splitlines()
     action = ('appended' if args.get('mode') == 'a'
               else 'created' if old is None else 'overwritten')
-    summary = f'({p.resolve()} — {len(lines)} lines, {count} chars, {action})'
+    summary = f'({p.resolve()} - {len(lines)} lines, {count} chars, {action})'
     if old is None:
         body = [f'+ {l}' for l in lines[:20]]
         if len(lines) > 20:
@@ -107,7 +107,7 @@ def register_tools(registry):
         width = len(str(end))
         out = [f'{i:>{width}}|{line}'
                for i, line in enumerate(lines[start:end], start=start + 1)]
-        header = f'# {path} — {len(lines)} lines'
+        header = f'# {path} - {len(lines)} lines'
         if end < len(lines):
             header += f' (showing {start + 1}-{end})'
         if not out:
@@ -156,7 +156,7 @@ def register_tools(registry):
 
     @registry.register(
         name='write_file',
-        description='Write content to a file, creating parent directories as needed. Use to create or update files such as source code, configs, and notes. Relative paths resolve against the current working directory — the result reports the resolved absolute path.',
+        description='Write content to a file, creating parent directories as needed. Use to create or update files such as source code, configs, and notes. Relative paths resolve against the current working directory - the result reports the resolved absolute path.',
         parameters={
             'type': 'object',
             'properties': {
@@ -202,7 +202,7 @@ def register_tools(registry):
 
     @registry.register(
         name='glob',
-        description='Find files and directories matching a glob pattern (e.g. "**/*.py", "src/**/chat.py"). Use to locate a file path before reading or listing it — do not guess paths.',
+        description='Find files and directories matching a glob pattern (e.g. "**/*.py", "src/**/chat.py"). Use to locate a file path before reading or listing it - do not guess paths.',
         parameters={
             'type': 'object',
             'properties': {

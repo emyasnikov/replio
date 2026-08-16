@@ -41,24 +41,24 @@ A plugin is a directory with a `manifest.json` and an entry module, or a bare `.
 
 | Key              | Default       | Description |
 |------------------|---------------|-------------|
-| `name`           | *(required)*  | Plugin name; also the install directory name |
+| `name`           | *(required)*  | Plugin name, also the install directory name |
 | `version`        | `"0.0.0"`     | Plugin version |
 | `description`    | `""`          | Shown in `/plugins` and `replio plugins list` |
 | `replio_version` | `""`          | Semver range the plugin is compatible with (`>=0.12.0,<1.0`). Incompatible plugins are skipped at load |
 | `python`         | `""`          | Minimum/maximum Python, same range syntax (`>=3.10`) |
 | `entry`          | `"plugin.py"` | Module to load |
-| `requires`       | `[]`          | Third-party packages; metadata for status and `--deps` install, never imported by the core |
+| `requires`       | `[]`          | Third-party packages, metadata for status and `--deps` install, never imported by the core |
 | `provides`       | `{}`          | Declared tools/providers/commands for `/plugins` display |
-| `source`         | `""`          | Origin recorded on install; used by `update` |
+| `source`         | `""`          | Origin recorded on install, used by `update` |
 
 ## Entry contract
 
 The entry module may define any of four hooks (all optional):
 
 ```python
-def register_tools(registry) -> None: ...        # @registry.register(...) — same as core tools
+def register_tools(registry) -> None: ...        # @registry.register(...) - same as core tools
 def register_providers(providers) -> None: ...   # providers["name"] = ProviderClass
-def register_commands(commands) -> None: ...     # @commands.register(...) — same as core commands
+def register_commands(commands) -> None: ...     # @commands.register(...) - same as core commands
 def register_services(services) -> None: ...     # services["name"] = service object for core features
 ```
 
@@ -81,7 +81,7 @@ def register_tools(registry):
         try:
             from pypdf import PdfReader
         except ImportError:
-            return 'Error: pdf2text requires "pypdf" — pip install pypdf'
+            return 'Error: pdf2text requires "pypdf" - pip install pypdf'
         ...
 ```
 
@@ -133,10 +133,10 @@ replio plugins uninstall <name>
 
 `/plugins` (and `replio plugins list`) shows each plugin's name, version, **origin** (`bundled` / `global` / `local`), load status, and any unmet `requires`:
 
-- `loaded` — active
-- `disabled` — not in the `plugins` list (when it is non-empty)
-- `incompatible` — `replio_version` or `python` range not satisfied (reason shown)
-- `error` — invalid manifest, missing entry module, or the entry module raised while loading
+- `loaded` - active
+- `disabled` - not in the `plugins` list (when it is non-empty)
+- `incompatible` - `replio_version` or `python` range not satisfied (reason shown)
+- `error` - invalid manifest, missing entry module, or the entry module raised while loading
 
 ## Security
 

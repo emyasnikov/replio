@@ -68,7 +68,7 @@ class Engine:
         factory = merged.get(provider_name)
         if factory is None:
             detected = detect_provider(self.config.get('base_url'))
-            self.ui.info(f'Unknown provider "{provider_name}" — using "{detected}" '
+            self.ui.info(f'Unknown provider "{provider_name}" - using "{detected}" '
                          '(detected from base_url)')
             self.config.set('provider', detected)
             factory = merged[detected]
@@ -132,7 +132,7 @@ class Engine:
             if context:
                 self.current_session.add_message('system', context)
             else:
-                self.ui.info('(Skipping AI — no search results)')
+                self.ui.info('(Skipping AI - no search results)')
                 return TurnResult(status='empty', session=self.current_session.name)
         return self._agent_loop()
 
@@ -280,7 +280,7 @@ class Engine:
                             status = 'empty'
                         break
                     if not content and attempt == 1:
-                        self.ui.info('(stream ended before a completion event — retrying)')
+                        self.ui.info('(stream ended before a completion event - retrying)')
                         continue
                     msg = 'Stream ended before a completion event'
                     self.current_session.add_error(0, msg)
@@ -359,7 +359,7 @@ class Engine:
     def _analyze_tool_result(self, name: str, output: str) -> str | None:
         sys_prompt = (
             "You write one-line insights for a session log. Given a tool name and its raw "
-            "result, state in a single sentence what useful information the result provided — "
+            "result, state in a single sentence what useful information the result provided - "
             "so a reader of the log can reconstruct the key insight without re-running the tool. "
             "Return only that sentence, nothing else."
         )
@@ -384,7 +384,7 @@ class Engine:
         service = pm.service('search') if pm is not None else None
         if service is None:
             if not silent:
-                self.ui.info('(web search unavailable — replio-core-websearch plugin not loaded)')
+                self.ui.info('(web search unavailable - replio-core-websearch plugin not loaded)')
             return None
 
         num = self.config.get('search_results', 5)
@@ -539,11 +539,11 @@ class Engine:
             code = err.get('code', '')
             msg = err.get('message', 'Unknown error')
             self.ui.error(code, msg)
-            self.ui.info('Compaction failed — context unchanged')
+            self.ui.info('Compaction failed - context unchanged')
             return None
         summary = (result.get('content') or '').strip()
         if not summary:
-            self.ui.info('Compaction failed — context unchanged')
+            self.ui.info('Compaction failed - context unchanged')
             return None
         return summary
 
@@ -570,7 +570,7 @@ class Engine:
         record['result'] = summary
         record['compact_from'] = boundary
         n, chars = self._context_size()
-        self.ui.info(f'Compacted — context now {n} messages ({self._human_chars(chars)})')
+        self.ui.info(f'Compacted - context now {n} messages ({self._human_chars(chars)})')
         self.ui.info('--- earlier conversation ---')
         self.ui.info(summary)
         self.session_auto_save()
@@ -607,7 +607,7 @@ class Engine:
         tools = sorted({tc.get('function', {}).get('name', '?')
                         for m in s.messages if m.get('tool_calls')
                         for tc in m['tool_calls']})
-        self.ui.info(f'  {s.name} — {len(s.messages)} messages')
+        self.ui.info(f'  {s.name} - {len(s.messages)} messages')
         self.ui.info(f'    created {s.created_at} · updated {s.updated_at}')
         self.ui.info('    roles: ' + ' · '.join(f'{k} {v}' for k, v in counts.items()))
         if tools:

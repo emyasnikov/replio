@@ -69,7 +69,7 @@ def register_tools(registry):
             'properties': {
                 'query': {
                     'type': 'string',
-                    'description': 'The search query — be specific and concise',
+                    'description': 'The search query - be specific and concise',
                 },
             },
             'required': ['query'],

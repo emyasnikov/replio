@@ -1,7 +1,7 @@
 {
   "name": "replio-core-exec",
   "version": "0.13.0",
-  "description": "Shell command execution — bundled with replio",
+  "description": "Shell command execution - bundled with replio",
   "replio_version": ">=0.13.0,<1.0",
   "python": ">=3.10",
   "entry": "plugin.py",

@@ -55,7 +55,7 @@ def register_tools(registry):
         try:
             import replio_definitely_missing_pkg
         except ImportError:
-            return 'Error: uses_dep requires "replio_definitely_missing_pkg" — pip install replio_definitely_missing_pkg'
+            return 'Error: uses_dep requires "replio_definitely_missing_pkg" - pip install replio_definitely_missing_pkg'
         return 'ok'
 '''
 

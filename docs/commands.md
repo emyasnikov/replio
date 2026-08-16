@@ -2,7 +2,7 @@
 
 ## Slash commands
 
-Run `replio` and type `/` — commands tab-complete. Use `/help` or `/help <cmd>` for details.
+Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` for details.
 
 | Command                 | Aliases        | Description                                                    |
 |-------------------------|----------------|----------------------------------------------------------------|
@@ -65,8 +65,8 @@ Manage plugins headlessly. See [plugins.md](plugins.md).
 | Subcommand    | Description                                                     |
 |---------------|-----------------------------------------------------------------|
 | `list`        | List installed plugins and their load status                    |
-| `install`     | `replio plugins install <git-url|path> [--global] [--deps]` — install a plugin |
-| `update`      | `replio plugins update <name>` — re-fetch from the recorded source |
-| `uninstall`   | `replio plugins uninstall <name>` — remove a plugin             |
+| `install`     | `replio plugins install <git-url|path> [--global] [--deps]` - install a plugin |
+| `update`      | `replio plugins update <name>` - re-fetch from the recorded source |
+| `uninstall`   | `replio plugins uninstall <name>` - remove a plugin             |
 
 `--path` may be given either before the subcommand (`replio --path X plugins list`) or after it (`replio plugins --path X list`).

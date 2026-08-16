@@ -327,7 +327,7 @@ class PluginManager:
             raise PluginError(f'plugin not installed: {name}')
         if info.origin == 'bundled':
             raise PluginError(
-                f'{name} is bundled with replio — disable it with /plugins disable instead of updating')
+                f'{name} is bundled with replio - disable it with /plugins disable instead of updating')
         if not info.source:
             raise PluginError(f'plugin {name} has no recorded source to update from')
         if self._is_url(info.source):
@@ -355,7 +355,7 @@ class PluginManager:
             raise PluginError(f'plugin not installed: {name}')
         if info.origin == 'bundled':
             raise PluginError(
-                f'{name} is bundled with replio — disable it with /plugins disable instead of uninstalling')
+                f'{name} is bundled with replio - disable it with /plugins disable instead of uninstalling')
         if info.directory.exists():
             shutil.rmtree(info.directory)
         self.load()

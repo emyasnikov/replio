@@ -16,7 +16,7 @@ This document compares two open-source personal AI assistant / coding-agent proj
 | Core runtime | Single Python process with a streaming agent loop | CLI that runs the agent core in the same process |
 | Entry point | `replio` | `pi` |
 | Runtime dependencies | None beyond stdlib | Node.js + Bun, npm |
-| Deployment | Python package installed via `pipx`, no daemon | CLI run directly; standalone binaries built for releases |
+| Deployment | Python package installed via `pipx`, no daemon | CLI run directly, standalone binaries built for releases |
 | Multi-process | No | No, but the monorepo can run services separately |
 
 Replio runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load lazily and are extended by Python plugins. Pi is a monorepo. `@earendil-works/pi-agent-core` provides the agent runtime, `@earendil-works/pi-ai` a unified LLM provider layer, and `@earendil-works/pi-coding-agent` ships an interactive CLI that runs the agent runtime in the same process.
@@ -26,16 +26,16 @@ Replio runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load la
 | Aspect | Replio | Pi |
 |--------|---------|----|
 | Built-in tools | web search, fetch page, file I/O, shell, permission gating (`allow`/`ask`/`deny`) | web search, fetch page, file I/O, shell, and custom `!` command syntax |
-| Permission model | Path-scoped `allow`/`ask`/`deny` with runtime prompts | No built-in permission system; relies on OS sandboxing or Docker |
+| Permission model | Path-scoped `allow`/`ask`/`deny` with runtime prompts | No built-in permission system, relies on OS sandboxing or Docker |
 | Function-calling scheme | OpenAI-compatible JSON schema | OpenAI-compatible JSON schema |
-| Extensibility | Python plugins register tools via a simple registry | Packages expose `@tool`/`@skill` decorators; monorepo architecture |
+| Extensibility | Python plugins register tools via a simple registry | Packages expose `@tool`/`@skill` decorators, monorepo architecture |
 
 ## Channels & UI
 
 | Feature | Replio | Pi |
 |---------|---------|----|
 | Built-in UI | Terminal REPL only | Terminal UI library (`@earendil-works/pi-tui`), CLI only |
-| Messaging channels | None | None (CLI only); `pi-chat` for Slack/chat automation |
+| Messaging channels | None | None (CLI only), `pi-chat` for Slack/chat automation |
 | Web UI | None | None |
 | TUI | Yes (basic REPL) | Yes (differential rendering) |
 
@@ -51,7 +51,7 @@ Replio runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load la
 | Feature | Replio | Pi |
 |---------|---------|----|
 | Session persistence | Append-only JSON session logs, compaction | Telemetry contracts (`@earendil-works/pi-telemetry`), logs in workspace |
-| State management | Simple conversation context | Agent runtime has a state stack; structured conversation state |
+| State management | Simple conversation context | Agent runtime has a state stack, structured conversation state |
 | Telemetry | None | Vendor-neutral telemetry contracts, reference adapter, conformance tests |
 
 ## Security & Isolation
@@ -65,8 +65,8 @@ Replio runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load la
 
 | Project | License | Community | Plugin Ecosystem | Docs |
 |---------|---------|-----------|-----------------|------|
-| Replio | MIT | Small, GitHub-centric | Python plugins | Docs in repo; minimal |
-| Pi | MIT | Active, GitHub + X | npm packages in the monorepo | Docs on pi.dev; extensive containerization guide |
+| Replio | MIT | Small, GitHub-centric | Python plugins | Docs in repo, minimal |
+| Pi | MIT | Active, GitHub + X | npm packages in the monorepo | Docs on pi.dev, extensive containerization guide |
 
 ## When to Choose Which
 

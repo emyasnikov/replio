@@ -132,7 +132,7 @@ def register_builtins(registry):
         chat.config.set('base_url', base_url)
         detected = detect_provider(base_url)
         if detected in providers and detected != 'openai-compatible' and detected != provider:
-            print(f'  Detected provider "{detected}" from base URL — switching')
+            print(f'  Detected provider "{detected}" from base URL - switching')
             provider = detected
         chat.config.set('provider', provider)
         chat.config.set('model', model)
@@ -159,7 +159,7 @@ def register_builtins(registry):
             print('Config reloaded from disk')
             for k in ('provider', 'base_url', 'model'):
                 if chat.config.get(k) != old[k]:
-                    print(f'  {k}: {old[k]} → {chat.config.get(k)} — run /provider or /connect to apply')
+                    print(f'  {k}: {old[k]} → {chat.config.get(k)} - run /provider or /connect to apply')
             return
 
         if not rest:
@@ -174,7 +174,7 @@ def register_builtins(registry):
             items = rest[2:].strip().split()
             current = chat.config.get(key)
             if not isinstance(current, list):
-                print(f'Config {key} is not a list — cannot add/remove items')
+                print(f'Config {key} is not a list - cannot add/remove items')
                 return
             changed = False
             for it in items:
@@ -255,7 +255,7 @@ def register_builtins(registry):
             if s:
                 chat.current_session = s
                 n, chars = chat._context_size()
-                print(f'Loaded session: {name} — {n} messages · '
+                print(f'Loaded session: {name} - {n} messages · '
                       f'{chat._human_chars(chars)} context')
                 chat.preview_session(name, session=s)
                 chat.current_session.add_message('command', f'/session load {name}')
@@ -373,7 +373,7 @@ def _render_plugins(pm):
             missing = [p for p, ok in pm.dep_status(info) if not ok]
             if missing:
                 parts.append('needs: ' + ', '.join(missing))
-        print('  ' + ' — '.join(parts))
+        print('  ' + ' - '.join(parts))
 
 
 def _render_plugin_detail(pm, info):
@@ -389,7 +389,7 @@ def _render_plugin_detail(pm, info):
     if info.requires:
         print('  requires:')
         for pkg, ok in pm.dep_status(info):
-            print(f'    {pkg} — {"installed" if ok else "missing"}')
+            print(f'    {pkg} - {"installed" if ok else "missing"}')
     provides = info.provides or {}
     for kind in ('tools', 'providers', 'commands'):
         items = provides.get(kind, [])
@@ -433,7 +433,7 @@ def _install_plugin(chat, pm, rest):
     if info.name not in plugins:
         plugins.append(info.name)
         chat.config.set('plugins', plugins)
-    print(f'Installed {info.name} v{info.version} — restart to activate')
+    print(f'Installed {info.name} v{info.version} - restart to activate')
     if info.status in ('incompatible', 'error', 'disabled'):
         print(f'  {info.status}: {info.error or "not loaded"}')
     if deps and info.requires:
@@ -448,7 +448,7 @@ def _update_plugin(pm, name):
     except PluginError as e:
         print(f'Error updating plugin: {e}')
         return
-    print(f'Updated {info.name} to v{info.version} — restart to apply')
+    print(f'Updated {info.name} to v{info.version} - restart to apply')
 
 
 def _uninstall_plugin(chat, pm, name):
