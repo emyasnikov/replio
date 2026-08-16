@@ -74,8 +74,7 @@
 
 ## Done
 
-- [x] Glyph activity lines - typed `<glyph> <verb> <key_arg>` status (dimmed) replaces the `[tool: key_arg]` oneliner for mapped categories, gated by `glyph_lines` config (default `true`); unmapped categories fall back to the `[tool: key_arg]` oneliner + detail lines
-  - [x] `ToolRegistry.activity(name, args)` returns `(glyph, verb, label)` from category defaults (`read` `←` Read, `write` `→` Write, `search` `%` Search, `exec` `$` Run, `ask` `~` Ask, `todo` `-` Todo, `delegate` `↳` Call). Per-tool `glyph`/`verb` overrides (glob `*` Glob), fall back on unmapped categories
+- [x] Glyph activity lines - typed `<glyph> <verb> <key_arg>` status (dimmed) for covered categories, gated by `glyph_lines` (default `true`); unmapped categories use the `[tool: key_arg]` oneliner
 - [x] `write_file` reports the resolved absolute path to the model - result returns `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)`. The description notes relative paths resolve against the current directory
 - [x] Tab completion restored (libedit binding) + extended to paths, tool names, and subcommands
 - [x] README terminal screenshot as SVG

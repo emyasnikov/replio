@@ -103,6 +103,8 @@ def register_tools(registry):
         permission='read',
         key_arg='url',
         short="Fetch and read a web page's content",
+        glyph='↓',
+        verb='Fetch',
     )
     def fetch_page(url: str) -> str:
         import urllib.request

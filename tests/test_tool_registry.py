@@ -126,6 +126,8 @@ class TestToolRegistry(unittest.TestCase):
     def test_activity_per_tool_override(self):
         self.assertEqual(self.registry.activity('glob', {'pattern': '**/*.py'}),
                          ('*', 'Glob', '**/*.py'))
+        self.assertEqual(self.registry.activity('fetch_page', {'url': 'https://x.dev/p'}),
+                         ('↓', 'Fetch', 'https://x.dev/p'))
 
     def test_activity_truncates_long_value(self):
         glyph, verb, label = self.registry.activity('run_command', {'command': 'x' * 200})
