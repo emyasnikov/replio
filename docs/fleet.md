@@ -57,21 +57,6 @@ curl localhost:8781/chat -X POST -d '{"prompt": "What does spec-42.pdf say?", "s
 
 ## Deployment
 
-Templates live in [`deploy/`](../deploy/). Generic templates are held in the repo. Per-agent values are configured per project.
+For a fleet you supervise each `replio serve` process with one service manager. The options are alternatives, not cumulative: systemd on bare-metal Linux, launchd on macOS, and Docker on containerized hosts, with Compose scaling by one service per agent. All three restart the agent on failure and expose it through `GET /health`.
 
-| Artifact | Repo | Per-project |
-|----------|------|-------------|
-| `Dockerfile` + entrypoint + `.dockerignore` | yes | |
-| `docker-compose.yml.example` | template | ports, `REPLIO_PATH`, volumes, env (API key) |
-| `replio@.service` (systemd template unit) | template | instance name, `EnvironmentFile`, port |
-| `com.replio.agent.plist.example` (launchd) | template | label, paths, port, user |
-
-See [deploy.md](deploy.md) for the full setup of each: Docker and Compose, systemd template units, and launchd plists.
-
-- **Install**: `pipx install replio` (or a per-agent venv).
-- **Config**: each agent's `.replio/config.json` holds its provider key or reads `REPLIO_API_KEY` from its environment.
-- **Lifecycle**: systemd template units scale by instantiation (`replio@<name>`). Launchd scales by copying the plist per label. Docker Compose scales by one service per agent.
-
-## Roadmap: fleet orchestration
-
-The end goal is a supervisor that runs many scoped `replio serve` instances. It will handle port allocation, health checks (reusing `GET /health`), restart policy, and per-agent config generation. Open tasks: [TODO.md](../TODO.md).
+Full setup for each is in [deploy.md](deploy.md). Templates live in [`deploy/`](../deploy/).

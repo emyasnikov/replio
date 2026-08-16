@@ -104,7 +104,7 @@ Agents talk to each other through the same `POST /chat` API. See [docs/fleet.md]
 
 ## Roadmap
 
-Personas and delegation are planned next. Fleet orchestration, a supervisor that runs and health-checks many scoped agents, is the next goal. Open tasks live in [TODO.md](TODO.md).
+Fleet orchestration (running many scoped agents under a supervisor) and swarm orchestration (agents cooperating through personas and delegation) are the two orchestration layers being built next. See [docs/fleet.md](docs/fleet.md) and [docs/swarm.md](docs/swarm.md). Open tasks live in [TODO.md](TODO.md).
 
 ## Contributing
 
@@ -119,6 +119,7 @@ Detailed references are in the [docs](docs/):
 - [Commands & CLI](docs/commands.md)
 - [Plugins](docs/plugins.md)
 - [Agent fleets](docs/fleet.md)
+- [Agent swarms](docs/swarm.md)
 - [Deployment](docs/deploy.md)
 
 ## License

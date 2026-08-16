@@ -1,7 +1,7 @@
 # TODO
 
 - Single-purpose agent fleet — "one agent per process, scoped to a folder" as the headline pattern; README + `docs/fleet.md` set the niche
-- Fleet orchestration as the final goal — supervisor that runs many scoped `replio serve` instances with port allocation, health checks, restart policy, and per-agent config generation
+- Fleet and swarm orchestration as the two layers — fleet: supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation); swarm: `/agent` personas, `delegate` tool, auditor agents, generate→check→correct
 - Community presence — decide on Discord/X channels and fill the README community link slots
 - Add multiuser capability or queue for API requests
 - Add ReadTheDocs documentation and GitHub Pages website
@@ -22,7 +22,8 @@
 
 ## Open
 
-- [ ] Fleet orchestration — supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation); the final goal of the fleet story in `docs/fleet.md`
+- [ ] Swarm orchestration — agent cooperation layer (`docs/swarm.md`): `/agent` personas, `delegate` tool, auditor agents, generate→check→correct, and team patterns as sub-tasks below
+- [ ] Fleet orchestration — supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation); the fleet orchestration layer in `docs/fleet.md`
 - [ ] Grep text index — internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
 - [ ] Agent folder watcher — internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival); scoped capability, no deps
 

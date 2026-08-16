@@ -2,6 +2,8 @@
 
 You can run `replio serve` directly, but for a fleet of agents you usually want each one supervised and restarted on failure. Three options are covered here: Docker, systemd on Linux, and launchd on macOS.
 
+The three options are alternatives. Pick the one that matches your host: systemd on bare-metal Linux, launchd on macOS, and Docker on containerized or mixed hosts. You need only one of them, and each supervises the process and restarts it on failure.
+
 Generic templates live in [`deploy/`](../deploy/). They are held in the repo and work as-is. The per-agent values, like the project path, the port, and the API key, are configured on your machine, never in the templates.
 
 A deployed agent is always just `replio serve` pointed at a folder. The folder holds `.replio/config.json` with the provider, model, system prompt, tool permissions, and plugins. Sessions are written under `.replio/sessions/` in the same folder. Mount that folder into the container or point a service unit at it and the agent keeps its state across restarts.
