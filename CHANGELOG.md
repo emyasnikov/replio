@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.13.0
+## v0.13.0 - 2026-08-16
 
 - Per-turn stats on their own line — the `(Ns, N tokens)` footer no longer lands at the end of the last content line; `ReplUI` tracks whether streamed output ended with a newline and emits a separating one before the footer
 - One-shot retry for empty/truncated streams — a provider stream that ends without a completion event and with no streamed content is requested once more (with a "retrying" note) before the "Stream ended before a completion event" error is surfaced; masks transient provider drops such as Ollama cloud returning an empty follow-up stream after a tool call
