@@ -106,18 +106,41 @@ class TestMachineTools(unittest.TestCase):
         self.assertEqual(flat, explicit)
 
     def test_write_file_creates(self):
-        out = self.run_tool('write_file', path=str(self.root / 'new.txt'), content='hello')
-        self.assertIn('Wrote 5 chars', out)
-        self.assertEqual((self.root / 'new.txt').read_text(), 'hello')
+        target = self.root / 'new.txt'
+        out = self.run_tool('write_file', path=str(target), content='hello')
+        self.assertIn(f'Created {target.resolve()} (1 lines, 5 chars)', out)
+        self.assertEqual(target.read_text(), 'hello')
+
+    def test_write_file_overwrites(self):
+        target = self.root / 'new.txt'
+        target.write_text('old')
+        out = self.run_tool('write_file', path=str(target), content='new')
+        self.assertIn(f'Overwritten {target.resolve()} (1 lines, 3 chars)', out)
+        self.assertEqual(target.read_text(), 'new')
 
     def test_write_file_creates_parents(self):
         self.run_tool('write_file', path=str(self.root / 'deep' / 'dir' / 'f.txt'), content='x')
         self.assertTrue((self.root / 'deep' / 'dir' / 'f.txt').exists())
 
     def test_write_file_append(self):
-        (self.root / 'f.txt').write_text('a')
-        self.run_tool('write_file', path=str(self.root / 'f.txt'), content='b', mode='a')
-        self.assertEqual((self.root / 'f.txt').read_text(), 'ab')
+        target = self.root / 'f.txt'
+        target.write_text('a')
+        out = self.run_tool('write_file', path=str(target), content='b', mode='a')
+        self.assertIn(f'Appended {target.resolve()} (1 lines, 1 chars)', out)
+        self.assertEqual(target.read_text(), 'ab')
+
+    def test_write_file_relative_path_reports_resolved(self):
+        with tempfile.TemporaryDirectory() as d:
+            orig = Path.cwd()
+            try:
+                import os
+                os.chdir(d)
+                out = self.run_tool('write_file', path='rel.txt', content='x')
+                resolved = (Path(d) / 'rel.txt').resolve()
+                self.assertIn(f'Created {resolved} (1 lines, 1 chars)', out)
+                self.assertEqual(resolved.read_text(), 'x')
+            finally:
+                os.chdir(orig)
 
     def test_run_command_success(self):
         out = self.run_tool('run_command', command='echo hello', cwd=str(self.root))

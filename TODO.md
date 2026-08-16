@@ -29,7 +29,6 @@
 - [ ] MCP support — Model Context Protocol integration, plugin-first (third-party `mcp` lib as a lazy plugin dep; the core stays stdlib-only):
   - [ ] MCP client plugin — connect to external MCP servers (stdio/HTTP), register their tools into the ToolRegistry so the model can call them like any Replio tool (tool policy, status, session logging apply)
   - [ ] MCP server — expose Replio's registered tools + sessions over MCP for external agents (Claude, opencode, …) to drive
-- [ ] `write_file` reports the resolved absolute path to the model — the tool result currently echoes the raw `path` arg (e.g. `Wrote 36 chars to test2.md`), so when a relative path resolves to an unexpected directory (launched from `~`, `test2.md` lands at `/Users/emyasnikov/test2.md`) the model can't see where the file actually went and may write twice or leave a stray file. Return `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)` and note in the tool description that relative paths resolve against the launch/current directory. The terminal status summary already shows the resolved path — this is about the model-visible tool result (observed: two `write_file` calls, one stray file in home)
 - [ ] Plan/Build modes — read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery
 - [ ] Minimal web Control UI — stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue); richer frameworks stay plugin-first
 
@@ -79,6 +78,7 @@
 
 ## Done
 
+- [x] `write_file` reports the resolved absolute path to the model — result returns `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)`; description notes relative paths resolve against the current directory
 - [x] Tab completion restored (libedit binding) + extended to paths, tool names, and subcommands
 - [x] README terminal screenshot as SVG
 - [x] `deploy/` fleet templates — `Dockerfile` + entrypoint + `.dockerignore`, `docker-compose.yml.example`, systemd `replio@.service` template unit, launchd `com.replio.agent.plist.example`; repo-held generic templates, per-agent values configured per project

@@ -2,6 +2,7 @@
 
 ## v0.14.0
 
+- `write_file` reports the resolved absolute path to the model — the tool result now returns `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)` instead of echoing the raw `path` arg, so when a relative path resolves to an unexpected directory (e.g. launched from `~`) the model sees where the file actually landed; the tool description notes that relative paths resolve against the current working directory. Terminal status preview unchanged. Tests: create/overwrite/append result strings and relative-path resolution
 - Tab completion extended — filesystem path completion after command arguments (directories get a trailing `/` for continued descent), tool-name completion for `/tool <prefix>`, and subcommand completion for commands declaring `subcommands` (`/session lo` → `load`, `/plugins dis` → `disable`)
 - Fixed tab completion — the completer no longer fires on macOS libedit (`readline.parse_and_bind('tab: complete')` is GNU-only and silently inserts a literal tab; libedit needs `bind ^I rl_complete`). `/` is removed from the completer delimiters so the model-facing word keeps its slash and paths complete correctly
 

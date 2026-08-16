@@ -156,13 +156,13 @@ def register_tools(registry):
 
     @registry.register(
         name='write_file',
-        description='Write content to a file, creating parent directories as needed. Use to create or update files such as source code, configs, and notes.',
+        description='Write content to a file, creating parent directories as needed. Use to create or update files such as source code, configs, and notes. Relative paths resolve against the current working directory — the result reports the resolved absolute path.',
         parameters={
             'type': 'object',
             'properties': {
                 'path': {
                     'type': 'string',
-                    'description': 'Path of the file to write (relative to the project or absolute)',
+                    'description': 'Path of the file to write (relative to the current directory or absolute)',
                 },
                 'content': {
                     'type': 'string',
@@ -187,14 +187,18 @@ def register_tools(registry):
         p = Path(path).expanduser()
         try:
             p.parent.mkdir(parents=True, exist_ok=True)
+            exists = p.exists()
             if mode == 'a':
                 with open(p, 'a', encoding='utf-8') as f:
                     f.write(content)
-                return f'Appended {len(content)} chars to {path}'
-            p.write_text(content, encoding='utf-8')
+                action = 'Appended'
+            else:
+                p.write_text(content, encoding='utf-8')
+                action = 'Overwritten' if exists else 'Created'
         except (OSError, ValueError) as e:
             return f'Error writing {path}: {e}'
-        return f'Wrote {len(content)} chars to {path}'
+        return (f'{action} {p.resolve()} '
+                f'({len(content.splitlines())} lines, {len(content)} chars)')
 
     @registry.register(
         name='glob',
