@@ -2,6 +2,7 @@
 
 ## v0.13.0
 
+- Per-turn stats on their own line — the `(Ns, N tokens)` footer no longer lands at the end of the last content line; `ReplUI` tracks whether streamed output ended with a newline and emits a separating one before the footer
 - One-shot retry for empty/truncated streams — a provider stream that ends without a completion event and with no streamed content is requested once more (with a "retrying" note) before the "Stream ended before a completion event" error is surfaced; masks transient provider drops such as Ollama cloud returning an empty follow-up stream after a tool call
 - `write_file` status preview ends with a dimmed parenthesized summary — resolved absolute path, line count, char count, and created/overwritten/appended action (tool result string stays minimal)
 - Thinking announce — `+ Thinking` on its own line before streamed reasoning when `show_thinking: true`; when hidden, `+ Thought 12.3s` (thinking duration) is printed instead and the reasoning text stays out of the terminal. The engine times the thinking window (`thinking_begin`/`thinking_end` UI hooks), `HeadlessUI` mirrors it in `--verbose` mode, and a spinner (`⠧ Thinking`) can replace the static markers later

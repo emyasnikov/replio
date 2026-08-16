@@ -66,6 +66,7 @@ class ReplUI:
     def __init__(self, loop):
         self._loop = loop
         self.first_content = True
+        self.content_newline = True
         self.md_state = {'code_block': False, 'inline_code': False, 'bold': False}
 
     def _prefix(self):
@@ -94,16 +95,19 @@ class ReplUI:
                 self._write(seg, ansi)
         else:
             self._write(text)
+        self.content_newline = text.endswith('\n')
 
     def thinking_begin(self):
         if not self._loop.config.get('show_thinking', True):
             return
         self._emit('- Thinking', '\033[90m')
+        self.content_newline = True
 
     def thinking(self, text):
         if not self._loop.config.get('show_thinking', True):
             return
         self._write(text, '\033[90m')
+        self.content_newline = text.endswith('\n')
 
     def thinking_end(self, duration):
         if self._loop.config.get('show_thinking', True):
@@ -111,6 +115,7 @@ class ReplUI:
             sys.stdout.flush()
         else:
             self._emit(f'+ Thought {duration:.1f}s', '\033[90m')
+        self.content_newline = True
 
     def warning(self, msg):
         self._emit(f'[warning] {msg}', '\033[93m')
@@ -132,10 +137,14 @@ class ReplUI:
         self._emit(f'[refine: "{old}" → "{new}"]', '\033[90m')
 
     def footer(self, duration, usage, tokens):
+        if not self.content_newline:
+            sys.stdout.write('\n')
+            sys.stdout.flush()
         if self._loop.config.get('show_context_size', True):
             self._emit(f'({duration:.1f}s, {tokens:,} tokens)', '\033[90m')
         else:
             self._emit(f'({duration:.1f}s)', '\033[90m')
+        self.content_newline = True
 
     def info(self, msg):
         self._emit(msg)

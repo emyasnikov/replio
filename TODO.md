@@ -29,7 +29,6 @@
 - [ ] Docker packaging — Dockerfile (+ `.dockerignore`, optional docker-compose.yml) to run `replio serve` (and `replio run`) inside a container: python slim base, install the package, volume-mount config (`~/.config/replio`) and the sessions dir for persistence
 - [ ] systemd unit — `replio.service` template to run the container (or `replio serve` directly) as a managed service: `ExecStart`, config/session paths, `Restart=on-failure`, environment for the API key
 - [ ] Restore tab completion for commands and paths — regression: diagnose why the readline completer no longer fires (likely macOS libedit `tab: complete` binding or completer registration after the Engine refactor), then extend to filesystem path completion after command arguments
-- [ ] Show per-turn stats on their own line — the `(Ns, N tokens)` footer currently lands at the end of the last content line; emit a separating newline in `ReplUI.footer` (or pass a content-ended-without-newline flag from the engine)
 - [ ] Plan/Build modes — read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery
 - [ ] Minimal web Control UI — stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue); richer frameworks stay plugin-first
 
@@ -80,6 +79,7 @@
 
 ## Done
 
+- [x] Per-turn stats on their own line — the `(Ns, N tokens)` footer no longer lands at the end of the last content line; `ReplUI` tracks whether streamed output ended with a newline and emits a separating one before the footer
 - [x] One-shot retry for empty/truncated streams — a provider stream that ends without a completion event and with no streamed content is requested once more before the "Stream ended before a completion event" error is surfaced (masks transient provider drops, e.g. Ollama cloud returning an empty follow-up stream after a tool call)
 - [x] `write_file` human-readable output — the status preview ends with a dimmed parenthesized summary: resolved absolute path, line count, char count, and created/overwritten/appended action (the tool result string stays minimal)
 - [x] Thinking announce — `+ Thinking` on its own line before streamed reasoning when `show_thinking: true`; `+ Thought 12.3s` (thinking duration) instead when hidden, keeping the reasoning text out of the terminal. The engine times the thinking window (`thinking_begin`/`thinking_end` UI hooks); `HeadlessUI` mirrors it in `--verbose`
