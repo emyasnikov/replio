@@ -1,5 +1,6 @@
 import sys
 import readline
+from pathlib import Path
 
 from .config import Config
 from .engine import Engine
@@ -35,30 +36,65 @@ class ChatLoop(Engine):
 
     def _setup_readline(self):
         readline.set_completer(self._completer)
-        readline.parse_and_bind('tab: complete')
+        readline.set_completer_delims(' \t\n')
+        if 'libedit' in (readline.__doc__ or ''):
+            readline.parse_and_bind('bind ^I rl_complete')
+        else:
+            readline.parse_and_bind('tab: complete')
 
     def _completer(self, text: str, state: int) -> str | None:
         line = readline.get_line_buffer()
+        head = line[: len(line) - len(text)]
         for prefix in ('/session load ', '/session preview ', '/session delete '):
-            if line.startswith(prefix):
+            if head.endswith(prefix):
                 names = [n for n in self.sessions.list() if n.startswith(text)]
                 if state < len(names):
                     return names[state] + ' '
                 return None
         for prefix in ('/plugins enable ', '/plugins disable ',
                        '/plugins update ', '/plugins uninstall '):
-            if line.startswith(prefix):
+            if head.endswith(prefix):
                 pm = getattr(self, '_plugin_manager', None)
                 names = [i.name for i in pm.status()] if pm else []
                 options = sorted(n for n in names if n.startswith(text))
                 if state < len(options):
                     return options[state] + ' '
                 return None
-        term = text[1:] if text.startswith('/') else text
-        options = sorted(c for c in self.registry.commands if c.startswith(term))
+        if head.endswith('/tool '):
+            options = sorted(n for n in self._tool_names() if n.startswith(text))
+            if state < len(options):
+                return options[state] + ' '
+            return None
+        if head.lstrip().startswith('/'):
+            return self._path_complete(text, state)
+        if text.startswith('/'):
+            term = text[1:]
+            options = sorted(c for c in self.registry.commands if c.startswith(term))
+            if state < len(options):
+                return '/' + options[state] + ' '
+            return None
+        return None
+
+    def _tool_names(self):
+        if not getattr(self, '_tool_registry', None):
+            return []
+        policy = getattr(self, '_tool_policy', None)
+        names = self._tool_registry.names()
+        if policy is None:
+            return names
+        return [n for n in names if policy.allowed(n)]
+
+    def _path_complete(self, text: str, state: int) -> str | None:
+        path = Path(text) if text else Path('.')
+        name = path.name
+        parent = path.parent if str(path.parent) else Path('.')
+        try:
+            options = sorted(p for p in parent.glob(name + '*'))
+        except OSError:
+            options = []
         if state < len(options):
-            name = options[state]
-            return ('/' + name if text.startswith('/') else name) + ' '
+            cand = options[state]
+            return str(cand) + ('/' if cand.is_dir() else ' ')
         return None
 
     def run(self):

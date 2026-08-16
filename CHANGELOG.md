@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.14.0
+
+- Fixed tab completion — the completer no longer fires on macOS libedit (`readline.parse_and_bind('tab: complete')` is GNU-only and silently inserts a literal tab; libedit needs `bind ^I rl_complete`). `/` is removed from the completer delimiters so the model-facing word keeps its slash and paths complete correctly
+- Tab completion extended to filesystem paths after command arguments (`/tool read_file <path>`, etc.) with a trailing `/` on directories for continued descent, plus tool-name completion for `/tool <prefix>`
+
 ## v0.13.0 - 2026-08-16
 
 - Per-turn stats on their own line — the `(Ns, N tokens)` footer no longer lands at the end of the last content line; `ReplUI` tracks whether streamed output ended with a newline and emits a separating one before the footer

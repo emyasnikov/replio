@@ -305,8 +305,8 @@ class TestReadlineCompleter(unittest.TestCase):
             self.assertEqual(self.chat._completer('/se', 0), '/session ')
 
     def test_command_completion_without_slash_prefix(self):
-        with self._buffer('/se'):
-            self.assertEqual(self.chat._completer('se', 0), 'session ')
+        with self._buffer('se'):
+            self.assertIsNone(self.chat._completer('se', 0))
 
     def test_command_completion_outside_session_context(self):
         with self._buffer('/session'):

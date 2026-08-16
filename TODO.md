@@ -30,7 +30,6 @@
   - [ ] MCP client plugin — connect to external MCP servers (stdio/HTTP), register their tools into the ToolRegistry so the model can call them like any Replio tool (tool policy, status, session logging apply)
   - [ ] MCP server — expose Replio's registered tools + sessions over MCP for external agents (Claude, opencode, …) to drive
 - [ ] `write_file` reports the resolved absolute path to the model — the tool result currently echoes the raw `path` arg (e.g. `Wrote 36 chars to test2.md`), so when a relative path resolves to an unexpected directory (launched from `~`, `test2.md` lands at `/Users/emyasnikov/test2.md`) the model can't see where the file actually went and may write twice or leave a stray file. Return `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)` and note in the tool description that relative paths resolve against the launch/current directory. The terminal status summary already shows the resolved path — this is about the model-visible tool result (observed: two `write_file` calls, one stray file in home)
-- [ ] Restore tab completion for commands and paths — regression: diagnose why the readline completer no longer fires (likely macOS libedit `tab: complete` binding or completer registration after the Engine refactor), then extend to filesystem path completion after command arguments
 - [ ] Plan/Build modes — read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery
 - [ ] Minimal web Control UI — stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue); richer frameworks stay plugin-first
 
@@ -38,7 +37,6 @@
 - [ ] PyPI plugin source — discover installed plugin packages via `importlib.metadata` entry points (`replio.plugins` group)
 - [ ] Shared plugin virtualenv — one venv for all plugin dependencies, injected at import
 - [ ] Per-plugin virtualenv isolation — `~/.config/replio/plugins/<name>/.venv`; loader injects its site-packages at import (strongest dependency separation)
-- [x] PyPI proper configuration and documentation
 - [ ] Web scraper plugin — full page scraping beyond `fetch_page`'s text extraction (structured content, links), shipped as an external plugin repository
 - [ ] PDF-to-text converter plugin — extract text from local/remote PDFs, shipped as an external plugin repository
 - [ ] Auditor agents — sub-agents that review/check a produced output (tests, code review, fact-check)
@@ -81,6 +79,7 @@
 
 ## Done
 
+- [x] Tab completion restored + extended — libedit `bind ^I rl_complete` binding with `/` removed from the completer delimiters (GNU readline keeps `tab: complete`); filesystem path completion after command arguments, tool-name completion for `/tool`, subcommand completion for `/session`/`/plugins`
 - [x] README terminal screenshot as SVG
 - [x] `deploy/` fleet templates — `Dockerfile` + entrypoint + `.dockerignore`, `docker-compose.yml.example`, systemd `replio@.service` template unit, launchd `com.replio.agent.plist.example`; repo-held generic templates, per-agent values configured per project
 - [x] `docs/fleet.md` — single-purpose agent fleet pattern (one scoped process per agent, responsibilities & permissions, doc-agent composition, deployment)
@@ -106,6 +105,7 @@
   - [x] `/plugins` command — list/detail/enable/disable/install/update/uninstall with name completion
   - [x] `replio plugins` CLI — headless list/install/update/uninstall
   - [x] `tests/test_plugins.py` (30 tests)
+- [x] PyPI proper configuration and documentation
 - [x] Clear screen on REPL start (`clear_screen` config, default `true`)
 - [x] `/config` structured values — JSON auto-parse, `-a`/`-r` list add/remove, `reload`, unknown-key y/N
 - [x] `/compact` session summarization — append-only; summary stored as `result` of a `command` message with `compact_from` boundary
