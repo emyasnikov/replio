@@ -1,0 +1,32 @@
+# Example: a fleet of single-purpose Replio agents under Docker Compose.
+# Copy to docker-compose.yml and adjust per agent: REPLIO_PATH, ports, and
+# environment (API key, model, tool permissions come from the agent's own
+# .replio/config.json inside the mounted volume).
+services:
+  docs-agent:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      REPLIO_HOST: 0.0.0.0
+      REPLIO_PORT: 8781
+      REPLIO_PATH: /srv/docs
+    volumes:
+      - ./agents/docs:/srv/docs
+    ports:
+      - "8781:8781"
+    restart: unless-stopped
+
+  code-agent:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      REPLIO_HOST: 0.0.0.0
+      REPLIO_PORT: 8782
+      REPLIO_PATH: /srv/src
+    volumes:
+      - ./agents/src:/srv/src
+    ports:
+      - "8782:8782"
+    restart: unless-stopped

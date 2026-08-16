@@ -66,6 +66,8 @@ Templates live in [`deploy/`](../deploy/). Generic templates are held in the rep
 | `replio@.service` (systemd template unit) | template | instance name, `EnvironmentFile`, port |
 | `com.replio.agent.plist.example` (launchd) | template | label, paths, port, user |
 
+See [deploy.md](deploy.md) for the full setup of each: Docker and Compose, systemd template units, and launchd plists.
+
 - **Install**: `pipx install replio` (or a per-agent venv).
 - **Config**: each agent's `.replio/config.json` holds its provider key or reads `REPLIO_API_KEY` from its environment.
 - **Lifecycle**: systemd template units scale by instantiation (`replio@<name>`). Launchd scales by copying the plist per label. Docker Compose scales by one service per agent.

@@ -121,6 +121,7 @@ Detailed references are in the [docs](docs/):
 - [Commands & CLI](docs/commands.md)
 - [Plugins](docs/plugins.md)
 - [Agent fleets](docs/fleet.md)
+- [Deployment](docs/deploy.md)
 
 ## License
 

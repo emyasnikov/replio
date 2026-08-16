@@ -1,6 +1,7 @@
 .venv/
 __pycache__/
 *.pyc
+.opencode/
 .replio/
 *.egg-info/
 dist/
