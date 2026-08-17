@@ -23,8 +23,20 @@ class ToolRegistry:
                  permission: str = 'web', path_arg: str | None = None,
                  key_arg: str | None = None, short: str = '',
                  status: Callable[[dict], str] | None = None,
-                 echo: bool = False, glyph: str = '', verb: str = ''):
+                 echo: bool = False, glyph: str = '', verb: str = '',
+                 aliases: list[str] | None = None,
+                 param_aliases: dict | None = None):
         def wrapper(fn):
+            def build_schema(tool_name: str) -> dict:
+                return {
+                    'type': 'function',
+                    'function': {
+                        'name': tool_name,
+                        'description': description,
+                        'parameters': parameters,
+                    },
+                }
+
             entry = {
                 'name': name,
                 'fn': fn,
@@ -38,33 +50,41 @@ class ToolRegistry:
                 'echo': echo,
                 'glyph': glyph,
                 'verb': verb,
-                'schema': {
-                    'type': 'function',
-                    'function': {
-                        'name': name,
-                        'description': description,
-                        'parameters': parameters,
-                    },
-                },
+                'param_aliases': dict(param_aliases or {}),
+                'schema': build_schema(name),
             }
             self._tools[name] = entry
             self._schema.append(entry['schema'])
+            for alias in (aliases or []):
+                self._tools[alias] = {'alias_of': name, 'schema': build_schema(alias)}
+                self._schema.append(self._tools[alias]['schema'])
             return fn
         return wrapper
 
-    def _clean_args(self, name: str, arguments: dict) -> dict:
+    def _canonical(self, name: str) -> tuple[str, dict | None]:
         tool = self._tools.get(name)
+        if not tool:
+            return name, None
+        if 'alias_of' in tool:
+            return tool['alias_of'], self._tools.get(tool['alias_of'])
+        return name, tool
+
+    def clean_args(self, name: str, arguments: dict) -> dict:
+        canon, tool = self._canonical(name)
         if not tool:
             return {}
         props = tool['schema']['function']['parameters'].get('properties', {})
-        return {k: v for k, v in arguments.items()
-                if k in props and v is not None}
+        args = dict(arguments)
+        for alias, target in tool.get('param_aliases', {}).items():
+            if alias in args and target not in args:
+                args[target] = args.pop(alias)
+        return {k: v for k, v in args.items() if k in props and v is not None}
 
     def execute(self, name: str, arguments: dict, config=None) -> str:
-        tool = self._tools.get(name)
+        canon, tool = self._canonical(name)
         if not tool:
             return f'Error: unknown tool "{name}"'
-        args = self._clean_args(name, arguments)
+        args = self.clean_args(name, arguments)
         fn = tool['fn']
         if config is not None:
             try:
@@ -79,8 +99,8 @@ class ToolRegistry:
             return f'Error executing {name}: {e}'
 
     def status_parts(self, name: str, arguments: dict) -> tuple[str, list[str]]:
-        tool = self._tools.get(name)
-        args = self._clean_args(name, arguments)
+        canon, tool = self._canonical(name)
+        args = self.clean_args(name, arguments)
         if not tool:
             return name, []
         status_fn = tool.get('status')
@@ -97,30 +117,30 @@ class ToolRegistry:
         return name, []
 
     def echo_for(self, name: str) -> bool:
-        tool = self._tools.get(name)
+        canon, tool = self._canonical(name)
         return bool(tool and tool.get('echo'))
 
     def refine_required(self, name: str) -> bool:
-        tool = self._tools.get(name)
+        canon, tool = self._canonical(name)
         return bool(tool and tool.get('refine'))
 
     def permission_for(self, name: str) -> str:
-        tool = self._tools.get(name)
+        canon, tool = self._canonical(name)
         return tool['permission'] if tool else 'web'
 
     def path_arg_for(self, name: str) -> str | None:
-        tool = self._tools.get(name)
+        canon, tool = self._canonical(name)
         return tool['path_arg'] if tool else None
 
     def key_arg_for(self, name: str) -> str | None:
-        tool = self._tools.get(name)
+        canon, tool = self._canonical(name)
         return tool['key_arg'] if tool else None
 
     def activity(self, name: str, arguments: dict) -> tuple[str, str, str] | None:
-        tool = self._tools.get(name)
+        canon, tool = self._canonical(name)
         if not tool:
             return None
-        args = self._clean_args(name, arguments)
+        args = self.clean_args(name, arguments)
         glyph = tool.get('glyph')
         verb = tool.get('verb')
         if not glyph or not verb:
@@ -130,12 +150,22 @@ class ToolRegistry:
             d_glyph, d_verb = defaults
             glyph = glyph or d_glyph
             verb = verb or d_verb
-        key_arg = tool.get('key_arg')
-        label = str(args[key_arg])[:80] if key_arg and args.get(key_arg) else name
+        label = None
+        status_fn = tool.get('status')
+        if status_fn:
+            try:
+                first = (status_fn(args) or '').split('\n', 1)[0].strip()
+                if first:
+                    label = first[:80]
+            except Exception:
+                pass
+        if label is None:
+            key_arg = tool.get('key_arg')
+            label = str(args[key_arg])[:80] if key_arg and args.get(key_arg) else name
         return glyph, verb, label
 
     def info(self, name: str) -> dict | None:
-        tool = self._tools.get(name)
+        canon, tool = self._canonical(name)
         if not tool:
             return None
         return {

@@ -105,6 +105,29 @@ The worktree is the directory holding the local `.replio/` - the launch director
 
 In headless mode (`run` / `serve`), `ask`-gated tools are denied outright (`--yes` / `--no` override), so an agent's reachable surface is exactly its `allow` tools on paths inside its worktree.
 
+## Configuration
+
+Tool behavior is controlled by config keys (see [config.md](config.md) for the full schema and defaults):
+
+| Key | Default | Controls |
+|-----|---------|----------|
+| `tool_calling` | `true` | Enable OpenAI-compatible function calling |
+| `tools.allow` | `[]` | Name-level allowlist. When non-empty, only these tools are callable |
+| `tools.deny` | `[]` | Name-level deny list (takes precedence over allow) |
+| `tool_permission` | *(see config.md)* | Category actions - `read`/`list`/`edit`/`bash`/`web` -> `allow`/`ask`/`deny` |
+| `tool_status_visible` | `true` | Show dimmed tool status in the REPL |
+| `glyph_lines` | `true` | Typed activity lines for mapped categories, else the `[tool: arg]` oneliner |
+| `tool_analysis` | `false` | Model-generated one-line analysis of each tool result (log-only) |
+| `tool_max_result_chars` | `0` | Cap every tool result at N chars (`0` = unlimited) |
+| `session_tool_max_chars` | `0` | Cap persisted tool-result content in session files (`0` = unlimited) |
+| `noise_tools` | `["fetch_page"]` | Tool results replaced by a marker in persisted sessions |
+| `query_refine` | `false` | Auto-refine short `query` args via a lightweight model call |
+| `query_refine_min_words` | `3` | Minimum query length before refinement applies |
+| `query_refine_context` | `4` | Recent-message context injected into refinement |
+| `search_results` | `5` | Number of results `web_search` returns |
+
+Handlers can read config at runtime via the `_config` keyword argument the registry passes only when declared.
+
 See [config.md](config.md) for the `tools.allow`, `tools.deny`, and `tool_permission` keys, and [security.md](security.md) for the threat model.
 
 ## Status and activity lines

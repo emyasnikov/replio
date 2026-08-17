@@ -43,6 +43,8 @@ def register_tools(registry):
         key_arg='command',
         short='Run a shell command',
         echo=True,
+        aliases=['bash', 'exec'],
+        param_aliases={'cmd': 'command'},
     )
     def run_command(command: str, cwd: str | None = None,
                     timeout: int = 30, _config=None) -> str:

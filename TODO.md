@@ -1,7 +1,7 @@
 # TODO
 
 - Single-purpose agent fleet with "one agent per process, scoped to a folder" as the headline pattern. README + `docs/fleet.md` set the niche
-- Fleet and swarm orchestration as the two layers - fleet: supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), swarm: `/agent` personas, `delegate` tool, auditor agents, generate→check→correct
+- Fleet and swarm orchestration as the two layers - fleet: supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), swarm: `/agent` personas, `delegate` tool, auditor agents, generate > check > correct
 - Community presence - decide on Discord/X channels and fill the README community link slots
 - Add multiuser capability or queue for API requests
 - Add ReadTheDocs documentation and GitHub Pages website
@@ -22,7 +22,8 @@
 
 ## Open
 
-- [ ] Swarm orchestration - agent cooperation layer (`docs/swarm.md`): `/agent` personas, `delegate` tool, auditor agents, generate→check→correct, and team patterns as sub-tasks below
+- [ ] Context-aware cross-plugin tool router - virtual tool names (`open`, `search`, …) dispatch per-argument to the matching plugin handler via `register_handler(name, match=…)` (e.g. `open https://…` > replio-core-websearch, `open ../…` > replio-core-fs), with merged schemas and args-aware policy accessors
+- [ ] Swarm orchestration - agent cooperation layer (`docs/swarm.md`): `/agent` personas, `delegate` tool, auditor agents, generate > check > correct, and team patterns as sub-tasks below
 - [ ] Fleet orchestration - supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), the fleet orchestration layer in `docs/fleet.md`
 - [ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
 - [ ] Agent folder watcher - internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps
@@ -40,7 +41,7 @@
 - [ ] Web scraper plugin - full page scraping beyond `fetch_page`'s text extraction (structured content, links), shipped as an external plugin repository
 - [ ] PDF-to-text converter plugin - extract text from local/remote PDFs, shipped as an external plugin repository
 - [ ] Auditor agents - sub-agents that review/check a produced output (tests, code review, fact-check)
-- [ ] Generate → check → correct orchestration - run a main agent, an auditor, and a fix pass in a loop until passing
+- [ ] Generate > check > correct orchestration - run a main agent, an auditor, and a fix pass in a loop until passing
 - [ ] Custom system prompts per session
 - [ ] Config validation (test connection on change)
 - [ ] Multi-line input (detect `"""` or `'''` blocks)
@@ -53,7 +54,7 @@
 - [ ] Sandboxed exec - namespace/container isolation for `run_command` (documented, planned for a later version)
 - [ ] Per-agent permission profiles - `tool_permission` becomes per-agent when `/agent` personas land
 - [ ] `/agent` personas - per-agent system prompt, session namespace, optional model override
-- [ ] `delegate(persona, task)` tool → sub-agent loop returning a result
+- [ ] `delegate(persona, task)` tool > sub-agent loop returning a result
 - [ ] PM/dev/tester team orchestration as a user-facing pattern
 - [ ] Headless web API plugin-first - stdlib `http.server` fallback, richer framework (FastAPI) via the dependency plugin
 - [ ] Enterprise plugins (stdlib-first, third-party deps optional):
@@ -74,6 +75,7 @@
 
 ## Done
 
+- [x] Alias layer - tool-name + param aliases (read/view, ls, bash/exec, cursor > offset, ...) and an `open` web tool (`id`/`url`/`offset`) with offset paging
 - [x] Glyph activity lines - typed `<glyph> <verb> <key_arg>` status (dimmed) for covered categories, gated by `glyph_lines` (default `true`); unmapped categories use the `[tool: key_arg]` oneliner
 - [x] `write_file` reports the resolved absolute path to the model - result returns `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)`. The description notes relative paths resolve against the current directory
 - [x] Tab completion restored (libedit binding) + extended to paths, tool names, and subcommands
@@ -112,7 +114,7 @@
 - [x] Context-size display - dimmed `(Ns, N tokens)` after each response (`show_context_size`, default `true`)
 - [x] `noise_tools` config (default `["fetch_page"]`) - noise tool results replaced with a marker in persisted sessions
 - [x] `max_tokens` optional (default `0` = unset). Hitting a cap warns + logs a session `errors` entry
-- [x] Provider payload prepared from the log - `command` filtered, summaries → `system`, dangling tool messages skipped
+- [x] Provider payload prepared from the log - `command` filtered, summaries > `system`, dangling tool messages skipped
 - [x] `replio run` - one-shot CLI mode (JSON/text) reusing the agent loop + session manager for CI/CD
   - [x] Flags: `--prompt`, `--provider`, `--model`, `--output=json`, `--verbose`
   - [x] `--session-id` - address persistent sessions from headless mode
@@ -151,7 +153,7 @@
 - [x] `read_file` always reports total line count in its header
 - [x] Tool permission model (`tools/policy.py` + config)
   - [x] `tools.allow` / `tools.deny` name-level policies (deny + allow-whitelist take precedence)
-  - [x] `tool_permission` category actions - `read`/`list`/`edit`/`bash`/`web` → `allow`/`ask`/`deny`
+  - [x] `tool_permission` category actions - `read`/`list`/`edit`/`bash`/`web` > `allow`/`ask`/`deny`
   - [x] Path-scoped confirm - outside-worktree read/write/list escalate to `ask`
   - [x] `bash: ask` default - every `run_command` prompts y/N
 - [x] Confirm prompts in the loop - denied tools filtered from the schema, cancelled calls feed `[cancelled]` results
@@ -174,7 +176,7 @@
 - [x] `tools/registry.py` - decorator-based tool registration
 - [x] `tools/builtins.py` - `web_search` and `fetch_page` tools
 - [x] `BaseProvider.chat_nonstreaming()` - non-streaming tool decision round
-- [x] Two-phase chat: non-streaming tool decision → stream final content
+- [x] Two-phase chat: non-streaming tool decision > stream final content
 - [x] `_show_tool_status()` - dimmed status during tool execution
 - [x] `/search` command integration with tool calling
 - [x] Config default: `tool_calling: true`

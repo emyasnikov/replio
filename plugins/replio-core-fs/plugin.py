@@ -98,6 +98,8 @@ def register_tools(registry):
         path_arg='path',
         key_arg='path',
         short='Read the contents of a text file',
+        aliases=['read', 'view'],
+        param_aliases={'file': 'path'},
     )
     def read_file(path: str, offset: int = 1, limit: int = 500,
                   _config=None) -> str:
@@ -147,6 +149,8 @@ def register_tools(registry):
         path_arg='path',
         key_arg='path',
         short="List a directory's contents",
+        aliases=['ls'],
+        param_aliases={'directory': 'path'},
     )
     def list_dir(path: str = '.', depth: int = 1, _config=None) -> str:
         p = Path(path).expanduser()
@@ -193,6 +197,7 @@ def register_tools(registry):
         key_arg='path',
         short='Write content to a file',
         status=_write_file_status,
+        param_aliases={'file': 'path'},
     )
     def write_file(path: str, content: str, mode: str = 'w') -> str:
         p = Path(path).expanduser()
@@ -282,6 +287,7 @@ def register_tools(registry):
         path_arg='path',
         key_arg='pattern',
         short='Search file contents for a pattern',
+        param_aliases={'query': 'pattern'},
     )
     def grep(pattern: str, path: str = '.', glob: str = '*',
              _config=None) -> str:

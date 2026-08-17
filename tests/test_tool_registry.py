@@ -34,9 +34,12 @@ class TestToolRegistry(unittest.TestCase):
 
     def test_schema(self):
         names = [s['function']['name'] for s in self.registry.schema()]
-        self.assertEqual(names, ['run_command', 'read_file', 'list_dir',
-                                 'write_file', 'glob', 'grep',
-                                 'web_search', 'fetch_page'])
+        self.assertEqual(names, [
+            'run_command', 'bash', 'exec',
+            'read_file', 'read', 'view', 'list_dir', 'ls', 'write_file',
+            'glob', 'grep',
+            'web_search', 'fetch_page', 'open',
+        ])
 
     def test_execute_drops_undeclared_and_none_args(self):
         out = self.registry.execute('list_dir',

@@ -1,12 +1,14 @@
 # Changelog
 
-## v0.14.0
+## v0.14.0 - 2026-08-17
 
+- Alias layer for tools and params - tool names can register `aliases` (`read`/`view` > read_file, `ls` > list_dir, `bash`/`exec` > run_command) and `param_aliases` (`file` > path, `query` > pattern, `cmd` > command, `q` > query, `cursor` > offset). The registry resolves aliases to the canonical tool and normalizes args, so the advertised schema stays in the project's own vocabulary while model-dialect tool and argument names are absorbed. `/tool`, `/help`, tool policy, confirm prompts, and glyph activity lines work through aliases unchanged
+- `open` web tool (replio-core-websearch) - fetch a web page by `id` (1-based result from the most recent `web_search`) or `url`, with `offset` (also accepted as `cursor`) to resume reading. `web_search` now retains its last results for `open` to resolve, and a shared `_fetch_text` helper gives both `fetch_page` and `open` offset-with-continuation paging, appending `[offset N of M chars - continue with cursor=N]` when content continues past the cap
 - Configurable stream retry - a provider stream that ends before a completion event with no streamed content is re-requested up to `1 + stream_retries` times (default 3 total attempts, configurable) with `stream_retry_delay` (default 0.5s) between attempts; the retrying note shows the attempt count, and when tool calls have already run the warning notes the results are saved so the answer can be retried with a follow-up message
 - `tool_max_result_chars` config (default `0` = unlimited) - replaces the bundled plugins' hardcoded 8000-char tool-result cap with a configurable one (set via `/config tool_max_result_chars N`); with the default nothing is truncated, `read_file` headers now report the total line and character count so the model can page large files with `offset`/`limit`, and `read_file(path, limit=0)` returns just the header as a size probe before committing to a read. Handlers can read the config via a `_config` kwarg the registry passes only when declared
 - Glyph activity lines - typed `<glyph> <verb> <key_arg>` status (dimmed) replaces the `[tool: key_arg]` oneliner for mapped categories, gated by the new `glyph_lines` config (default `true`). `ToolRegistry.activity()` resolves the glyph from category defaults (read `←` Read, write `→` Write, search `%` Search, exec `$` Run, ask `~` Ask, todo `-` Todo, delegate `↳` Call) or per-tool `glyph`/`verb` overrides (glob `*` Glob, fetch_page `↓` Fetch). Disabling `glyph_lines` or an unmapped category keeps the `[tool: key_arg]` oneliner + detail lines. `ReplUI`/`HeadlessUI` render the glyph line, ephemeral UI only (never persisted to session files)
 - `write_file` reports the resolved absolute path to the model - the tool result now returns `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)` instead of echoing the raw `path` arg, so when a relative path resolves to an unexpected directory (e.g. launched from `~`) the model sees where the file actually landed, the tool description notes that relative paths resolve against the current working directory. Terminal status preview unchanged. Tests: create/overwrite/append result strings and relative-path resolution
-- Tab completion extended - filesystem path completion after command arguments (directories get a trailing `/` for continued descent), tool-name completion for `/tool <prefix>`, and subcommand completion for commands declaring `subcommands` (`/session lo` → `load`, `/plugins dis` → `disable`)
+- Tab completion extended - filesystem path completion after command arguments (directories get a trailing `/` for continued descent), tool-name completion for `/tool <prefix>`, and subcommand completion for commands declaring `subcommands` (`/session lo` > `load`, `/plugins dis` > `disable`)
 - Fixed tab completion - the completer no longer fires on macOS libedit (`readline.parse_and_bind('tab: complete')` is GNU-only and silently inserts a literal tab, libedit needs `bind ^I rl_complete`). `/` is removed from the completer delimiters so the model-facing word keeps its slash and paths complete correctly
 
 ## v0.13.0 - 2026-08-16
@@ -81,7 +83,7 @@
 - If a configured `max_tokens` cap is hit (`finish_reason: length`), the loop now prints a visible truncation warning and records a session `errors` entry instead of stopping silently
 - `OllamaProvider.chat()` streaming captures `usage` from the final chunk and attaches it to the `done` event
 - `config.py` - new keys `show_context_size`, `compact_keep` (default `4`), `noise_tools` (default `["fetch_page"]`), removed `compact_prompt_chars`
-- Compaction failed with sessions containing `command`/tool messages - the summarizer now sanitizes the batch (drops `command`, drops `tool_calls` declarations, converts `tool` → `user [tool result]`), and provider errors are printed instead of swallowed as a generic "Compaction failed"
+- Compaction failed with sessions containing `command`/tool messages - the summarizer now sanitizes the batch (drops `command`, drops `tool_calls` declarations, converts `tool` > `user [tool result]`), and provider errors are printed instead of swallowed as a generic "Compaction failed"
 - Tab completion for `/` commands never matched - readline passes the current word, and command names have no leading slash, so the prefix test always failed, the completer now strips the `/` when comparing and re-adds it on completion
 - `stream_sse` decoded each 4096-byte chunk with strict UTF-8, so a multi-byte character split across a chunk boundary raised `UnicodeDecodeError` - caught as a generic error that aborted the stream mid-output and killed the tool loop during long web research, buffering is now byte-based and each complete line is decoded with `errors='replace'`
 
@@ -103,7 +105,7 @@
 - `CommandRegistry.canonical()` and `ToolRegistry.info()` accessors backing the `/help <name>` detail views
 - `glob` tool - recursive pattern file discovery (`**/*.py`, `src/**/chat.py`), skips noise dirs (`.git`, `.venv`, `__pycache__`…), marks dirs with `/`, caps at 200 matches
 - `grep` tool - regex content search returning `file:line: text` matches with an optional file-filter `glob`, skips noise dirs, caps at 100 matches, friendly invalid-regex error
-- `/config` structured values - JSON auto-parse (`["run_command"]` → list, `0.3`/`2048`/`true` → number/bool), `-a`/`-r` list add/remove, `reload` re-reads config from disk (warns when provider/model changed), unknown keys prompt y/N before storing
+- `/config` structured values - JSON auto-parse (`["run_command"]` > list, `0.3`/`2048`/`true` > number/bool), `-a`/`-r` list add/remove, `reload` re-reads config from disk (warns when provider/model changed), unknown keys prompt y/N before storing
 - Command registration metadata - `description` and `subcommands` on `CommandRegistry.register()` (`self.meta`), canonical names tracked so aliases can't shadow real command names
 - Machine access tools (`tools/machine.py`): `read_file` (numbered lines, `offset`/`limit`, truncation), `list_dir` (sorted entries, dir markers, sizes), `write_file` (parent-dir creation, write/append), `run_command` (subprocess exec with timeout, stdout/stderr capture, exit code, 8k output cap)
 - Tool permission model (`tools/policy.py`) - `ToolPolicy` resolves each tool call to `allow`/`ask`/`deny` from configurable permission keys (`tool_permission`: `read`/`list`/`edit`/`bash`/`web`) plus name-level `tools.allow`/`tools.deny` (deny and allow-whitelist take precedence)
@@ -117,7 +119,7 @@
 - `/help <name>` shows details for a specific command (aliases + subcommands) or tool (`category`, `permission: action`, full parameter schema with required/optional), commands take precedence
 - `/tool` (no args) lists allowed tool names one per line and points to `/help <tool>` for details
 - `read_file` always emits a `# <path> - N lines` header (with the shown range when truncated) so the model knows the file's total size without extra reads
-- `/help` compacts to one line per command with aliases inline (`/help, /h`) and subcommand rows beneath (`/session` → `new`/`list`/`load`/`delete`/`save`), all aligned to a computed description column
+- `/help` compacts to one line per command with aliases inline (`/help, /h`) and subcommand rows beneath (`/session` > `new`/`list`/`load`/`delete`/`save`), all aligned to a computed description column
 - `/session` (no args) reuses the shared subcommand metadata instead of a hardcoded usage block
 - `/tool` command respects tool policy - listing shows only allowed tools, execution routes through `_run_tool()` (deny rejection + confirm prompts)
 - `Session.to_dict()` and the agent loop unchanged - confirm prompts and tool status remain ephemeral REPL UI, never persisted
@@ -186,7 +188,7 @@
 - `BaseProvider.chat_nonstreaming()` - returns `{role, content, tool_calls, finish_reason}`
 - `tools/builtins.py` - `web_search` and `fetch_page` tools
 - `tools/registry.py` - decorator-based tool registration (OpenAI function calling format)
-- Tool calling system: two-phase chat (non-streaming tool decision → stream final content)
+- Tool calling system: two-phase chat (non-streaming tool decision > stream final content)
 
 ## v0.1.0 - 2026-07-27
 

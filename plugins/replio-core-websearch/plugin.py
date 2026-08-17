@@ -4,6 +4,8 @@ from html.parser import HTMLParser
 import search
 import display
 
+MAX_FETCH_CHARS = 8000
+
 
 class _TextExtractor(HTMLParser):
     def __init__(self):
@@ -43,6 +45,9 @@ class _TextExtractor(HTMLParser):
 
 
 class _SearchService:
+    def __init__(self):
+        self.last_results: list[dict] = []
+
     def search(self, query: str, num: int = 5) -> list[dict]:
         return search.search(query, num)
 
@@ -54,6 +59,57 @@ class _SearchService:
 
 
 SERVICE = _SearchService()
+
+
+def _fetch_text(url: str, offset: int = 0) -> str:
+    import urllib.request
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)'},
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            content = resp.read().decode('utf-8', errors='replace')
+        extractor = _TextExtractor()
+        extractor.feed(content)
+        text = extractor.text()
+    except Exception as e:
+        return f'Error fetching page: {e}'
+    total = len(text)
+    start = max(0, int(offset or 0))
+    if start >= total:
+        return '(end of content)' if total else '(empty content)'
+    remaining = text[start:]
+    if len(remaining) > MAX_FETCH_CHARS:
+        next_offset = start + MAX_FETCH_CHARS
+        return (remaining[:MAX_FETCH_CHARS]
+                + f'\n[offset {next_offset} of {total} chars - continue with cursor={next_offset}]')
+    return remaining
+
+
+def _open_target(url: str | None = None, id=None) -> tuple[str, str | None]:
+    if url:
+        return url, None
+    if id is None:
+        return None, 'Error: open requires "url" or "id" (from the most recent web_search)'
+    if not SERVICE.last_results:
+        return None, 'Error: no previous web_search results to open'
+    try:
+        index = int(id)
+    except (TypeError, ValueError):
+        return None, f'Error: open id must be an integer, got {id}'
+    if not (1 <= index <= len(SERVICE.last_results)):
+        return None, (f'Error: open id {index} out of range, '
+                      f'web_search returned {len(SERVICE.last_results)} results')
+    return SERVICE.last_results[index - 1].get('url', ''), None
+
+
+def _open_status(args: dict) -> str:
+    url = args.get('url')
+    if url:
+        return url
+    target, err = _open_target(id=args.get('id'))
+    return target if not err else ''
 
 
 def register_services(services):
@@ -79,22 +135,28 @@ def register_tools(registry):
         permission='web',
         key_arg='query',
         short='Search the web',
+        param_aliases={'q': 'query'},
     )
     def web_search(query: str) -> str:
         results = SERVICE.search(query)
+        SERVICE.last_results = results
         if not results:
             return 'No search results found.'
         return SERVICE.context(query, results)
 
     @registry.register(
         name='fetch_page',
-        description='Fetch and read the full content of a web page. Use this when search result snippets are insufficient and you need detailed information from a specific URL.',
+        description='Fetch and read the full content of a web page. Use this when search result snippets are insufficient and you need detailed information from a specific URL. Pass offset to continue reading from a previous offset marker.',
         parameters={
             'type': 'object',
             'properties': {
                 'url': {
                     'type': 'string',
                     'description': 'The full URL of the page to fetch',
+                },
+                'offset': {
+                    'type': 'integer',
+                    'description': 'Character offset to resume reading from, as reported by the previous offset marker',
                 },
             },
             'required': ['url'],
@@ -105,21 +167,42 @@ def register_tools(registry):
         short="Fetch and read a web page's content",
         glyph='↓',
         verb='Fetch',
+        param_aliases={'cursor': 'offset'},
     )
-    def fetch_page(url: str) -> str:
-        import urllib.request
-        try:
-            req = urllib.request.Request(
-                url,
-                headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)'},
-            )
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                content = resp.read().decode('utf-8', errors='replace')
-            extractor = _TextExtractor()
-            extractor.feed(content)
-            text = extractor.text()
-            if len(text) > 8000:
-                text = text[:8000] + '\n... (truncated)'
-            return text
-        except Exception as e:
-            return f'Error fetching page: {e}'
+    def fetch_page(url: str, offset: int = 0) -> str:
+        return _fetch_text(url, offset)
+
+    @registry.register(
+        name='open',
+        description='Open a web page. Preferred after web_search: pass id (the 1-based result number from the most recent web_search) to fetch that result, or pass url directly. Returns the page text, with an offset marker when the content continues.',
+        parameters={
+            'type': 'object',
+            'properties': {
+                'id': {
+                    'type': 'integer',
+                    'description': '1-based result number from the most recent web_search to open',
+                },
+                'url': {
+                    'type': 'string',
+                    'description': 'The full URL of the page to open',
+                },
+                'offset': {
+                    'type': 'integer',
+                    'description': 'Character offset to resume reading from, as reported by the previous offset marker',
+                },
+            },
+        },
+        category='read',
+        permission='read',
+        key_arg='id',
+        short='Open a web page or a web_search result',
+        glyph='↓',
+        verb='Open',
+        status=_open_status,
+        param_aliases={'cursor': 'offset'},
+    )
+    def open(url: str | None = None, id=None, offset: int = 0) -> str:
+        target, err = _open_target(url, id)
+        if err:
+            return err
+        return _fetch_text(target, offset)

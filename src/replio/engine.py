@@ -435,8 +435,9 @@ class Engine:
     def _run_tool(self, name: str, args: dict) -> str:
         registry = self._tool_registry
         policy = self._tool_policy
+        cleaned = registry.clean_args(name, args)
         path_arg = registry.path_arg_for(name)
-        path = args.get(path_arg) if path_arg else None
+        path = cleaned.get(path_arg) if path_arg else None
         action = policy.action(name, registry.permission_for(name), path)
         if action == 'deny':
             return f'Error: tool "{name}" is disabled by tool policy'

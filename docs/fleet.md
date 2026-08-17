@@ -20,7 +20,7 @@ Every agent is a single-purpose process. Its responsibility comes from its confi
 - **Worktree scoping**: the tool policy treats the launch directory (`--path`, or the current directory) as the worktree. `read_file` / `list_dir` / `write_file` / `glob` / `grep` on a path outside it escalate from `allow` to `ask` (tools/policy.py:35). A doc agent cannot touch files in another agent's folder unless its config says so.
 - **Headless auto-deny**: in `serve`/`run` mode, `ask`-gated tools are denied outright (ui.py `HeadlessUI.confirm` answers `auto == 'allow'`). An agent's reachable surface is therefore exactly `allow` tools on paths inside its worktree, plus `--yes` explicit approvals.
 - **Tool allow/deny**: `tools.allow` (whitelist mode) and `tools.deny` narrow the registered schema the model sees. A web agent sets `tools.deny: [run_command, write_file]`. A code agent denies `web_search, fetch_page`.
-- **Category permissions**: `tool_permission` (`read`/`list`/`edit`/`bash`/`web` → `allow`/`ask`/`deny`) is per-agent. `bash` defaults to `ask` everywhere. Set `tool_permission.bash: allow` only for agents that may run shell commands.
+- **Category permissions**: `tool_permission` (`read`/`list`/`edit`/`bash`/`web` > `allow`/`ask`/`deny`) is per-agent. `bash` defaults to `ask` everywhere. Set `tool_permission.bash: allow` only for agents that may run shell commands.
 - **Plugins per agent**: the `plugins` config list controls which plugin set loads in each process. Capabilities that need external dependencies (PDF extraction, MCP, vector search) are external plugins. Scoped capabilities (folder watching, text indexing) are bundled ones.
 
 ## Example: a documentation agent
@@ -31,7 +31,7 @@ A doc agent watches a folder of PDFs, converts new ones to text, indexes them, a
 |---|---|---|
 | Folder watching (new-file detection) | internal bundled plugin | stdlib `threading` + `pathlib` |
 | Text index over converted files | internal bundled plugin | stdlib |
-| PDF → text extraction | external plugin | `pypdf` (lazy import) |
+| PDF > text extraction | external plugin | `pypdf` (lazy import) |
 | Vector store / embeddings | external plugin | FAISS/Weaviate (later) |
 | MCP server for peer agents | external plugin (planned) | `mcp` (lazy import) |
 

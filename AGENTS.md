@@ -97,7 +97,7 @@ Replio/
 - No tool-name special-casing in the loop - use registration metadata instead
 - `BaseProvider.chat()` is a generator yielding events: `thinking`, `token`, `tool_calls`, `error`, `done`
 - `BaseProvider` uses OpenAI-compatible `/v1/chat/completions` format
-- Config: global (`~/.config/replio/config.json`) → local (`.replio/config.json`) merge, local wins
+- Config: global (`~/.config/replio/config.json`) > local (`.replio/config.json`) merge, local wins
 - Sessions stored as `.replio/sessions/<name>.json`
 - Slash commands registered via `@registry.register()` decorator
 - Tools registered via `@tool_registry.register()` decorator (OpenAI function calling format)
@@ -115,13 +115,14 @@ Replio/
 ### Adding a Tool
 1. Use the `@registry.register(name, description, parameters)` decorator in the plugin/module where the tool belongs
 2. `parameters` follow the OpenAI function calling JSON schema format. The handler receives keyword arguments matching the schema and returns a string (the tool result injected into the conversation)
-3. Add optional metadata for loop behavior and permissions: `refine`, `category`, `permission`, `path_arg`, `key_arg`, `glyph`/`verb`, `status`, `echo` - full reference in `docs/tools.md`
+3. Add optional metadata for loop behavior and permissions: `refine`, `category`, `permission`, `path_arg`, `key_arg`, `glyph`/`verb`, `status`, `echo`, `aliases`, `param_aliases` - full reference in `docs/tools.md`
 4. `ToolRegistry.execute()` passes only args declared in the tool's schema - undeclared and `null`-valued args (e.g. a hallucinated `recursive`, or `depth: null`) are dropped, never forwarded to the handler
+5. `aliases` (extra tool names resolving to this tool, e.g. `read`/`view` for `read_file`) and `param_aliases` (caller-side param synonyms mapped onto declared params, e.g. `{'cursor': 'offset'}`) let the registry absorb model-dialect tool and argument names without advertising them in the schema. `/tool`, `/help`, policy, confirm, and glyphs work through aliases unchanged
 
 ### Machine Access & Permissions
 - `ToolPolicy` (`tools/policy.py`) is the single permission resolution point. The loop and `/tool` both route through it, so never special-case tool names for permission logic
 - Actions: `allow` (no prompt), `ask` (y/N confirm in the loop via `_confirm_tool`), `deny` (tool filtered from the provider schema and refused on direct calls)
-- Precedence: name-level `deny` / allow-whitelist → category action from `tool_permission` → worktree escalation (read/write/list outside the worktree becomes `ask`)
+- Precedence: name-level `deny` / allow-whitelist > category action from `tool_permission` > worktree escalation (read/write/list outside the worktree becomes `ask`)
 - The worktree is the directory holding the local `.replio/` - i.e. the launch directory, or `--path`. Launching from `~` makes the whole home directory the worktree, so subdirectories (including other projects) do **not** escalate. Launch inside the project or pass `--path` for project-scoped prompting
 - `bash: ask` by default - every `run_command` confirms. Set `tool_permission.bash = "allow"` to disable prompting
 - Confirm prompts and tool status are ephemeral REPL UI - never persisted to session files
@@ -157,10 +158,10 @@ Plugins currently install from git URLs or local paths into the plugin roots. Sh
 ## Roadmap
 
 - **Phase 0** - Unified streaming agent loop (single SSE stream, `tool_calls` events)
-- **Phase 1** - Unified dispatch (slash commands → same `ToolRegistry`, generic refinement)
+- **Phase 1** - Unified dispatch (slash commands > same `ToolRegistry`, generic refinement)
 - **Phase 2** - Machine access (read/write/exec tools, tool policies, `confirm`-gated exec)
 - **Phase 3** - Personas (`/agent` with per-agent prompt, sessions, model)
-- **Phase 4** - Delegation (`delegate` tool → sub-agent loops, team orchestration)
+- **Phase 4** - Delegation (`delegate` tool > sub-agent loops, team orchestration)
 - **Phase 5** - Plugins (tools + providers + commands installable, directory-based)
   - `PluginManager` discovers plugins in bundled `replio.plugins.bundled`, `~/.config/replio/plugins/`, and `.replio/plugins/` (local wins), validates the manifest (`replio_version`/`python` ranges), imports entry modules once, and hooks tools/providers/commands/services into the live registries
   - Management: `/plugins` and `replio plugins` - `install`/`update`/`uninstall`/`enable`/`disable`. Activation is via the `plugins` config list (empty = all)
