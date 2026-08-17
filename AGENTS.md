@@ -30,7 +30,7 @@ The agentic core has three layers:
 
 3. **Commands** (`commands/`) - user-facing affordances. A command either wraps a tool or performs a local action (`/model`, `/session`).
 
-Providers (`providers/`) are OpenAI-compatible `/v1/chat/completions` backends that implement the event-generator `chat()` contract.
+Providers (`providers/`) are OpenAI-compatible `/v1/chat/completions` backends that implement the event-generator `chat()` contract. A fuller treatment of the core, UI sinks, and front-ends is in `docs/architecture.md`.
 
 ### Project Structure
 
@@ -108,27 +108,24 @@ Replio/
 - After completing a planned task: mark it `[x]` in `TODO.md` and add entries under the current version section at the top of `CHANGELOG.md` (start a new version section first if none exists).
 - Keep both files in sync with actual project state.
 - Keep `version` in `pyproject.toml` in sync with the current version in `CHANGELOG.md` - bump it whenever a release section is started or finalized.
+- No em-dashes (`—`) or semicolons (`;`) joining sentence clauses in docs - use hyphens (`-`) for dashes and split with periods or commas instead.
 
 ## Extension Points
 
 ### Adding a Tool
-1. Open `tools/builtins.py` (web tools) or `tools/machine.py` (file/exec tools)
-2. Use `@registry.register(name, description, parameters)` decorator
-3. `parameters` follow the OpenAI function calling JSON schema format
-4. Handler receives keyword arguments matching the schema
-5. Return a string (the tool result injected into the conversation)
-6. Add optional metadata for loop behavior - e.g. `refine=True` to auto-refine short query args via a lightweight model call (gated by the `query_refine` config)
-7. Optional permission/display metadata: `category` (`search`/`read`/`write`/`exec`/`ask`/`todo`), `permission` (`read`/`list`/`edit`/`bash`/`web` - the `tool_permission` key that gates it), `path_arg` (which parameter is a filesystem path, for `external_directory` scope checks), `key_arg` (which argument to show in status/confirm labels/glyph activity lines), `glyph`/`verb` (per-tool activity-line overrides, e.g. `glob` uses `glyph='*', verb='Glob'` and `fetch_page` uses `glyph='↓', verb='Fetch'`, instead of the category default)
-8. Optional status metadata: `status` (a `Callable[[dict], str]` receiving the cleaned args and returning a block whose first line becomes the `[tool: <value>]` oneliner and the rest render as dimmed detail lines - used by `write_file` to preview/diff the written text), `echo` (bool - when true, the tool's result is printed dimmed below the status oneliner, used by `run_command` to show exec output)
+1. Use the `@registry.register(name, description, parameters)` decorator in the plugin/module where the tool belongs
+2. `parameters` follow the OpenAI function calling JSON schema format. The handler receives keyword arguments matching the schema and returns a string (the tool result injected into the conversation)
+3. Add optional metadata for loop behavior and permissions: `refine`, `category`, `permission`, `path_arg`, `key_arg`, `glyph`/`verb`, `status`, `echo` - full reference in `docs/tools.md`
+4. `ToolRegistry.execute()` passes only args declared in the tool's schema - undeclared and `null`-valued args (e.g. a hallucinated `recursive`, or `depth: null`) are dropped, never forwarded to the handler
 
 ### Machine Access & Permissions
 - `ToolPolicy` (`tools/policy.py`) is the single permission resolution point. The loop and `/tool` both route through it, so never special-case tool names for permission logic
 - Actions: `allow` (no prompt), `ask` (y/N confirm in the loop via `_confirm_tool`), `deny` (tool filtered from the provider schema and refused on direct calls)
-- Precedence: name-level `deny` / allow-whitelist → category action from `tool_permission` → `external_directory` escalation (read/write/list outside the project worktree becomes `ask`)
+- Precedence: name-level `deny` / allow-whitelist → category action from `tool_permission` → worktree escalation (read/write/list outside the worktree becomes `ask`)
 - The worktree is the directory holding the local `.replio/` - i.e. the launch directory, or `--path`. Launching from `~` makes the whole home directory the worktree, so subdirectories (including other projects) do **not** escalate. Launch inside the project or pass `--path` for project-scoped prompting
 - `bash: ask` by default - every `run_command` confirms. Set `tool_permission.bash = "allow"` to disable prompting
 - Confirm prompts and tool status are ephemeral REPL UI - never persisted to session files
-- `ToolRegistry.execute()` passes only args declared in the tool's schema - undeclared and `null`-valued args (e.g. a hallucinated `recursive`, or `depth: null`) are dropped, not forwarded to the handler
+- Full policy flow and registration metadata in `docs/tools.md`. Threat model in `docs/security.md`
 - Sandboxed exec (namespace/container isolation) and per-agent permission profiles are planned future work (see TODO)
 
 ### Adding a Provider
@@ -136,6 +133,8 @@ Replio/
 2. Subclass `OpenAICompatibleProvider`, set `DEFAULT_BASE_URL` / `DEFAULT_MODEL` (override `_headers()`/`_payload()` only for non-standard auth or bodies)
 3. Add the class to the `PROVIDERS` dict in `providers/__init__.py`
 4. Add a hostname match in `detect_provider()` so `/connect` auto-selects it
+
+The chat() event contract and full provider reference are in `docs/providers.md`.
 
 ### Adding a Slash Command
 1. Open `commands/builtins.py`
@@ -172,92 +171,15 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
 
 ## Config Schema
 
-```json
-{
-  "provider": "ollama",
-  "model": "llama3.2",
-  "base_url": "https://api.ollama.com",
-  "api_key": "",
-  "temperature": 0.7,
-  "max_tokens": 0,
-  "system_prompt": "",
-  "tool_calling": true,
-  "tool_status_visible": true,
-  "glyph_lines": true,
-  "tool_analysis": false,
-  "session_tool_max_chars": 0,
-  "query_refine": false,
-  "query_refine_min_words": 3,
-  "query_refine_context": 4,
-  "show_thinking": true,
-  "markdown_streaming": false,
-  "show_context_size": true,
-  "clear_screen": true,
-  "show_version": true,
-  "compact_keep": 4,
-  "noise_tools": ["fetch_page"],
-  "web_search": false,
-  "search_results": 5,
-  "tools.allow": [],
-  "tools.deny": [],
-  "tool_permission": {
-    "read": "allow",
-    "list": "allow",
-    "edit": "allow",
-    "bash": "ask",
-    "web": "allow"
-  },
-  "plugins": ["replio-core-websearch", "replio-core-fs", "replio-core-exec"]
-}
-```
+Full schema and defaults are in `docs/config.md`. Notable edge cases:
 
-`max_tokens` defaults to `0` = unset (omitted from the provider payload, so the provider's own default applies). Set a positive value to re-enable a cap. Hitting it prints a warning and logs a session `errors` entry. `plugins` lists the plugins to load, and the bundled plugins are in the default. An empty list loads all discovered plugins. `plugins.enabled`/`plugins.deny` from earlier versions are migrated automatically.
+- `max_tokens` defaults to `0` = unset (omitted from the provider payload, so the provider's own default applies). Set a positive value to re-enable a cap. Hitting it prints a warning and logs a session `errors` entry.
+- `plugins` lists the plugins to load, and the bundled plugins are in the default. An empty list loads all discovered plugins. `plugins.enabled`/`plugins.deny` from earlier versions are migrated automatically.
 
 ## Testing
 
-- Tests live in `tests/` and use stdlib `unittest` (no external test runner needed)
-- **Mock tests** patch provider responses - no internet, no API key required
-- Run all tests:
-  ```bash
-  python -m unittest discover tests
-  ```
-- Run a specific test file:
-  ```bash
-  python -m unittest tests.test_tool_calling
-  ```
-- Run before committing changes to verify core logic isn't broken
-- Manual live tests (against real API) are done ad-hoc, not automated
+Run tests before committing changes to verify core logic isn't broken. The suite is stdlib `unittest` with mock providers (no network, no API key). Commands and the per-file coverage map are in `docs/testing.md`.
 
-## Session JSON Format
+## Sessions
 
-Sessions are complete logs - every message, tool call + result, reasoning, and error is persisted, and entries are **never removed** (append-only, so compaction only trims the provider context). `role: tool` messages are kept (with optional `session_tool_max_chars` truncation, and `noise_tools` results replaced by a marker, at serialization time only). `thinking` metadata holds reasoning before each tool call/answer and is excluded from `content`.
-
-```json
-{
-  "name": "20250727_120000",
-  "created_at": "2026-07-27T14:30:00+00:00",
-  "updated_at": "2026-07-27T14:35:15+00:00",
-  "messages": [
-    {"role": "user", "content": "Hello", "timestamp": "2026-07-27T14:30:00+00:00"},
-    {"role": "assistant", "content": "Hi! How can I help?", "timestamp": "2026-07-27T14:30:05+00:00", "duration": 4.8, "model": "llama3.2", "provider": "ollama"},
-    {"role": "command", "content": "/model llama3.3", "timestamp": "2026-07-27T14:35:00+00:00"},
-    {"role": "user", "content": "Now?", "timestamp": "2026-07-27T14:35:10+00:00"},
-    {"role": "assistant", "content": "Ready.", "timestamp": "2026-07-27T14:35:15+00:00", "duration": 3.1, "model": "llama3.3", "provider": "ollama", "thinking": "The user is switching models, just confirm."},
-    {"role": "command", "content": "/compact", "timestamp": "...", "result": "Summary of the earlier conversation…", "compact_from": 8}
-  ],
-  "errors": [
-    {"code": 401, "message": "Unauthorized", "timestamp": "2026-07-27T14:40:00+00:00"}
-  ]
-}
-```
-
-A `command` message with a `result` is a compaction record: `result` holds the summary, `compact_from` is the index into `messages` where the kept portion starts. `ChatLoop._provider_messages()` prepares the log for the API - `command` role messages are dropped (records become `system` summaries), dangling tool messages are skipped.
-
-## Tool Call Messages
-
-```json
-{"role": "assistant", "tool_calls": [{"id": "call_xxx", "type": "function", "function": {"name": "web_search", "arguments": "{\"query\": \"latest Python\"}"}}], "timestamp": "...", "thinking": "..."},
-{"role": "tool", "tool_call_id": "call_xxx", "content": "Web search results...", "timestamp": "...", "tool": "web_search", "analysis": "Pages about recent Python releases - 3.13 is the latest."},
-```
-
-`tool` messages carry the originating `tool` name (used to identify `noise_tools` at persistence time) and an optional `analysis` insight. The provider payload is prepared by `_provider_messages()` - `command` role messages are dropped, compaction records become `system` summaries, and dangling tool messages (e.g. at a `compact_from` boundary) are skipped.
+Sessions are complete, append-only logs - every message, tool call + result, reasoning, and error is persisted, and entries are **never removed** (compaction only trims the provider context). The full schema - file location, message fields per role, `errors`, serialization-time transforms (`noise_tools`, `session_tool_max_chars`), provider-context preparation, and compaction - is in `docs/session.md`.

@@ -1,0 +1,62 @@
+# Security
+
+Replio is local-first and deliberately small. Its security posture rests on a few properties: an explicit per-tool permission model, worktree-scoped file access, a config-driven surface, and complete session logs that double as an audit trail. This document covers the threat model and the controls in place today.
+
+## Permission model
+
+Every tool call is gated by `ToolPolicy` (`src/replio/tools/policy.py`) with three actions:
+
+- **`allow`** - runs without prompting.
+- **`ask`** - prompts y/N in the loop.
+- **`deny`** - the tool is filtered from the provider schema and refused on direct calls.
+
+Resolution precedence (see [tools.md](tools.md) for the full flow):
+
+1. Name-level `tools.deny` and the `tools.allow` allowlist.
+2. The category action from `tool_permission` (`read` / `list` / `edit` / `bash` / `web`).
+3. Worktree escalation: `read` / `list` / `write` tools on paths outside the worktree escalate `allow` to `ask`.
+
+The worktree is the directory holding the local `.replio/` - the launch directory, or `--path`. A `read_file` / `list_dir` / `write_file` / `glob` / `grep` on a path outside it escalates to `ask`, so an agent cannot silently reach files beyond its scope. Launching from `~` makes home the worktree, so subdirectories do not escalate. Launch inside the project or pass `--path` for project-scoped prompting.
+
+`bash` defaults to `ask`, so every `run_command` confirms unless `tool_permission.bash = "allow"` is set explicitly.
+
+## Headless agents are confined
+
+In headless mode (`replio serve` / `replio run`), `ask`-gated tools are denied outright - the headless UI auto-answers with the configured `--yes` / `--no` policy. An agent's reachable surface is therefore exactly its `allow` tools on paths inside its worktree. This is the isolation boundary that makes one-agent-per-process fleets safe: a crash or a misbehaving agent cannot touch another agent's folder or run commands it was not given. See [fleet.md](fleet.md).
+
+## Config-driven surface
+
+The model only sees tools whose schema passes policy filtering (`tools.allow` / `tools.deny` / `tool_permission`), and plugin activation is an explicit `plugins` list. The surface area - providers, tools, plugins, permissions - is configuration, not convention. Confirm prompts and tool status are ephemeral UI and are never persisted to session files.
+
+## Audit trail
+
+Sessions are complete, append-only logs: every message, tool call with its arguments and result, reasoning, and error is recorded with timestamps. Compaction only trims the provider context, never the log, so any action can be reconstructed later. See [session.md](session.md). For enterprise deployments this is the base for compliance and forensics, with central aggregation and tamper-evidence as additive hardening (see [enterprise.md](enterprise.md)).
+
+## Data posture
+
+- **Local-first** - config and session logs live on your disk. All provider traffic is outbound. There is no external telemetry or logging service holding enterprise data.
+- **Zero dependencies** - the core is Python stdlib only, so there is no supply chain to audit and no lockfile churn. Plugins may add third-party deps, imported lazily and only when the plugin is used.
+- **API keys** - stored in config (global or local `.replio/config.json`) or passed via `REPLIO_API_KEY`. Keep keys out of repositories.
+
+## Plugins
+
+Plugins are arbitrary Python code that run with your user's privileges. Install only plugins you trust. A plugin's `register_providers` hook runs at load. Its tools run on demand like any built-in tool. The manifest declares `replio_version` and `python` compatibility ranges, and incompatible plugins are skipped at load. See [plugins.md](plugins.md) for management and the security notes.
+
+## Prompt injection
+
+Tool results and fetched content are untrusted input returned to the model. Defense in depth today: tools are whitelisted by policy, `ToolRegistry.execute()` drops undeclared and `null` arguments (so a hallucinated parameter cannot reach a handler), results are bounded (`session_tool_max_chars`, `noise_tools`), and `run_command` requires confirmation by default. Worktree escalation keeps file access scoped.
+
+## Threat model at a glance
+
+| Asset | Control |
+|-------|---------|
+| Filesystem | Worktree-scoped `allow`/`ask`/`deny`, escalation outside the worktree |
+| Shell | `run_command` gated by `bash: ask` by default, headless auto-deny |
+| Network | Explicit tools (`web_search`, `fetch_page`), `web` permission |
+| Provider context | Policy-filtered tool schema, argument cleaning, bounded tool results |
+| Session data | Append-only local logs, local file ownership |
+| Model | Config-driven provider/model selection, no autonomous self-modification |
+
+## Planned hardening
+
+Sandboxed exec (namespace/container isolation for `run_command`), per-agent permission profiles, and per-plugin virtualenv isolation are planned future work (see [TODO.md](../TODO.md) and [plugins.md](plugins.md)).
