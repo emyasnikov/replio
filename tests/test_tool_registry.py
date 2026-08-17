@@ -47,6 +47,35 @@ class TestToolRegistry(unittest.TestCase):
         out = self.registry.execute('nonexistent', {})
         self.assertIn('unknown tool', out)
 
+    def test_execute_passes_config_to_declared_handler(self):
+        reg = ToolRegistry()
+        params = {'type': 'object', 'properties': {}, 'required': []}
+        seen = {}
+
+        @reg.register('peek_cfg', 'Peek', params)
+        def peek_cfg(_config=None):
+            seen['config'] = _config
+            return 'ok'
+
+        class FakeConfig:
+            def get(self, key, default=None):
+                return default
+
+        out = reg.execute('peek_cfg', {}, config=FakeConfig())
+        self.assertEqual(out, 'ok')
+        self.assertIsNotNone(seen['config'])
+
+    def test_execute_ignores_config_for_plain_handler(self):
+        reg = ToolRegistry()
+        params = {'type': 'object', 'properties': {}, 'required': []}
+
+        @reg.register('plain', 'Plain', params)
+        def plain():
+            return 'ok'
+
+        out = reg.execute('plain', {}, config=object())
+        self.assertEqual(out, 'ok')
+
     def test_custom_refine_metadata(self):
         reg = ToolRegistry()
 

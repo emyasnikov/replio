@@ -4,14 +4,22 @@ import os
 import re
 from pathlib import Path
 
-MAX_RESULT_CHARS = 8000
 SKIP_DIRS = frozenset({'__pycache__', '.git', '.venv', '.replio',
                        '.opencode', 'dist', 'node_modules'})
 
 
-def _truncate(text: str) -> str:
-    if len(text) > MAX_RESULT_CHARS:
-        return text[:MAX_RESULT_CHARS].rsplit('\n', 1)[0] + '\n... (truncated)'
+def _cap(config=None) -> int:
+    if config is None:
+        return 0
+    try:
+        return max(0, int(config.get('tool_max_result_chars', 0)))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _truncate(text: str, max_chars: int = 0) -> str:
+    if max_chars > 0 and len(text) > max_chars:
+        return text[:max_chars].rsplit('\n', 1)[0] + '\n... (truncated)'
     return text
 
 
@@ -66,7 +74,7 @@ def _write_file_status(args):
 def register_tools(registry):
     @registry.register(
         name='read_file',
-        description='Read the contents of a text file. Use to inspect source code, configs, logs, or any file on disk after locating it with glob. Returns numbered lines.',
+        description='Read the contents of a text file. Use to inspect source code, configs, logs, or any file on disk after locating it with glob. Returns numbered lines with a header reporting the total line and character count; limit=0 returns just the header as a size probe, use offset/limit to page through large files.',
         parameters={
             'type': 'object',
             'properties': {
@@ -91,7 +99,8 @@ def register_tools(registry):
         key_arg='path',
         short='Read the contents of a text file',
     )
-    def read_file(path: str, offset: int = 1, limit: int = 500) -> str:
+    def read_file(path: str, offset: int = 1, limit: int = 500,
+                  _config=None) -> str:
         p = Path(path).expanduser()
         if not p.exists():
             return f'Error: file not found: {path}'
@@ -102,17 +111,19 @@ def register_tools(registry):
         except OSError as e:
             return f'Error reading {path}: {e}'
         lines = content.splitlines()
+        header = f'# {path} - {len(lines)} lines, {len(content)} chars'
+        if int(limit) == 0:
+            return header
         start = max(0, int(offset) - 1)
         end = len(lines) if not limit else min(len(lines), start + int(limit))
         width = len(str(end))
         out = [f'{i:>{width}}|{line}'
                for i, line in enumerate(lines[start:end], start=start + 1)]
-        header = f'# {path} - {len(lines)} lines'
         if end < len(lines):
             header += f' (showing {start + 1}-{end})'
         if not out:
             return f'{header}\n(empty file)'
-        return _truncate(header + '\n' + '\n'.join(out))
+        return _truncate(header + '\n' + '\n'.join(out), _cap(_config))
 
     @registry.register(
         name='list_dir',
@@ -137,7 +148,7 @@ def register_tools(registry):
         key_arg='path',
         short="List a directory's contents",
     )
-    def list_dir(path: str = '.', depth: int = 1) -> str:
+    def list_dir(path: str = '.', depth: int = 1, _config=None) -> str:
         p = Path(path).expanduser()
         if not p.exists():
             return f'Error: path not found: {path}'
@@ -152,7 +163,7 @@ def register_tools(registry):
             return '(empty directory)'
         lines = [f'{p}:']
         _walk(p, entries, 1, level, lines)
-        return _truncate('\n'.join(lines))
+        return _truncate('\n'.join(lines), _cap(_config))
 
     @registry.register(
         name='write_file',
@@ -225,7 +236,7 @@ def register_tools(registry):
         glyph='*',
         verb='Glob',
     )
-    def glob(pattern: str, path: str = '.') -> str:
+    def glob(pattern: str, path: str = '.', _config=None) -> str:
         base = Path(path).expanduser()
         if not base.exists() or not base.is_dir():
             return f'Error: not a directory: {path}'
@@ -243,7 +254,7 @@ def register_tools(registry):
         result = '\n'.join(matches[:200])
         if len(matches) > 200:
             result += f'\n... (showing 200 of {len(matches)} matches)'
-        return _truncate(result)
+        return _truncate(result, _cap(_config))
 
     @registry.register(
         name='grep',
@@ -272,7 +283,8 @@ def register_tools(registry):
         key_arg='pattern',
         short='Search file contents for a pattern',
     )
-    def grep(pattern: str, path: str = '.', glob: str = '*') -> str:
+    def grep(pattern: str, path: str = '.', glob: str = '*',
+             _config=None) -> str:
         try:
             regex = re.compile(pattern)
         except re.error as e:
@@ -312,4 +324,4 @@ def register_tools(registry):
         result = '\n'.join(results[:100])
         if len(results) >= 100:
             result += '\n... (showing first 100 matches)'
-        return _truncate(result)
+        return _truncate(result, _cap(_config))

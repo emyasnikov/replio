@@ -22,6 +22,7 @@ def make_chat(config_data: dict | None = None) -> ChatLoop:
         'api_key': '',
         'temperature': 0.7,
         'max_tokens': 2048,
+        'stream_retry_delay': 0,
     }
     if config_data:
         data.update(config_data)

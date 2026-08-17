@@ -1,5 +1,6 @@
 import unittest
 import io
+import json
 from unittest.mock import patch
 
 from tests.helpers import make_chat
@@ -58,13 +59,16 @@ class TestAgentLoop(unittest.TestCase):
 
     def test_empty_stream_persists_nothing(self):
         self.chat.provider.chat.return_value = []
-        self._run()
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat._agent_loop()
         self.assertEqual(self._assistant_msgs(), [])
         self.chat.session_auto_save.assert_called()
         errors = self.chat.current_session.errors
         self.assertEqual(len(errors), 1)
         self.assertIn('Stream ended before a completion event', errors[0]['message'])
-        self.assertEqual(self.chat.provider.chat.call_count, 2)
+        self.assertEqual(self.chat.provider.chat.call_count, 3)
+        self.assertEqual(out.getvalue().count('retrying'), 2)
 
     def test_empty_stream_retried_once_then_succeeds(self):
         self.chat.provider.chat.side_effect = [
@@ -78,6 +82,44 @@ class TestAgentLoop(unittest.TestCase):
         self.assertEqual(self.chat.provider.chat.call_count, 2)
         self.assertEqual(self.chat.current_session.errors, [])
         self.assertEqual(self._assistant_msgs()[0]['content'], 'Recovered answer')
+
+    def test_empty_stream_retried_twice_then_succeeds(self):
+        self.chat.provider.chat.side_effect = [
+            [],
+            [],
+            [
+                {'type': 'token', 'content': 'Recovered answer'},
+                {'type': 'done', 'reason': 'stop'},
+            ],
+        ]
+        self._run()
+        self.assertEqual(self.chat.provider.chat.call_count, 3)
+        self.assertEqual(self.chat.current_session.errors, [])
+        self.assertEqual(self._assistant_msgs()[0]['content'], 'Recovered answer')
+
+    def test_failed_follow_up_stream_hints_recovery(self):
+        target = self.chat.config.local_path.parent.parent / 'a.txt'
+        target.write_text('hello\n')
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'tool_calls', 'tool_calls': [
+                {'id': 'call_1', 'type': 'function',
+                 'function': {'name': 'read_file',
+                              'arguments': json.dumps({'path': str(target)})}},
+            ]}],
+            [],
+            [],
+            [],
+        ]
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat._agent_loop()
+        errors = self.chat.current_session.errors
+        self.assertEqual(len(errors), 1)
+        self.assertIn('Stream ended before a completion event', errors[0]['message'])
+        self.assertIn('tool results are saved', out.getvalue())
+        self.assertIn('retrying', out.getvalue())
+        tool_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'tool']
+        self.assertEqual(len(tool_msgs), 1)
 
     def test_token_stream_then_eof_persists_content_and_logs_error(self):
         self.chat.provider.chat.return_value = [

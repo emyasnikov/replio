@@ -49,7 +49,7 @@ Tools are registered with `@registry.register(name, description, parameters)` pl
 | `echo` | When true, the tool result is printed dimmed below the status oneliner (used by `run_command`) |
 | `short` | Short label for `/help` listing (defaults to the description truncated) |
 
-`ToolRegistry.execute()` passes only arguments declared in the tool's schema - undeclared and `null`-valued arguments (e.g. a hallucinated `recursive`, or `depth: null`) are dropped, not forwarded to the handler.
+`ToolRegistry.execute()` passes only arguments declared in the tool's schema - undeclared and `null`-valued arguments (e.g. a hallucinated `recursive`, or `depth: null`) are dropped, not forwarded to the handler. It also passes the engine `Config` to handlers that declare a `_config` keyword argument (e.g. `def read_file(path, offset=1, limit=500, _config=None)`), so a tool can read config keys like `tool_max_result_chars` without exposing them to the model.
 
 ## Adding a tool
 
@@ -76,6 +76,16 @@ Example:
 def pdf2text(path):
     return extract(path)
 ```
+
+## Result size and large files
+
+Tool results are sent to the model verbatim; nothing is truncated unless `tool_max_result_chars` is set (default `0` = unlimited). Setting it caps every tool result at N characters with a trailing `... (truncated)` marker.
+
+`read_file` helps the model page through large files without hitting a cap:
+
+- Every result header reports the total size: `# <path> - <N> lines, <M> chars` (plus `(showing a-b)` for partial windows), so the model learns a file's size from the first read.
+- `limit=0` returns just the header as a size probe - the model can check a file's size before committing to a read.
+- A large file is then read in windows via `offset` / `limit` arguments (`read_file(path, offset=1, limit=200)`, then `offset=201`, ...).
 
 ## Tool policy
 

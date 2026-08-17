@@ -1,4 +1,5 @@
 import json
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
@@ -185,7 +186,9 @@ class Engine:
                         self.ui.thinking_end(dur)
 
                 messages = self._provider_messages()
-                for attempt in (1, 2):
+                max_attempts = 1 + max(0, int(self.config.get('stream_retries', 2)))
+                retry_delay = max(0.0, float(self.config.get('stream_retry_delay', 0.5)))
+                for attempt in range(1, max_attempts + 1):
                     content = ''
                     thinking = ''
                     in_thinking = False
@@ -279,12 +282,19 @@ class Engine:
                             self.ui.warning(msg)
                             status = 'empty'
                         break
-                    if not content and attempt == 1:
-                        self.ui.info('(stream ended before a completion event - retrying)')
+                    if not content and attempt < max_attempts:
+                        self.ui.info(f'(stream ended before a completion event - retrying '
+                                     f'{attempt}/{max_attempts - 1})')
+                        if retry_delay:
+                            time.sleep(retry_delay)
                         continue
                     msg = 'Stream ended before a completion event'
                     self.current_session.add_error(0, msg)
-                    self.ui.warning(msg)
+                    if executed_tool_calls:
+                        self.ui.warning(f'{msg} - tool results are saved, '
+                                        'send "continue" to retry the answer')
+                    else:
+                        self.ui.warning(msg)
                     status = 'error'
                     break
                 if aborted or not tool_calls_detected:
@@ -435,7 +445,7 @@ class Engine:
                 return f'[cancelled] User declined the {name} call'
         if self.config.get('tool_status_visible', True):
             self._show_tool_status(name, args)
-        return registry.execute(name, args)
+        return registry.execute(name, args, config=self.config)
 
     def _confirm_tool(self, name: str, args: dict) -> bool:
         key_arg = self._tool_registry.key_arg_for(name)

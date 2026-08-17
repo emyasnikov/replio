@@ -23,12 +23,15 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `api_key`                   | `""`                   | Provider API key                                                       |
 | `temperature`               | `0.7`                  | Sampling temperature                                                   |
 | `max_tokens`                | `0`                    | `0` = unset (provider default). Positive value caps output             |
+| `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event with no content |
+| `stream_retry_delay`        | `0.5`                  | Seconds to wait between stream retries                                  |
 | `system_prompt`             | `""`                   | Optional system prompt                                                 |
 | `tool_calling`              | `true`                 | Enable OpenAI-compatible function calling                              |
 | `tool_status_visible`       | `true`                 | Show dimmed tool status in the REPL                                    |
 | `glyph_lines`               | `true`                 | Typed `<glyph> <verb> <arg>` status lines for mapped categories. When off, or for unmapped categories, the `[tool: arg]` oneliner is used |
 | `tool_analysis`             | `false`                | Model-generated one-line analysis of each tool result (log-only)      |
 | `session_tool_max_chars`    | `0`                    | `0` = unlimited. Caps persisted tool-result content                    |
+| `tool_max_result_chars`     | `0`                    | `0` = unlimited. Caps tool-result content returned to the model (`... (truncated)` appended). With the default, the model sizes files via the `read_file` header and pages with `offset`/`limit` |
 | `query_refine`              | `false`                | Auto-refine short web-search queries via a lightweight model call      |
 | `query_refine_min_words`    | `3`                    | Minimum query length before refinement applies                         |
 | `query_refine_context`      | `4`                    | Recent-message context to inject into refinement                       |

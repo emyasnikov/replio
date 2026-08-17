@@ -1,11 +1,18 @@
 import subprocess
 
-MAX_RESULT_CHARS = 8000
+
+def _cap(config=None) -> int:
+    if config is None:
+        return 0
+    try:
+        return max(0, int(config.get('tool_max_result_chars', 0)))
+    except (TypeError, ValueError):
+        return 0
 
 
-def _truncate(text: str) -> str:
-    if len(text) > MAX_RESULT_CHARS:
-        return text[:MAX_RESULT_CHARS].rsplit('\n', 1)[0] + '\n... (truncated)'
+def _truncate(text: str, max_chars: int = 0) -> str:
+    if max_chars > 0 and len(text) > max_chars:
+        return text[:max_chars].rsplit('\n', 1)[0] + '\n... (truncated)'
     return text
 
 
@@ -38,7 +45,8 @@ def register_tools(registry):
         echo=True,
     )
     def run_command(command: str, cwd: str | None = None,
-                    timeout: int = 30) -> str:
+                    timeout: int = 30, _config=None) -> str:
+        max_chars = _cap(_config)
         try:
             proc = subprocess.run(
                 command, shell=True, capture_output=True, text=True,
@@ -46,7 +54,7 @@ def register_tools(registry):
             )
         except subprocess.TimeoutExpired as e:
             out = e.stdout or ''
-            return f'Error: command timed out after {timeout}s' + (f'\n{_truncate(out)}' if out else '')
+            return f'Error: command timed out after {timeout}s' + (f'\n{_truncate(out, max_chars)}' if out else '')
         except OSError as e:
             return f'Error running command: {e}'
         stdout = proc.stdout or ''
@@ -57,5 +65,5 @@ def register_tools(registry):
             lines.append(f'[cwd: {cwd}]')
         lines.append(f'exit {proc.returncode}')
         if body:
-            lines.append(_truncate(body))
+            lines.append(_truncate(body, max_chars))
         return '\n'.join(lines)

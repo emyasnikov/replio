@@ -1,4 +1,5 @@
 from typing import Callable
+import inspect
 
 
 ACTIVITY_DEFAULTS: dict[str, tuple[str, str]] = {
@@ -59,13 +60,21 @@ class ToolRegistry:
         return {k: v for k, v in arguments.items()
                 if k in props and v is not None}
 
-    def execute(self, name: str, arguments: dict) -> str:
+    def execute(self, name: str, arguments: dict, config=None) -> str:
         tool = self._tools.get(name)
         if not tool:
             return f'Error: unknown tool "{name}"'
         args = self._clean_args(name, arguments)
+        fn = tool['fn']
+        if config is not None:
+            try:
+                params = inspect.signature(fn).parameters
+                if '_config' in params:
+                    args = {**args, '_config': config}
+            except (TypeError, ValueError):
+                pass
         try:
-            return tool['fn'](**args)
+            return fn(**args)
         except Exception as e:
             return f'Error executing {name}: {e}'
 

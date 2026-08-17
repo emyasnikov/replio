@@ -64,6 +64,8 @@ def register_services(services) -> None: ...     # services["name"] = service ob
 
 Plugin tools automatically inherit the tool permission policy, `/tool`, `/help`, query refinement, `noise_tools`, and session logging. The loop never special-cases plugin names.
 
+A tool handler may declare a `_config` keyword argument to receive the engine's `Config` (e.g. to read a config key like `tool_max_result_chars`); the registry passes it only when the handler's signature accepts it, and it is never exposed to the model. See [tools.md](tools.md).
+
 ### Services
 
 `register_services` lets a plugin power a core feature that is not tool-calling. Today the only service is the web search-then-answer mode (`web_search: true`). The bundled `replio-core-websearch` registers `services['search']` with `search(query, num)`, `display(query, results)`, and `context(query, results)` methods. If no plugin registers the service, that mode reports that it is unavailable instead of erroring.

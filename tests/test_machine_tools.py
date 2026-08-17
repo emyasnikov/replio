@@ -25,6 +25,9 @@ class TestMachineTools(unittest.TestCase):
     def run_tool(self, name, **args):
         return self.registry.execute(name, args)
 
+    def run_tool_cfg(self, name, config, **args):
+        return self.registry.execute(name, args, config=config)
+
     def test_read_file_numbered(self):
         (self.root / 'a.txt').write_text('one\ntwo\nthree\n')
         out = self.run_tool('read_file', path=str(self.root / 'a.txt'))
@@ -44,9 +47,37 @@ class TestMachineTools(unittest.TestCase):
         (self.root / 'a.txt').write_text('one\ntwo\nthree\n')
         out = self.run_tool('read_file', path=str(self.root / 'a.txt'))
         self.assertIn('3 lines', out)
+        self.assertIn('14 chars', out)
         self.assertNotIn('(showing', out)
         self.assertIn('1|one', out)
         self.assertIn('3|three', out)
+
+    def test_read_file_limit_zero_returns_header_probe(self):
+        (self.root / 'a.txt').write_text('one\ntwo\nthree\n')
+        out = self.run_tool('read_file', path=str(self.root / 'a.txt'), limit=0)
+        self.assertIn('3 lines', out)
+        self.assertIn('14 chars', out)
+        self.assertNotIn('1|one', out)
+        self.assertNotIn('... (truncated)', out)
+
+    def test_read_file_unlimited_default_no_truncation(self):
+        content = '\n'.join(f'line{i} line{i} line{i} line{i} line{i}'
+                            for i in range(1, 201))
+        (self.root / 'big.txt').write_text(content)
+        out = self.run_tool('read_file', path=str(self.root / 'big.txt'))
+        self.assertIn(f'{len(content)} chars', out)
+        self.assertNotIn('... (truncated)', out)
+        self.assertIn('200|', out)
+
+    def test_read_file_cap_truncates(self):
+        content = '\n'.join(f'line{i} line{i} line{i} line{i} line{i}'
+                            for i in range(1, 201))
+        (self.root / 'big.txt').write_text(content)
+        cfg = Config(path=self._cfg_tmp.name)
+        cfg.data['tool_max_result_chars'] = 1000
+        out = self.run_tool_cfg('read_file', cfg, path=str(self.root / 'big.txt'))
+        self.assertIn('... (truncated)', out)
+        self.assertNotIn('200|', out)
 
     def test_read_file_missing(self):
         out = self.run_tool('read_file', path=str(self.root / 'nope.txt'))
@@ -154,6 +185,14 @@ class TestMachineTools(unittest.TestCase):
     def test_run_command_timeout(self):
         out = self.run_tool('run_command', command='sleep 5', cwd=str(self.root), timeout=1)
         self.assertIn('timed out', out)
+
+    def test_run_command_cap_truncates(self):
+        cfg = Config(path=self._cfg_tmp.name)
+        cfg.data['tool_max_result_chars'] = 20
+        out = self.run_tool_cfg('run_command', cfg,
+                                command='seq 1 1000', cwd=str(self.root))
+        self.assertIn('... (truncated)', out)
+        self.assertNotIn('\n1000', out)
 
     def test_glob_recursive(self):
         (self.root / 'src').mkdir()

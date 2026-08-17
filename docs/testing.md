@@ -22,14 +22,14 @@ Run tests before committing changes to verify core logic isn't broken.
 
 | File | Covers |
 |------|--------|
-| `test_agent_loop.py` | Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty-stream retry |
+| `test_agent_loop.py` | Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty/truncated-stream multi-attempt retry, recovery hint after failed tool-call rounds |
 | `test_bundled_plugins.py` | Bundled plugin discovery, tool registration, search service, bundled update/uninstall blocking |
 | `test_cli.py` | `replio run`: JSON/text output, session-id persistence, exit codes |
 | `test_commands.py` | Slash-command registration and `/help` output (aliases, subcommands, tools section) |
 | `test_completion.py` | Readline tab completion: commands, session names, plugin names, tool names |
 | `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions |
 | `test_http.py` | SSE streaming: data parsing, `done` marker, multi-byte split across chunks, HTTP errors |
-| `test_machine_tools.py` | `read_file` / `list_dir` behavior: numbering, offsets, headers, error paths |
+| `test_machine_tools.py` | `read_file` / `list_dir` behavior: numbering, offsets, headers, size probe (`limit=0`), `tool_max_result_chars` cap, error paths |
 | `test_ollama_provider.py` | Streaming provider: fragmented tool-call reassembly, thinking events, payload construction |
 | `test_plugins.py` | Plugin manager: manifest compat ranges, discovery precedence, registration hooks, install/update/uninstall |
 | `test_providers.py` | Provider defaults, override behavior, `detect_provider` |
@@ -37,7 +37,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_session_log.py` | Session model: append-only serialization, `tool_max_chars` truncation, metadata |
 | `test_tool_calling.py` | Tool-calling flow: single and multiple calls, unknown tools, query refinement |
 | `test_tool_policy.py` | `ToolPolicy`: allow/ask/deny, worktree escalation, deny/allowlist precedence |
-| `test_tool_registry.py` | Tool registration metadata, schema, refine flags |
+| `test_tool_registry.py` | Tool registration metadata, schema, refine flags, `_config` pass-through |
 | `test_ui.py` | UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering |
 
 `tests/helpers.py` provides `make_chat(config_data)` - a `ChatLoop` with a mocked provider - used by most tests to drive the engine without a model.

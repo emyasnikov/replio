@@ -74,4 +74,4 @@ Plugins can also register providers via their `register_providers(providers)` ho
 
 ## Streaming contract
 
-The underlying SSE utility (`src/replio/utils/http.py`) reads the stream line by line with byte-buffered decoding, so multi-byte UTF-8 split across read chunks is handled correctly. Keep-alive and mid-stream errors surface as `error` events. A stream that ends without a completion event is retried once before the "Stream ended before a completion event" error is reported.
+The underlying SSE utility (`src/replio/utils/http.py`) reads the stream line by line with byte-buffered decoding, so multi-byte UTF-8 split across read chunks is handled correctly. Keep-alive and mid-stream errors surface as `error` events; a stream that ends without a completion event and with no streamed content is re-requested up to `1 + stream_retries` times (default 3 total attempts) with `stream_retry_delay` seconds between attempts before the "Stream ended before a completion event" error is reported. When tool calls have already run in the turn, the warning notes that the tool results are saved and the answer can be retried with a follow-up message.
