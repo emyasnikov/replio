@@ -91,16 +91,15 @@ curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
 {"content": "Hello! How can I help you today?", "thinking": null, "tool_calls": [], "errors": [], "duration": 7.0, "usage": null, "model": "gpt-oss:20b-cloud", "provider": "ollama", "session": "20260814_192711_hi", "status": "ok"}
 ```
 
-### Agent fleets
+### Agent orchestration
 
-Each `replio serve` process is an agent scoped to its folder. The tool policy confines file access to that folder, and headless agents auto-deny anything that asks for confirmation, so an agent can only reach its own worktree.
+Three ways to combine Replio into larger systems:
 
-```bash
-replio serve --path docs --port 8781 &
-replio serve --path src --port 8782 &
-```
+- **MCP (Model Context Protocol)** - work alongside other AI tools. Connect to external MCP servers (stdio or HTTP) to import their tools, or expose Replio's own tools and sessions as an MCP server for other agents (Claude, opencode, ...) via `replio mcp` or `POST /mcp` on `replio serve`. See [docs/mcp.md](docs/mcp.md)
+- **Swarm** - make agents cooperate on a task with `/agent` personas and the `delegate` tool, so a lead agent splits work across specialized sub-agents and auditors. See [docs/swarm.md](docs/swarm.md)
+- **Fleet** - run many scoped agents side by side, each a `replio serve` process confined to its own folder, worktree and permissions, orchestrated under a supervisor. See [docs/fleet.md](docs/fleet.md)
 
-Agents talk to each other through the same `POST /chat` API. See [docs/fleet.md](docs/fleet.md) for the full pattern and deployment templates.
+Fleet and swarm are two layers: fleet keeps agents alive, swarm gets the job done, and both compose with MCP for cross-tool interoperability.
 
 ## Roadmap
 
@@ -112,15 +111,7 @@ The project is stdlib-only with no external dependencies. See [AGENTS.md](AGENTS
 
 ## Documentation
 
-Detailed references are in the [docs](docs/):
-
-- [Agent fleets](docs/fleet.md)
-- [Agent swarms](docs/swarm.md)
-- [API endpoints](docs/api.md)
-- [Commands & CLI](docs/commands.md)
-- [Configuration](docs/config.md)
-- [Deployment](docs/deploy.md)
-- [Plugins](docs/plugins.md)
+Detailed references are in the [docs/INDEX.md](docs/INDEX.md)
 
 ## License
 
