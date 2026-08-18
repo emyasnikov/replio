@@ -28,9 +28,6 @@
 - [ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
 - [ ] Agent folder watcher - internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps
 
-- [ ] MCP support - Model Context Protocol integration, plugin-first (third-party `mcp` lib as a lazy plugin dep, so the core stays stdlib-only):
-  - [ ] MCP client plugin - connect to external MCP servers (stdio/HTTP), register their tools into the ToolRegistry so the model can call them like any Replio tool (tool policy, status, session logging apply)
-  - [ ] MCP server - expose Replio's registered tools + sessions over MCP for external agents (Claude, opencode, …) to drive
 - [ ] Plan/Build modes - read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery
 - [ ] Minimal web Control UI - stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue). Richer frameworks stay plugin-first
 
@@ -75,6 +72,7 @@
 
 ## Done
 
+- [x] MCP support via stdlib-only `replio-core-mcp` bundled plugin - client imports external server tools (stdio/HTTP) into the ToolRegistry, server exposes replio's tools + sessions over MCP for external agents, both dual-era (modern 2026-07-28 + legacy initialize)
 - [x] Alias layer - tool-name + param aliases (read/view, ls, bash/exec, cursor > offset, ...) and an `open` web tool (`id`/`url`/`offset`) with offset paging
 - [x] Glyph activity lines - typed `<glyph> <verb> <key_arg>` status (dimmed) for covered categories, gated by `glyph_lines` (default `true`); unmapped categories use the `[tool: key_arg]` oneliner
 - [x] `write_file` reports the resolved absolute path to the model - result returns `Created|Overwritten|Appended <resolved abs path> (<n> lines, <n> chars)`. The description notes relative paths resolve against the current directory

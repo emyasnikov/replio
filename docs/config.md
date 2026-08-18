@@ -47,16 +47,19 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `tools.allow`               | `[]`                   | Name-level allowlist. Empty means no restriction                       |
 | `tools.deny`                | `[]`                   | Name-level deny list (takes precedence over allow)                     |
 | `tool_permission`           | *(see below)*          | Category permission actions                                            |
+| `mcp.servers`               | `[]`                   | MCP client server definitions (see [mcp.md](mcp.md) for the schema)     |
+| `mcp_server.allow_ask`      | `true`                 | When serving MCP, run `ask`-policy tools (deferred to the client) vs refuse them |
 | `plugins`                   | *(bundled)*            | Plugins to load. Empty = all discovered plugins load                   |
 
 ### `tool_permission`
 
 ```json
 {
-  "read": "allow",
-  "list": "allow",
-  "edit": "allow",
   "bash": "ask",
+  "edit": "allow",
+  "list": "allow",
+  "mcp": "ask",
+  "read": "allow",
   "web": "allow"
 }
 ```

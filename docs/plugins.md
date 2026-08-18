@@ -10,7 +10,7 @@ Plugins extend Replio with **tools**, **providers**, **slash commands**, and **s
 | `~/.config/replio/plugins/` | global, all projects | middle |
 | `.replio/plugins/` | local to a project | highest (wins on name collision) |
 
-Three first-party plugins ship with replio and are listed in the default `plugins` config, so they are active out of the box. `replio-core-websearch` provides `web_search` and `fetch_page`. `replio-core-fs` provides `read_file`, `list_dir`, `write_file`, `glob`, and `grep`. `replio-core-exec` provides `run_command`. They behave like any other plugin. Remove their name from `plugins` (or use `/plugins disable`) to stop them loading, but they cannot be uninstalled or updated, since they version with replio. A global or local plugin with the same name overrides the bundled one.
+First-party plugins ship with replio and are listed in the default `plugins` config, so they are active out of the box. `replio-core-websearch` provides `web_search` and `fetch_page`. `replio-core-fs` provides `read_file`, `list_dir`, `write_file`, `glob`, and `grep`. `replio-core-exec` provides `run_command`. `replio-core-mcp` provides the MCP client (`mcp_connect`/`mcp_list`/`mcp_disconnect`) and server (`replio mcp` and `POST /mcp`) - see [mcp.md](mcp.md). They behave like any other plugin. Remove a name from `plugins` (or use `/plugins disable`) to stop it loading, but they cannot be uninstalled or updated, since they version with replio. A global or local plugin with the same name overrides the bundled one.
 
 ## Plugin layout
 

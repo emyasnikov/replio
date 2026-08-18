@@ -40,8 +40,8 @@ Tools are registered with `@registry.register(name, description, parameters)` pl
 | Key | Description |
 |-----|-------------|
 | `refine` | Auto-refine short `query` args via a lightweight model call, gated by the `query_refine` config |
-| `category` | `search` / `read` / `write` / `exec` / `ask` / `todo` / `delegate` - drives the default activity glyph and verb |
-| `permission` | The `tool_permission` key that gates the tool: `read` / `list` / `edit` / `bash` / `web` |
+| `category` | `search` / `read` / `write` / `exec` / `ask` / `todo` / `delegate` / `mcp` - drives the default activity glyph and verb |
+| `permission` | The `tool_permission` key that gates the tool: `read` / `list` / `edit` / `bash` / `web` / `mcp` |
 | `path_arg` | Which parameter is a filesystem path, for worktree scope checks |
 | `key_arg` | Which argument appears in status/confirm labels and glyph activity lines |
 | `glyph` / `verb` | Per-tool activity-line overrides (e.g. `glob` uses `* Glob`, `fetch_page` uses `↓ Fetch`) |
@@ -114,7 +114,7 @@ Tool behavior is controlled by config keys (see [config.md](config.md) for the f
 | `tool_calling` | `true` | Enable OpenAI-compatible function calling |
 | `tools.allow` | `[]` | Name-level allowlist. When non-empty, only these tools are callable |
 | `tools.deny` | `[]` | Name-level deny list (takes precedence over allow) |
-| `tool_permission` | *(see config.md)* | Category actions - `read`/`list`/`edit`/`bash`/`web` -> `allow`/`ask`/`deny` |
+| `tool_permission` | *(see config.md)* | Category actions - `read`/`list`/`edit`/`bash`/`web`/`mcp` -> `allow`/`ask`/`deny` |
 | `tool_status_visible` | `true` | Show dimmed tool status in the REPL |
 | `glyph_lines` | `true` | Typed activity lines for mapped categories, else the `[tool: arg]` oneliner |
 | `tool_analysis` | `false` | Model-generated one-line analysis of each tool result (log-only) |

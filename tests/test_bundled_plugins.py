@@ -6,7 +6,7 @@ from replio.config import Config
 from replio.plugins.manager import PluginManager, PluginError
 from replio.tools.registry import ToolRegistry
 
-BUNDLED = {'replio-core-websearch', 'replio-core-fs', 'replio-core-exec'}
+BUNDLED = {'replio-core-websearch', 'replio-core-fs', 'replio-core-exec', 'replio-core-mcp'}
 
 
 class TestBundledPlugins(unittest.TestCase):
@@ -36,6 +36,7 @@ class TestBundledPlugins(unittest.TestCase):
         self.assertTrue({'web_search', 'fetch_page'} <= tools)
         self.assertTrue({'read_file', 'list_dir', 'write_file', 'glob', 'grep'} <= tools)
         self.assertIn('run_command', tools)
+        self.assertTrue({'mcp_connect', 'mcp_list', 'mcp_disconnect'} <= tools)
 
     def test_search_service_registered(self):
         self.pm.load()
@@ -44,6 +45,13 @@ class TestBundledPlugins(unittest.TestCase):
         self.assertTrue(callable(service.search))
         self.assertTrue(callable(service.display))
         self.assertTrue(callable(service.context))
+
+    def test_mcp_server_service_registered(self):
+        self.pm.load()
+        service = self.pm.service('mcp_server')
+        self.assertIsNotNone(service)
+        self.assertTrue(callable(service.serve_stdio))
+        self.assertTrue(callable(service.handle_http))
 
     def test_bundled_cannot_uninstall(self):
         self.pm.load()
@@ -79,6 +87,7 @@ class TestBundledPlugins(unittest.TestCase):
         self.assertIn('replio-core-websearch', DEFAULT_CONFIG['plugins'])
         self.assertIn('replio-core-fs', DEFAULT_CONFIG['plugins'])
         self.assertIn('replio-core-exec', DEFAULT_CONFIG['plugins'])
+        self.assertIn('replio-core-mcp', DEFAULT_CONFIG['plugins'])
 
 
 if __name__ == '__main__':

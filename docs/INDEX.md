@@ -11,6 +11,7 @@ Detailed reference for Replio. For an overview, features, and quick start, see t
 - [Configuration](config.md) - config schema and keys
 - [Deployment](deploy.md) - Docker, systemd, and launchd configuration
 - [Enterprise fit](enterprise.md) - enterprise assessment, industry fits, extension requirements, reference architecture
+- [MCP](mcp.md) - Model Context Protocol client and server
 - [Plugins](plugins.md) - plugins: bundled, layout, manifest, management
 - [Providers](providers.md) - providers, auto-detection, the chat event contract, adding a provider
 - [Security](security.md) - permission model, threat model, data posture, prompt injection

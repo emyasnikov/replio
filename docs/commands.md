@@ -21,7 +21,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 ## CLI
 
 ```
-usage: replio [-h] [--path PATH] [-v] {run,serve,plugins} ...
+usage: replio [-h] [--path PATH] [-v] {run,serve,mcp,plugins} ...
 ```
 
 Global:
@@ -50,12 +50,20 @@ One-shot headless chat.
 
 ### `replio serve`
 
-HTTP JSON API server. See [api.md](api.md).
+HTTP JSON API server. See [api.md](api.md). Also serves `POST /mcp` (MCP server) when the `replio-core-mcp` plugin is loaded.
 
 | Flag          | Default      | Description                  |
 |---------------|--------------|------------------------------|
 | `--host`      | `127.0.0.1`  | Bind address                 |
 | `--port`      | `8787`       | Bind port                    |
+| `--path`      |              | Project path                 |
+
+### `replio mcp`
+
+Run replio as an MCP server over stdio (newline-delimited JSON-RPC). See [mcp.md](mcp.md). Requires the `replio-core-mcp` plugin.
+
+| Flag          | Default      | Description                  |
+|---------------|--------------|------------------------------|
 | `--path`      |              | Project path                 |
 
 ### `replio plugins`

@@ -34,13 +34,16 @@ DEFAULT_CONFIG = {
     'tools.allow': [],
     'tools.deny': [],
     'tool_permission': {
-        'read': 'allow',
-        'list': 'allow',
-        'edit': 'allow',
         'bash': 'ask',
+        'edit': 'allow',
+        'list': 'allow',
+        'mcp': 'ask',
+        'read': 'allow',
         'web': 'allow',
     },
-    'plugins': ['replio-core-websearch', 'replio-core-fs', 'replio-core-exec'],
+    'mcp.servers': [],
+    'mcp_server.allow_ask': True,
+    'plugins': ['replio-core-websearch', 'replio-core-fs', 'replio-core-exec', 'replio-core-mcp'],
 }
 
 

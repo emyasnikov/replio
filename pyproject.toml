@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "replio"
-version = "0.14.0"
+version = "0.15.0"
 description = "A lightweight agentic tooling core with API, CLI and REPL interfaces"
 requires-python = ">=3.10"
 authors = [{name = "Contributors"}]

@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.15.0 - 2026-08-18
+
+- MCP (Model Context Protocol) support via the bundled `replio-core-mcp` plugin (stdlib-only - JSON-RPC 2.0 over newline-delimited stdio and SSE over urllib, no third-party `mcp` library)
+  - MCP client - connect to external servers over stdio or streamable HTTP and import their tools into the ToolRegistry, named `<prefix>.<tool>` and registered under the new `mcp` permission category (default `ask`, so each remote call confirms in the REPL). Management tools `mcp_connect`/`mcp_list`/`mcp_disconnect` and a `/mcp` command wrap the same registry dispatch. `mcp.servers` config defines server name, transport, command/url, prefix, headers, and timeout
+  - Dual-era negotiation - the client probes `server/discover` (modern 2026-07-28 per-request `_meta` protocol) and falls back to the legacy `initialize` handshake (2025-11-25 and earlier), accepting a mutually supported version on unsupported-version errors
+  - MCP server - exposes Replio's policy-filtered tools and its sessions as resources (`replio://session/<name>`) to external agents, over stdio (`replio mcp`) and HTTP (`POST /mcp` on `replio serve`). The server is dual-era too, serving `server/discover`/modern requests or the legacy `initialize` handshake depending on how the client opens. `ask`-policy tools run by default when serving (`mcp_server.allow_ask`, deferred to the external client as the human-in-the-loop)
+  - Core stays MCP-agnostic - `replio mcp` and the `/mcp` HTTP route delegate to the plugin's `mcp_server` service (same generic `register_services` pattern as the web-search service), erroring cleanly if the plugin is not loaded
+  - Tests - `tests/test_mcp.py` (27 tests): JSON-RPC framing, stdio/HTTP transports over real subprocesses and a loopback server, modern/legacy negotiation, tool import + prefixing, server dispatch (initialize/discover/tools/call/resources), `_meta` validation, and policy integration
+  - Docs - `docs/mcp.md` (config schema, client + server usage, interop note and security), bundled-plugin and config/tools/testing references updated
+
 ## v0.14.0 - 2026-08-17
 
 - Alias layer for tools and params - tool names can register `aliases` (`read`/`view` > read_file, `ls` > list_dir, `bash`/`exec` > run_command) and `param_aliases` (`file` > path, `query` > pattern, `cmd` > command, `q` > query, `cursor` > offset). The registry resolves aliases to the canonical tool and normalizes args, so the advertised schema stays in the project's own vocabulary while model-dialect tool and argument names are absorbed. `/tool`, `/help`, tool policy, confirm prompts, and glyph activity lines work through aliases unchanged

@@ -35,6 +35,12 @@ def _add_serve_parser(sub):
                    help='Project path (default: current directory)')
 
 
+def _add_mcp_parser(sub):
+    p = sub.add_parser('mcp', help='Run replio as an MCP server over stdio')
+    p.add_argument('--path', default=argparse.SUPPRESS,
+                   help='Project path (default: current directory)')
+
+
 def _add_plugins_parser(sub):
     p = sub.add_parser('plugins', help='Manage plugins (list, install, update, uninstall)')
     p.add_argument('--path', default=argparse.SUPPRESS,
@@ -67,6 +73,7 @@ def main(argv=None):
     sub = parser.add_subparsers(dest='command')
     _add_run_parser(sub)
     _add_serve_parser(sub)
+    _add_mcp_parser(sub)
     _add_plugins_parser(sub)
     args = parser.parse_args(argv)
 
@@ -76,9 +83,9 @@ def main(argv=None):
     if args.command == 'serve':
         from .cli import cmd_serve
         return cmd_serve(args)
-    if args.command == 'plugins':
-        from .cli import cmd_plugins
-        return cmd_plugins(args)
+    if args.command == 'mcp':
+        from .cli import cmd_mcp
+        return cmd_mcp(args)
 
     config = Config(path=args.path)
     chat = ChatLoop(config)

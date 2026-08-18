@@ -38,6 +38,7 @@ class TestToolRegistry(unittest.TestCase):
             'run_command', 'bash', 'exec',
             'read_file', 'read', 'view', 'list_dir', 'ls', 'write_file',
             'glob', 'grep',
+            'mcp_connect', 'mcp_list', 'mcp_disconnect',
             'web_search', 'fetch_page', 'open',
         ])
 

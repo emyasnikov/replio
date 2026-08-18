@@ -9,9 +9,10 @@ from . import get_version
 class HeadlessServer(ThreadingHTTPServer):
     daemon_threads = True
 
-    def __init__(self, address, handler, engine=None):
+    def __init__(self, address, handler, engine=None, mcp_service=None):
         super().__init__(address, handler)
         self.engine = engine
+        self.mcp_service = mcp_service
         self.lock = threading.Lock()
 
 
@@ -24,7 +25,33 @@ class ChatHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _send_raw(self, code, headers: dict, body: bytes):
+        self.send_response(code)
+        for key, value in headers.items():
+            self.send_header(key, value)
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _mcp_request(self):
+        server = self.server
+        service = server.mcp_service
+        if service is None:
+            self._send(404, {'error': 'not found'})
+            return
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            raw = self.rfile.read(length) if length else b''
+        except (ValueError, OSError):
+            self._send(400, {'error': 'invalid request'})
+            return
+        code, headers, body = service.handle_http(server.engine, raw)
+        self._send_raw(code, headers, body)
+
     def do_POST(self):
+        if self.path == '/mcp':
+            self._mcp_request()
+            return
         if self.path != '/chat':
             self._send(404, {'error': 'not found'})
             return

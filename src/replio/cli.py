@@ -36,15 +36,34 @@ def cmd_serve(args) -> int:
     ui = HeadlessUI(auto='deny', verbose=False, stream=False,
                     show_thinking=config.get('show_thinking', True))
     engine = Engine(config, ui=ui)
-    server = HeadlessServer((args.host, args.port), ChatHandler, engine=engine)
+    pm = getattr(engine, '_plugin_manager', None)
+    mcp_service = pm.service('mcp_server') if pm is not None else None
+    server = HeadlessServer((args.host, args.port), ChatHandler,
+                            engine=engine, mcp_service=mcp_service)
     print(f'replio serve - http://{args.host}:{args.port} '
-          f'(POST /chat, GET /sessions, GET /health, GET /version)', file=sys.stderr)
+          f'(POST /chat, GET /sessions, GET /health, GET /version'
+          f'{", POST /mcp" if mcp_service else ""})', file=sys.stderr)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
         server.server_close()
+    return 0
+
+
+def cmd_mcp(args) -> int:
+    config = Config(path=args.path)
+    ui = HeadlessUI(auto='deny', verbose=False, stream=False,
+                    show_thinking=config.get('show_thinking', True))
+    engine = Engine(config, ui=ui)
+    pm = getattr(engine, '_plugin_manager', None)
+    service = pm.service('mcp_server') if pm is not None else None
+    if service is None:
+        print('MCP server unavailable - replio-core-mcp plugin not loaded',
+              file=sys.stderr)
+        return 1
+    service.serve_stdio(engine)
     return 0
 
 
