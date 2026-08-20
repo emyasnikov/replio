@@ -85,6 +85,33 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(result.thinking, 'reasoning')
         self.assertEqual(result.content, 'Answer')
 
+    def test_reasoning_and_thinking_persisted_to_session(self):
+        self.engine.config.set('reasoning', 'high')
+        self.engine.provider.chat.return_value = [
+            {'type': 'thinking', 'content': 'secret reasoning'},
+            {'type': 'token', 'content': 'Answer'},
+            {'type': 'done', 'reason': 'stop'},
+        ]
+        result = self.engine.chat('q')
+        assistant = [m for m in self.engine.current_session.messages
+                     if m['role'] == 'assistant'][0]
+        self.assertEqual(assistant['thinking'], 'secret reasoning')
+        self.assertEqual(assistant['reasoning'], 'high')
+
+    def test_reasoning_persisted_when_thinking_hidden_from_display(self):
+        self.engine.config.set('show_thinking', False)
+        self.engine.config.set('reasoning', 'auto')
+        self.engine.provider.chat.return_value = [
+            {'type': 'thinking', 'content': 'still logged'},
+            {'type': 'token', 'content': 'Answer'},
+            {'type': 'done', 'reason': 'stop'},
+        ]
+        self.engine.chat('q')
+        assistant = [m for m in self.engine.current_session.messages
+                     if m['role'] == 'assistant'][0]
+        self.assertEqual(assistant['thinking'], 'still logged')
+        self.assertEqual(assistant['reasoning'], 'auto')
+
     def test_error_status_and_errors(self):
         self.engine.provider.chat.return_value = [
             {'type': 'error', 'code': 401, 'message': 'Unauthorized'},
