@@ -1,4 +1,10 @@
 import sys
+import threading
+import time
+
+
+SPINNER_FRAMES = ('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
+SPINNER_INTERVAL = 0.08
 
 
 def render_markdown(token: str, state: dict) -> list[tuple[str, str]]:
@@ -68,6 +74,10 @@ class ReplUI:
         self.first_content = True
         self.content_newline = True
         self.md_state = {'code_block': False, 'inline_code': False, 'bold': False}
+        self._spinner_thread: threading.Thread | None = None
+        self._spinner_stop = threading.Event()
+        self._spinner_lock = threading.Lock()
+        self._spinner_frame = 0
 
     def _prefix(self):
         if self.first_content:
@@ -99,9 +109,41 @@ class ReplUI:
 
     def thinking_begin(self):
         if not self._loop.config.get('show_thinking', True):
+            self._start_spinner()
             return
         self._emit('- Thinking', '\033[90m')
         self.content_newline = True
+
+    def _spinner_run(self):
+        while not self._spinner_stop.is_set():
+            frame = SPINNER_FRAMES[self._spinner_frame % len(SPINNER_FRAMES)]
+            self._spinner_frame += 1
+            with self._spinner_lock:
+                if self._spinner_stop.is_set():
+                    break
+                sys.stdout.write(f'\r\033[K{frame} Thinking')
+                sys.stdout.flush()
+            time.sleep(SPINNER_INTERVAL)
+
+    def _start_spinner(self):
+        if self._spinner_thread is not None and self._spinner_thread.is_alive():
+            return
+        self._spinner_stop.clear()
+        self._spinner_frame = 0
+        self._spinner_thread = threading.Thread(
+            target=self._spinner_run, name='replio-spinner', daemon=True)
+        self._spinner_thread.start()
+
+    def _stop_spinner(self):
+        if self._spinner_thread is None or not self._spinner_thread.is_alive():
+            self._spinner_thread = None
+            return
+        self._spinner_stop.set()
+        self._spinner_thread.join(timeout=0.5)
+        self._spinner_thread = None
+        with self._spinner_lock:
+            sys.stdout.write('\r\033[K')
+            sys.stdout.flush()
 
     def thinking(self, text):
         if not self._loop.config.get('show_thinking', True):
@@ -110,6 +152,7 @@ class ReplUI:
         self.content_newline = text.endswith('\n')
 
     def thinking_end(self, duration):
+        self._stop_spinner()
         if self._loop.config.get('show_thinking', True):
             sys.stdout.write('\n')
             sys.stdout.flush()

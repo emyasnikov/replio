@@ -61,6 +61,48 @@ class TestGlyphActivityLines(unittest.TestCase):
         self.assertIn('[xyz_case: xyz_case]', value)
 
 
+class TestThinkingSpinner(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+
+    def tearDown(self):
+        self.chat._ui._stop_spinner()
+        self.chat._tmp.cleanup()
+
+    def test_spinner_starts_when_thinking_hidden(self):
+        self.chat.config.set('show_thinking', False)
+        self.chat._ui.thinking_begin()
+        self.assertIsNotNone(self.chat._ui._spinner_thread)
+        self.assertTrue(self.chat._ui._spinner_thread.is_alive())
+
+    def test_no_spinner_when_thinking_visible(self):
+        self.chat.config.set('show_thinking', True)
+        self.chat._ui.thinking_begin()
+        self.assertIsNone(self.chat._ui._spinner_thread)
+
+    def test_thinking_end_stops_spinner_and_prints_thought(self):
+        self.chat.config.set('show_thinking', False)
+        self.chat._ui.thinking_begin()
+        thread = self.chat._ui._spinner_thread
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat._ui.thinking_end(2.5)
+        self.assertFalse(thread.is_alive())
+        self.assertIsNone(self.chat._ui._spinner_thread)
+        value = out.getvalue()
+        self.assertIn('\r\033[K', value)
+        self.assertIn('+ Thought 2.5s', value)
+
+    def test_thinking_end_without_spinner_is_clean(self):
+        self.chat.config.set('show_thinking', False)
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat._ui.thinking_end(1.0)
+        self.assertIsNone(self.chat._ui._spinner_thread)
+        self.assertIn('+ Thought 1.0s', out.getvalue())
+
+
 class TestEphemeralUI(unittest.TestCase):
 
     def test_activity_lines_not_persisted_to_session(self):

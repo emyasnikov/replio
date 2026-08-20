@@ -2,6 +2,7 @@
 
 ## v0.16.0
 
+- Thinking spinner - when `show_thinking: false` the REPL now shows an animated `⠋⠙⠹...` spinner (stdlib `threading` daemon, `\r\033[K` cleared) in place of the silent wait, then falls back to the `+ Thought N.Ns` summary. No new config key - folded into `show_thinking`. Interactive `ReplUI` only, headless stderr output unchanged
 - Activity lines and tool status are ephemeral UI - emitted through the UI sink only and never persisted to session files (tool calls/results are recorded there). Regression test locks this in
 
 ## v0.15.0 - 2026-08-18
