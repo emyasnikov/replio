@@ -16,5 +16,5 @@ Detailed reference for Replio. For an overview, features, and quick start, see t
 - [Sessions](session.md) - session log format, message schema, compaction, persistence
 - [Testing](testing.md) - running the mock test suite, per-file coverage map
 - [Tools](tools.md) - tool registry, bundled tools, tool policy, registration metadata
-- [Use cases](use-cases/) - fit and adoption guides: enterprise, personal, small business, developer, research, education, home lab
+- [Use cases](use-cases/) - fit and adoption guides for enterprise, personal etc.
 - [Versus](vs/) - Replio vs. OpenClaw, Hermes and broader landscape
