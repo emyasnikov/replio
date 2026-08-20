@@ -63,6 +63,17 @@ The loop runs one SSE stream per turn. When the model only produces content, tha
 
 `max_tokens` defaults to `0` = unset (omitted from the payload, so the provider's own default applies). A positive value caps output. Hitting it prints a warning and logs a session `errors` entry.
 
+## Requesting reasoning
+
+The `reasoning` config (default `"auto"`) tells the model reasoning is desired and controls its token budget. It is orthogonal to `show_thinking` (which only controls display). Values: `false`/`"off"` = do not request, `true`/`"on"`/`"auto"` = request with the provider default, `"low"`/`"medium"`/`"high"` = explicit budget hint. The provider maps it to its own parameter:
+
+| Provider | off / false | low / medium / high | on / auto |
+|----------|-------------|----------------------|-----------|
+| `openai` | no `reasoning_effort` | `reasoning_effort = "low"\|"medium"\|"high"` | `reasoning_effort = "medium"` |
+| `anthropic` | `thinking: {type: "disabled"}` | `thinking: {type: "enabled", budget_tokens: 1024\|2048\|4096}` | `thinking: {type: "enabled", budget_tokens: 2048}` |
+| `ollama` (Qwen) | `enable_thinking: false` | `enable_thinking: true` (`chat_template_kwargs.thinking: true`) | `enable_thinking: true` |
+| other / `openai-compatible` | nothing | `reasoning_effort` pass-through | nothing (provider default) |
+
 ## Adding a provider
 
 1. Create `src/replio/providers/<name>.py`.
@@ -74,4 +85,4 @@ Plugins can also register providers via their `register_providers(providers)` ho
 
 ## Streaming contract
 
-The underlying SSE utility (`src/replio/utils/http.py`) reads the stream line by line with byte-buffered decoding, so multi-byte UTF-8 split across read chunks is handled correctly. Keep-alive and mid-stream errors surface as `error` events; a stream that ends without a completion event and with no streamed content is re-requested up to `1 + stream_retries` times (default 3 total attempts) with `stream_retry_delay` seconds between attempts before the "Stream ended before a completion event" error is reported. When tool calls have already run in the turn, the warning notes that the tool results are saved and the answer can be retried with a follow-up message.
+The underlying SSE utility (`src/replio/utils/http.py`) reads the stream line by line with byte-buffered decoding, so multi-byte UTF-8 split across read chunks is handled correctly. Keep-alive and mid-stream errors surface as `error` events. A stream that ends without a completion event and with no streamed content is re-requested up to `1 + stream_retries` times (default 3 total attempts) with `stream_retry_delay` seconds between attempts before the "Stream ended before a completion event" error is reported. When tool calls have already run in the turn, the warning notes that the tool results are saved and the answer can be retried with a follow-up message.

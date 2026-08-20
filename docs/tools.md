@@ -79,7 +79,7 @@ def pdf2text(path):
 
 ## Result size and large files
 
-Tool results are sent to the model verbatim; nothing is truncated unless `tool_max_result_chars` is set (default `0` = unlimited). Setting it caps every tool result at N characters with a trailing `... (truncated)` marker.
+Tool results are sent to the model verbatim. Nothing is truncated unless `tool_max_result_chars` is set (default `0` = unlimited). Setting it caps every tool result at N characters with a trailing `... (truncated)` marker.
 
 `read_file` helps the model page through large files without hitting a cap:
 

@@ -30,7 +30,7 @@ The model only sees tools whose schema passes policy filtering (`tools.allow` / 
 
 ## Audit trail
 
-Sessions are complete, append-only logs: every message, tool call with its arguments and result, reasoning, and error is recorded with timestamps. Compaction only trims the provider context, never the log, so any action can be reconstructed later. See [session.md](session.md). For enterprise deployments this is the base for compliance and forensics, with central aggregation and tamper-evidence as additive hardening (see [enterprise.md](enterprise.md)).
+Sessions are complete, append-only logs: every message, tool call with its arguments and result, reasoning, and error is recorded with timestamps. Compaction only trims the provider context, never the log, so any action can be reconstructed later. See [session.md](session.md). For enterprise deployments this is the base for compliance and forensics, with central aggregation and tamper-evidence as additive hardening (see [use-cases/enterprise.md](use-cases/enterprise.md)).
 
 ## Data posture
 

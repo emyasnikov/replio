@@ -103,12 +103,12 @@ Replio/
 - Tools registered via `@tool_registry.register()` decorator (OpenAI function calling format)
 
 ### Doc Conventions
-- `TODO.md` has three zones. Ideas are plain bullets at the very top (no header, no checkbox - they evolve over time), followed by `## Open` (defined `[ ]` tasks) and `## Done` (`[x]` items, separated by `---`). Within `## Open` and `## Done`, items are sorted newest-first so new tasks are added at the top of their zone without reorganizing, nested sub-bullets are preserved (e.g. machine tools, tool policy). Completed items stay in `## Done` and are never moved to an archive. `## Done` entries are short one-liners - detailed change descriptions live in `CHANGELOG.md` under the matching version.
+- `TODO.md` has three zones. Ideas are plain bullets at the very top (no header, no checkbox - they evolve over time), followed by `## Open` (defined `[ ]` tasks) and `## Done` (`[x]` items, separated by `---`). Within `## Open` and `## Done`, items are sorted newest-first so new tasks are added at the top of their zone without reorganizing, nested sub-bullets are preserved (e.g. machine tools, tool policy). Completed items stay in `## Done` and are never moved to an archive. `## Done` entries are short one-liners - detailed change descriptions live in `CHANGELOG.md` under the matching version. As a soft rule, keep each `## Done` entry to a single line of at most 100 characters (shorter is better - trim detail rather than wrap or exceed).
 - `CHANGELOG.md` is grouped by **versions**, newest at the top - new `## vX.Y.Z - YYYY-MM-DD` sections go above previous ones, so the latest changes are readable with `head`. Entries under each version form a **single flat bullet list, newest first** (no `### Added`/`### Changed`/`### Removed` grouping).
 - After completing a planned task: mark it `[x]` in `TODO.md` and add entries under the current version section at the top of `CHANGELOG.md` (start a new version section first if none exists).
 - Keep both files in sync with actual project state.
 - Keep `version` in `pyproject.toml` in sync with the current version in `CHANGELOG.md` - bump it whenever a release section is started or finalized.
-- No em-dashes (`—`) or semicolons (`;`) joining sentence clauses in docs - use hyphens (`-`) for dashes and split with periods or commas instead.
+- Use only ASCII punctuation and glyphs in docs. Avoid typographic Unicode characters: em-dashes (`—`), en-dashes (`–`), smart/curly quotes (`‘ ’ “ ”`), the single-character ellipsis (`…`), non-breaking spaces, and similar substitutes. Use plain hyphens (`-`) or ASCII three dots (`...`) instead, and split clauses with periods or commas rather than semicolons (`;`). Inline code and quoted strings may keep non-ASCII only when they reproduce literal runtime output (e.g. the `…` truncation marker).
 
 ## Extension Points
 

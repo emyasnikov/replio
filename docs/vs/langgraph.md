@@ -16,7 +16,7 @@ This document compares **Replio** (github.com/emyasnikov/replio) and **LangGraph
 | What it is | An application - a terminal REPL/CLI/HTTP agent core | A library - a graph-based orchestration runtime you embed in your own app |
 | Core model | Single streaming agent loop per turn | `StateGraph` of nodes/edges mixing deterministic and agentic steps |
 | Entry point | `replio` (REPL), `replio run`, `replio serve` | You write code - `graph.invoke(...)` from your application |
-| Dependencies | None beyond stdlib | External deps (LangChain, checkpointer DBs); inspired by Pregel, Apache Beam, and NetworkX |
+| Dependencies | None beyond stdlib | External deps (LangChain, checkpointer DBs), and inspired by Pregel, Apache Beam, and NetworkX |
 | Deployment | Local process, or `replio serve` HTTP API | Embedded in your service, or deployed via LangGraph Platform/LangSmith |
 
 Replio gives you a working agent out of the box. LangGraph gives you fine-grained control to build bespoke agents - you design the graph, choose persistence, and wire in models and tools yourself.
@@ -25,10 +25,10 @@ Replio gives you a working agent out of the box. LangGraph gives you fine-graine
 
 | Aspect | Replio | LangGraph |
 |--------|--------|-----------|
-| Built-in tools | Web search, fetch page, file I/O, shell - via bundled plugin tools | None built-in; you connect models and tools yourself |
+| Built-in tools | Web search, fetch page, file I/O, shell - via bundled plugin tools | None built-in, you connect models and tools yourself |
 | Tool organization | Plugin registry | LangChain component integrations (models, tools, retrievers) |
-| Function-calling scheme | OpenAI-compatible JSON schema | Model-independent; works with any tool-calling model |
-| Refinement/planning | Generic query refinement via tool metadata | Prebuilt agent loops in higher-level LangChain; graph gives full control |
+| Function-calling scheme | OpenAI-compatible JSON schema | Model-independent, works with any tool-calling model |
+| Refinement/planning | Generic query refinement via tool metadata | Prebuilt agent loops in higher-level LangChain, or the graph gives full control |
 
 ## Persistence, Durability & Memory
 

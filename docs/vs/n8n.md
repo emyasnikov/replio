@@ -1,6 +1,6 @@
 # Replio vs. n8n
 
-This document compares **Replio** (github.com/emyasnikov/replio) and **n8n** (github.com/n8n-io/n8n). n8n is a fair-code workflow automation platform with native AI capabilities; Replio is a minimal terminal agent core. Beyond both being agent-capable, they target very different users - Replio is a code-first developer tool and n8n is a broad integration/automation platform with a visual canvas.
+This document compares **Replio** (github.com/emyasnikov/replio) and **n8n** (github.com/n8n-io/n8n). n8n is a fair-code workflow automation platform with native AI capabilities, while Replio is a minimal terminal agent core. Beyond both being agent-capable, they target very different users - Replio is a code-first developer tool and n8n is a broad integration/automation platform with a visual canvas.
 
 ## Project Overview
 
@@ -18,7 +18,7 @@ n8n is fair-code, not MIT - the source is available and self-hostable, but a sep
 | What it is | A terminal agent application | A self-hosted/cloud automation platform with a visual editor |
 | Core model | Single streaming agent loop per turn | Node-based workflows connecting triggers, apps, and AI agents |
 | Entry point | `replio` (REPL), `replio run`, `replio serve` | Web editor on `localhost:5678`, `npx n8n`, or Docker |
-| Building style | Code and slash commands | Visual canvas; custom code in JavaScript, Python, or npm packages |
+| Building style | Code and slash commands | Visual canvas, plus custom code in JavaScript, Python, or npm packages |
 | Dependencies | None beyond stdlib | Node.js, large platform with many integrations |
 
 ## Capabilities
@@ -46,7 +46,7 @@ n8n is fair-code, not MIT - the source is available and self-hostable, but a sep
 |---------|--------|-----|
 | Deployment | Local process or `serve` | Self-host (npm/Docker) or n8n Cloud |
 | Enterprise features | None | Role-based access control, audit trails, enterprise edition |
-| Default isolation | Runs with user permissions; path-scoped prompts | Runs with configured permissions; human-approval steps in workflows |
+| Default isolation | Runs with user permissions, path-scoped prompts | Runs with configured permissions, human-approval steps in workflows |
 
 ## Community & Ecosystem
 

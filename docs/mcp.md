@@ -5,7 +5,7 @@ Replio speaks MCP in both directions through the bundled `replio-core-mcp` plugi
 - **Client** - connect to external MCP servers (stdio or HTTP), import their tools into the `ToolRegistry`, and call them like any other Replio tool. Tool policy, `/tool`, `/help`, glyph activity lines, query refinement and session logging all apply.
 - **Server** - expose Replio's registered tools and sessions as an MCP server to external agents (Claude, opencode, and other MCP clients) over stdio (`replio mcp`) and HTTP (`POST /mcp` on `replio serve`).
 
-Both eras are supported and negotiated per connection: the modern stateless revision (`2026-07-28`, per-request `_meta`) and the legacy `initialize`-handshake revisions (`2025-11-25` and earlier). The client probes `server/discover` and falls back to `initialize`; the server serves either based on how the client opens.
+Both eras are supported and negotiated per connection: the modern stateless revision (`2026-07-28`, per-request `_meta`) and the legacy `initialize`-handshake revisions (`2025-11-25` and earlier). The client probes `server/discover` and falls back to `initialize`. The server serves either based on how the client opens.
 
 ## Client
 
@@ -61,14 +61,14 @@ Imported tools are named `<prefix>.<tool>` (e.g. `github.list_issues`). They inh
 ### Security
 
 - Tool descriptions and schemas come from the server and must be treated as untrusted metadata.
-- stdio spawns arbitrary commands from your config; only configure servers you trust.
-- HTTP servers are contacted over the network; credentials in `headers` are sent as-is.
+- stdio spawns arbitrary commands from your config. Only configure servers you trust.
+- HTTP servers are contacted over the network. Credentials in `headers` are sent as-is.
 - Every imported tool call routes through `ToolPolicy` (`mcp: ask` by default), giving a human confirmation in the REPL before the remote call runs.
 - Tool results are logged to the session like any tool result.
 
 ## Server
 
-The server exposes Replio's currently registered tools (policy-filtered) and its saved sessions as resources, without mutating the active session. Tool execution follows `ToolPolicy`; tools whose action is `ask` are run directly (the external MCP client is the human-in-the-loop and shows its own confirmations) unless `mcp_server.allow_ask` is `false`, in which case they are refused.
+The server exposes Replio's currently registered tools (policy-filtered) and its saved sessions as resources, without mutating the active session. Tool execution follows `ToolPolicy`. Tools whose action is `ask` are run directly (the external MCP client is the human-in-the-loop and shows its own confirmations) unless `mcp_server.allow_ask` is `false`, in which case they are refused.
 
 ### stdio - `replio mcp`
 

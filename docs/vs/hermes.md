@@ -17,7 +17,7 @@ This document compares two open-source AI agent projects: **Replio** (github.com
 | Front-ends | Terminal REPL, `replio run` (CLI), `replio serve` (HTTP JSON API) | CLI, TUI, desktop app, web dashboard, and messaging bots |
 | Execution backends | Local only | Seven terminal backends - local, Docker, SSH, Singularity, Modal, Daytona, Vercel Sandbox (serverless) |
 | Dependencies | None beyond stdlib | uv, Python 3.11, Node.js, ripgrep, ffmpeg |
-| Deployment | Python package via `pipx`, no daemon | Installer for Linux/macOS/WSL/Windows/Termux; runs on a `$5` VPS, GPU cluster, or serverless infra |
+| Deployment | Python package via `pipx`, no daemon | Installer for Linux/macOS/WSL/Windows/Termux, and runs on a `$5` VPS, GPU cluster, or serverless infra |
 
 ## Learning, Memory & Persistence
 
@@ -25,8 +25,8 @@ This document compares two open-source AI agent projects: **Replio** (github.com
 |---------|--------|--------|
 | Session persistence | Append-only JSON session logs with compaction | SQLite `state.db` sessions with FTS5 full-text search |
 | Learning loop | None | Creates skills from experience and improves them during use |
-| Memory | Per-session context only | Persistent `MEMORY.md`/`USER.md` injected into the system prompt, managed by the agent; external memory providers (Honcho, Mem0, and more) |
-| Recall | None | `session_search` across all past conversations; `/journey` learning timeline |
+| Memory | Per-session context only | Persistent `MEMORY.md`/`USER.md` injected into the system prompt, managed by the agent, plus external memory providers (Honcho, Mem0, and more) |
+| Recall | None | `session_search` across all past conversations and a `/journey` learning timeline |
 | Model of the user | None | Builds a deepening user profile across sessions |
 
 This is Hermes's defining differentiator - a closed learning loop that persists knowledge, skills, and a user model across sessions. Replio is a stateless core that logs everything but learns nothing.
@@ -53,14 +53,14 @@ This is Hermes's defining differentiator - a closed learning loop that persists 
 | Aspect | Replio | Hermes |
 |--------|--------|--------|
 | LLM providers | Ollama (default), OpenAI, Groq, Anthropic, any OpenAI-compatible endpoint | Nous Portal (300+ models), OpenRouter, OpenAI, Anthropic, and many more |
-| Model management | Single model, `reasoning` effort toggle | Main model plus 11 auxiliary slots (compression, vision, approval, and more); `hermes model` switch with no lock-in |
+| Model management | Single model, `reasoning` effort toggle | Main model plus 11 auxiliary slots (compression, vision, approval, and more), with a `hermes model` switch and no lock-in |
 | Local models | Via Ollama | Via configured local endpoints |
 
 ## Security & Isolation
 
 | Feature | Replio | Hermes |
 |---------|--------|--------|
-| Default isolation | Runs with user permissions | Runs with user permissions; strict approval model |
+| Default isolation | Runs with user permissions | Runs with user permissions, with a strict approval model |
 | Command approval | Path-scoped `allow`/`ask`/`deny` prompts | Dangerous-command approval (`smart`/`manual`/`off`), plus a hardline blocklist that even YOLO mode cannot bypass |
 | Write safety | None beyond prompts | File-write denylist and optional `HERMES_WRITE_SAFE_ROOT` sandbox |
 | Sandboxing | None | Hardened container isolation (Docker/Singularity/Modal/SSH), SSRF protection, MCP credential filtering, prompt-injection scanning, Tirith pre-exec scanning |

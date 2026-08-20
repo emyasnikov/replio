@@ -18,7 +18,7 @@ Claude Code is a commercial product. It is not fully open source - the repositor
 | Core runtime | Single Python process with a streaming agent loop | Node.js-based agent that shares one engine across surfaces |
 | Front-ends | Terminal REPL, `replio run` (CLI), `replio serve` (HTTP JSON API) | Terminal CLI, VS Code, JetBrains, desktop app, web, mobile |
 | Execution | Local tools invoked over the OpenAI-compatible loop | Reads the codebase, edits files, runs commands, uses Git (staging, branches, PRs) |
-| Dependencies | None beyond stdlib | Node.js runtime; requires Claude subscription or API account |
+| Dependencies | None beyond stdlib | Node.js runtime, requires Claude subscription or API account |
 
 ## Tooling & Function Calling
 
@@ -42,22 +42,22 @@ Claude Code is a commercial product. It is not fully open source - the repositor
 
 | Aspect | Replio | Claude Code |
 |--------|--------|-------------|
-| LLM providers | Ollama (default), OpenAI, Groq, Anthropic, any OpenAI-compatible endpoint | Primarily Claude via subscription/API; third-party providers supported on terminal and VS Code |
+| LLM providers | Ollama (default), OpenAI, Groq, Anthropic, any OpenAI-compatible endpoint | Primarily Claude via subscription/API, with third-party providers supported on terminal and VS Code |
 | Local models | Via Ollama | Third-party/OpenAI-compatible providers on some surfaces |
 
 ## Persistence & Memory
 
 | Feature | Replio | Claude Code |
 |---------|--------|-------------|
-| Session persistence | Append-only JSON session logs with compaction | Session history across surfaces; `CLAUDE.md` project instructions |
-| Memory | None (per-session context) | Auto memory that saves learnings across sessions; skills |
+| Session persistence | Append-only JSON session logs with compaction | Session history across surfaces, plus `CLAUDE.md` project instructions |
+| Memory | None (per-session context) | Auto memory that saves learnings across sessions, plus skills |
 
 ## Security & Isolation
 
 | Feature | Replio | Claude Code |
 |---------|--------|-------------|
-| Default isolation | Runs with user permissions | Runs with user permissions; permission modes gate edits and shell commands |
-| Permission model | Path-scoped `allow`/`ask`/`deny` prompts | Permission controls for file edits and command execution; hooks for lifecycle safety |
+| Default isolation | Runs with user permissions | Runs with user permissions, with permission modes gating edits and shell commands |
+| Permission model | Path-scoped `allow`/`ask`/`deny` prompts | Permission controls for file edits and command execution, plus hooks for lifecycle safety |
 
 Both rely on permission prompts rather than a sandbox by default.
 
