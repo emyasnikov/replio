@@ -146,5 +146,53 @@ class TestProviderSwitching(unittest.TestCase):
         chat._tmp.cleanup()
 
 
+class TestReasoningPayload(unittest.TestCase):
+
+    def _payload(self, provider, reasoning):
+        p = provider(reasoning=reasoning)
+        return p._payload([{'role': 'user', 'content': 'hi'}])
+
+    def test_base_off_sends_nothing(self):
+        payload = self._payload(OpenAICompatibleProvider, 'off')
+        self.assertNotIn('reasoning_effort', payload)
+
+    def test_base_auto_sends_nothing(self):
+        payload = self._payload(OpenAICompatibleProvider, 'auto')
+        self.assertNotIn('reasoning_effort', payload)
+
+    def test_base_passes_effort_through(self):
+        payload = self._payload(OpenAICompatibleProvider, 'high')
+        self.assertEqual(payload['reasoning_effort'], 'high')
+
+    def test_openai_effort(self):
+        self.assertEqual(self._payload(OpenAIProvider, 'low')['reasoning_effort'], 'low')
+        self.assertEqual(self._payload(OpenAIProvider, 'medium')['reasoning_effort'], 'medium')
+        self.assertEqual(self._payload(OpenAIProvider, 'high')['reasoning_effort'], 'high')
+
+    def test_openai_auto_maps_to_medium(self):
+        self.assertEqual(self._payload(OpenAIProvider, 'auto')['reasoning_effort'], 'medium')
+
+    def test_openai_off_sends_nothing(self):
+        self.assertNotIn('reasoning_effort', self._payload(OpenAIProvider, 'off'))
+
+    def test_anthropic_off_disables_thinking(self):
+        payload = self._payload(AnthropicProvider, 'off')
+        self.assertEqual(payload['thinking'], {'type': 'disabled'})
+
+    def test_anthropic_effort_budget(self):
+        self.assertEqual(self._payload(AnthropicProvider, 'low')['thinking']['budget_tokens'], 1024)
+        self.assertEqual(self._payload(AnthropicProvider, 'medium')['thinking']['budget_tokens'], 2048)
+        self.assertEqual(self._payload(AnthropicProvider, 'high')['thinking']['budget_tokens'], 4096)
+
+    def test_anthropic_auto_budget(self):
+        self.assertEqual(self._payload(AnthropicProvider, 'auto')['thinking']['budget_tokens'], 2048)
+
+    def test_ollama_enable_thinking_on(self):
+        self.assertTrue(self._payload(OllamaProvider, 'auto')['enable_thinking'])
+
+    def test_ollama_off_disables_thinking(self):
+        self.assertFalse(self._payload(OllamaProvider, 'off')['enable_thinking'])
+
+
 if __name__ == '__main__':
     unittest.main()

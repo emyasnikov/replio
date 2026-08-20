@@ -2,6 +2,7 @@
 
 ## v0.16.0
 
+- Thinking/reasoning toggle - two orthogonal knobs: `show_thinking` (default `false`) controls display (stream reasoning dimmed when on, else an animated spinner + `+ Thought N.Ns` summary), and `reasoning` (default `"auto"`) requests reasoning from the model and controls its token budget. `reasoning` maps `false`/`"off"` (no request), `true`/`"on"`/`"auto"` (provider default), and `"low"`/`"medium"`/`"high"` (budget hint) to provider params - OpenAI `reasoning_effort`, Anthropic `thinking.budget_tokens` (1024/2048/4096), Qwen/Ollama `enable_thinking` - with a generic `reasoning_effort` pass-through for other OpenAI-compatible endpoints. The `/thinking on|off|?` command toggles `show_thinking` live
 - Thinking spinner - when `show_thinking: false` the REPL now shows an animated `⠋⠙⠹...` spinner (stdlib `threading` daemon, `\r\033[K` cleared) in place of the silent wait, then falls back to the `+ Thought N.Ns` summary. No new config key - folded into `show_thinking`. Interactive `ReplUI` only, headless stderr output unchanged
 - Activity lines and tool status are ephemeral UI - emitted through the UI sink only and never persisted to session files (tool calls/results are recorded there). Regression test locks this in
 

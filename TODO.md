@@ -66,10 +66,10 @@
 - [ ] Session export to Markdown
 - [ ] Session import from Markdown/JSON
 - [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
-- [ ] Streaming with thinking/reasoning block toggle
 
 ## Done
 
+- [x] Thinking/reasoning block toggle - `show_thinking` (display: stream dimmed vs spinner + `+ Thought N.Ns`, default `false`) and `reasoning` (request + token budget, default `auto`: OpenAI `reasoning_effort`, Claude `thinking.budget_tokens`, Qwen `enable_thinking`), driven live by `/thinking on|off|?`
 - [x] Thinking spinner - animated `⠧ Thinking` replaces the static `+ Thinking` announce while thinking in progress (`show_thinking: false`), folded into `show_thinking`, stdlib `threading` daemon cleared with `\r\033[K`
 - [x] Activity lines and tool status are ephemeral UI - never persisted to session files (tool calls and results are recorded there)
 - [x] MCP support via stdlib-only `replio-core-mcp` bundled plugin - client imports external server tools (stdio/HTTP) into the ToolRegistry, server exposes replio's tools + sessions over MCP for external agents, both dual-era (modern 2026-07-28 + legacy initialize)

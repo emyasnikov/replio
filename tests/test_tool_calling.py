@@ -109,6 +109,7 @@ class TestToolCalling(unittest.TestCase):
         self.assertEqual(self._assistant_msgs()[-1]['content'], 'Done.')
 
     def test_shown_thinking_announces_and_streams(self):
+        self.chat.config.data['show_thinking'] = True
         self.chat.provider.chat.side_effect = [
             [{'type': 'thinking', 'content': 'reasoning...'},
              {'type': 'token', 'content': 'Visible'},

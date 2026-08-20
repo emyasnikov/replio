@@ -97,6 +97,7 @@ class Engine:
             model=model,
             temperature=self.config.get('temperature'),
             max_tokens=self.config.get('max_tokens'),
+            reasoning=self.config.get('reasoning'),
         )
 
     def session_auto_save(self):
@@ -310,6 +311,7 @@ class Engine:
                     model=self.config.get('model'),
                     provider=self.config.get('provider'),
                     thinking=thinking or None,
+                    reasoning=self.config.get('reasoning'),
                 )
                 self.ui.footer(duration, usage, self._context_tokens(usage))
             self.session_auto_save()
@@ -333,6 +335,7 @@ class Engine:
             'assistant', None,
             tool_calls=tcs,
             thinking=thinking or None,
+            reasoning=self.config.get('reasoning'),
         )
         executed: list[dict] = []
         for tc in tcs:

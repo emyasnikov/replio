@@ -313,5 +313,46 @@ class TestReadlineCompleter(unittest.TestCase):
             self.assertEqual(self.chat._completer('/session', 0), '/session ')
 
 
+class TestThinkingCommand(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def _dispatch(self, line):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat.registry.dispatch(line)
+        return out.getvalue()
+
+    def test_thinking_reports_current_state(self):
+        output = self._dispatch('/thinking')
+        self.assertIn('Thinking streaming: off', output)
+
+    def test_thinking_off(self):
+        output = self._dispatch('/thinking off')
+        self.assertIn('Thinking streaming: off', output)
+        self.assertIs(self.chat.config.get('show_thinking'), False)
+
+    def test_thinking_on(self):
+        output = self._dispatch('/thinking on')
+        self.assertIn('Thinking streaming: on', output)
+        self.assertIs(self.chat.config.get('show_thinking'), True)
+
+    def test_thinking_status_no_change(self):
+        self._dispatch('/thinking on')
+        output = self._dispatch('/thinking status')
+        self.assertIn('Thinking streaming: on', output)
+        self.assertIs(self.chat.config.get('show_thinking'), True)
+
+    def test_thinking_invalid_arg(self):
+        self._dispatch('/thinking on')
+        output = self._dispatch('/thinking bogus')
+        self.assertIn('Usage: /thinking', output)
+        self.assertIs(self.chat.config.get('show_thinking'), True)
+
+
 if __name__ == '__main__':
     unittest.main()

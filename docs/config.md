@@ -35,7 +35,8 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `query_refine`              | `false`                | Auto-refine short web-search queries via a lightweight model call      |
 | `query_refine_min_words`    | `3`                    | Minimum query length before refinement applies                         |
 | `query_refine_context`      | `4`                    | Recent-message context to inject into refinement                       |
-| `show_thinking`             | `true`                 | Stream thinking/reasoning tokens dimmed                                |
+| `show_thinking`             | `false`                | Stream thinking/reasoning tokens dimmed. When off, thinking is shown only as an animated spinner plus a `+ Thought N.Ns` summary (display only - does not change what is sent to the model) |
+| `reasoning`                 | `"auto"`               | Request reasoning from the model and control its token budget: `false`/`"off"` = do not request; `true`/`"on"`/`"auto"` = request with provider default; `"low"`/`"medium"`/`"high"` = explicit budget hint. Mapping is provider-specific (OpenAI `reasoning_effort`, Claude `thinking.budget_tokens`, Qwen `enable_thinking`) |
 | `markdown_streaming`        | `false`                | Basic markdown-aware streaming                                         |
 | `show_context_size`         | `true`                 | Dimmed context-size line after each response                           |
 | `clear_screen`              | `true`                 | Clear the screen before the REPL banner                                |

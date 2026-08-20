@@ -110,6 +110,26 @@ def register_builtins(registry):
         else:
             print(f'Current provider: {chat.config.get("provider")}')
 
+    @registry.register('thinking', aliases=['reasoning'],
+                       description='Show or toggle streaming of thinking/reasoning tokens')
+    def thinking_cmd(arg=''):
+        arg = arg.strip().lower()
+        current = chat.config.get('show_thinking', False)
+        if arg in ('on', '1', 'true', 'yes', 'show'):
+            new = True
+        elif arg in ('off', '0', 'false', 'no', 'hide'):
+            new = False
+        elif arg in ('', '?', 'status'):
+            new = None
+        else:
+            print(f"Usage: /thinking [on|off]  (current: {'on' if current else 'off'})")
+            return
+        if new is None:
+            print(f'Thinking streaming: {"on" if current else "off"}')
+        else:
+            chat.config.set('show_thinking', new)
+            print(f'Thinking streaming: {"on" if new else "off"}')
+
     @registry.register('connect', description='Set up provider connection interactively')
     def connect_cmd(_=None):
         from ..providers import PROVIDERS, detect_provider

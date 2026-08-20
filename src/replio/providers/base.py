@@ -8,12 +8,13 @@ from ..utils.http import stream_sse
 class BaseProvider:
     def __init__(self, base_url: str = '', api_key: str = '',
                  model: str = '', temperature: float = 0.7,
-                 max_tokens: int = 0):
+                 max_tokens: int = 0, reasoning=None):
         self.base_url = base_url.rstrip('/')
         self.api_key = api_key
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
+        self.reasoning = reasoning
 
     def chat(self, messages: list[dict], stream: bool = True,
              tools: list[dict] | None = None):
@@ -44,6 +45,17 @@ class OpenAICompatibleProvider(BaseProvider):
             headers['Authorization'] = f'Bearer {self.api_key}'
         return headers
 
+    @staticmethod
+    def _reasoning_off(reasoning) -> bool:
+        return reasoning in (False, None, 'off', 'none', 'false', 0, '0')
+
+    def _reasoning_payload(self, payload: dict) -> dict:
+        if self._reasoning_off(self.reasoning):
+            return payload
+        if isinstance(self.reasoning, str) and self.reasoning in ('low', 'medium', 'high'):
+            payload['reasoning_effort'] = self.reasoning
+        return payload
+
     def _payload(self, messages, stream=False, tools=None):
         payload = {
             'model': self.model,
@@ -55,6 +67,7 @@ class OpenAICompatibleProvider(BaseProvider):
             payload['max_tokens'] = self.max_tokens
         if tools:
             payload['tools'] = tools
+        self._reasoning_payload(payload)
         return payload
 
     def _post(self, payload):
