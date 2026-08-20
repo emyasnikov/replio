@@ -47,7 +47,6 @@
 - [ ] `docs_search` - local grep + DuckDuckGo for documentation lookups
 - [ ] Workspace sessions - tools write into a scoped `--workspace` dir, optional `--git` sync
 - [ ] Spinner - animated `⠧ Thinking` replaces the static `+ Thinking` / `+ Thought 12.3s` announce while thinking is in progress (`show_thinking: false`). Folded into `show_thinking`, no new config key. stdlib `threading` daemon, cleared with `\r\033[K`
-- [ ] Activity lines are ephemeral UI - never persisted to session files (tool calls are already recorded there)
 - [ ] Sandboxed exec - namespace/container isolation for `run_command` (documented, planned for a later version)
 - [ ] Per-agent permission profiles - `tool_permission` becomes per-agent when `/agent` personas land
 - [ ] `/agent` personas - per-agent system prompt, session namespace, optional model override
@@ -72,6 +71,7 @@
 
 ## Done
 
+- [x] Activity lines and tool status are ephemeral UI - never persisted to session files (tool calls and results are recorded there)
 - [x] MCP support via stdlib-only `replio-core-mcp` bundled plugin - client imports external server tools (stdio/HTTP) into the ToolRegistry, server exposes replio's tools + sessions over MCP for external agents, both dual-era (modern 2026-07-28 + legacy initialize)
 - [x] Alias layer - tool-name + param aliases (read/view, ls, bash/exec, cursor > offset, ...) and an `open` web tool (`id`/`url`/`offset`) with offset paging
 - [x] Glyph activity lines - typed `<glyph> <verb> <key_arg>` status (dimmed) for covered categories, gated by `glyph_lines` (default `true`); unmapped categories use the `[tool: key_arg]` oneliner

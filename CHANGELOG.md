@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.16.0
+
+- Activity lines and tool status are ephemeral UI - emitted through the UI sink only and never persisted to session files (tool calls/results are recorded there). Regression test locks this in
+
 ## v0.15.0 - 2026-08-18
 
 - MCP (Model Context Protocol) support via the bundled `replio-core-mcp` plugin (stdlib-only - JSON-RPC 2.0 over newline-delimited stdio and SSE over urllib, no third-party `mcp` library)

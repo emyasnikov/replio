@@ -61,5 +61,19 @@ class TestGlyphActivityLines(unittest.TestCase):
         self.assertIn('[xyz_case: xyz_case]', value)
 
 
+class TestEphemeralUI(unittest.TestCase):
+
+    def test_activity_lines_not_persisted_to_session(self):
+        chat = make_chat()
+        chat._init_tooling()
+        chat._show_tool_status = Engine._show_tool_status.__get__(chat)
+        chat._show_tool_status('write_file', {'path': 'a.md', 'content': 'x'})
+        dump = chat.current_session.to_dict()
+        blob = str(dump)
+        self.assertNotIn('→ Write a.md', blob)
+        self.assertNotIn('[write_file: a.md]', blob)
+        chat._tmp.cleanup()
+
+
 if __name__ == '__main__':
     unittest.main()
