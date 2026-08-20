@@ -90,7 +90,7 @@ This document compares two open-source AI coding-agent / personal assistant proj
 
 ## References
 
-- Replio: https://github.com/emyasnikov/replio
-- OpenCode: https://github.com/anomalyco/opencode
-- OpenCode docs: https://opencode.ai/docs
-- Replio docs: https://github.com/emyasnikov/replio/tree/main/docs
+- https://github.com/anomalyco/opencode
+- https://github.com/emyasnikov/replio
+- https://github.com/emyasnikov/replio/tree/main/docs
+- https://opencode.ai/docs

@@ -96,7 +96,7 @@ Both projects share a common goal: a personal AI assistant that acts through too
 
 ## References
 
-- Replio: https://github.com/emyasnikov/replio
-- OpenClaw: https://github.com/openclaw/openclaw
-- Replio docs: https://github.com/emyasnikov/replio/tree/main/docs
-- OpenClaw docs: https://docs.openclaw.ai
+- https://docs.openclaw.ai
+- https://github.com/emyasnikov/replio
+- https://github.com/emyasnikov/replio/tree/main/docs
+- https://github.com/openclaw/openclaw

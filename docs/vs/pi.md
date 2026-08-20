@@ -92,7 +92,7 @@ Replio runs a tight loop that handles the REPL, CLI, and HTTP API. Tools load la
 
 ## References
 
-- Replio: https://github.com/emyasnikov/replio
-- Pi: https://github.com/earendil-works/pi
-- Pi docs: https://pi.dev/docs/latest
-- Replio docs: https://github.com/emyasnikov/replio/tree/main/docs
+- https://github.com/earendil-works/pi
+- https://github.com/emyasnikov/replio
+- https://github.com/emyasnikov/replio/tree/main/docs
+- https://pi.dev/docs/latest
