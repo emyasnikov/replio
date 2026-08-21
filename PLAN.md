@@ -12,7 +12,6 @@ Working backlog for the next tasks, ranked by effort, urgency (hardening current
 
 | Task | Effort | Urgency | Importance | Why |
 |------|--------|---------|------------|-----|
-| Plan/Build modes | S | High (safety) | High | Auto-`deny` write/exec via existing `ToolPolicy`, no new machinery. Developer.md gap + opencode/cline/claude-code parity. |
 | Session export to Markdown | S-M | Medium | High | Cross-cutting: enterprise compliance export, research citation trail, personal journal, small-biz handover; prerequisite for sharing links. |
 | Config validation (test connection on change) | S | High (onboarding) | Medium | Broken provider config is top friction; `/connect` already has the plumbing. |
 | Multi-line input | S | Medium (REPL) | Medium | `"""`/`'''` block detection; pure REPL hardening. |
@@ -39,26 +38,10 @@ Working backlog for the next tasks, ranked by effort, urgency (hardening current
 - Plugin ecosystem: PyPI entry-point source, marketplace, per-plugin venv isolation, externalize bundled plugins
 - Enterprise plugins: RBAC, connectors (MQTT/OPC-UA/Modbus), durable workflows, hash-chained audit, edge buffering, observability
 
-## New items added to TODO.md
-
-Open (`[ ]`):
-
-- Project instructions file - per-worktree `AGENTS.md`-style context auto-loaded into the system prompt
-- Session recall - full-text search across past sessions (grep/index over `.replio/sessions/`)
-- Tool dry-run mode - propose tool args/effects without executing (enterprise tool-gateway requirement)
-
-Ideas (plain bullets):
-
-- Hash-chained / tamper-evident audit log - additive on session logs (enterprise.md recommendation)
-- Immutable agent config - `replio serve` agents must not self-modify config/permissions/tool list
-- Scheduled / durable jobs - cron-style `replio run`, retries, resumability, human-in-the-loop status model
-- Edge / offline store-and-forward buffering
-- API rate limits + request queue (extended the existing multiuser/queue idea)
-
 ## Execution order
 
 Each task follows the AGENTS.md doc conventions: build, add `unittest` tests, mark `[x]` in `TODO.md`, log under a new version section at the top of `CHANGELOG.md`, and sync the `pyproject.toml` version.
 
-1. Tier 1: Plan/Build modes -> Session export to Markdown -> Config validation -> Multi-line input -> Word-level streaming buffering
+1. Tier 1 (remaining): Session export to Markdown -> Config validation -> Multi-line input -> Word-level streaming buffering
 2. Tier 2 (after Tier 1, order to be re-ranked against the backlog at that point)
 3. Tier 3 roadmap phases, one phase at a time, docs-first

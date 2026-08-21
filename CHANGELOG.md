@@ -4,9 +4,9 @@
 
 - Failed tool calls now render a dimmed `! Error: ...` line (first line of the result) under the activity line, for every tool through the shared dispatch point (agent loop, `/tool`, policy-denied calls), gated by the new `show_errors` config (default `true`)
 - `list_dir` and `grep` get the `*` glyph with distinct verbs (`* List`, `* Grep`), matching `glob`'s `* Glob` - they no longer render as `← Read`, which made directory listings and greps look like `read_file` calls
-- Glyph activity lines and confirm prompts now show the parameters the model passed (`← Read engine.py [offset=299, limit=85]`, `$ Run pytest [cwd=/workspace, timeout=600]`), gated by the new `glyph_params` config (default `true`). The label's own argument is not repeated
 - `run_command` now validates `cwd` (friendly `Error: cwd not found` instead of an `OSError`) and clamps `timeout` to 1..600 seconds, so a nonsense value like `10000` no longer executes
 - The confirm prompt prefix changed from `↳` to `?` so it no longer collides with the reserved delegate-category glyph
+- Glyph activity lines and confirm prompts now show the parameters the model passed (`← Read engine.py [offset=299, limit=85]`, `$ Run pytest [cwd=/workspace, timeout=600]`), gated by the new `glyph_params` config (default `true`). The label's own argument is not repeated
 - `max_tokens` now defaults to `8192` (sent to the provider, overriding low provider-side defaults like Ollama's 2048 cap). Setting it to `0` omits it from the payload so the provider's own default applies
 - Truncation messages now distinguish a configured `max_tokens` cap from the provider's own default limit (no more misleading `(0)` in the session log when the limit is unset)
 - Session auto-names are now ASCII-only: non-ASCII letters are transliterated (NFKD, e.g. `prüfe` becomes `prufe`) instead of being stored in filenames
