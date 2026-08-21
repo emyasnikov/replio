@@ -18,9 +18,13 @@ Replio is a terminal-native agent core, so developers are the most natural first
 - **Multi-repo fleets** - one `replio serve --path <repo>` agent per repository, answering over the API. See [docs/fleet.md](../fleet.md).
 - **Release and ops notes** - summarize changelogs, craft commit messages, and prepare runbooks from local records.
 
+## Hands-on setup
+
+A complete step-by-step recipe - a lead/implementer/tester/reviewer fleet on a Raspberry Pi with cloud Ollama (`gpt-oss:20b-cloud`), git worktree isolation, and human gates between every hand-off - is in [docs/usage/programming.md](../usage/programming.md).
+
 ## Gaps and planned
 
-Plan/Build modes are live: `/mode plan` (or `replio run --mode plan`) switches to a read-only posture where write and exec tools are denied and the model is instructed to plan, `/mode build` restores full access, and custom modes can express other postures. Notebook mode for iterating on code cells and richer interactive data analysis are still planned. These track the roadmap in [TODO.md](../../TODO.md). Tab completion, `/compact`, `/session`, and `replio run` already cover most day-to-day flows.
+Plan/Build modes are live: `/mode plan` (or `replio run --mode plan`) switches to a read-only posture where write and exec tools are denied and the model is instructed to plan, `/mode build` restores full access, and custom modes can express other postures. The `git` tool, `run_command` command allowlists, and `delegate`/personas (the swarm building blocks the hands-on guide works around today) are planned. Notebook mode for iterating on code cells and richer interactive data analysis are still planned. These track the roadmap in [PLAN.md](../../PLAN.md) and [TODO.md](../../TODO.md). Tab completion, `/compact`, `/session`, and `replio run` already cover most day-to-day flows.
 
 ## Get started
 

@@ -1,5 +1,6 @@
 # TODO
 
+- `run_command` command allowlist - allow only safe shell commands (e.g. `pytest`, `ruff`, `git diff`, `python -m unittest`) via a policy key rather than allowing all or none of `bash` (programming-fleet requirement from `docs/usage/programming.md`)
 - Surface soft tool results as dimmed info lines - parenthesized notes like `(empty file)`, `(no matches for "x")`, `(end of content)`, and `No search results found.` are currently invisible in the REPL (only persisted + fed to the model). The `show_errors` line covers `Error:` results only
 - Edge / offline store-and-forward buffering - offline-capable agents with local buffering for unreliable connectivity (enterprise use case)
 - Scheduled / durable jobs - cron-style `replio run`, retries with backoff, resumability, human-in-the-loop status model (`proposed` > `approved` > `executing` > `verified` > `failed`). A chat loop alone is not a workflow engine

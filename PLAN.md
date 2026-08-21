@@ -27,6 +27,7 @@ Working backlog for the next tasks, ranked by effort, urgency (hardening current
 | Minimal web Control UI | M | OpenClaw Control UI parity; enterprise dashboards; homelab. |
 | Session recall (full-text search over past sessions) | M | Hermes `session_search` parity; research reproducibility; personal journal search. |
 | `code_lint`/`code_format`/`code_test` wrappers | M | Developer.md test/CI triage flow. |
+| `run_command` command allowlist | S-M | Developer.md/security: Perplexity-style shell allowlist (only `pytest`, `ruff`, `git diff`, ...) behind a policy key, e.g. `tool_permission.bash_allow`. Today the choice is all-bash-or-none |
 | Project instructions file | S-M | Per-worktree `AGENTS.md`-style context; claude-code `CLAUDE.md` parity. |
 
 ## Tier 3 - roadmap phases (large)

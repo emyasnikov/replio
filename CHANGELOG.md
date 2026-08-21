@@ -1,5 +1,7 @@
 # Changelog
 
+## v0.18.0
+
 ## v0.17.0 - 2026-08-21
 
 - Failed tool calls now render a dimmed `! Error: ...` line (first line of the result) under the activity line, for every tool through the shared dispatch point (agent loop, `/tool`, policy-denied calls), gated by the new `show_errors` config (default `true`)
