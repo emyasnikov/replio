@@ -102,7 +102,8 @@ class MCPServer:
         tools = []
         if registry is not None:
             for name in registry.names():
-                if policy is not None and not policy.allowed(name):
+                if policy is not None and not policy.allowed(
+                        name, registry.permission_for(name)):
                     continue
                 info = registry.info(name)
                 if info is None:

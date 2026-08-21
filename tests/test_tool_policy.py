@@ -68,6 +68,21 @@ class TestToolPolicy(unittest.TestCase):
         self.assertTrue(whitelist.allowed('read_file'))
         self.assertFalse(whitelist.allowed('list_dir'))
 
+    def test_allowed_with_permission_key_respects_category_deny(self):
+        p = self.policy(permissions={'edit': 'deny', 'bash': 'deny'})
+        self.assertFalse(p.allowed('write_file', 'edit'))
+        self.assertFalse(p.allowed('run_command', 'bash'))
+        self.assertTrue(p.allowed('read_file', 'read'))
+        self.assertTrue(p.allowed('web_search', 'web'))
+
+    def test_allowed_without_permission_key_ignores_category(self):
+        p = self.policy(permissions={'edit': 'deny'})
+        self.assertTrue(p.allowed('write_file'))
+
+    def test_allowed_name_deny_beats_category_allow(self):
+        p = self.policy(permissions={'edit': 'allow'}, deny=['write_file'])
+        self.assertFalse(p.allowed('write_file', 'edit'))
+
     def test_relative_path_against_worktree(self):
         import os
         p = self.policy(permissions={'read': 'allow'})

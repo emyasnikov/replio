@@ -14,6 +14,8 @@ def _engine_from_args(args) -> Engine:
         config.set('model', args.model)
     if getattr(args, 'base_url', None):
         config.set('base_url', args.base_url)
+    if getattr(args, 'mode', None):
+        config.set('mode', args.mode)
     auto = 'allow' if getattr(args, 'approve', None) is True else 'deny'
     ui = HeadlessUI(auto=auto, verbose=getattr(args, 'verbose', False),
                     stream=getattr(args, 'output', 'json') == 'text',
@@ -33,6 +35,8 @@ def cmd_run(args) -> int:
 def cmd_serve(args) -> int:
     from .server import HeadlessServer, ChatHandler
     config = Config(path=args.path)
+    if getattr(args, 'mode', None):
+        config.set('mode', args.mode)
     ui = HeadlessUI(auto='deny', verbose=False, stream=False,
                     show_thinking=config.get('show_thinking', True))
     engine = Engine(config, ui=ui)
@@ -40,7 +44,7 @@ def cmd_serve(args) -> int:
     mcp_service = pm.service('mcp_server') if pm is not None else None
     server = HeadlessServer((args.host, args.port), ChatHandler,
                             engine=engine, mcp_service=mcp_service)
-    print(f'replio serve - http://{args.host}:{args.port} '
+    print(f'replio serve ({config.get("mode")} mode) - http://{args.host}:{args.port} '
           f'(POST /chat, GET /sessions, GET /health, GET /version'
           f'{", POST /mcp" if mcp_service else ""})', file=sys.stderr)
     try:

@@ -20,7 +20,7 @@ Replio is a terminal-native agent core, so developers are the most natural first
 
 ## Gaps and planned
 
-Developer-oriented additions are planned: Plan/Build modes (read-only posture vs. write via auto-`deny`), notebook mode for iterating on code cells, and richer interactive data analysis. These track the roadmap in [TODO.md](../../TODO.md). Tab completion, `/compact`, `/session`, and `replio run` already cover most day-to-day flows.
+Plan/Build modes are live: `/mode plan` (or `replio run --mode plan`) switches to a read-only posture where write and exec tools are denied and the model is instructed to plan, `/mode build` restores full access, and custom modes can express other postures. Notebook mode for iterating on code cells and richer interactive data analysis are still planned. These track the roadmap in [TODO.md](../../TODO.md). Tab completion, `/compact`, `/session`, and `replio run` already cover most day-to-day flows.
 
 ## Get started
 

@@ -30,7 +30,8 @@ def _render_tools(chat):
         print('  (tool calling disabled)')
         return
     allowed = sorted(n for n in chat._tool_registry.names()
-                     if chat._tool_policy.allowed(n))
+                     if chat._tool_policy.allowed(
+                         n, chat._tool_registry.permission_for(n)))
     if not allowed:
         print('  (no tools allowed)')
         return
@@ -129,6 +130,28 @@ def register_builtins(registry):
         else:
             chat.config.set('show_thinking', new)
             print(f'Thinking streaming: {"on" if new else "off"}')
+
+    @registry.register('mode', description='Show or switch the agent mode (plan = read-only, build, or custom)')
+    def mode_cmd(arg=''):
+        from ..modes import mode_list, resolve_mode
+        current, names = resolve_mode(chat.config)
+        arg = arg.strip()
+        if not arg or arg in ('?', 'status'):
+            print(f'Current mode: {current.name}')
+            specs = {m.name: m for m in mode_list(chat.config)}
+            for m in sorted(specs.values(), key=lambda s: s.name):
+                label = '  ' + m.name + ('  <-- current' if m.name == current.name else '')
+                print(f'{label}')
+                if m.instruction:
+                    print(f'    {m.instruction.splitlines()[0][:80]}')
+            return
+        if arg not in names:
+            print(f'Unknown mode "{arg}" - valid modes: ' + ', '.join(names))
+            return
+        chat.config.set('mode', arg)
+        print(f'Mode set to: {arg}')
+        if arg == 'plan':
+            print('  Read-only: write and exec tools are disabled')
 
     @registry.register('connect', description='Set up provider connection interactively')
     def connect_cmd(_=None):
@@ -317,7 +340,8 @@ def register_builtins(registry):
         parts = arg.strip().split(maxsplit=1)
         if not arg:
             allowed = sorted(n for n in chat._tool_registry.names()
-                             if chat._tool_policy.allowed(n))
+                             if chat._tool_policy.allowed(
+                                 n, chat._tool_registry.permission_for(n)))
             if not allowed:
                 print('No tools allowed')
                 return

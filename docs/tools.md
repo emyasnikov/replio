@@ -96,8 +96,10 @@ Actions are `allow` (no prompt), `ask` (y/N confirm in the loop), or `deny` (too
 Resolution precedence:
 
 1. **Name-level** - `tools.deny` (always denied) and `tools.allow` (when non-empty, an allowlist - everything else is denied).
-2. **Category action** - the `tool_permission.<key>` action for the tool's `permission` key.
+2. **Category action** - the `tool_permission.<key>` action for the tool's `permission` key. `deny` here filters the tool from the provider schema and from tool listings, not just direct calls.
 3. **Worktree escalation** - `read` / `list` / `write` tools pointing outside the project worktree escalate from `allow` to `ask`.
+
+Modes ([config.md](config.md)) layer over the base policy: a mode's `tool_permission` merges over the base (mode wins per key), its `tools.deny` appends, and its `tools.allow` replaces when non-empty. The built-in `plan` mode denies the `edit` and `bash` categories, so write and exec tools are filtered from the schema and refused on direct calls. Switch with `/mode <name>` in the REPL or `--mode <name>` on `replio run` / `replio serve`.
 
 ### Worktree
 

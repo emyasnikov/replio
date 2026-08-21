@@ -22,6 +22,7 @@ Replio is deliberately small and auditable zero-dependency agentic core built on
 - **Agentic REPL** - streaming token-by-token output, dimmed thinking, markdown-aware rendering, readline history and tab completion
 - **Tool calling** - web search, page fetching, file read/write/search and shell execution via OpenAI-compatible function calling
 - **Permissions** - every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmations for anything outside your worktree
+- **Modes** - named postures with their own instructions and permissions: `plan` (read-only) vs `build`, or custom modes, switchable live with `/mode` or via `--mode`
 - **Plugins** - external repositories register tools, providers and slash commands. The core stays zero-dependency, and plugin deps are imported lazily, only when you activate a plugin
 - **Multi-provider** - Ollama, OpenAI, Groq, Anthropic, plus any OpenAI-compatible endpoint, with automatic detection from the base URL
 - **Sessions** - complete append-only conversation logs, including every tool call and its result

@@ -354,5 +354,89 @@ class TestThinkingCommand(unittest.TestCase):
         self.assertIs(self.chat.config.get('show_thinking'), True)
 
 
+class TestModeCommand(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def _dispatch(self, line):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat.registry.dispatch(line)
+        return out.getvalue()
+
+    def test_mode_shows_current_and_list(self):
+        output = self._dispatch('/mode')
+        self.assertIn('Current mode: build', output)
+        self.assertIn('plan', output)
+        self.assertIn('build  <-- current', output)
+
+    def test_mode_switch(self):
+        output = self._dispatch('/mode plan')
+        self.assertIn('Mode set to: plan', output)
+        self.assertEqual(self.chat.config.get('mode'), 'plan')
+
+    def test_mode_unknown(self):
+        output = self._dispatch('/mode nosuch')
+        self.assertIn('Unknown mode "nosuch"', output)
+        self.assertIn('build', output)
+        self.assertEqual(self.chat.config.get('mode'), 'build')
+
+    def test_plan_mode_denies_write_tool(self):
+        self._dispatch('/mode plan')
+        output = self._dispatch('/tool write_file {"path": "x.txt", "content": "x"}')
+        self.assertIn('disabled by tool policy', output)
+
+    def test_plan_mode_filters_schema(self):
+        self._dispatch('/mode plan')
+        schema = self.chat._init_tooling()
+        names = [s['function']['name'] for s in schema]
+        self.assertNotIn('write_file', names)
+        self.assertNotIn('run_command', names)
+        self.assertIn('read_file', names)
+
+    def test_plan_mode_tool_listing_hides_write_tools(self):
+        self._dispatch('/mode plan')
+        output = self._dispatch('/tool')
+        self.assertNotIn('write_file', output)
+        self.assertNotIn('run_command', output)
+        self.assertIn('read_file', output)
+
+    def test_switch_back_to_build_restores_tools(self):
+        self._dispatch('/mode plan')
+        self._dispatch('/mode build')
+        schema = self.chat._init_tooling()
+        names = [s['function']['name'] for s in schema]
+        self.assertIn('write_file', names)
+        self.assertIn('run_command', names)
+
+
+class TestModeCompleter(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def test_mode_completes_names(self):
+        with patch('replio.chat.readline.get_line_buffer', return_value='/mode b'):
+            self.assertEqual(self.chat._completer('b', 0), 'build ')
+            self.assertIsNone(self.chat._completer('b', 1))
+        with patch('replio.chat.readline.get_line_buffer', return_value='/mode '):
+            matches = []
+            i = 0
+            while True:
+                m = self.chat._completer('', i)
+                if m is None:
+                    break
+                matches.append(m)
+                i += 1
+        self.assertEqual(matches, ['build ', 'plan '])
+
+
 if __name__ == '__main__':
     unittest.main()

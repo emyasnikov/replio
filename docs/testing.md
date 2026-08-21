@@ -27,10 +27,11 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_cli.py` | `replio run`: JSON/text output, session-id persistence, exit codes |
 | `test_commands.py` | Slash-command registration and `/help` output (aliases, subcommands, tools section) |
 | `test_completion.py` | Readline tab completion: commands, session names, plugin names, tool names |
-| `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions |
+| `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions, plan-mode schema filtering, instruction injection, per-message `mode` |
 | `test_http.py` | SSE streaming: data parsing, `done` marker, multi-byte split across chunks, HTTP errors |
 | `test_machine_tools.py` | `read_file` / `list_dir` behavior: numbering, offsets, headers, size probe (`limit=0`), `tool_max_result_chars` cap, error paths |
 | `test_mcp.py` | MCP plugin: JSON-RPC framing, stdio/HTTP transports, modern/legacy negotiation, tool import + prefixing, server dispatch (`initialize`/`discover`/`tools/*`/`resources/*`), `_meta` validation, policy integration |
+| `test_modes.py` | Mode resolution and policy merging: built-ins (`build`/`plan`), custom modes, unknown fallback, instruction composition |
 | `test_ollama_provider.py` | Streaming provider: fragmented tool-call reassembly, thinking events, payload construction |
 | `test_plugins.py` | Plugin manager: manifest compat ranges, discovery precedence, registration hooks, install/update/uninstall |
 | `test_providers.py` | Provider defaults, override behavior, `detect_provider` |

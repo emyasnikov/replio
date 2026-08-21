@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.17.0 - 2026-08-21
+
+- Plan/Build (and custom) agent modes - a mode is a named posture combining a system instruction with tool-policy overrides. New `mode` (default `build`) and `modes` config keys ship the built-ins: `build` (no overrides, current behavior) and `plan` (read-only - denies the `edit` and `bash` categories and instructs the model to investigate and propose rather than modify). Custom modes can set `system_prompt`, `tool_permission` (merged over the base, mode wins per key), `tools.deny` (appended), and `tools.allow` (replaces when non-empty). An unknown `mode` falls back to `build` with no error
+- `/mode` command - no args lists the current mode and all defined modes, `/mode <name>` switches live (the next turn uses the new posture, mode switches are recorded as `command` messages), unknown names print the valid list. Mode names tab-complete in the REPL. The REPL banner and the `replio serve` stderr line show the active mode when it is not `build`
+- `--mode <name>` CLI flag on `replio run` and `replio serve` - headless agents start in the given posture (e.g. `replio run --mode plan` for a read-only review run)
+- Mode mechanics reuse the existing `ToolPolicy` - no new machinery: `ToolPolicy.allowed()` is now permission-aware, so a category-level `deny` (`tool_permission.edit: deny` and `tool_permission.bash: deny`) filters the tool from the provider schema and from `/tool`/`/help` listings, not just direct calls. The MCP server's tool listing honors the same filtering
+- Mode instructions and `system_prompt` are injected at the engine level (`_provider_messages`) as a virtual system message, so the REPL, `replio run`, `replio serve`, and MCP all apply them. Headless modes now receive `system_prompt` (previously REPL-only, persisted as a session message - that block is removed)
+- Sessions record the active mode on every assistant message (`mode` field, parity with `reasoning`), so the posture in effect per turn is auditable from the append-only log
+- Tests - `tests/test_modes.py` (12 tests: resolve/merge rules, unknown fallback, instruction composition), plus plan-mode schema filtering, instruction injection, per-message mode, `/mode` command and completer, `--mode` CLI, and permission-aware `allowed()` coverage in engine/commands/cli/policy tests
+- Docs - `docs/config.md` (mode/modes schema + semantics), `docs/commands.md` (`/mode`, `--mode`), `docs/tools.md` (category-deny schema filtering, mode layering), `docs/security.md` (Modes section), `docs/session.md` (`mode` field), README feature line, developer use-case guide updated
+
 ## v0.16.0 - 2026-08-20
 
 - Reasoning persisted in session logs - each `assistant` message records the `reasoning` config value in effect, alongside the existing `thinking` text. Reasoning text is always logged regardless of `show_thinking` (display hides it but never drops it from the log)

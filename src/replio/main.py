@@ -12,6 +12,7 @@ def _add_run_parser(sub):
     p.add_argument('--provider', help='Provider override (e.g. ollama, openai, groq)')
     p.add_argument('--model', help='Model override')
     p.add_argument('--base-url', help='Base URL override')
+    p.add_argument('--mode', help='Agent mode override (plan, build, or a custom mode)')
     p.add_argument('--output', choices=['text', 'json'], default='json',
                    help='Output format (default: json)')
     p.add_argument('--verbose', action='store_true',
@@ -33,6 +34,7 @@ def _add_serve_parser(sub):
     p.add_argument('--port', type=int, default=8787)
     p.add_argument('--path', default=argparse.SUPPRESS,
                    help='Project path (default: current directory)')
+    p.add_argument('--mode', help='Agent mode override (plan, build, or a custom mode)')
 
 
 def _add_mcp_parser(sub):

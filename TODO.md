@@ -34,7 +34,6 @@
 - [ ] Fleet orchestration - supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), the fleet orchestration layer in `docs/fleet.md`
 - [ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
 - [ ] Agent folder watcher - internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps
-- [ ] Plan/Build modes - read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery (`/plan` toggle; headless `--plan` flag)
 - [ ] Minimal web Control UI - stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue). Richer frameworks stay plugin-first
 - [ ] Externalize the bundled plugins (`replio-core-websearch`/`fs`/`exec`) into separate versioned repositories - the bundled copies stay the shipped defaults. Global/local plugins of the same name already override them
 - [ ] PyPI plugin source - discover installed plugin packages via `importlib.metadata` entry points (`replio.plugins` group)
@@ -74,6 +73,7 @@
 
 ## Done
 
+- [x] Plan/Build modes - `mode`/`modes` config, built-in `plan` (edit+bash denied, read-only) vs `build`, `/mode` cmd + `--mode` flag, per-message mode in session logs
 - [x] Thinking/reasoning toggle - show_thinking (display) + reasoning (request), /thinking cmd
 - [x] Thinking spinner - animated spinner while thinking when show_thinking false, cleared \r\033[K
 - [x] Activity lines + tool status ephemeral - never persisted to session files

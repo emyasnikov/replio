@@ -36,8 +36,12 @@ class ToolPolicy:
             return 'ask'
         return action
 
-    def allowed(self, name: str) -> bool:
-        return not (name in self.deny or (self.allow and name not in self.allow))
+    def allowed(self, name: str, permission_key: str | None = None) -> bool:
+        if name in self.deny or (self.allow and name not in self.allow):
+            return False
+        if permission_key:
+            return self.action(name, permission_key) != 'deny'
+        return True
 
     def needs_confirm(self, name: str, permission_key: str,
                       path: str | None = None) -> bool:

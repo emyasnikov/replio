@@ -25,7 +25,8 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `max_tokens`                | `0`                    | `0` = unset (provider default). Positive value caps output             |
 | `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event with no content |
 | `stream_retry_delay`        | `0.5`                  | Seconds to wait between stream retries                                  |
-| `system_prompt`             | `""`                   | Optional system prompt                                                 |
+| `system_prompt`             | `""`                   | Optional system prompt, injected for every front-end (REPL, `run`, `serve`) |
+| `mode`                      | `"build"`              | Active agent mode (`build`, `plan`, or a custom mode from `modes`) |
 | `tool_calling`              | `true`                 | Enable OpenAI-compatible function calling                              |
 | `tool_status_visible`       | `true`                 | Show dimmed tool status in the REPL                                    |
 | `glyph_lines`               | `true`                 | Typed `<glyph> <verb> <arg>` status lines for mapped categories. When off, or for unmapped categories, the `[tool: arg]` oneliner is used |
@@ -51,6 +52,25 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `mcp.servers`               | `[]`                   | MCP client server definitions (see [mcp.md](mcp.md) for the schema)     |
 | `mcp_server.allow_ask`      | `true`                 | When serving MCP, run `ask`-policy tools (deferred to the client) vs refuse them |
 | `plugins`                   | *(bundled)*            | Plugins to load. Empty = all discovered plugins load                   |
+
+### `modes`
+
+Modes are named postures combining an instruction block with tool-policy overrides. The built-ins ship as defaults - `build` (no overrides) and `plan` (read-only: `edit` and `bash` categories denied):
+
+```json
+{
+  "mode": "plan",
+  "modes": {
+    "build": { "system_prompt": "", "tool_permission": {} },
+    "plan": {
+      "system_prompt": "You are in plan mode (read-only)...",
+      "tool_permission": { "edit": "deny", "bash": "deny" }
+    }
+  }
+}
+```
+
+Each mode may define `system_prompt` (instructions), `tool_permission` (category actions merged over the base `tool_permission`, mode wins per key), `tools.deny` (appended to the base deny list), and `tools.allow` (replaces the base allowlist when non-empty). An unknown `mode` value falls back to `build`. Switch live with `/mode <name>` or set `--mode <name>` on `replio run` / `replio serve`. The mode instruction and `system_prompt` are injected as a system message for every front-end. The active mode is recorded on each assistant message in the session log.
 
 ### `tool_permission`
 

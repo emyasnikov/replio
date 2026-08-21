@@ -24,6 +24,10 @@ The worktree is the directory holding the local `.replio/` - the launch director
 
 In headless mode (`replio serve` / `replio run`), `ask`-gated tools are denied outright - the headless UI auto-answers with the configured `--yes` / `--no` policy. An agent's reachable surface is therefore exactly its `allow` tools on paths inside its worktree. This is the isolation boundary that makes one-agent-per-process fleets safe: a crash or a misbehaving agent cannot touch another agent's folder or run commands it was not given. See [fleet.md](fleet.md).
 
+## Modes
+
+Modes ([config.md](config.md)) are named postures that combine an instruction block with tool-policy overrides. The built-in `plan` mode is a read-only posture: it denies the `edit` and `bash` categories, so write and exec tools are filtered from the provider schema and refused on direct calls, and its system prompt instructs the model to investigate and propose rather than modify. Custom modes can express stronger postures (e.g. deny `mcp` as well) per deployment. The active mode is recorded on each assistant message in the session log, so the posture in effect for every turn is auditable. Mode switches are recorded as `command` messages.
+
 ## Config-driven surface
 
 The model only sees tools whose schema passes policy filtering (`tools.allow` / `tools.deny` / `tool_permission`), and plugin activation is an explicit `plugins` list. The surface area - providers, tools, plugins, permissions - is configuration, not convention. Confirm prompts and tool status are ephemeral UI and are never persisted to session files.

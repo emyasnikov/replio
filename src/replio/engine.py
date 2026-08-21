@@ -312,6 +312,7 @@ class Engine:
                     provider=self.config.get('provider'),
                     thinking=thinking or None,
                     reasoning=self.config.get('reasoning'),
+                    mode=self.config.get('mode'),
                 )
                 self.ui.footer(duration, usage, self._context_tokens(usage))
             self.session_auto_save()
@@ -336,6 +337,7 @@ class Engine:
             tool_calls=tcs,
             thinking=thinking or None,
             reasoning=self.config.get('reasoning'),
+            mode=self.config.get('mode'),
         )
         executed: list[dict] = []
         for tc in tcs:
@@ -421,18 +423,21 @@ class Engine:
             return None
         from .tools.registry import ToolRegistry
         from .tools.policy import ToolPolicy
+        from .modes import merge_policy
         self._tool_registry = ToolRegistry()
         plugin_manager = getattr(self, '_plugin_manager', None)
         if plugin_manager is not None:
             plugin_manager.register_tools(self._tool_registry)
+        permissions, allow, deny = merge_policy(self.config)
         self._tool_policy = ToolPolicy(
-            permissions=self.config.get('tool_permission', {}),
-            allow=self.config.get('tools.allow', []),
-            deny=self.config.get('tools.deny', []),
+            permissions=permissions,
+            allow=allow,
+            deny=deny,
             worktree=self.config.local_path.parent.parent,
         )
         allowed = {n for n in self._tool_registry.names()
-                   if self._tool_policy.allowed(n)}
+                   if self._tool_policy.allowed(
+                       n, self._tool_registry.permission_for(n))}
         return self._tool_registry.schema_filtered(allowed)
 
     def _run_tool(self, name: str, args: dict) -> str:
@@ -480,6 +485,7 @@ class Engine:
         return refined_query if refined_query else query
 
     def _provider_messages(self) -> list[dict]:
+        from .modes import system_instruction
         msgs = self.current_session.messages
         boundary = 0
         summary = None
@@ -495,6 +501,9 @@ class Engine:
                 'role': 'system',
                 'content': 'Summary of earlier conversation:\n\n' + summary,
             })
+        instruction = system_instruction(self.config)
+        if instruction:
+            out.append({'role': 'system', 'content': instruction})
         declared: set[str] = set()
         for m in msgs[boundary:]:
             role = m.get('role')

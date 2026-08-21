@@ -11,6 +11,18 @@ DEFAULT_CONFIG = {
     'temperature': 0.7,
     'max_tokens': 0,
     'system_prompt': '',
+    'mode': 'build',
+    'modes': {
+        'build': {'system_prompt': '', 'tool_permission': {}},
+        'plan': {
+            'system_prompt': (
+                'You are in plan mode (read-only). Investigate, cite sources, and '
+                'propose a plan; do not modify files or run commands. Write and '
+                'exec tools are disabled.'
+            ),
+            'tool_permission': {'edit': 'deny', 'bash': 'deny'},
+        },
+    },
     'tool_calling': True,
     'tool_status_visible': True,
     'glyph_lines': True,

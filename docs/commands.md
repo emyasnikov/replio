@@ -11,6 +11,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/version`              | `/v`           | Show the Replio version                                       |
 | `/model`                |                | Show or switch the active model (`/model gpt-4o`)              |
 | `/provider`             |                | Show or switch the active provider                             |
+| `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
 | `/connect`              |                | Interactive provider connection setup                          |
 | `/config`               |                | Show, get, or set config values (`/config <key> <value>`)      |
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save` |
@@ -41,6 +42,7 @@ One-shot headless chat.
 | `--provider`         | Provider override (e.g. `ollama`, `openai`, `groq`)           |
 | `--model`            | Model override                                               |
 | `--base-url`         | Base URL override                                            |
+| `--mode`             | Agent mode override (`plan`, `build`, or a custom mode)      |
 | `--output`           | `json` (default) or `text`                                   |
 | `--verbose`          | Print tool status and diagnostics to stderr                   |
 | `--session-id`       | Persistent session name (load or create)                     |
@@ -57,6 +59,7 @@ HTTP JSON API server. See [api.md](api.md). Also serves `POST /mcp` (MCP server)
 | `--host`      | `127.0.0.1`  | Bind address                 |
 | `--port`      | `8787`       | Bind port                    |
 | `--path`      |              | Project path                 |
+| `--mode`      |              | Agent mode override (`plan`, `build`, or a custom mode) |
 
 ### `replio mcp`
 

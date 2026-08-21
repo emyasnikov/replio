@@ -230,5 +230,82 @@ class TestEngineSinks(unittest.TestCase):
             engine._tmp.cleanup()
 
 
+class TestEngineModes(unittest.TestCase):
+
+    def setUp(self):
+        self.engine = make_engine()
+        self.engine.provider.chat.return_value = [
+            {'type': 'token', 'content': 'Answer'},
+            {'type': 'done', 'reason': 'stop'},
+        ]
+
+    def tearDown(self):
+        self.engine._tmp.cleanup()
+
+    def test_plan_mode_filters_write_and_exec_from_schema(self):
+        self.engine.config.set('mode', 'plan')
+        schema = self.engine._init_tooling()
+        names = [s['function']['name'] for s in schema]
+        self.assertNotIn('write_file', names)
+        self.assertNotIn('run_command', names)
+        self.assertIn('read_file', names)
+        self.assertIn('web_search', names)
+
+    def test_build_mode_schema_unfiltered(self):
+        schema = self.engine._init_tooling()
+        names = [s['function']['name'] for s in schema]
+        self.assertIn('write_file', names)
+        self.assertIn('run_command', names)
+
+    def test_plan_mode_instruction_sent_to_provider(self):
+        self.engine.config.set('mode', 'plan')
+        self.engine.chat('q')
+        msgs = self.engine.provider.chat.call_args.args[0]
+        self.assertEqual(msgs[0]['role'], 'system')
+        self.assertIn('plan mode', msgs[0]['content'])
+        self.assertIn('read-only', msgs[0]['content'])
+
+    def test_system_prompt_injected_for_headless(self):
+        self.engine.config.set('system_prompt', 'You are a compliance bot.')
+        self.engine.chat('q')
+        msgs = self.engine.provider.chat.call_args.args[0]
+        self.assertEqual(msgs[0]['role'], 'system')
+        self.assertIn('compliance bot', msgs[0]['content'])
+
+    def test_mode_recorded_on_assistant_message(self):
+        self.engine.config.set('mode', 'plan')
+        self.engine.chat('q')
+        assistant = [m for m in self.engine.current_session.messages
+                     if m['role'] == 'assistant'][0]
+        self.assertEqual(assistant['mode'], 'plan')
+
+    def test_mode_recorded_on_tool_call_message(self):
+        self.engine.config.set('mode', 'plan')
+        self.engine.provider.chat.side_effect = [
+            [{'type': 'tool_calls', 'tool_calls': [{
+                'id': 'c1', 'type': 'function',
+                'function': {'name': 'grep', 'arguments': '{"pattern": "x", "glob": "*.py"}'},
+            }]}],
+            [{'type': 'token', 'content': 'Final'},
+             {'type': 'done', 'reason': 'stop'}],
+        ]
+        self.engine.chat('q')
+        assistant = [m for m in self.engine.current_session.messages
+                     if m['role'] == 'assistant' and m.get('tool_calls')][0]
+        self.assertEqual(assistant['mode'], 'plan')
+
+    def test_plan_mode_run_tool_refuses_write(self):
+        self.engine.config.set('mode', 'plan')
+        self.engine._init_tooling()
+        out = self.engine._run_tool('write_file', {'path': 'x.txt', 'content': 'x'})
+        self.assertIn('disabled by tool policy', out)
+
+    def test_unknown_mode_falls_back_to_build(self):
+        self.engine.config.set('mode', 'nosuch')
+        schema = self.engine._init_tooling()
+        names = [s['function']['name'] for s in schema]
+        self.assertIn('write_file', names)
+
+
 if __name__ == '__main__':
     unittest.main()

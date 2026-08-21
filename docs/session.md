@@ -56,6 +56,7 @@ Every message has at least `role`, `content`, and `timestamp` (ISO 8601 UTC). Th
 | `provider` | `assistant` | Provider that served it |
 | `thinking` | `assistant` | Reasoning text preceding the answer or tool call, excluded from `content` |
 | `reasoning` | `assistant` | The `reasoning` config value in effect for this message (how reasoning was requested: `false`/`"off"` or an effort value) |
+| `mode` | `assistant` | The agent `mode` config value in effect for this message (`build`, `plan`, or a custom mode) |
 | `tool_calls` | `assistant` | OpenAI function-call objects requested by the model |
 | `tool_call_id` | `tool` | ID linking the result to the originating `tool_calls` entry |
 | `tool` | `tool` | Name of the tool that produced the result |

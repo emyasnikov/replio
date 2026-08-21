@@ -32,7 +32,7 @@ class TestCliRun(unittest.TestCase):
     def _args(self, **kw):
         base = dict(prompt='hello', output='json', session_id=None, approve=None,
                     verbose=False, path=self.tmp.name, provider=None, model=None,
-                    base_url=None)
+                    base_url=None, mode=None)
         base.update(kw)
         return SimpleNamespace(**base)
 
@@ -116,6 +116,58 @@ class TestCliRun(unittest.TestCase):
         self.assertEqual(rc, 0)
         data = json.loads(out)
         self.assertEqual(len(data['tool_calls']), 1)
+
+    def test_run_mode_plan_filters_schema(self):
+        captured = {}
+
+        def _factory_rec(rounds):
+            def _f(**kwargs):
+                p = MagicMock()
+                p.chat.side_effect = rounds
+                captured['provider'] = p
+                return p
+            _f.DEFAULT_BASE_URL = 'https://fake.api.com'
+            _f.DEFAULT_MODEL = 'fake-model'
+            return _f
+        rounds = [[{'type': 'token', 'content': 'plan answer'},
+                   {'type': 'done', 'reason': 'stop'}]]
+        with patch('replio.providers.PROVIDERS', {'ollama': _factory_rec(rounds)}):
+            out = io.StringIO()
+            with patch('sys.stdout', new=out):
+                rc = cmd_run(self._args(mode='plan'))
+        self.assertEqual(rc, 0)
+        data = json.loads(out.getvalue())
+        self.assertEqual(data['content'], 'plan answer')
+        tools = captured['provider'].chat.call_args.kwargs['tools']
+        names = [s['function']['name'] for s in tools]
+        self.assertNotIn('write_file', names)
+        self.assertNotIn('run_command', names)
+        self.assertIn('read_file', names)
+        msgs = captured['provider'].chat.call_args.args[0]
+        self.assertIn('plan mode', msgs[0]['content'])
+
+    def test_run_mode_build_keeps_write_tools(self):
+        captured = {}
+
+        def _factory_rec(rounds):
+            def _f(**kwargs):
+                p = MagicMock()
+                p.chat.side_effect = rounds
+                captured['provider'] = p
+                return p
+            _f.DEFAULT_BASE_URL = 'https://fake.api.com'
+            _f.DEFAULT_MODEL = 'fake-model'
+            return _f
+        rounds = [[{'type': 'token', 'content': 'x'},
+                   {'type': 'done', 'reason': 'stop'}]]
+        with patch('replio.providers.PROVIDERS', {'ollama': _factory_rec(rounds)}):
+            out = io.StringIO()
+            with patch('sys.stdout', new=out):
+                cmd_run(self._args())
+        tools = captured['provider'].chat.call_args.kwargs['tools']
+        names = [s['function']['name'] for s in tools]
+        self.assertIn('write_file', names)
+        self.assertIn('run_command', names)
 
 
 class TestCliPlugins(unittest.TestCase):
