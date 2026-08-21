@@ -1,9 +1,13 @@
 # TODO
 
+- Edge / offline store-and-forward buffering - offline-capable agents with local buffering for unreliable connectivity (enterprise use case)
+- Scheduled / durable jobs - cron-style `replio run`, retries with backoff, resumability, human-in-the-loop status model (`proposed` > `approved` > `executing` > `verified` > `failed`). A chat loop alone is not a workflow engine
+- Immutable agent config - `replio serve` agents must never be able to change their own configuration, permissions, or tool list (control-plane rule from the use-case reference architecture)
+- Hash-chained / tamper-evident audit log - additive on session logs (enterprise.md recommendation), hash-chained append or WORM storage
 - Single-purpose agent fleet with "one agent per process, scoped to a folder" as the headline pattern. README + `docs/fleet.md` set the niche
 - Fleet and swarm orchestration as the two layers - fleet: supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), swarm: `/agent` personas, `delegate` tool, auditor agents, generate > check > correct
 - Community presence - decide on Discord/X channels and fill the README community link slots
-- Add multiuser capability or queue for API requests
+- Add multiuser capability or queue for API requests (request queue, per-token rate limits)
 - Add ReadTheDocs documentation and GitHub Pages website
 - Citations / source attribution - return URL + snippet with every answer
 - Bookmarks - `/bookmark add/remove/list` for session pinning
@@ -22,12 +26,15 @@
 
 ## Open
 
+- [ ] Project instructions file - per-worktree `AGENTS.md`-style context auto-loaded into the system prompt (claude-code `CLAUDE.md` parity)
+- [ ] Session recall - full-text search across past sessions (grep/index over `.replio/sessions/`) so an agent can answer from its own history
+- [ ] Tool dry-run mode - propose tool args/effects without executing (enterprise tool-gateway requirement)
 - [ ] Context-aware cross-plugin tool router - virtual tool names (`open`, `search`, ...) dispatch per-argument to the matching plugin handler via `register_handler(name, match=...)` (e.g. `open https://...` > replio-core-websearch, `open ../...` > replio-core-fs), with merged schemas and args-aware policy accessors
 - [ ] Swarm orchestration - agent cooperation layer (`docs/swarm.md`): `/agent` personas, `delegate` tool, auditor agents, generate > check > correct, and team patterns as sub-tasks below
 - [ ] Fleet orchestration - supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), the fleet orchestration layer in `docs/fleet.md`
 - [ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
 - [ ] Agent folder watcher - internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps
-- [ ] Plan/Build modes - read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery
+- [ ] Plan/Build modes - read-only planning posture vs. build (OpenCode analogue): write/edit/exec tools auto-`deny` via `ToolPolicy` in plan mode, no new machinery (`/plan` toggle; headless `--plan` flag)
 - [ ] Minimal web Control UI - stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue). Richer frameworks stay plugin-first
 - [ ] Externalize the bundled plugins (`replio-core-websearch`/`fs`/`exec`) into separate versioned repositories - the bundled copies stay the shipped defaults. Global/local plugins of the same name already override them
 - [ ] PyPI plugin source - discover installed plugin packages via `importlib.metadata` entry points (`replio.plugins` group)
@@ -61,7 +68,7 @@
   - [ ] Onboarding wizard (`replio wizard`) for data-source / MES interface setup
   - [ ] RBAC - role-based access control for enterprise deployments
   - [ ] Queue-based scaling - many concurrent sensor/chat feeds without blocking the loop
-- [ ] Session export to Markdown
+- [ ] Session export to Markdown (renderer over the session log; feeds conversation-sharing links)
 - [ ] Session import from Markdown/JSON
 - [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
 
