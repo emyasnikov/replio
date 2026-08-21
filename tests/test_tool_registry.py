@@ -176,6 +176,12 @@ class TestToolRegistry(unittest.TestCase):
         self.assertEqual(self.registry.activity('fetch_page', {'url': 'https://x.dev/p'}),
                          ('↓', 'Fetch', 'https://x.dev/p', ''))
 
+    def test_activity_fs_list_and_grep_glyphs(self):
+        self.assertEqual(self.registry.activity('list_dir', {'path': 'x', 'depth': 2}),
+                         ('*', 'List', 'x', 'depth=2'))
+        self.assertEqual(self.registry.activity('grep', {'pattern': 'foo', 'path': 'src'}),
+                         ('*', 'Grep', 'foo', 'path=src'))
+
     def test_activity_truncates_long_value(self):
         glyph, verb, label, params = self.registry.activity('run_command', {'command': 'x' * 200})
         self.assertEqual((glyph, verb), ('$', 'Run'))

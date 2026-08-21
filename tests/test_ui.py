@@ -42,6 +42,28 @@ class TestGlyphActivityLines(unittest.TestCase):
             ui.activity('$', 'Run', 'echo hi', [])
         self.assertIn('$ Run echo hi', err.getvalue())
 
+    def test_repl_tool_error_renders_first_line(self):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat._ui.tool_error('Error: boom\nsecond line')
+        value = out.getvalue()
+        self.assertIn('! Error: boom', value)
+        self.assertNotIn('second line', value)
+
+    def test_headless_tool_error_renders_when_verbose(self):
+        ui = HeadlessUI(auto='deny', verbose=True)
+        err = io.StringIO()
+        with patch('sys.stderr', new=err):
+            ui.tool_error('Error: boom')
+        self.assertIn('! Error: boom', err.getvalue())
+
+    def test_headless_tool_error_silent_when_not_verbose(self):
+        ui = HeadlessUI(auto='deny', verbose=False)
+        err = io.StringIO()
+        with patch('sys.stderr', new=err):
+            ui.tool_error('Error: boom')
+        self.assertEqual(err.getvalue(), '')
+
     def test_status_renders_glyph_when_mapped(self):
         value = self._capture_status('write_file', {'path': 'a.md', 'content': 'x'})
         self.assertIn('→ Write a.md', value)

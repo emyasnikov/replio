@@ -463,7 +463,10 @@ class Engine:
                 return f'[cancelled] User declined the {name} call'
         if self.config.get('tool_status_visible', True):
             self._show_tool_status(name, args)
-        return registry.execute(name, args, config=self.config)
+        result = registry.execute(name, args, config=self.config)
+        if result.startswith('Error') and self.config.get('show_errors', True):
+            self.ui.tool_error(result)
+        return result
 
     def _confirm_tool(self, name: str, args: dict) -> bool:
         key_arg = self._tool_registry.key_arg_for(name)

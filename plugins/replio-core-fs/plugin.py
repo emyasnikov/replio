@@ -151,6 +151,8 @@ def register_tools(registry):
         short="List a directory's contents",
         aliases=['ls'],
         param_aliases={'directory': 'path'},
+        glyph='*',
+        verb='List',
     )
     def list_dir(path: str = '.', depth: int = 1, _config=None) -> str:
         p = Path(path).expanduser()
@@ -288,6 +290,8 @@ def register_tools(registry):
         key_arg='pattern',
         short='Search file contents for a pattern',
         param_aliases={'query': 'pattern'},
+        glyph='*',
+        verb='Grep',
     )
     def grep(pattern: str, path: str = '.', glob: str = '*',
              _config=None) -> str:

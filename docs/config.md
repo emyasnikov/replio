@@ -31,6 +31,7 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `tool_status_visible`       | `true`                 | Show dimmed tool status in the REPL                                    |
 | `glyph_lines`               | `true`                 | Typed `<glyph> <verb> <arg>` status lines for mapped categories. When off, or for unmapped categories, the `[tool: arg]` oneliner is used |
 | `glyph_params`              | `true`                 | Append the tool call parameters to glyph status lines and confirm prompts (e.g. `← Read engine.py [offset=299, limit=85]`). Off for bare `<glyph> <verb> <arg>` |
+| `show_errors`               | `true`                 | Show a dimmed `! Error: ...` line (first line of the result) when a tool call fails. Off hides the line |
 | `tool_analysis`             | `false`                | Model-generated one-line analysis of each tool result (log-only)      |
 | `session_tool_max_chars`    | `0`                    | `0` = unlimited. Caps persisted tool-result content                    |
 | `tool_max_result_chars`     | `0`                    | `0` = unlimited. Caps tool-result content returned to the model (`... (truncated)` appended). With the default, the model sizes files via the `read_file` header and pages with `offset`/`limit` |

@@ -2,6 +2,8 @@
 
 ## v0.17.0 - 2026-08-21
 
+- Failed tool calls now render a dimmed `! Error: ...` line (first line of the result) under the activity line, for every tool through the shared dispatch point (agent loop, `/tool`, policy-denied calls), gated by the new `show_errors` config (default `true`)
+- `list_dir` and `grep` get the `*` glyph with distinct verbs (`* List`, `* Grep`), matching `glob`'s `* Glob` - they no longer render as `← Read`, which made directory listings and greps look like `read_file` calls
 - Glyph activity lines and confirm prompts now show the parameters the model passed (`← Read engine.py [offset=299, limit=85]`, `$ Run pytest [cwd=/workspace, timeout=600]`), gated by the new `glyph_params` config (default `true`). The label's own argument is not repeated
 - `run_command` now validates `cwd` (friendly `Error: cwd not found` instead of an `OSError`) and clamps `timeout` to 1..600 seconds, so a nonsense value like `10000` no longer executes
 - The confirm prompt prefix changed from `↳` to `?` so it no longer collides with the reserved delegate-category glyph

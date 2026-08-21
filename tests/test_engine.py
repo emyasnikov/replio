@@ -53,6 +53,9 @@ class _CaptureUI:
     def tool_status(self, name, value, body):
         self.labels.append(f'[{name}: {value}]')
 
+    def tool_error(self, msg):
+        self.labels.append(f'! {msg.split(chr(10), 1)[0]}')
+
     def confirm(self, name, label):
         self.labels.append(f'confirm: {label}')
         return True
@@ -200,6 +203,37 @@ class TestEngine(unittest.TestCase):
         self.engine._ui = ui
         self.engine._confirm_tool('run_command', {'command': 'ls', 'cwd': '/x'})
         self.assertEqual(ui.labels, ['confirm: run_command ls [cwd=/x]'])
+
+    def test_run_tool_error_renders_error_line(self):
+        ui = _CaptureUI()
+        self.engine._init_tooling()
+        self.engine._ui = ui
+        out = self.engine._run_tool('read_file', {'path': '/definitely/not/here.txt'})
+        self.assertIn('Error: file not found', out)
+        self.assertEqual(ui.labels, [
+            'confirm: read_file /definitely/not/here.txt',
+            '← Read /definitely/not/here.txt',
+            '! Error: file not found: /definitely/not/here.txt',
+        ])
+
+    def test_run_tool_error_suppressed_when_hidden(self):
+        ui = _CaptureUI()
+        self.engine._init_tooling()
+        self.engine._ui = ui
+        self.engine.config.set('show_errors', False)
+        self.engine._run_tool('read_file', {'path': '/definitely/not/here.txt'})
+        self.assertEqual(ui.labels, [
+            'confirm: read_file /definitely/not/here.txt',
+            '← Read /definitely/not/here.txt',
+        ])
+
+    def test_run_tool_success_no_error_line(self):
+        ui = _CaptureUI()
+        self.engine._init_tooling()
+        self.engine._ui = ui
+        self.engine._run_tool('run_command', {'command': 'echo hi'})
+        self.assertEqual(ui.labels, ['confirm: run_command echo hi', '$ Run echo hi'])
+        self.assertFalse(any(l.startswith('! ') for l in ui.labels))
 
     def test_denied_ask_tool_feeds_cancelled_result(self):
         self.engine.provider.chat.side_effect = [
