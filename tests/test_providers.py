@@ -1,7 +1,9 @@
 import unittest
 import tempfile
 import json
+import threading
 from pathlib import Path
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from replio.config import Config
 from replio.chat import ChatLoop
@@ -144,6 +146,96 @@ class TestProviderSwitching(unittest.TestCase):
         self.assertEqual(type(chat.provider), GroqProvider)
         self.assertEqual(chat.config.get('provider'), 'groq')
         chat._tmp.cleanup()
+
+
+class _RedirectAPIHandler(BaseHTTPRequestHandler):
+    protocol_version = 'HTTP/1.1'
+
+    def do_POST(self):
+        if self.path == '/start':
+            self.send_response(301)
+            self.send_header('Location', '/v1/chat/completions')
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+            return
+        if self.path == '/v1/chat/completions':
+            self.rfile.read(int(self.headers.get('Content-Length', 0)))
+            body = json.dumps({
+                'choices': [{
+                    'message': {'role': 'assistant', 'content': 'ok'},
+                    'finish_reason': 'stop',
+                }],
+            }).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        self.send_error(404)
+
+    def do_GET(self):
+        if self.path == '/v1/chat/completions':
+            self.send_error(405, 'Method Not Allowed')
+            return
+        self.send_error(404)
+
+    def log_message(self, *args):
+        pass
+
+
+class TestPostRedirect(unittest.TestCase):
+
+    def test_nonstreaming_post_survives_301(self):
+        server = ThreadingHTTPServer(('127.0.0.1', 0), _RedirectAPIHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            base = f'http://127.0.0.1:{server.server_port}'
+            p = OpenAIProvider(base_url=base, model='test-model')
+            result = p.chat_nonstreaming([{'role': 'user', 'content': 'hi'}])
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join()
+        self.assertEqual(result['role'], 'assistant')
+        self.assertEqual(result['content'], 'ok')
+
+
+class TestProviderEndpoints(unittest.TestCase):
+
+    def test_default_endpoints_no_double_v1(self):
+        cases = {
+            OllamaProvider: 'https://api.ollama.com/v1/chat/completions',
+            OpenAIProvider: 'https://api.openai.com/v1/chat/completions',
+            GroqProvider: 'https://api.groq.com/openai/v1/chat/completions',
+            AnthropicProvider: 'https://api.anthropic.com/v1/chat/completions',
+        }
+        for factory, expected in cases.items():
+            self.assertEqual(factory()._endpoint(), expected, factory.__name__)
+
+    def test_custom_base_without_v1_appends_v1(self):
+        p = OpenAICompatibleProvider(base_url='https://x.example')
+        self.assertEqual(p._endpoint(), 'https://x.example/v1/chat/completions')
+
+    def test_custom_base_with_v1_not_doubled(self):
+        p = OpenAICompatibleProvider(base_url='https://x.example/v1')
+        self.assertEqual(p._endpoint(), 'https://x.example/v1/chat/completions')
+
+    def test_list_models_url_normalized(self):
+        import urllib.request
+        p = OpenAIProvider()
+        captured = {}
+        real_urlopen = urllib.request.urlopen
+
+        def _fake_urlopen(req, *args, **kwargs):
+            captured['url'] = req.full_url
+            raise Exception('stop')
+
+        with unittest.mock.patch('urllib.request.urlopen', _fake_urlopen):
+            p.list_models()
+        self.assertEqual(captured.get('url'),
+                         'https://api.openai.com/v1/models')
 
 
 class TestReasoningPayload(unittest.TestCase):

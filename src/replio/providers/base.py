@@ -2,7 +2,7 @@ import json
 import urllib.request
 import urllib.error
 
-from ..utils.http import stream_sse
+from ..utils.http import stream_sse, PostRedirectHandler
 
 
 class BaseProvider:
@@ -75,7 +75,8 @@ class OpenAICompatibleProvider(BaseProvider):
         data = json.dumps(payload).encode('utf-8')
         req = urllib.request.Request(url, data=data, headers=self._headers())
         try:
-            with urllib.request.urlopen(req) as resp:
+            opener = urllib.request.build_opener(PostRedirectHandler)
+            with opener.open(req) as resp:
                 return json.loads(resp.read())
         except urllib.error.HTTPError as e:
             body = e.read().decode('utf-8', errors='replace')
@@ -165,10 +166,14 @@ class OpenAICompatibleProvider(BaseProvider):
             yield {'type': 'done'}
 
     def _endpoint(self):
-        return f'{self.base_url}/v1/chat/completions'
+        base = self.base_url.rstrip('/')
+        if base.endswith('/v1'):
+            return f'{base}/chat/completions'
+        return f'{base}/v1/chat/completions'
 
     def list_models(self) -> list[str]:
-        url = f'{self.base_url}/v1/models'
+        base = self.base_url.rstrip('/')
+        url = f'{base}/v1/models' if not base.endswith('/v1') else f'{base}/models'
         req = urllib.request.Request(url, headers=self._headers())
         try:
             with urllib.request.urlopen(req) as resp:
