@@ -9,7 +9,7 @@ DEFAULT_CONFIG = {
     'base_url': 'https://api.ollama.com',
     'api_key': '',
     'temperature': 0.7,
-    'max_tokens': 0,
+    'max_tokens': 8192,
     'system_prompt': '',
     'mode': 'build',
     'modes': {

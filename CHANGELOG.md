@@ -2,6 +2,9 @@
 
 ## v0.17.0 - 2026-08-21
 
+- `max_tokens` now defaults to `8192` (sent to the provider, overriding low provider-side defaults like Ollama's 2048 cap). Setting it to `0` omits it from the payload so the provider's own default applies
+- Truncation messages now distinguish a configured `max_tokens` cap from the provider's own default limit (no more misleading `(0)` in the session log when the limit is unset)
+- Session auto-names are now ASCII-only: non-ASCII letters are transliterated (NFKD, e.g. `prüfe` becomes `prufe`) instead of being stored in filenames
 - `/help` now lists tools as indented subcommand-style rows under `/tool` (replacing the separate "Available tools:" section), filtered by policy and mode like the `/tool` listing. Bare `/tool` shows the same rows with short descriptions
 - Fixed streaming and non-streaming provider requests failing with `405 Method Not Allowed` on endpoints that redirect - urllib converts POST to GET on 301/302/303 redirects, so `api.ollama.com/v1/chat/completions` (which 301-redirects to `ollama.com`) ended up GETting the chat endpoint and getting 405 back. A `PostRedirectHandler` now preserves the POST method and body across redirects (`utils/http.py`, `providers/base.py`), with loopback-server tests for both the SSE stream and non-streaming `_post`
 - Fixed OpenAI/Groq/Anthropic provider defaults posting to a doubled path - `DEFAULT_BASE_URL` already includes `/v1`, and `_endpoint()` appended `/v1/chat/completions` again, producing `/v1/v1/chat/completions` (404). `_endpoint()` and `list_models()` now normalize a trailing `/v1` instead of doubling it, so default and custom base URLs both resolve correctly

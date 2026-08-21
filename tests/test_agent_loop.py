@@ -154,6 +154,7 @@ class TestAgentLoop(unittest.TestCase):
         self.assertIn('Agent loop failed: boom', errors[0]['message'])
 
     def test_length_finish_logs_truncation_error(self):
+        self.chat.config.set('max_tokens', 500)
         self.chat.provider.chat.return_value = [
             {'type': 'token', 'content': 'Part of an answer'},
             {'type': 'done', 'reason': 'length'},
@@ -161,8 +162,20 @@ class TestAgentLoop(unittest.TestCase):
         self._run()
         errors = self.chat.current_session.errors
         self.assertEqual(len(errors), 1)
-        self.assertIn('max_tokens', errors[0]['message'])
+        self.assertIn('max_tokens limit reached (500)', errors[0]['message'])
         self.assertEqual(self._assistant_msgs()[0]['content'], 'Part of an answer')
+
+    def test_length_finish_unset_limit_mentions_provider_default(self):
+        self.chat.config.set('max_tokens', 0)
+        self.chat.provider.chat.return_value = [
+            {'type': 'token', 'content': 'Part of an answer'},
+            {'type': 'done', 'reason': 'length'},
+        ]
+        self._run()
+        errors = self.chat.current_session.errors
+        self.assertEqual(len(errors), 1)
+        self.assertIn('provider\'s default max_tokens limit', errors[0]['message'])
+        self.assertNotIn('(0)', errors[0]['message'])
 
     def test_context_size_printed_after_response(self):
         self.chat.provider.chat.return_value = [

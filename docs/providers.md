@@ -61,7 +61,7 @@ The loop runs one SSE stream per turn. When the model only produces content, tha
 
 `OpenAICompatibleProvider` (`src/replio/providers/base.py`) builds an OpenAI-format payload (`model`, `messages`, `temperature`, optional `max_tokens`, optional `tools`, `stream`), POSTs it to `<base_url>/v1/chat/completions`, and streams the SSE response line by line. Streaming deltas are accumulated: `reasoning_content` becomes `thinking` events, `content` becomes `token` events, and fragmented `tool_calls` deltas are reassembled by index into complete function-call objects. HTTP and network errors are returned as `error` events.
 
-`max_tokens` defaults to `0` = unset (omitted from the payload, so the provider's own default applies). A positive value caps output. Hitting it prints a warning and logs a session `errors` entry.
+`max_tokens` defaults to `8192` (sent to the provider, overriding low provider-side defaults like Ollama's 2048 cap). Set it to `0` to omit it from the payload, in which case the provider's own default applies. Hitting the limit prints a warning and logs a session `errors` entry - the warning text distinguishes a configured cap from the provider's default.
 
 ## Requesting reasoning
 

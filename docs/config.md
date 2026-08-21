@@ -22,7 +22,7 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
 | `api_key`                   | `""`                   | Provider API key                                                       |
 | `temperature`               | `0.7`                  | Sampling temperature                                                   |
-| `max_tokens`                | `0`                    | `0` = unset (provider default). Positive value caps output             |
+| `max_tokens`                | `8192`                 | Output token cap sent to the provider. `0` = unset (provider default applies, e.g. Ollama caps at 2048). Default `8192` overrides low provider defaults |
 | `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event with no content |
 | `stream_retry_delay`        | `0.5`                  | Seconds to wait between stream retries                                  |
 | `system_prompt`             | `""`                   | Optional system prompt, injected for every front-end (REPL, `run`, `serve`) |

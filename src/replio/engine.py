@@ -1,5 +1,6 @@
 import json
 import time
+import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
@@ -147,7 +148,8 @@ class Engine:
         space = truncated.rfind(' ')
         if space > 0:
             truncated = truncated[:space]
-        msg_part = ''.join(c if c.isalnum() or c in '-_ ' else '' for c in truncated).strip().replace(' ', '_')
+        msg_part = ''.join(c for c in unicodedata.normalize('NFKD', truncated)
+                           if c.isascii() and (c.isalnum() or c in '-_ ')).strip().replace(' ', '_')
         if not msg_part:
             return
         old = self.sessions.sessions_dir / f'{self.current_session.name}.json'
@@ -259,11 +261,18 @@ class Engine:
                                 reason = event.get('reason', '')
                                 end_thinking()
                                 if reason == 'length':
-                                    msg = ('Assistant output truncated: max_tokens limit reached '
-                                           f'({self.config.get("max_tokens")})')
+                                    limit = self.config.get('max_tokens')
+                                    if limit > 0:
+                                        msg = ('Assistant output truncated: max_tokens limit reached '
+                                               f'({limit})')
+                                        self.ui.warning('Assistant output truncated (max_tokens reached); '
+                                                        'use /config max_tokens N')
+                                    else:
+                                        msg = ("Assistant output truncated: the provider's default "
+                                               'max_tokens limit was reached')
+                                        self.ui.warning('Assistant output truncated (provider max_tokens '
+                                                        'limit reached); set /config max_tokens N to raise it')
                                     self.current_session.add_error(0, msg)
-                                    self.ui.warning('Assistant output truncated (max_tokens reached); '
-                                                    'use /config max_tokens N')
                                     status = 'truncated'
                                 break
                     except Exception as e:

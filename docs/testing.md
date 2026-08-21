@@ -22,12 +22,12 @@ Run tests before committing changes to verify core logic isn't broken.
 
 | File | Covers |
 |------|--------|
-| `test_agent_loop.py` | Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty/truncated-stream multi-attempt retry, recovery hint after failed tool-call rounds |
+| `test_agent_loop.py` | Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty/truncated-stream multi-attempt retry, recovery hint after failed tool-call rounds, truncation error messages (configured cap vs provider default) |
 | `test_bundled_plugins.py` | Bundled plugin discovery, tool registration, search service, bundled update/uninstall blocking |
 | `test_cli.py` | `replio run`: JSON/text output, session-id persistence, exit codes |
 | `test_commands.py` | Slash-command registration and `/help` output (aliases, subcommands, tools listed under `/tool`, mode-filtered listings) |
 | `test_completion.py` | Readline tab completion: commands, session names, plugin names, tool names |
-| `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions, plan-mode schema filtering, instruction injection, per-message `mode` |
+| `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-message `mode` |
 | `test_http.py` | SSE streaming: data parsing, `done` marker, multi-byte split across chunks, HTTP errors, POST-preserving redirects (loopback server) |
 | `test_machine_tools.py` | `read_file` / `list_dir` behavior: numbering, offsets, headers, size probe (`limit=0`), `tool_max_result_chars` cap, error paths |
 | `test_mcp.py` | MCP plugin: JSON-RPC framing, stdio/HTTP transports, modern/legacy negotiation, tool import + prefixing, server dispatch (`initialize`/`discover`/`tools/*`/`resources/*`), `_meta` validation, policy integration |

@@ -174,7 +174,7 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
 
 Full schema and defaults are in `docs/config.md`. Notable edge cases:
 
-- `max_tokens` defaults to `0` = unset (omitted from the provider payload, so the provider's own default applies). Set a positive value to re-enable a cap. Hitting it prints a warning and logs a session `errors` entry.
+- `max_tokens` defaults to `8192` - the cap sent to the provider, which overrides low provider-side defaults (e.g. Ollama's 2048). Set it to `0` to omit it from the provider payload, so the provider's own default applies. Hitting the limit prints a warning (distinguishing a configured cap from the provider's default) and logs a session `errors` entry.
 - `plugins` lists the plugins to load, and the bundled plugins are in the default. An empty list loads all discovered plugins. `plugins.enabled`/`plugins.deny` from earlier versions are migrated automatically.
 
 ## Testing

@@ -122,6 +122,25 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(result.errors[0]['code'], 401)
         self.assertEqual(result.errors[0]['message'], 'Unauthorized')
 
+    def test_auto_name_session_transliterates_non_ascii(self):
+        self.engine.provider.chat.return_value = [
+            {'type': 'token', 'content': 'Answer'},
+            {'type': 'done', 'reason': 'stop'},
+        ]
+        self.engine.chat('Lies die Datei und prüfe sie')
+        name = self.engine.current_session.name
+        self.assertIn('_lies_die_datei_und_prufe', name)
+        self.assertTrue(all(ord(c) < 128 for c in name))
+
+    def test_auto_name_session_drops_non_alnum(self):
+        self.engine.provider.chat.return_value = [
+            {'type': 'token', 'content': 'Answer'},
+            {'type': 'done', 'reason': 'stop'},
+        ]
+        self.engine.chat('what is 2+2? and <b>html</b>')
+        name = self.engine.current_session.name
+        self.assertIn('_what_is_22_and', name)
+
     def test_load_or_create_session_persists_and_reloads(self):
         self.engine.load_or_create_session('foo')
         self.assertEqual(self.engine.current_session.name, 'foo')
