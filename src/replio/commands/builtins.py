@@ -13,32 +13,34 @@ def _command_label(name, aliases):
     return label
 
 
-def _render_commands(registry, names):
+def _render_commands(registry, names, chat=None):
     metas = {n: registry.meta.get(n, {}) for n in names}
     labels = {n: _command_label(n, metas[n].get('aliases', [])) for n in names}
     max_label = max((len(l) for l in labels.values()), default=0)
     desc_col = 2 + max_label + 2
     for n in names:
         print(f'  {labels[n]:<{desc_col - 2}}{metas[n].get("description", "")}')
-        for sub, sdesc in metas[n].get('subcommands', []):
+        subs = list(metas[n].get('subcommands', []))
+        if chat is not None and n == 'tool':
+            rows = _tool_rows(chat)
+            if rows is None:
+                subs.append(('(tool calling disabled)', ''))
+            elif not rows:
+                subs.append(('(no tools allowed)', ''))
+            else:
+                subs.extend(rows)
+        for sub, sdesc in subs:
             print(f'{" " * SUB_INDENT}{sub:<{desc_col - SUB_INDENT}}{sdesc}')
 
 
-def _render_tools(chat):
+def _tool_rows(chat):
     chat._init_tooling()
     if not chat._tool_registry or not chat._tool_policy:
-        print('  (tool calling disabled)')
-        return
-    allowed = sorted(n for n in chat._tool_registry.names()
-                     if chat._tool_policy.allowed(
-                         n, chat._tool_registry.permission_for(n)))
-    if not allowed:
-        print('  (no tools allowed)')
-        return
-    rows = [(n, chat._tool_registry.info(n)) for n in allowed]
-    name_w = max(len(n) for n, _ in rows)
-    for n, info in rows:
-        print(f'  {n:<{name_w + 2}}{info["short"]}')
+        return None
+    return [(n, chat._tool_registry.info(n)['short']) for n in sorted(
+        n for n in chat._tool_registry.names()
+        if chat._tool_policy.allowed(
+            n, chat._tool_registry.permission_for(n)))]
 
 
 def _render_tool_detail(chat, name):
@@ -70,7 +72,7 @@ def register_builtins(registry):
         if arg:
             canonical = registry.canonical(arg)
             if canonical:
-                _render_commands(registry, [canonical])
+                _render_commands(registry, [canonical], chat)
                 return
             chat._init_tooling()
             if chat._tool_registry and chat._tool_registry.info(arg):
@@ -79,10 +81,7 @@ def register_builtins(registry):
             print(f'No help available for "{arg}"')
             return
         print('Available commands:')
-        _render_commands(registry, sorted(registry.meta))
-        print()
-        print('Available tools:')
-        _render_tools(chat)
+        _render_commands(registry, sorted(registry.meta), chat)
 
     @registry.register('exit', aliases=['quit', 'q'], description='Exit the REPL')
     def exit_cmd(_=None):
@@ -339,15 +338,17 @@ def register_builtins(registry):
             return
         parts = arg.strip().split(maxsplit=1)
         if not arg:
-            allowed = sorted(n for n in chat._tool_registry.names()
-                             if chat._tool_policy.allowed(
-                                 n, chat._tool_registry.permission_for(n)))
-            if not allowed:
+            rows = _tool_rows(chat)
+            if rows is None:
+                print('Tool calling is disabled (tool_calling: false)')
+                return
+            if not rows:
                 print('No tools allowed')
                 return
             print('Available tools:')
-            for n in allowed:
-                print(f'  {n}')
+            name_w = max(len(n) for n, _ in rows)
+            for n, tdesc in rows:
+                print(f'  {n:<{name_w + 2}}{tdesc}')
             print('Use /help <tool> for details')
             return
         name = parts[0]

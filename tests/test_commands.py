@@ -44,12 +44,18 @@ class TestToolCommand(unittest.TestCase):
         output = self._dispatch('/help')
         self.assertIn('\n    new', output)
 
-    def test_help_shows_tools_section(self):
+    def test_help_lists_tools_under_tool(self):
         output = self._dispatch('/help')
-        self.assertIn('Available tools:', output)
+        self.assertNotIn('Available tools:', output)
+        self.assertIn('\n    run_command', output)
         self.assertIn('Run a shell command', output)
         self.assertIn('Find files matching a glob pattern', output)
         self.assertNotIn('[exec · bash: ask]', output)
+
+    def test_help_tool_shows_tool_rows(self):
+        output = self._dispatch('/help tool')
+        self.assertIn('\n    read_file', output)
+        self.assertIn('Read the contents of a text file', output)
 
     def test_help_tool_detail(self):
         output = self._dispatch('/help read_file')
@@ -230,8 +236,8 @@ class TestToolCommand(unittest.TestCase):
     def test_tool_listing_respects_deny(self):
         self.chat.config.set('tools.deny', ['web_search'])
         output = self._dispatch('/tool')
-        self.assertNotIn('web_search', output)
-        self.assertIn('read_file', output)
+        self.assertNotIn('\n  web_search', output)
+        self.assertIn('\n  read_file', output)
 
     def test_tool_ask_prompt_declined(self):
         self.chat.config.set('tool_permission', {'web': 'ask'})
@@ -401,9 +407,17 @@ class TestModeCommand(unittest.TestCase):
     def test_plan_mode_tool_listing_hides_write_tools(self):
         self._dispatch('/mode plan')
         output = self._dispatch('/tool')
-        self.assertNotIn('write_file', output)
-        self.assertNotIn('run_command', output)
-        self.assertIn('read_file', output)
+        self.assertNotIn('\n  write_file', output)
+        self.assertNotIn('\n  run_command', output)
+        self.assertIn('\n  read_file', output)
+
+    def test_plan_mode_help_lists_hides_write_tools(self):
+        self._dispatch('/mode plan')
+        output = self._dispatch('/help')
+        self.assertNotIn('\n    write_file', output)
+        self.assertNotIn('\n    run_command', output)
+        self.assertIn('\n    read_file', output)
+        self.assertIn('\n    list_dir', output)
 
     def test_switch_back_to_build_restores_tools(self):
         self._dispatch('/mode plan')

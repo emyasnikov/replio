@@ -25,7 +25,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_agent_loop.py` | Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty/truncated-stream multi-attempt retry, recovery hint after failed tool-call rounds |
 | `test_bundled_plugins.py` | Bundled plugin discovery, tool registration, search service, bundled update/uninstall blocking |
 | `test_cli.py` | `replio run`: JSON/text output, session-id persistence, exit codes |
-| `test_commands.py` | Slash-command registration and `/help` output (aliases, subcommands, tools section) |
+| `test_commands.py` | Slash-command registration and `/help` output (aliases, subcommands, tools listed under `/tool`, mode-filtered listings) |
 | `test_completion.py` | Readline tab completion: commands, session names, plugin names, tool names |
 | `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions, plan-mode schema filtering, instruction injection, per-message `mode` |
 | `test_http.py` | SSE streaming: data parsing, `done` marker, multi-byte split across chunks, HTTP errors, POST-preserving redirects (loopback server) |
