@@ -1,4 +1,15 @@
 import subprocess
+from pathlib import Path
+
+MAX_TIMEOUT = 600
+DEFAULT_TIMEOUT = 30
+
+
+def _clamp_timeout(timeout) -> int:
+    try:
+        return max(1, min(int(timeout), MAX_TIMEOUT))
+    except (TypeError, ValueError):
+        return DEFAULT_TIMEOUT
 
 
 def _cap(config=None) -> int:
@@ -33,7 +44,7 @@ def register_tools(registry):
                 },
                 'timeout': {
                     'type': 'integer',
-                    'description': 'Timeout in seconds before the command is killed',
+                    'description': 'Timeout in seconds before the command is killed (capped at 600)',
                 },
             },
             'required': ['command'],
@@ -49,6 +60,9 @@ def register_tools(registry):
     def run_command(command: str, cwd: str | None = None,
                     timeout: int = 30, _config=None) -> str:
         max_chars = _cap(_config)
+        if cwd and not Path(cwd).is_dir():
+            return f'Error: cwd not found: {cwd}'
+        timeout = _clamp_timeout(timeout)
         try:
             proc = subprocess.run(
                 command, shell=True, capture_output=True, text=True,

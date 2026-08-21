@@ -135,3 +135,5 @@ See [config.md](config.md) for the `tools.allow`, `tools.deny`, and `tool_permis
 ## Status and activity lines
 
 Tool status is ephemeral REPL/CLI UI - it is never persisted to session files (tool calls and results are already recorded there). Registered tools render a typed activity line - `<glyph> <verb> <key_arg>` (e.g. `← Read README.md`, `→ Write test.md`, `$ Run pytest`) - gated by the `glyph_lines` config (default `true`). Category defaults map to glyphs: read `←` Read, write `→` Write, search `%` Search, exec `$` Run, ask `~` Ask, todo `-` Todo, delegate `↳` Call. Tools without a mapped category fall back to the `[tool: key_arg]` oneliner plus any `status` detail lines.
+
+When `glyph_params` is on (default `true`), the parameters the model passed - excluding the one already shown in the label - are appended: `← Read engine.py [offset=299, limit=85]`, `$ Run pytest [cwd=/workspace, timeout=600]`. Confirm prompts show the same suffix so the cwd, timeout, and other arguments are visible before approving.

@@ -148,28 +148,43 @@ class TestToolRegistry(unittest.TestCase):
 
     def test_activity_category_defaults(self):
         self.assertEqual(self.registry.activity('web_search', {'query': 'hi there'}),
-                         ('%', 'Search', 'hi there'))
+                         ('%', 'Search', 'hi there', ''))
         self.assertEqual(self.registry.activity('run_command', {'command': 'echo hi'}),
-                         ('$', 'Run', 'echo hi'))
+                         ('$', 'Run', 'echo hi', ''))
         self.assertEqual(self.registry.activity('write_file', {'path': 'a.md', 'content': 'x'}),
-                         ('→', 'Write', 'a.md'))
+                         ('→', 'Write', 'a.md', 'content=x'))
         self.assertEqual(self.registry.activity('read_file', {'path': 'a.py'}),
-                         ('←', 'Read', 'a.py'))
+                         ('←', 'Read', 'a.py', ''))
+
+    def test_activity_params_exclude_key_arg_in_schema_order(self):
+        self.assertEqual(
+            self.registry.activity('open', {'url': 'https://example.com', 'offset': 0}),
+            ('↓', 'Open', 'https://example.com', 'offset=0'))
+        self.assertEqual(
+            self.registry.activity('run_command',
+                                   {'command': 'ls', 'cwd': '/workspace', 'timeout': 10000}),
+            ('$', 'Run', 'ls', 'cwd=/workspace, timeout=10000'))
+
+    def test_activity_params_aliases_resolved(self):
+        self.assertEqual(
+            self.registry.activity('read_file', {'file': 'a.py', 'limit': 5}),
+            ('←', 'Read', 'a.py', 'limit=5'))
 
     def test_activity_per_tool_override(self):
         self.assertEqual(self.registry.activity('glob', {'pattern': '**/*.py'}),
-                         ('*', 'Glob', '**/*.py'))
+                         ('*', 'Glob', '**/*.py', ''))
         self.assertEqual(self.registry.activity('fetch_page', {'url': 'https://x.dev/p'}),
-                         ('↓', 'Fetch', 'https://x.dev/p'))
+                         ('↓', 'Fetch', 'https://x.dev/p', ''))
 
     def test_activity_truncates_long_value(self):
-        glyph, verb, label = self.registry.activity('run_command', {'command': 'x' * 200})
+        glyph, verb, label, params = self.registry.activity('run_command', {'command': 'x' * 200})
         self.assertEqual((glyph, verb), ('$', 'Run'))
         self.assertEqual(len(label), 80)
+        self.assertEqual(params, '')
 
     def test_activity_missing_key_arg_falls_back_to_name(self):
         self.assertEqual(self.registry.activity('run_command', {}),
-                         ('$', 'Run', 'run_command'))
+                         ('$', 'Run', 'run_command', ''))
 
     def test_activity_unknown_tool(self):
         self.assertIsNone(self.registry.activity('nonexistent', {}))
@@ -196,7 +211,7 @@ class TestToolRegistry(unittest.TestCase):
             return 'ok'
 
         self.assertEqual(reg.activity('peek_dir', {'path': '/x'}),
-                         ('←', 'Scan', '/x'))
+                         ('←', 'Scan', '/x', ''))
 
     def test_custom_status_callback(self):
         reg = ToolRegistry()

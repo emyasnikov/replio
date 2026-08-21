@@ -26,6 +26,7 @@ DEFAULT_CONFIG = {
     'tool_calling': True,
     'tool_status_visible': True,
     'glyph_lines': True,
+    'glyph_params': True,
     'tool_analysis': False,
     'session_tool_max_chars': 0,
     'tool_max_result_chars': 0,

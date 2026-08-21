@@ -136,7 +136,29 @@ class ToolRegistry:
         canon, tool = self._canonical(name)
         return tool['key_arg'] if tool else None
 
-    def activity(self, name: str, arguments: dict) -> tuple[str, str, str] | None:
+    def params_str(self, name: str, arguments: dict,
+                   exclude: tuple[str, ...] = ()) -> str:
+        canon, tool = self._canonical(name)
+        if not tool:
+            return ''
+        args = self.clean_args(name, arguments)
+        key_arg = tool.get('key_arg')
+        if key_arg:
+            args.pop(key_arg, None)
+        for k in exclude:
+            args.pop(k, None)
+        if not args:
+            return ''
+        props = tool['schema']['function']['parameters'].get('properties', {})
+        ordered = sorted(args.items(),
+                         key=lambda kv: list(props).index(kv[0]) if kv[0] in props else 99)
+        parts = []
+        for k, v in ordered:
+            text = str(v)[:60]
+            parts.append(f'{k}={text}')
+        return ', '.join(parts)
+
+    def activity(self, name: str, arguments: dict) -> tuple[str, str, str, str] | None:
         canon, tool = self._canonical(name)
         if not tool:
             return None
@@ -162,7 +184,8 @@ class ToolRegistry:
         if label is None:
             key_arg = tool.get('key_arg')
             label = str(args[key_arg])[:80] if key_arg and args.get(key_arg) else name
-        return glyph, verb, label
+        exclude = tuple(k for k, v in args.items() if str(v)[:80] == label)
+        return glyph, verb, label, self.params_str(name, arguments, exclude=exclude)
 
     def info(self, name: str) -> dict | None:
         canon, tool = self._canonical(name)

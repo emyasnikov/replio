@@ -186,6 +186,24 @@ class TestMachineTools(unittest.TestCase):
         out = self.run_tool('run_command', command='sleep 5', cwd=str(self.root), timeout=1)
         self.assertIn('timed out', out)
 
+    def test_run_command_missing_cwd(self):
+        out = self.run_tool('run_command', command='echo hi',
+                            cwd='/definitely/not/a/real/dir')
+        self.assertIn("Error: cwd not found: /definitely/not/a/real/dir", out)
+
+    def test_run_command_clamps_timeout(self):
+        import importlib.util
+        from replio.plugins.manager import PluginManager
+        entry = PluginManager._bundled_dir() / 'replio-core-exec' / 'plugin.py'
+        spec = importlib.util.spec_from_file_location('_test_exec_plugin', str(entry))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        self.assertEqual(mod._clamp_timeout(10000), mod.MAX_TIMEOUT)
+        self.assertEqual(mod._clamp_timeout(5), 5)
+        self.assertEqual(mod._clamp_timeout(0), 1)
+        self.assertEqual(mod._clamp_timeout('nonsense'), mod.DEFAULT_TIMEOUT)
+        self.assertEqual(mod._clamp_timeout(None), mod.DEFAULT_TIMEOUT)
+
     def test_run_command_cap_truncates(self):
         cfg = Config(path=self._cfg_tmp.name)
         cfg.data['tool_max_result_chars'] = 20

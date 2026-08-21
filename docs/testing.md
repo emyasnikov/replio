@@ -27,9 +27,9 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_cli.py` | `replio run`: JSON/text output, session-id persistence, exit codes |
 | `test_commands.py` | Slash-command registration and `/help` output (aliases, subcommands, tools listed under `/tool`, mode-filtered listings) |
 | `test_completion.py` | Readline tab completion: commands, session names, plugin names, tool names |
-| `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-message `mode` |
+| `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-message `mode`, glyph param suffix gating |
 | `test_http.py` | SSE streaming: data parsing, `done` marker, multi-byte split across chunks, HTTP errors, POST-preserving redirects (loopback server) |
-| `test_machine_tools.py` | `read_file` / `list_dir` behavior: numbering, offsets, headers, size probe (`limit=0`), `tool_max_result_chars` cap, error paths |
+| `test_machine_tools.py` | `read_file` / `list_dir` behavior: numbering, offsets, headers, size probe (`limit=0`), `tool_max_result_chars` cap, error paths, `run_command` cwd validation and timeout clamp |
 | `test_mcp.py` | MCP plugin: JSON-RPC framing, stdio/HTTP transports, modern/legacy negotiation, tool import + prefixing, server dispatch (`initialize`/`discover`/`tools/*`/`resources/*`), `_meta` validation, policy integration |
 | `test_modes.py` | Mode resolution and policy merging: built-ins (`build`/`plan`), custom modes, unknown fallback, instruction composition |
 | `test_ollama_provider.py` | Streaming provider: fragmented tool-call reassembly, thinking events, payload construction |
@@ -39,7 +39,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_session_log.py` | Session model: append-only serialization, `tool_max_chars` truncation, metadata |
 | `test_tool_calling.py` | Tool-calling flow: single and multiple calls, unknown tools, query refinement |
 | `test_tool_policy.py` | `ToolPolicy`: allow/ask/deny, worktree escalation, deny/allowlist precedence |
-| `test_tool_registry.py` | Tool registration metadata, schema, refine flags, `_config` pass-through |
+| `test_tool_registry.py` | Tool registration metadata, schema, refine flags, `_config` pass-through, activity params strings |
 | `test_ui.py` | UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering |
 
 `tests/helpers.py` provides `make_chat(config_data)` - a `ChatLoop` with a mocked provider - used by most tests to drive the engine without a model.

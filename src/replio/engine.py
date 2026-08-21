@@ -471,13 +471,18 @@ class Engine:
         if key_arg and args.get(key_arg):
             value = str(args[key_arg])
             label = f'{name} {value[:80]}'
+        params = self._tool_registry.params_str(name, args)
+        if params and self.config.get('glyph_params', True):
+            label = f'{label} [{params}]'
         return self.ui.confirm(name, label)
 
     def _show_tool_status(self, name, arguments):
         value, body = self._tool_registry.status_parts(name, arguments)
         activity = self._tool_registry.activity(name, arguments)
         if activity is not None and self.config.get('glyph_lines', True):
-            glyph, verb, label = activity
+            glyph, verb, label, params = activity
+            if params and self.config.get('glyph_params', True):
+                label = f'{label} [{params}]'
             self.ui.activity(glyph, verb, label, body)
         else:
             self.ui.tool_status(name, value, body)

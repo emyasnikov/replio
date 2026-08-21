@@ -43,6 +43,21 @@ def make_engine(config_data: dict | None = None) -> Engine:
     return engine
 
 
+class _CaptureUI:
+    def __init__(self):
+        self.labels = []
+
+    def activity(self, glyph, verb, label, body):
+        self.labels.append(f'{glyph} {verb} {label}')
+
+    def tool_status(self, name, value, body):
+        self.labels.append(f'[{name}: {value}]')
+
+    def confirm(self, name, label):
+        self.labels.append(f'confirm: {label}')
+        return True
+
+
 class TestEngine(unittest.TestCase):
 
     def setUp(self):
@@ -162,6 +177,29 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(out, '[cancelled] User declined the run_command call')
         self.engine._ui = HeadlessUI(auto='allow')
         self.assertEqual(self.engine._confirm_tool('run_command', {'command': 'echo hi'}), True)
+
+    def test_show_tool_status_renders_params_when_enabled(self):
+        ui = _CaptureUI()
+        self.engine._init_tooling()
+        self.engine._ui = ui
+        self.engine._show_tool_status(
+            'run_command', {'command': 'ls', 'cwd': '/workspace', 'timeout': 10000})
+        self.assertEqual(ui.labels, ['$ Run ls [cwd=/workspace, timeout=10000]'])
+
+    def test_show_tool_status_omits_params_when_disabled(self):
+        ui = _CaptureUI()
+        self.engine._init_tooling()
+        self.engine._ui = ui
+        self.engine.config.set('glyph_params', False)
+        self.engine._show_tool_status('run_command', {'command': 'ls', 'cwd': '/workspace'})
+        self.assertEqual(ui.labels, ['$ Run ls'])
+
+    def test_confirm_label_includes_params(self):
+        ui = _CaptureUI()
+        self.engine._init_tooling()
+        self.engine._ui = ui
+        self.engine._confirm_tool('run_command', {'command': 'ls', 'cwd': '/x'})
+        self.assertEqual(ui.labels, ['confirm: run_command ls [cwd=/x]'])
 
     def test_denied_ask_tool_feeds_cancelled_result(self):
         self.engine.provider.chat.side_effect = [
