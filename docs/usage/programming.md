@@ -19,14 +19,11 @@ The pipeline is one direction:
 
 ```text
 Human: issue or goal
-    |   lead writes a plan
-    v
+  > lead writes a plan
 Human gate: approve the plan
-    |   implementer changes a feature worktree
-    v
+  > implementer changes a feature worktree
 Tester: run and fix tests in the same worktree
-    |   reviewer reads only the diff and results
-    v
+  > reviewer reads only the diff and results
 Human gate: merge the branch (by hand, never by an agent)
 ```
 
@@ -36,7 +33,8 @@ The principle behind the role split: **no single agent may plan, implement, test
 
 - Raspberry Pi (64-bit OS) or any Linux box running systemd, with Python 3.10+
 - Git, for the worktree isolation
-- A Replio-capable model. The examples use cloud Ollama with `gpt-oss:20b-cloud`; see [Step 2](#step-2-pick-the-model) for alternatives including a fully local Pi setup
+- `pipx` (Raspberry Pi OS: `sudo apt install pipx`) for the Replio install
+- A Replio-capable model - the examples use cloud Ollama with `gpt-oss:20b-cloud`; see [Step 2](#step-2-pick-the-model) for other cloud models, and the [Raspberry Pi notes](#raspberry-pi-notes) for a fully local option
 
 ## Layout
 
@@ -55,17 +53,18 @@ All agents live under one directory so the permissions worktree scoping is easy 
 
 Each of `lead`, `tester`, `reviewer`, and `feature-hello` holds its own `.replio/config.json`. Sessions are written next to it, under `.replio/sessions/`, so every agent keeps its own append-only audit log.
 
-## Step 1 - install Replio
+## Step 1 - Install Replio
+
+> Installs pipx and Replio for your user only; the system Python stays untouched. Re-run `pipx upgrade replio` after a Replio release.
 
 ```bash
-# Risk: installs into the venv only; the system Python stays untouched.
-# Re-run after a Replio release by repeating the pip install line.
-python3 -m venv ~/replio-venv
-~/replio-venv/bin/pip install --upgrade replio
-~/replio-venv/bin/replio --version
+sudo apt install pipx
+pipx install replio
+pipx ensurepath        # add ~/.local/bin to PATH; re-login or open a new shell
+replio --version
 ```
 
-## Step 2 - pick the model
+## Step 2 - Pick the model
 
 The examples use the **cloud Ollama** provider with **`gpt-oss:20b-cloud`**, a 20B coding-oriented model that runs off-device, so the Pi does no inference:
 
@@ -80,41 +79,40 @@ The examples use the **cloud Ollama** provider with **`gpt-oss:20b-cloud`**, a 2
 
 Alternatives:
 
-| Model | Where it runs | Notes |
-|-------|---------------|-------|
-| `gpt-oss:20b-cloud` | Ollama cloud | Default in this guide; good quality/speed balance |
-| `gpt-oss:120b-cloud` | Ollama cloud | Stronger reviewer model, slower and more expensive |
-| `qwen3-coder:14b` | Local Ollama on the Pi | Fully offline; slowish on 8GB RAM |
-| `qwen3:4b` | Local Ollama on the Pi | Fits small Pi boards; keep tasks narrow |
+| Model | Notes |
+|-------|-------|
+| `gpt-oss:20b-cloud` | Default in this guide; good quality/speed balance |
+| `gpt-oss:120b-cloud` | Stronger reviewer model, slower and more expensive |
 
 > Tip: use a different model for the reviewer than the implementer, with a fresh session, so a flawed plan is not rubber-stamped by the same model and context.
 
 The API key can live in the agent's `.replio/config.json`, in the global `~/.config/replio/config.json`, or in the `REPLIO_API_KEY` environment variable. Never commit a key to git.
 
-## Step 3 - clone the repo and create the worktrees
+## Step 3 - Clone the repo and create the worktrees
+
+> Creates a directory tree under your home directory. Nothing destructive.
 
 ```bash
-# Risk: creates a directory tree under your home directory. Nothing destructive.
 mkdir -p ~/replio-agents/agents ~/replio-agents/workspace
 git clone <your-repo-url> ~/replio-agents/workspace/repo
 ```
 
 One implementer works per task, on its own branch in a git worktree. A worktree is a full checkout living in its own folder, so two implementers never write into the same directory:
 
+> git worktree books a branch in the main repo. The worktree is just a folder (see `git worktree list`). Remove it later with `git worktree remove`.
+
 ```bash
-# Risk: git worktree books a branch in the main repo. The worktree is just a
-# folder (see `git worktree list`). Remove it later with `git worktree remove`.
 git -C ~/replio-agents/workspace/repo worktree add \
   ~/replio-agents/workspace/feature-hello -b feature/hello
 ```
 
-## Step 4 - configure the roles
+## Step 4 - Configure the roles
 
 Create the role folders, then give each one a `.replio/config.json`:
 
+> Plain mkdir under your home directory. The .replio dirs are created by the first run, so pre-creating them is optional but convenient.
+
 ```bash
-# Risk: plain mkdir under your home directory. The .replio dirs are created by
-# the first run, so pre-creating them is optional but convenient.
 mkdir -p ~/replio-agents/agents/{lead,tester,reviewer}
 ```
 
@@ -185,30 +183,32 @@ Worktree scoping ([docs/tools.md](../tools.md)) escalates any `read_file` / `wri
 
 The reviewer gets the diff as an input file, not by running git itself. That keeps the reviewer purely read-only and gives the human gate control over what the reviewer sees:
 
+> Writes /tmp/review-input.diff; safe, but keep the file until the review is done.
+
 ```bash
-# Risk: writes /tmp/review-input.diff; safe, but keep the file until the review is done.
 git -C ~/replio-agents/workspace/repo diff main...feature/hello > /tmp/review-input.diff
 mkdir -p ~/replio-agents/reviewer/input && cp /tmp/review-input.diff ~/replio-agents/reviewer/input/
 ```
 
-## Step 5 - run the agents
+## Step 5 - Run the agents
 
 Run each agent as its own process, from its own folder:
 
+> Opens an interactive REPL as the current user. Ctrl-D exits.
+
 ```bash
-# Risk: opens an interactive REPL as the current user. Ctrl-D exits.
-~/replio-venv/bin/replio --path ~/replio-agents/agents/lead
+replio --path ~/replio-agents/agents/lead
 ```
 
 For automation, use the headless runner. `--mode plan` makes the role's posture explicit even if the config sets it:
 
+> Headless mode auto-denies anything that needs confirmation. This is the safe default for unattended runs. Never add --yes just to make a job pass.
+
 ```bash
-# Risk: headless mode auto-denies anything that needs confirmation. This is the
-# safe default for unattended runs. Never add --yes just to make a job pass.
-~/replio-venv/bin/replio run -p "plan the hello-world task" \
+replio run -p "plan the hello-world task" \
   --path ~/replio-agents/agents/lead --mode plan --output json
 
-~/replio-venv/bin/replio run -p "review the diff in input/review-input.diff" \
+replio run -p "review the diff in input/review-input.diff" \
   --path ~/replio-agents/reviewer --mode plan --output json
 ```
 
@@ -217,12 +217,12 @@ Long-lived agents (a lead that answers over the API, an agent-facing endpoint fo
 ```bash
 # Risk: binds a local port. Keep the default 127.0.0.1 binding unless you have a
 # reverse proxy; do not expose the JSON API to the network without auth in front.
-~/replio-venv/bin/replio serve --path ~/replio-agents/agents/lead --port 8781
+replio serve --path ~/replio-agents/agents/lead --port 8781
 ```
 
 See [docs/api.md](../api.md) for `POST /chat` and `GET /health`. Agents can already talk to each other over this API; the `delegate` tool that makes that a swarm is planned (see [Gaps](#gaps-and-planned)).
 
-## Step 6 - the human gates
+## Step 6 - The human gates
 
 Automation stops at three gates. Everything between them is agent work; every gate is a human decision.
 
@@ -230,9 +230,9 @@ Automation stops at three gates. Everything between them is agent work; every ga
 2. **Review pass** - the reviewer answers `PASS`, `CHANGES_REQUESTED`, or `BLOCKED` on the diff. A human reads that verdict.
 3. **Merge** - merging is a human action in the main checkout, never an agent tool call:
 
+> Merges feature/hello into your current branch. Checkout happens on your main checkout; do this only after tests pass and the review says PASS.
+
 ```bash
-# Risk: merges feature/hello into your current branch. Checkout happens on your
-# main checkout; do this only after tests pass and the review says PASS.
 git -C ~/replio-agents/workspace/repo checkout main
 git -C ~/replio-agents/workspace/repo merge --no-ff feature/hello
 ```
@@ -243,14 +243,17 @@ Then release the worktree:
 git -C ~/replio-agents/workspace/repo worktree remove ~/replio-agents/workspace/feature-hello
 ```
 
-## Step 7 - supervise the agents with systemd
+## Step 7 - Supervise the agents with systemd
 
 For a fleet that must stay up, run each agent under systemd. This mirrors the template in [deploy/](../../deploy/replio@.service); the instance name becomes the directory, the user, and the service name.
 
+> Creates system users, a root-owned venv under /opt, and systemd units. These commands run as root and change the system. Retype them, adapt the paths to your home directory, and review the unit before enabling it.
+> pipx installs are user-scoped (they live under ~/.local in your home), so the supervised agents use this shared install instead. Upgrade it with the pip install line after a Replio release.
+
 ```bash
-# Risk: creates system users and systemd units. These commands run as root and
-# change the system. Retype them, adapt the paths to your home directory, and
-# review the unit before enabling it.
+sudo python3 -m venv /opt/replio-venv
+sudo /opt/replio-venv/bin/pip install --upgrade replio
+
 sudo useradd -r -d /srv/replio-agents/agents/lead lead
 sudo mkdir -p /etc/replio-agents/
 
@@ -269,7 +272,7 @@ Wants=network-online.target
 Type=simple
 User=lead
 WorkingDirectory=/srv/replio-agents/agents/lead
-ExecStart=/home/pi/replio-venv/bin/replio serve --path /srv/replio-agents/agents/lead --port 8781
+ExecStart=/opt/replio-venv/bin/replio serve --path /srv/replio-agents/agents/lead --port 8781
 EnvironmentFile=/etc/replio-agents/lead.env
 Restart=on-failure
 RestartSec=3
@@ -277,9 +280,9 @@ RestartSec=3
 [Install]
 WantedBy=multi-user.target
 ```
+> Enables and starts the service now.
 
 ```bash
-# Risk: enables and starts the service now.
 sudo systemctl daemon-reload
 sudo systemctl enable --now replio-lead
 journalctl -u replio-lead -f
