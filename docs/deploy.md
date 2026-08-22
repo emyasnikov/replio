@@ -21,7 +21,7 @@ The image runs `replio serve` and takes three environment variables:
 Build the image from the repo root:
 
 ```bash
-docker build -f deploy/Dockerfile -t replio .
+docker build -t replio .
 ```
 
 ### Single agent
@@ -38,7 +38,8 @@ The mounted `/srv/docs` directory holds the agent's `.replio/config.json` and it
 
 ### Fleet with Docker Compose
 
-The example file `deploy/docker-compose.yml.example` defines one service per agent. Copy it to `docker-compose.yml` and adjust the services.
+The file `docker-compose.yml.example` defines one service per agent. Copy it to `docker-compose.yml` and adjust the services.
+```
 
 ```yaml
 services:

@@ -5,7 +5,7 @@ WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY src ./src
 COPY plugins ./plugins
-COPY deploy/replio-entrypoint.sh ./replio-entrypoint.sh
+COPY replio-entrypoint.sh ./replio-entrypoint.sh
 
 RUN pip install --no-cache-dir .
 
