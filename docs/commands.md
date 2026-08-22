@@ -21,12 +21,12 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 
 `/help` renders commands with their subcommands indented below, and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.
 
-`/session export <name> [out]` renders a saved session as Markdown (see [session.md](session.md)). A headless `replio export <name> [--out]` CLI reusing the same renderer is planned but not yet implemented.
+`/session export <name> [out]` renders a saved session as Markdown (see [session.md](session.md)).
 
 ## CLI
 
 ```
-usage: replio [-h] [--path PATH] [-v] {run,serve,mcp,plugins} ...
+usage: replio [-h] [--path PATH] [-v] {run,export,serve,mcp,plugins} ...
 ```
 
 Global:
@@ -53,6 +53,16 @@ One-shot headless chat.
 | `--yes`              | Auto-approve tools that require confirmation                 |
 | `--no`               | Auto-deny tools that require confirmation (default)          |
 | `--path`             | Project path                                                 |
+
+### `replio export`
+
+Export a saved session to Markdown (see [session.md](session.md)).
+
+| Flag             | Default                      | Description                       |
+|------------------|------------------------------|-----------------------------------|
+| `name`           | **Required**                 | Session name to export            |
+| `--out`          | `.replio/exports/<name>.md`  | Output file, `-` for stdout       |
+| `--path`         |                              | Project path                      |
 
 ### `replio serve`
 

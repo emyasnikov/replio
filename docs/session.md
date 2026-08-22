@@ -31,7 +31,7 @@ The default output is `.replio/exports/<name>.md`, next to the `sessions/` direc
 
 The export is the full, auditable log: each message becomes a `### <Role>` section with its timestamp, assistant meta (provider/model/duration) and thinking, tool calls and results as fenced code blocks (with tool `analysis`), `command` records, compaction summaries (with the trimmed context boundary), and a final `## Errors` section. Because it renders the persisted form, serialization-time transforms (`noise_tools` markers, `session_tool_max_chars` truncation) carry through as they appear in the file.
 
-A headless `replio export <name> [--out]` CLI reusing the same renderer is planned but not yet implemented.
+The headless CLI `replio export <name> [--out <file>]` reuses the same renderer for scripts and CI - `--out -` prints to stdout, the default matches the slash command (`.replio/exports/<name>.md`).
 
 ## File structure
 

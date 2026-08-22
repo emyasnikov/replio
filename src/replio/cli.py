@@ -1,5 +1,6 @@
 import json
 import sys
+from pathlib import Path
 
 from .config import Config
 from .engine import Engine
@@ -30,6 +31,30 @@ def cmd_run(args) -> int:
     if args.output == 'json':
         sys.stdout.write(json.dumps(result.to_dict(), indent=2) + '\n')
     return 0 if result.status in ('ok', 'truncated') else 1
+
+
+def cmd_export(args) -> int:
+    from .sessions.manager import SessionManager
+    from .sessions.render import render_session
+    config = Config(path=getattr(args, 'path', None))
+    sessions = SessionManager(config.local_path.parent / 'sessions')
+    session = sessions.read(args.name)
+    if session is None:
+        print(f'Session not found: {args.name}', file=sys.stderr)
+        return 1
+    markdown = render_session(session)
+    out = getattr(args, 'out', None)
+    if out == '-':
+        sys.stdout.write(markdown)
+        return 0
+    if out:
+        path = Path(out)
+    else:
+        path = sessions.sessions_dir.parent / 'exports' / f'{args.name}.md'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(markdown)
+    print(f'Exported session: {args.name} -> {path}')
+    return 0
 
 
 def cmd_serve(args) -> int:

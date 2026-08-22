@@ -28,6 +28,14 @@ def _add_run_parser(sub):
                    help='Project path (default: current directory)')
 
 
+def _add_export_parser(sub):
+    p = sub.add_parser('export', help='Export a saved session to Markdown')
+    p.add_argument('name', help='Session name to export')
+    p.add_argument('--out', help='Output file (default: .replio/exports/<name>.md, - for stdout)')
+    p.add_argument('--path', default=argparse.SUPPRESS,
+                   help='Project path (default: current directory)')
+
+
 def _add_serve_parser(sub):
     p = sub.add_parser('serve', help='HTTP JSON API server (stdlib http.server)')
     p.add_argument('--host', default='127.0.0.1')
@@ -74,6 +82,7 @@ def main(argv=None):
                         help='Print version and exit', version=_version())
     sub = parser.add_subparsers(dest='command')
     _add_run_parser(sub)
+    _add_export_parser(sub)
     _add_serve_parser(sub)
     _add_mcp_parser(sub)
     _add_plugins_parser(sub)
@@ -82,6 +91,9 @@ def main(argv=None):
     if args.command == 'run':
         from .cli import cmd_run
         return cmd_run(args)
+    if args.command == 'export':
+        from .cli import cmd_export
+        return cmd_export(args)
     if args.command == 'serve':
         from .cli import cmd_serve
         return cmd_serve(args)

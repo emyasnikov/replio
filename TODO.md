@@ -74,7 +74,7 @@
 
 ## Done
 
-- [x] Session export to Markdown - /session export renders the log to .replio/exports/<name>.md
+- [x] Session export to Markdown - /session export and replio export CLI render logs to Markdown
 - [x] Plan/Build modes - plan (edit+bash denied) vs build, /mode cmd + --mode flag, per-message mode
 - [x] Thinking/reasoning toggle - show_thinking (display) + reasoning (request), /thinking cmd
 - [x] Thinking spinner - animated spinner while thinking when show_thinking false, cleared \r\033[K

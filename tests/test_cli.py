@@ -6,9 +6,10 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from replio.cli import cmd_run, cmd_plugins
+from replio.cli import cmd_run, cmd_export, cmd_plugins
 from replio.main import main
 from replio import get_version
+from replio.sessions.manager import Session
 
 
 def _factory(rounds):
@@ -223,6 +224,69 @@ class TestCliPlugins(unittest.TestCase):
                                               source='/nonexistent/path'))
         self.assertEqual(rc, 1)
         self.assertIn('Error', err)
+
+
+class TestCliExport(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.path = self.tmp.name
+        sessions = Path(self.path) / '.replio' / 'sessions'
+        sessions.mkdir(parents=True, exist_ok=True)
+        s = Session('alpha')
+        s.add_message('user', 'hello')
+        s.add_message('assistant', 'hi there')
+        with open(sessions / 'alpha.json', 'w') as f:
+            json.dump(s.to_dict(), f)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _args(self, **kw):
+        base = dict(name='alpha', out=None, path=self.path)
+        base.update(kw)
+        return SimpleNamespace(**base)
+
+    def _capture(self, args):
+        out = io.StringIO()
+        err = io.StringIO()
+        with patch('sys.stdout', new=out), patch('sys.stderr', new=err):
+            rc = cmd_export(args)
+        return rc, out.getvalue(), err.getvalue()
+
+    def test_export_writes_default_file(self):
+        rc, out, _ = self._capture(self._args())
+        self.assertEqual(rc, 0)
+        path = (Path(self.path) / '.replio' / 'exports' / 'alpha.md').resolve()
+        self.assertTrue(path.exists())
+        self.assertIn('# Session: alpha', path.read_text())
+        self.assertIn(f'Exported session: alpha -> {path}', out)
+
+    def test_export_stdout(self):
+        rc, out, _ = self._capture(self._args(out='-'))
+        self.assertEqual(rc, 0)
+        self.assertIn('# Session: alpha', out)
+        self.assertIn('hello', out)
+        self.assertIn('hi there', out)
+
+    def test_export_custom_out(self):
+        target = Path(self.path) / 'out' / 'custom.md'
+        rc, _, _ = self._capture(self._args(out=str(target)))
+        self.assertEqual(rc, 0)
+        self.assertTrue(target.exists())
+        self.assertIn('# Session: alpha', target.read_text())
+
+    def test_export_not_found(self):
+        rc, _, err = self._capture(self._args(name='nosuch'))
+        self.assertEqual(rc, 1)
+        self.assertIn('Session not found: nosuch', err)
+
+    def test_export_main_dispatch(self):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            rc = main(['export', 'alpha', '--path', self.path])
+        self.assertEqual(rc, 0)
+        self.assertIn('Exported session: alpha', out.getvalue())
 
 
 class TestCliVersion(unittest.TestCase):

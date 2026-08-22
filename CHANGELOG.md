@@ -2,9 +2,10 @@
 
 ## v0.18.0
 
+- `replio export <name> [--out <file>]` - headless Markdown export for scripts and CI, reusing the same renderer and defaulting to the same `.replio/exports/<name>.md` target (`--out -` prints to stdout, exit `1` on an unknown session)
 - Session export to Markdown - `/session export <name> [out]` renders any saved session as a Markdown transcript (default `.replio/exports/<name>.md`, custom path via the second arg, `-` for stdout). The pure renderer in `sessions/render.py` covers the full persisted log: thinking, tool calls and results as fenced code blocks, tool `analysis`, `command` records, compaction summaries with the trimmed boundary, and the `## Errors` section. It reads via `read()` (never switches the current session) and carries serialization-time transforms (`noise_tools`, `session_tool_max_chars`) through as persisted
-- `/session export` completes session names in the REPL, and `docs/session.md` documents the format and the planned-but-unimplemented headless `replio export <name> [--out]` CLI
-- Tests - `tests/test_session_render.py` (17 tests: renderer output per role, fence escaping for backtick-heavy tool results, persisted noise transforms, and `/session export` dispatch covering default/custom/stdout targets and the non-destructive read)
+- `/session export` completes session names in the REPL, and the export format is documented in `docs/session.md`
+- Tests - `tests/test_session_render.py` (17 tests: renderer output per role, fence escaping for backtick-heavy tool results, persisted noise transforms, and `/session export` dispatch covering default/custom/stdout targets and the non-destructive read) plus `tests/test_cli.py` for `replio export` (default/custom/stdout targets, unknown session, `main` dispatch)
 
 ## v0.17.0 - 2026-08-21
 
