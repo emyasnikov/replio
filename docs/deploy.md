@@ -1,12 +1,13 @@
 # Deployment
 
-You can run `replio serve` directly, but for a fleet of agents you usually want each one supervised and restarted on failure. Three options are covered here: Docker, systemd on Linux, and launchd on macOS.
+You can run `replio serve` directly, but a fleet of agents is best supervised by Docker: one container per agent, restarted on failure, with the agent's config and sessions kept on a mounted folder. Replio has two install paths:
 
-The three options are alternatives. Pick the one that matches your host: systemd on bare-metal Linux, launchd on macOS, and Docker on containerized or mixed hosts. You need only one of them, and each supervises the process and restarts it on failure.
+- **Single interactive agent** - install with pipx and run the REPL, `replio run`, or `replio serve` by hand. See the [README](../README.md).
+- **Supervised fleet or always-on server** - this page. Build the image from the repo's `Dockerfile` and run one container per agent with `docker-compose.yml.example`.
 
-Generic templates live in [`deploy/`](../deploy/). They are held in the repo and work as-is. The per-agent values, like the project path, the port, and the API key, are configured on your machine, never in the templates.
+The Docker templates live at the repo root (`Dockerfile`, `replio-entrypoint.sh`, `docker-compose.yml.example`) and work as-is. Per-agent values - the project path, the port, and the API key - are configured on your machine, never in the templates.
 
-A deployed agent is always just `replio serve` pointed at a folder. The folder holds `.replio/config.json` with the provider, model, system prompt, tool permissions, and plugins. Sessions are written under `.replio/sessions/` in the same folder. Mount that folder into the container or point a service unit at it and the agent keeps its state across restarts.
+A deployed agent is always just `replio serve` pointed at a folder inside the container. The folder holds `.replio/config.json` with the provider, model, system prompt, tool permissions, and plugins. Sessions are written under `.replio/sessions/` in the same folder. Mount that folder into the container and the agent keeps its state across restarts.
 
 ## Docker
 
@@ -27,36 +28,52 @@ docker build -t replio .
 ### Single agent
 
 ```bash
-docker run -d --name docs-agent -p 8781:8781 \
+docker run -d --name docs-agent -p 127.0.0.1:8781:8781 \
+  --user "$(id -u):$(id -g)" \
   -e REPLIO_PORT=8781 \
   -e REPLIO_PATH=/srv/docs \
   -v "$PWD/agents/docs:/srv/docs" \
   replio
 ```
 
-The mounted `/srv/docs` directory holds the agent's `.replio/config.json` and its sessions. Put the API key in that config, or pass it with `-e REPLIO_API_KEY=...` and set it in the config later.
+The mounted `agents/docs` directory holds the agent's `.replio/config.json` and its sessions. Put the API key in that config, or pass it with `-e REPLIO_API_KEY=...` and set it in the config later. `--user` runs the container as your uid so it can write the mounted folder; the folder must be owned by that uid.
 
 ### Fleet with Docker Compose
 
-The file `docker-compose.yml.example` defines one service per agent. Copy it to `docker-compose.yml` and adjust the services.
+The file `docker-compose.yml.example` at the repo root defines one service per agent. Copy it to `docker-compose.yml`, adjust the services, and put the API key and container user in a `.env` file next to it:
+
+```bash
+# .env
+REPLIO_API_KEY=...
+UID=1000   # the owner of the mounted agent folders
+GID=1000
 ```
 
 ```yaml
 services:
   docs-agent:
     build:
-      context: ..
-      dockerfile: deploy/Dockerfile
+      context: .
+    user: "${UID:-1000}:${GID:-1000}"
     environment:
       REPLIO_PORT: 8781
       REPLIO_PATH: /srv/docs
     volumes:
       - ./agents/docs:/srv/docs
     ports:
-      - "8781:8781"
+      - "127.0.0.1:8781:8781"
     restart: unless-stopped
 ```
 
+Non-root: each service runs as the `UID`/`GID` from `.env`, which must match the owner of the mounted folders (`chown -R $UID:$GID agents` if needed). Ports are published on `127.0.0.1` so the JSON API stays host-local behind your reverse proxy.
+
+Add an agent by copying a service block and changing the name, port, and volume. Bring the fleet up:
+
+```bash
+docker compose up -d
+```
+
+Compose's `restart: unless-stopped` restarts a dead agent. See [docs/usage/programming.md](usage/programming.md) for a full role-based programming fleet built on this template.
 
 ## Health checks
 

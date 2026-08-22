@@ -8,7 +8,7 @@ Detailed reference for Replio. For an overview, features, and quick start, see t
 - [Architecture](architecture.md) - agent core: the loop, engine, UI sinks, front-ends, extension points
 - [Commands & CLI](commands.md) - slash commands and headless CLI flags
 - [Configuration](config.md) - config schema and keys
-- [Deployment](deploy.md) - Docker, systemd, and launchd configuration
+- [Deployment](deploy.md) - Docker deployment (image + Compose fleet)
 - [MCP](mcp.md) - Model Context Protocol client and server
 - [Plugins](plugins.md) - plugins: bundled, layout, manifest, management
 - [Providers](providers.md) - providers, auto-detection, the chat event contract, adding a provider

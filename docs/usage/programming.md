@@ -31,9 +31,10 @@ The principle behind the role split: **no single agent may plan, implement, test
 
 ## Prerequisites
 
-- Raspberry Pi (64-bit OS) or any Linux box running systemd, with Python 3.10+
+- Raspberry Pi (64-bit OS) or any Linux box, with Python 3.10+
 - Git, for the worktree isolation
-- `pipx` (Raspberry Pi OS: `sudo apt install pipx`) for the Replio install
+- `pipx` (Raspberry Pi OS: `sudo apt install pipx`) for the interactive Replio install
+- Docker with Compose (for the supervised fleet in [Step 7](#step-7-supervise-the-agents-with-docker))
 - A Replio-capable model - the examples use cloud Ollama with `gpt-oss:20b-cloud`; see [Step 2](#step-2-pick-the-model) for other cloud models, and the [Raspberry Pi notes](#raspberry-pi-notes) for a fully local option
 
 ## Layout
@@ -54,6 +55,8 @@ All agents live under one directory so the permissions worktree scoping is easy 
 Each of `lead`, `tester`, `reviewer`, and `feature-hello` holds its own `.replio/config.json`. Sessions are written next to it, under `.replio/sessions/`, so every agent keeps its own append-only audit log.
 
 ## Step 1 - Install Replio
+
+Install with pipx. This covers the interactive REPL and the headless gate commands in [Step 5](#step-5-run-the-agents); the always-on fleet runs in Docker in [Step 7](#step-7-supervise-the-agents-with-docker), which does not need this install.
 
 > Installs pipx and Replio for your user only; the system Python stays untouched. Re-run `pipx upgrade replio` after a Replio release.
 
@@ -237,18 +240,99 @@ Then release the worktree:
 git -C ~/replio-agents/workspace/repo worktree remove ~/replio-agents/workspace/feature-hello
 ```
 
+## Step 7 - Supervise the agents with Docker
+
+For a fleet that must stay up, run each agent in a container. The repo ships an image (`Dockerfile`), a fleet Compose template (`docker-compose.yml.example`), and an entrypoint (`replio-entrypoint.sh`) at its root, so there is no per-agent user, venv, or service unit to maintain: one Compose service per agent, restarted on failure, with config and sessions kept on mounted folders.
+
+If Docker is not installed yet:
+
+> Installs Docker Engine as root and adds your user to the `docker` group (re-login after). This is the only host-level install on this path.
+
+```bash
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker "$USER"
+```
+
+Build the image from the repo source (there is no prebuilt image):
+
+> Clones the Replio repo read-only and builds the image (a few minutes on a Pi). Rebuild after a release with `docker build -t replio .` from the clone.
+
+```bash
+git clone --depth 1 https://github.com/emyasnikov/replio ~/replio-agents/replio-src
+docker build -t replio ~/replio-agents/replio-src
+```
+
+Write a compose file next to the agent folders, one service per role and per implementer worktree:
+
+```yaml
+# ~/replio-agents/docker-compose.yml plus a .env next to it:
+#   REPLIO_API_KEY=your-ollama-cloud-key
+#   UID=1000   # must match the owner of the mounted folders (pi is 1000)
+#   GID=1000
+services:
+  lead:
+    image: replio
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      REPLIO_PORT: 8781
+      REPLIO_PATH: /srv/agent
+      REPLIO_API_KEY: ${REPLIO_API_KEY}
+    volumes:
+      - ./agents/lead:/srv/agent
+    ports:
+      - "127.0.0.1:8781:8781"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+
+  feature-hello:
+    image: replio
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      REPLIO_PORT: 8782
+      REPLIO_PATH: /srv/agent
+      REPLIO_API_KEY: ${REPLIO_API_KEY}
+    volumes:
+      - ./workspace/feature-hello:/srv/agent
+    ports:
+      - "127.0.0.1:8782:8782"
+    restart: unless-stopped
+```
+
+Add one service per agent - `tester`, `reviewer`, and each `feature-*` worktree - with a distinct port, mounting that agent's folder (its `.replio/config.json` from Step 4 plus its sessions) or the git worktree. Implementers mount their worktree; `tester` and `reviewer` mount their own agent folders. Ports publish on `127.0.0.1` so the JSON API stays host-local behind your reverse proxy, and the non-root container user (the `UID`/`GID` from `.env`) replaces per-agent host users - make it own the mounted folders first:
+
+> Changes ownership of the agent folders to your uid/gid. Only needed if writing to them fails.
+
+```bash
+chown -R "$(id -u):$(id -g)" ~/replio-agents
+```
+
+Bring the fleet up:
+
+> Builds or pulls the image and starts every service now. `docker compose down` stops the whole fleet; `docker compose stop <name>` stops one agent.
+
+```bash
+cd ~/replio-agents
+docker compose up -d
+docker logs -f replio-lead
+```
 
 ## Security hardening
 
-- **Secrets** - API keys live in config or the `.env` file, never in git and never in a session log by hand. Sessions capture tool results verbatim, so avoid pasting credentials into prompts.
-- **No home access** - each agent runs as its own user with its own directory. Do not launch agents from `~`: that makes the whole home directory the worktree and defeats the scoping.
+- **Secrets** - API keys live in config or the compose `.env` file, never in git and never in a session log by hand. Sessions capture tool results verbatim, so avoid pasting credentials into prompts.
+- **No home access** - each agent runs in its own container scoped to its own mounted directory. Do not launch agents with `--path ~`: that makes the whole home directory the worktree and defeats the scoping.
 - **Shell is the risk axis** - the three dangerous capabilities for one agent are web access, shell access, and write access. Do not give a single implementer all three. The reviewer gets none of them.
-- **Resource limits** - systemd can cap CPU and memory per service:
+- **Resource limits** - cap CPU and memory per Compose service:
 
-```ini
-[Service]
-MemoryMax=512M
-CPUQuota=50%
+```yaml
+deploy:
+  resources:
+    limits:
+      cpus: "1"
+      memory: 512M
 ```
 
 `run_command` also has a hard timeout clamp of 600 seconds, so a single command cannot hang the box forever.
@@ -260,6 +344,7 @@ CPUQuota=50%
 
 - Cloud Ollama moves the inference off-device: `gpt-oss:20b-cloud` runs on Ollama's servers, so even a Pi 4 with 4GB can drive a full fleet. The cost is data leaving the device; for private code, use the local models instead.
 - Local Ollama on the Pi: `curl -fsSL https://ollama.com/install.sh | sh`, then `ollama pull qwen3:4b`, and point the agents at `"base_url": "http://127.0.0.1:11434"` with a small model. Expect slow generations on 4GB boards; keep turn counts and file reads small.
+- Docker Engine supports arm64, so [Step 7](#step-7-supervise-the-agents-with-docker) runs on the Pi; expect the image build to take a few minutes.
 
 ## Gaps and planned
 
@@ -268,6 +353,6 @@ Everything above uses only features shipped in the current release. The followin
 | Planned capability | Current workaround in this guide |
 |--------------------|-----------------------------------|
 | `git` tool (status/diff/commit as gated tools) | git through `run_command` behind `bash: ask`; merge by hand |
-| `run_command` command allowlist (e.g. only `pytest`, `ruff`) | Role separation, per-agent users, and `tools.allow` instead |
+| `run_command` command allowlist (e.g. only `pytest`, `ruff`) | Role separation, per-role containers, and `tools.allow` instead |
 | `delegate` tool + `/agent` personas + auditor agents | Separate processes over `POST /chat`, manual hand-off between roles |
 | `code_lint` / `code_format` / `code_test` wrappers | Plain `run_command` calls from the tester config |
