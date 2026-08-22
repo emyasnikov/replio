@@ -40,7 +40,7 @@ Sessions are complete, append-only logs: every message, tool call with its argum
 
 - **Local-first** - config and session logs live on your disk. All provider traffic is outbound. There is no external telemetry or logging service holding enterprise data.
 - **Zero dependencies** - the core is Python stdlib only, so there is no supply chain to audit and no lockfile churn. Plugins may add third-party deps, imported lazily and only when the plugin is used.
-- **API keys** - stored in config (global or local `.replio/config.json`) or passed via `REPLIO_API_KEY`. Keep keys out of repositories.
+- **API keys** - stored in config (global or local `.replio/config.json`). Keep keys out of repositories.
 
 ## Plugins
 

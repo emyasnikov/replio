@@ -29,32 +29,23 @@ docker build -t replio .
 
 ```bash
 docker run -d --name docs-agent -p 127.0.0.1:8781:8781 \
-  --user "$(id -u):$(id -g)" \
   -e REPLIO_PORT=8781 \
   -e REPLIO_PATH=/srv/docs \
   -v "$PWD/agents/docs:/srv/docs" \
   replio
 ```
 
-The mounted `agents/docs` directory holds the agent's `.replio/config.json` and its sessions. Put the API key in that config, or pass it with `-e REPLIO_API_KEY=...` and set it in the config later. `--user` runs the container as your uid so it can write the mounted folder; the folder must be owned by that uid.
+The mounted `agents/docs` directory holds the agent's `.replio/config.json` (with the API key, model, and permissions) and its sessions. The container runs as root, so agent-written session files are root-owned on the host, add `--user "$(id -u):$(id -g)"` if you want them owned by your uid.
 
 ### Fleet with Docker Compose
 
-The file `docker-compose.yml.example` at the repo root defines one service per agent. Copy it to `docker-compose.yml`, adjust the services, and put the API key and container user in a `.env` file next to it:
-
-```bash
-# .env
-REPLIO_API_KEY=...
-UID=1000   # the owner of the mounted agent folders
-GID=1000
-```
+The file `docker-compose.yml.example` at the repo root defines one service per agent. Copy it to `docker-compose.yml`, adjust the services (name, `REPLIO_PATH`, port, volume - the API key and model come from the mounted `.replio/config.json`):
 
 ```yaml
 services:
   docs-agent:
     build:
       context: .
-    user: "${UID:-1000}:${GID:-1000}"
     environment:
       REPLIO_PORT: 8781
       REPLIO_PATH: /srv/docs
@@ -65,7 +56,7 @@ services:
     restart: unless-stopped
 ```
 
-Non-root: each service runs as the `UID`/`GID` from `.env`, which must match the owner of the mounted folders (`chown -R $UID:$GID agents` if needed). Ports are published on `127.0.0.1` so the JSON API stays host-local behind your reverse proxy.
+Ports publish on `127.0.0.1` so the JSON API stays host-local behind your reverse proxy. Containers run as root, add `user: "1000:1000"` (your uid) to a service if you want agent-written files in the mounted folders owned by you.
 
 Add an agent by copying a service block and changing the name, port, and volume. Bring the fleet up:
 

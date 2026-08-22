@@ -28,7 +28,7 @@ Providers are the model backends. Replio speaks OpenAI-compatible `/v1/chat/comp
 }
 ```
 
-The API key can also be supplied via `REPLIO_API_KEY` when running in a container.
+The API key is read from the `api_key` config value (global or local `.replio/config.json`), no environment variable is consulted.
 
 ## Auto-detection
 

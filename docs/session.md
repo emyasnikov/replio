@@ -107,7 +107,7 @@ Messages and errors are only ever appended. Compaction stores the summary in a n
 
 Two config keys reshape `tool` message content when the session is written to disk, without touching the stored messages themselves:
 
-- **`noise_tools`** (default `["fetch_page"]`) - results of the listed tools are replaced with `[<tool> result excluded from log; see tool call above for parameters]`, keeping noisy results out of session files while preserving the parameters in the tool call above.
+- **`noise_tools`** (default `["fetch_page"]`) - results of the listed tools are replaced with `[<tool> result excluded from log, see tool call above for parameters]`, keeping noisy results out of session files while preserving the parameters in the tool call above.
 - **`session_tool_max_chars`** (default `0` = unlimited) - caps persisted tool-result content to N characters, appending `… (truncated from <len> chars)`.
 
 ## Preparing the provider context

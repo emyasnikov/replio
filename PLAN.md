@@ -12,23 +12,23 @@ Working backlog for the next tasks, ranked by effort, urgency (hardening current
 
 | Task | Effort | Urgency | Importance | Why |
 |------|--------|---------|------------|-----|
-| Session export to Markdown | S-M | Medium | High | Cross-cutting: enterprise compliance export, research citation trail, personal journal, small-biz handover; prerequisite for sharing links. |
-| Config validation (test connection on change) | S | High (onboarding) | Medium | Broken provider config is top friction; `/connect` already has the plumbing. |
-| Multi-line input | S | Medium (REPL) | Medium | `"""`/`'''` block detection; pure REPL hardening. |
-| Word-level streaming buffering | S | Low-Med (polish) | Medium | Stops mid-word breaks; visible output quality. |
+| Session export to Markdown | S-M | Medium | High | Cross-cutting: enterprise compliance export, research citation trail, personal journal, small-biz handover, prerequisite for sharing links. |
+| Config validation (test connection on change) | S | High (onboarding) | Medium | Broken provider config is top friction, `/connect` already has the plumbing. |
+| Multi-line input | S | Medium (REPL) | Medium | `"""`/`'''` block detection, pure REPL hardening. |
+| Word-level streaming buffering | S | Low-Med (polish) | Medium | Stops mid-word breaks, visible output quality. |
 
 ## Tier 2 - next (medium effort, high use-case + competitive value)
 
 | Task | Effort | Why |
 |------|--------|-----|
 | `git` tool | M | Developer.md + claude-code/opencode parity (status/diff/commit). |
-| Custom system prompts per session | S-M | Enterprise per-site instructions; groundwork for `/agent`. |
-| Grep text index | M | Research/personal/homelab "search my notes"; bridges toward RAG. |
-| Minimal web Control UI | M | OpenClaw Control UI parity; enterprise dashboards; homelab. |
-| Session recall (full-text search over past sessions) | M | Hermes `session_search` parity; research reproducibility; personal journal search. |
+| Custom system prompts per session | S-M | Enterprise per-site instructions, groundwork for `/agent`. |
+| Grep text index | M | Research/personal/homelab "search my notes", bridges toward RAG. |
+| Minimal web Control UI | M | OpenClaw Control UI parity, enterprise dashboards, homelab. |
+| Session recall (full-text search over past sessions) | M | Hermes `session_search` parity, research reproducibility, personal journal search. |
 | `code_lint`/`code_format`/`code_test` wrappers | M | Developer.md test/CI triage flow. |
 | `run_command` command allowlist | S-M | Developer.md/security: Perplexity-style shell allowlist (only `pytest`, `ruff`, `git diff`, ...) behind a policy key, e.g. `tool_permission.bash_allow`. Today the choice is all-bash-or-none |
-| Project instructions file | S-M | Per-worktree `AGENTS.md`-style context; claude-code `CLAUDE.md` parity. |
+| Project instructions file | S-M | Per-worktree `AGENTS.md`-style context, claude-code `CLAUDE.md` parity. |
 
 ## Tier 3 - roadmap phases (large)
 
