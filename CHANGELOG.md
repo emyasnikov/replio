@@ -2,6 +2,10 @@
 
 ## v0.18.0
 
+- Session export to Markdown - `/session export <name> [out]` renders any saved session as a Markdown transcript (default `.replio/exports/<name>.md`, custom path via the second arg, `-` for stdout). The pure renderer in `sessions/render.py` covers the full persisted log: thinking, tool calls and results as fenced code blocks, tool `analysis`, `command` records, compaction summaries with the trimmed boundary, and the `## Errors` section. It reads via `read()` (never switches the current session) and carries serialization-time transforms (`noise_tools`, `session_tool_max_chars`) through as persisted
+- `/session export` completes session names in the REPL, and `docs/session.md` documents the format and the planned-but-unimplemented headless `replio export <name> [--out]` CLI
+- Tests - `tests/test_session_render.py` (17 tests: renderer output per role, fence escaping for backtick-heavy tool results, persisted noise transforms, and `/session export` dispatch covering default/custom/stdout targets and the non-destructive read)
+
 ## v0.17.0 - 2026-08-21
 
 - Failed tool calls now render a dimmed `! Error: ...` line (first line of the result) under the activity line, for every tool through the shared dispatch point (agent loop, `/tool`, policy-denied calls), gated by the new `show_errors` config (default `true`)

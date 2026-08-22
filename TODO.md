@@ -69,12 +69,12 @@
   - [ ] Onboarding wizard (`replio wizard`) for data-source / MES interface setup
   - [ ] RBAC - role-based access control for enterprise deployments
   - [ ] Queue-based scaling - many concurrent sensor/chat feeds without blocking the loop
-- [ ] Session export to Markdown - renderer over the session log, prerequisite for conversation-sharing links
 - [ ] Session import from Markdown/JSON
 - [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
 
 ## Done
 
+- [x] Session export to Markdown - /session export renders the log to .replio/exports/<name>.md
 - [x] Plan/Build modes - plan (edit+bash denied) vs build, /mode cmd + --mode flag, per-message mode
 - [x] Thinking/reasoning toggle - show_thinking (display) + reasoning (request), /thinking cmd
 - [x] Thinking spinner - animated spinner while thinking when show_thinking false, cleared \r\033[K

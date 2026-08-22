@@ -1,7 +1,9 @@
 import sys
 import json
+from pathlib import Path
 
 from .. import get_version
+from ..sessions.render import render_session
 
 SUB_INDENT = 4
 
@@ -259,9 +261,10 @@ def register_builtins(registry):
         ('load', 'Load a session'),
         ('delete', 'Delete a session'),
         ('save', 'Save the current session'),
+        ('export', 'Export a session to Markdown'),
     ])
     def session_cmd(arg=''):
-        parts = arg.strip().split(maxsplit=1)
+        parts = arg.strip().split(maxsplit=2)
         action = parts[0] if parts else ''
 
         if not action:
@@ -324,6 +327,27 @@ def register_builtins(registry):
         elif action == 'save':
             chat.session_auto_save()
             print('Session saved')
+        elif action == 'export':
+            name = parts[1] if len(parts) > 1 else ''
+            out = parts[2] if len(parts) > 2 else ''
+            if not name:
+                print('Usage: /session export <name> [out]')
+                return
+            s = chat.sessions.read(name)
+            if s is None:
+                print(f'Session not found: {name}')
+                return
+            markdown = render_session(s)
+            if out == '-':
+                sys.stdout.write(markdown)
+                return
+            if out:
+                path = Path(out)
+            else:
+                path = chat.sessions.sessions_dir.parent / 'exports' / f'{name}.md'
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(markdown)
+            print(f'Exported session: {name} -> {path}')
 
     @registry.register('compact', aliases=['c'],
                        description='Summarize the conversation and trim the context')

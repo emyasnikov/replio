@@ -37,6 +37,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_providers.py` | Provider defaults, override behavior, `detect_provider`, endpoint normalization, POST-preserving redirects |
 | `test_server.py` | `replio serve` HTTP API: `/chat`, `/sessions`, `/health`, `/version` |
 | `test_session_log.py` | Session model: append-only serialization, `tool_max_chars` truncation, metadata |
+| `test_session_render.py` | Session Markdown export: renderer output per role, error section, `/session export` dispatch and file/stdout targets |
 | `test_tool_calling.py` | Tool-calling flow: single and multiple calls, unknown tools, query refinement |
 | `test_tool_policy.py` | `ToolPolicy`: allow/ask/deny, worktree escalation, deny/allowlist precedence |
 | `test_tool_registry.py` | Tool registration metadata, schema, refine flags, `_config` pass-through, activity params strings, fs tool glyphs (`* List` / `* Grep`) |

@@ -18,9 +18,20 @@ Names are either explicit (`/session new <name>`, `/session load <name>`, `repli
 | `/session load <name>` | Load a session (with compaction offer if it has a summary) |
 | `/session delete <name>` | Delete a session |
 | `/session save` | Save the current session |
+| `/session export <name> [out]` | Export a session to Markdown |
 | `replio run --session-id <name>` | Load or create a session from headless mode |
 
 The current session is auto-saved after every message and command, so nothing is lost on exit.
+
+## Exporting to Markdown
+
+`/session export <name>` renders any saved session as a Markdown transcript. It reads the persisted log directly (`read()`, not `load()`), so the current session is never switched and the source file is left untouched.
+
+The default output is `.replio/exports/<name>.md`, next to the `sessions/` directory. A second argument overrides the path (`/session export <name> out.md`), and `-` prints the transcript to stdout instead of writing a file. The command tab-completes session names.
+
+The export is the full, auditable log: each message becomes a `### <Role>` section with its timestamp, assistant meta (provider/model/duration) and thinking, tool calls and results as fenced code blocks (with tool `analysis`), `command` records, compaction summaries (with the trimmed context boundary), and a final `## Errors` section. Because it renders the persisted form, serialization-time transforms (`noise_tools` markers, `session_tool_max_chars` truncation) carry through as they appear in the file.
+
+A headless `replio export <name> [--out]` CLI reusing the same renderer is planned but not yet implemented.
 
 ## File structure
 

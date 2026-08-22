@@ -45,7 +45,7 @@ class ChatLoop(Engine):
     def _completer(self, text: str, state: int) -> str | None:
         line = readline.get_line_buffer()
         head = line[: len(line) - len(text)]
-        for prefix in ('/session load ', '/session preview ', '/session delete '):
+        for prefix in ('/session load ', '/session preview ', '/session delete ', '/session export '):
             if head.endswith(prefix):
                 names = [n for n in self.sessions.list() if n.startswith(text)]
                 if state < len(names):

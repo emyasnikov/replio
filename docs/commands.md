@@ -14,12 +14,14 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
 | `/connect`              |                | Interactive provider connection setup                          |
 | `/config`               |                | Show, get, or set config values (`/config <key> <value>`)      |
-| `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save` |
+| `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
 | `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
 | `/plugins`              | `/plugin`      | Manage plugins: `list`, `enable`, `disable`, `install`, `update`, `uninstall` |
 
 `/help` renders commands with their subcommands indented below, and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.
+
+`/session export <name> [out]` renders a saved session as Markdown (see [session.md](session.md)). A headless `replio export <name> [--out]` CLI reusing the same renderer is planned but not yet implemented.
 
 ## CLI
 
