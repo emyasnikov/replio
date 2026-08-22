@@ -212,13 +212,7 @@ replio run -p "review the diff in input/review-input.diff" \
   --path ~/replio-agents/reviewer --mode plan --output json
 ```
 
-Long-lived agents (a lead that answers over the API, an agent-facing endpoint for a future swarm layer) run as servers:
-
-```bash
-# Risk: binds a local port. Keep the default 127.0.0.1 binding unless you have a
-# reverse proxy; do not expose the JSON API to the network without auth in front.
-replio serve --path ~/replio-agents/agents/lead --port 8781
-```
+Long-lived agents (a lead that answers over the API, an agent-facing endpoint for a future swarm layer).
 
 See [docs/api.md](../api.md) for `POST /chat` and `GET /health`. Agents can already talk to each other over this API; the `delegate` tool that makes that a swarm is planned (see [Gaps](#gaps-and-planned)).
 
@@ -243,52 +237,6 @@ Then release the worktree:
 git -C ~/replio-agents/workspace/repo worktree remove ~/replio-agents/workspace/feature-hello
 ```
 
-## Step 7 - Supervise the agents with systemd
-
-For a fleet that must stay up, run each agent under systemd. This mirrors the template in [deploy/](../../deploy/replio@.service); the instance name becomes the directory, the user, and the service name.
-
-> Creates system users, a root-owned venv under /opt, and systemd units. These commands run as root and change the system. Retype them, adapt the paths to your home directory, and review the unit before enabling it.
-> pipx installs are user-scoped (they live under ~/.local in your home), so the supervised agents use this shared install instead. Upgrade it with the pip install line after a Replio release.
-
-```bash
-sudo python3 -m venv /opt/replio-venv
-sudo /opt/replio-venv/bin/pip install --upgrade replio
-
-sudo useradd -r -d /srv/replio-agents/agents/lead lead
-sudo mkdir -p /etc/replio-agents/
-
-# /etc/replio-agents/lead.env
-# REPLIO_API_KEY=your-ollama-cloud-key
-```
-
-```ini
-# /etc/systemd/system/replio-lead.service
-[Unit]
-Description=Replio lead agent
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=simple
-User=lead
-WorkingDirectory=/srv/replio-agents/agents/lead
-ExecStart=/opt/replio-venv/bin/replio serve --path /srv/replio-agents/agents/lead --port 8781
-EnvironmentFile=/etc/replio-agents/lead.env
-Restart=on-failure
-RestartSec=3
-
-[Install]
-WantedBy=multi-user.target
-```
-> Enables and starts the service now.
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now replio-lead
-journalctl -u replio-lead -f
-```
-
-Repeat the user, `.env`, and unit for `tester`, `reviewer`, and each `feature-*` worktree, with a distinct port per agent. The per-agent system user plus `WorkingDirectory` is what actually isolates file access on the host: even if a tool call escapes the worktree policy, it still runs inside that user's home and permissions.
 
 ## Security hardening
 
@@ -312,7 +260,6 @@ CPUQuota=50%
 
 - Cloud Ollama moves the inference off-device: `gpt-oss:20b-cloud` runs on Ollama's servers, so even a Pi 4 with 4GB can drive a full fleet. The cost is data leaving the device; for private code, use the local models instead.
 - Local Ollama on the Pi: `curl -fsSL https://ollama.com/install.sh | sh`, then `ollama pull qwen3:4b`, and point the agents at `"base_url": "http://127.0.0.1:11434"` with a small model. Expect slow generations on 4GB boards; keep turn counts and file reads small.
-- The Pi ships with systemd, so [Step 7](#step-7-supervise-the-agents-with-systemd) works as-is.
 
 ## Gaps and planned
 

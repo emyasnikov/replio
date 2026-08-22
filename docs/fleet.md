@@ -57,6 +57,6 @@ curl localhost:8781/chat -X POST -d '{"prompt": "What does spec-42.pdf say?", "s
 
 ## Deployment
 
-For a fleet you supervise each `replio serve` process with one service manager. The options are alternatives, not cumulative: systemd on bare-metal Linux, launchd on macOS, and Docker on containerized hosts, with Compose scaling by one service per agent. All three restart the agent on failure and expose it through `GET /health`.
+For a fleet you supervise each `replio serve` process with Docker Compose, scaling one service per agent from the repo's `docker-compose.yml.example`. Each service mounts the agent folder, publishes a host-local port, and carries `restart: unless-stopped`, so Compose restarts the agent on failure and every agent exposes `GET /health` for monitoring.
 
 Full setup is in [deploy.md](deploy.md).
