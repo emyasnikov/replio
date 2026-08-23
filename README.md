@@ -51,6 +51,8 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 
 First-time setup with `/connect`, then type any message. Tab-complete `/` commands and session names. Use arrow keys to navigate history.
 
+Open a `"""` or `'''` block to type a multi-line prompt. The block's framing quotes are stripped, and the whole message is sent as one turn. Ctrl-C exits the REPL from anywhere, including inside an open block.
+
 ```
 >>> /connect
   Provider [ollama]:

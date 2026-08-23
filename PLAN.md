@@ -12,7 +12,6 @@ Working backlog for the next tasks, ranked by effort, urgency (hardening current
 
 | Task | Effort | Urgency | Importance | Why |
 |------|--------|---------|------------|-----|
-| Multi-line input | S | Medium (REPL) | Medium | `"""`/`'''` block detection, pure REPL hardening. |
 | Word-level streaming buffering | S | Low-Med (polish) | Medium | Stops mid-word breaks, visible output quality. |
 
 ## Tier 2 - next (medium effort, high use-case + competitive value)

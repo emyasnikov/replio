@@ -24,7 +24,7 @@ Run tests before committing changes to verify core logic isn't broken.
 |------|--------|
 | `test_agent_loop.py` | Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty/truncated-stream multi-attempt retry, recovery hint after failed tool-call rounds, truncation error messages (configured cap vs provider default) |
 | `test_bundled_plugins.py` | Bundled plugin discovery, tool registration, search service, bundled update/uninstall blocking |
-| `test_cli.py` | `replio run`: JSON/text output, session-id persistence, exit codes; `replio export`: default/custom/stdout targets, unknown session; `replio models`: listing, error/empty, `main` dispatch |
+| `test_cli.py` | `replio run`: JSON/text output, session-id persistence, exit codes. `replio export`: default/custom/stdout targets, unknown session. `replio models`: listing, error/empty, `main` dispatch |
 | `test_commands.py` | Slash-command registration and `/help` output (aliases, subcommands, tools listed under `/tool`, mode-filtered listings), `/connect` probe-before-commit (decline/reject, model-mismatch show offer), `/models` listing/error/empty, `/provider` warn |
 | `test_completion.py` | Readline tab completion: commands, session names, plugin names, tool names |
 | `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-message `mode`, glyph param suffix gating, `!` error-line rendering and `show_errors` gating, `check_connection`/`list_models` probe resolution and overrides without state mutation |
@@ -35,6 +35,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_ollama_provider.py` | Streaming provider: fragmented tool-call reassembly, thinking events, payload construction |
 | `test_plugins.py` | Plugin manager: manifest compat ranges, discovery precedence, registration hooks, install/update/uninstall |
 | `test_providers.py` | Provider defaults, override behavior, `detect_provider`, endpoint normalization, POST-preserving redirects, `check_connection` probe (success/empty/model note/HTTP/network), `list_models` silent-on-error |
+| `test_repl_input.py` | REPL input: multi-line `"""`/`'''` block detection, framing strip (pure, lead-in, indentation preserved), EOF exit during an open block, slash commands single-line |
 | `test_server.py` | `replio serve` HTTP API: `/chat`, `/sessions`, `/health`, `/version` |
 | `test_session_log.py` | Session model: append-only serialization, `tool_max_chars` truncation, metadata |
 | `test_session_render.py` | Session Markdown export: renderer output per role, error section, `/session export` dispatch and file/stdout targets |

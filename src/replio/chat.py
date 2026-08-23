@@ -9,6 +9,35 @@ from . import get_version
 
 HISTFILE = '.replio_history'
 
+MAIN_PROMPT = '\001\033[36m\002>>>\001\033[0m\002 '
+CONT_PROMPT = '\001\033[36m\002...\001\033[0m\002 '
+
+
+def _open_delim(text: str) -> str | None:
+    if _overlap_count(text, '"""') % 2 == 1:
+        return '"""'
+    if _overlap_count(text, "'''") % 2 == 1:
+        return "'''"
+    return None
+
+
+def _overlap_count(text: str, delim: str) -> int:
+    n = 0
+    i = text.find(delim)
+    while i != -1:
+        n += 1
+        i = text.find(delim, i + 1)
+    return n
+
+
+def _strip_framing(text: str, delim: str) -> str:
+    first = text.find(delim)
+    last = text.rfind(delim)
+    if first == -1 or last <= first:
+        return text
+    return (text[:first] + text[first + len(delim):last]
+            + text[last + len(delim):]).strip('\n')
+
 
 class ChatLoop(Engine):
     def __init__(self, config: Config):
@@ -113,6 +142,31 @@ class ChatLoop(Engine):
             return str(cand) + ('/' if cand.is_dir() else ' ')
         return None
 
+    def _read_line(self) -> str | None:
+        try:
+            line = input(MAIN_PROMPT).strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return None
+        delim = _open_delim(line)
+        if delim is None:
+            return line
+        parts = [line]
+        while True:
+            try:
+                parts.append(input(CONT_PROMPT).rstrip())
+            except (EOFError, KeyboardInterrupt):
+                print()
+                return None
+            buffer = '\n'.join(parts)
+            if _overlap_count(buffer, delim) % 2 == 0:
+                composed = _strip_framing(buffer, delim)
+                try:
+                    readline.add_history(composed)
+                except Exception:
+                    pass
+                return composed
+
     def run(self):
         if self.config.get('clear_screen', True):
             sys.stdout.write('\033[3J\033[2J\033[H')
@@ -128,10 +182,8 @@ class ChatLoop(Engine):
             print(f'Replio ({provider_str}: {model_str}){suffix}  /help for commands')
 
         while True:
-            try:
-                line = input('\001\033[36m\002>>>\001\033[0m\002 ').strip()
-            except (EOFError, KeyboardInterrupt):
-                print()
+            line = self._read_line()
+            if line is None:
                 self.session_auto_save()
                 self._save_history()
                 break
