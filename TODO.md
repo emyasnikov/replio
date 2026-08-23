@@ -1,6 +1,5 @@
 # TODO
 
-- `run_command` command allowlist - allow only safe shell commands (e.g. `pytest`, `ruff`, `git diff`, `python -m unittest`) via a policy key rather than allowing all or none of `bash` (programming-fleet requirement from `docs/usage/programming.md`)
 - Surface soft tool results as dimmed info lines - parenthesized notes like `(empty file)`, `(no matches for "x")`, `(end of content)`, and `No search results found.` are currently invisible in the REPL (only persisted + fed to the model). The `show_errors` line covers `Error:` results only
 - Edge / offline store-and-forward buffering - offline-capable agents with local buffering for unreliable connectivity (enterprise use case)
 - Scheduled / durable jobs - cron-style `replio run`, retries with backoff, resumability, human-in-the-loop status model (`proposed` > `approved` > `executing` > `verified` > `failed`). A chat loop alone is not a workflow engine
@@ -28,6 +27,16 @@
 
 ## Open
 
+- [ ] `run_command` command allowlist - allow only safe shell commands (e.g. `pytest`, `ruff`, `git diff`, `python -m unittest`) via a `tool_permission.bash_allow` key rather than all-or-none `bash`. Match by startswith on each chained segment over `&&`/`||`/`;`/`|`/`&`, reject shell-script forms (heredocs, multi-line) (programming-fleet requirement from `docs/usage/programming.md`)
+- [ ] Thinking visibility - `/thinking on` + `reasoning` config documented, per-provider `reasoning_content` check so reasoning shows in the REPL
+- [ ] `/spawn` command - launch a scoped `replio serve` agent from the REPL (home -> project path), supervise (health/list/stop) and delegate to it (`docs/fleet.md`)
+- [ ] Remote channels - command agents from messaging apps (OpenClaw channels parity):
+  - [ ] Channel gateway - one adapter surface over the engine/serve API
+  - [ ] Telegram adapter - long-polling bot, send + receive
+  - [ ] WhatsApp adapter - business-API HTTP channel
+  - [ ] More adapters (Discord, Signal, email)
+  - [ ] Remote auth + session scoping + headless deny
+- [ ] Plugin test harness - plugins ship a test suite, `replio plugins test <name>` runs it (bundled plugin tests stay in the core until externalization)
 - [ ] Project instructions file - per-worktree `AGENTS.md`-style context auto-loaded into the system prompt (claude-code `CLAUDE.md` parity)
 - [ ] Session recall - full-text search across past sessions (grep/index over `.replio/sessions/`) so an agent can answer from its own history
 - [ ] Tool dry-run mode - propose tool args/effects without executing (enterprise tool-gateway requirement)

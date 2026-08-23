@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.18.0
+## v0.18.0 - 2026-08-23
 
 - Word-level streaming buffering - the REPL now buffers streamed tokens to word boundaries and prints whole words as they complete, so responses render smoothly without mid-word pauses or breaks. The `<<< ` prefix appears on the first printed word, indentation and newlines flush correctly, and the trailing partial word is written before any status line, confirm prompt, or the turn footer. `HeadlessUI` and `NullUI` stream unchanged, and the content persisted to sessions is untouched. Gated by the new `word_streaming` config (default `true`), off restores character-by-character streaming
 - Multi-line REPL input - opening `"""` or `'''` switches the prompt to `...` until the block closes. The composed prompt is sent as one turn with the framing quotes stripped (both `"""..."""` and `task: """..."""` work, indentation inside the block is kept, and the block is a single history entry). Balancing is overlap-aware, so `""""` reads as a matched pair. Ctrl-C or EOF on an open block exits the REPL cleanly instead of swallowing the interrupt
