@@ -2,7 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from replio.config import Config
 from replio.engine import Engine
@@ -277,6 +277,71 @@ class _RecordUI(NullUI):
 
     def thinking_end(self, duration):
         self.calls.append(('end', duration))
+
+
+class TestEngineCheckConnection(unittest.TestCase):
+
+    def setUp(self):
+        self.engine = make_engine()
+
+    def tearDown(self):
+        self.engine._tmp.cleanup()
+
+    def _factory(self, ok, msg):
+        captured = {}
+
+        def _f(**kwargs):
+            captured.update(kwargs)
+            p = MagicMock()
+            p.check_connection.return_value = (ok, msg)
+            return p
+        _f.DEFAULT_BASE_URL = 'https://test.api.com'
+        _f.DEFAULT_MODEL = 'test-model'
+        _f.captured = captured
+        return _f
+
+    def test_check_connection_resolves_and_probes(self):
+        factory = self._factory(True, '3 models available')
+        with patch('replio.providers.PROVIDERS', {'ollama': factory}):
+            ok, msg = self.engine.check_connection()
+        self.assertTrue(ok)
+        self.assertEqual(msg, '3 models available')
+        self.assertEqual(factory.captured['base_url'], 'https://test.api.com')
+        self.assertEqual(factory.captured['model'], 'test-model')
+        self.assertEqual(factory.captured['api_key'], '')
+
+    def test_check_connection_overrides_win(self):
+        factory = self._factory(False, 'HTTP 401: bad')
+        with patch('replio.providers.PROVIDERS', {'ollama': factory}):
+            ok, msg = self.engine.check_connection(
+                base_url='https://other.example', api_key='sk-new', model='m2')
+        self.assertFalse(ok)
+        self.assertEqual(factory.captured['base_url'], 'https://other.example')
+        self.assertEqual(factory.captured['api_key'], 'sk-new')
+        self.assertEqual(factory.captured['model'], 'm2')
+
+    def test_check_connection_unknown_factory(self):
+        with patch('replio.providers.PROVIDERS', {}):
+            ok, msg = self.engine.check_connection(
+                provider='nope', base_url='http://localhost:11434')
+        self.assertFalse(ok)
+        self.assertIn('No provider registered', msg)
+
+    def test_check_connection_does_not_mutate_state(self):
+        before = self.engine.provider
+        factory = self._factory(True, 'ok')
+        with patch('replio.providers.PROVIDERS', {'ollama': factory}):
+            self.engine.check_connection(base_url='https://other.example')
+        self.assertIs(self.engine.provider, before)
+        self.assertEqual(self.engine.config.get('base_url'), 'https://test.api.com')
+
+    def test_check_connection_detects_from_base_url(self):
+        factory = self._factory(True, 'ok')
+        with patch('replio.providers.PROVIDERS', {'groq': factory}):
+            ok, msg = self.engine.check_connection(
+                provider='nope', base_url='https://api.groq.com/openai/v1')
+        self.assertTrue(ok)
+        self.assertEqual(factory.captured['base_url'], 'https://api.groq.com/openai/v1')
 
 
 class TestEngineSinks(unittest.TestCase):

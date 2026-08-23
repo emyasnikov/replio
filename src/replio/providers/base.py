@@ -27,6 +27,9 @@ class BaseProvider:
     def list_models(self) -> list[str]:
         raise NotImplementedError
 
+    def check_connection(self) -> tuple[bool, str]:
+        raise NotImplementedError
+
 
 class OpenAICompatibleProvider(BaseProvider):
     DEFAULT_BASE_URL = ''
@@ -172,13 +175,34 @@ class OpenAICompatibleProvider(BaseProvider):
         return f'{base}/v1/chat/completions'
 
     def list_models(self) -> list[str]:
+        models, error = self._fetch_models()
+        if error:
+            print(f'\001\033[91m\002[Error]\001\033[0m\002 Failed to list models: {error}')
+        return models
+
+    def check_connection(self) -> tuple[bool, str]:
+        models, error = self._fetch_models()
+        if error:
+            return False, error
+        if not models:
+            return True, 'connected (no models listed)'
+        note = ''
+        if self.model and self.model not in models:
+            note = f' (configured model "{self.model}" not in the model list)'
+        return True, f'{len(models)} models available{note}'
+
+    def _fetch_models(self) -> tuple[list[str], str | None]:
         base = self.base_url.rstrip('/')
         url = f'{base}/v1/models' if not base.endswith('/v1') else f'{base}/models'
         req = urllib.request.Request(url, headers=self._headers())
         try:
             with urllib.request.urlopen(req) as resp:
                 data = json.loads(resp.read())
-            return [m['id'] for m in data.get('data', [])]
+        except urllib.error.HTTPError as e:
+            body = e.read().decode('utf-8', errors='replace').strip()
+            return [], f'HTTP {e.code}: {body or e.reason}'
+        except urllib.error.URLError as e:
+            return [], f'Network error: {e.reason}'
         except Exception as e:
-            print(f'\001\033[91m\002[Error]\001\033[0m\002 Failed to list models: {e}')
-            return []
+            return [], str(e)
+        return [m['id'] for m in data.get('data', []) if isinstance(m, dict) and 'id' in m], None

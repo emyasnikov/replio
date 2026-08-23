@@ -12,8 +12,6 @@ Working backlog for the next tasks, ranked by effort, urgency (hardening current
 
 | Task | Effort | Urgency | Importance | Why |
 |------|--------|---------|------------|-----|
-| Session export to Markdown | S-M | Medium | High | Cross-cutting: enterprise compliance export, research citation trail, personal journal, small-biz handover, prerequisite for sharing links. |
-| Config validation (test connection on change) | S | High (onboarding) | Medium | Broken provider config is top friction, `/connect` already has the plumbing. |
 | Multi-line input | S | Medium (REPL) | Medium | `"""`/`'''` block detection, pure REPL hardening. |
 | Word-level streaming buffering | S | Low-Med (polish) | Medium | Stops mid-word breaks, visible output quality. |
 

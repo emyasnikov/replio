@@ -60,20 +60,28 @@ class Engine:
             self._ui = NullUI()
         return self._ui
 
-    def _reinit_provider(self):
+    def _resolve_provider_factory(self, provider: str, base_url: str):
         from .providers import PROVIDERS, detect_provider
         merged = dict(PROVIDERS)
         plugin_manager = getattr(self, '_plugin_manager', None)
         if plugin_manager is not None:
             merged.update(plugin_manager.provider_classes())
+        factory = merged.get(provider)
+        if factory is not None:
+            return factory, provider, merged
+        detected = detect_provider(base_url)
+        self.ui.info(f'Unknown provider "{provider}" - using "{detected}" '
+                     '(detected from base_url)')
+        return merged.get(detected), detected, merged
+
+    def _reinit_provider(self):
         provider_name = self.config.get('provider', 'ollama')
-        factory = merged.get(provider_name)
+        factory, resolved, merged = self._resolve_provider_factory(
+            provider_name, self.config.get('base_url'))
         if factory is None:
-            detected = detect_provider(self.config.get('base_url'))
-            self.ui.info(f'Unknown provider "{provider_name}" - using "{detected}" '
-                         '(detected from base_url)')
-            self.config.set('provider', detected)
-            factory = merged[detected]
+            return
+        if resolved != provider_name:
+            self.config.set('provider', resolved)
 
         base_url = self.config.get('base_url')
         model = self.config.get('model')
@@ -100,6 +108,19 @@ class Engine:
             max_tokens=self.config.get('max_tokens'),
             reasoning=self.config.get('reasoning'),
         )
+
+    def check_connection(self, base_url: str | None = None, api_key: str | None = None,
+                         model: str | None = None,
+                         provider: str | None = None) -> tuple[bool, str]:
+        provider = provider or self.config.get('provider')
+        base_url = self.config.get('base_url') if base_url is None else base_url
+        api_key = self.config.get('api_key') if api_key is None else api_key
+        model = model or self.config.get('model')
+        factory, _, _ = self._resolve_provider_factory(provider, base_url)
+        if factory is None:
+            return False, f'No provider registered for "{provider}"'
+        probe = factory(base_url=base_url, api_key=api_key, model=model)
+        return probe.check_connection()
 
     def session_auto_save(self):
         if self.current_session and self.current_session.messages:

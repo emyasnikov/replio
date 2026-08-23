@@ -109,6 +109,11 @@ def register_builtins(registry):
             chat.config.set('provider', arg.strip())
             chat._reinit_provider()
             print(f'Provider set to: {chat.config.get("provider")}')
+            if chat.config.get('connect_check', True):
+                ok, msg = chat.check_connection()
+                if not ok:
+                    print(f'  Warning: connection test failed - {msg}')
+                    print('  Run /connect to fix provider settings')
         else:
             print(f'Current provider: {chat.config.get("provider")}')
 
@@ -173,18 +178,37 @@ def register_builtins(registry):
             f'  Model [{chat.config.get("model")}]: '
         ).strip() or chat.config.get('model')
 
-        chat.config.set('base_url', base_url)
         detected = detect_provider(base_url)
         if detected in providers and detected != 'openai-compatible' and detected != provider:
             print(f'  Detected provider "{detected}" from base URL - switching')
             provider = detected
+
+        checkout = chat.config.get('connect_check', True)
+        if checkout:
+            ok, msg = chat.check_connection(
+                base_url=base_url, api_key=api_key, model=model, provider=provider)
+            if not ok:
+                print(f'  [Error] Connection test failed: {msg}')
+                try:
+                    answer = input('  Save anyway? [y/N] ').strip().lower()
+                except (EOFError, KeyboardInterrupt):
+                    print()
+                    return
+                if answer not in ('y', 'yes'):
+                    print('  Connection not saved - run /connect again with corrected values')
+                    return
+
+        chat.config.set('base_url', base_url)
         chat.config.set('provider', provider)
         chat.config.set('model', model)
         if api_key:
             chat.config.set('api_key', api_key)
 
         chat._reinit_provider()
-        print(f'Connected to {provider} ({base_url})')
+        if checkout:
+            print(f'Connected to {provider} ({base_url}) - {msg}')
+        else:
+            print(f'Connected to {provider} ({base_url})')
 
     @registry.register('config', description='Show, get, or set config values')
     def config_cmd(arg=''):

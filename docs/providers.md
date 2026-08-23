@@ -36,10 +36,12 @@ When the configured provider name is unknown, or when `base_url` matches a known
 
 ## Setting up
 
-- `/connect` - interactive setup: provider, base URL, API key, model. Detects the provider from the entered base URL.
+- `/connect` - interactive setup: provider, base URL, API key, model. Detects the provider from the entered base URL, then **tests the connection** (a `GET <base_url>/v1/models` probe) before saving: broken values are rejected unless you confirm `Save anyway?`.
 - `/model <name>` - show or switch the active model.
-- `/provider <name>` - show or switch the active provider.
+- `/provider <name>` - show or switch the active provider. After switching, the connection is probed and a warning is shown on failure (`/connect` is the fix).
 - `replio run --provider ... --model ... --base-url ...` - headless overrides.
+
+Connection probing is gated by the `connect_check` config (default `true`); set it to `false` to skip the probes (e.g. offline/flaky networks). `OpenAICompatibleProvider.check_connection()` returns `(ok, message)` by reusing `_fetch_models()` - the shared `GET /v1/models` helper that `list_models()` also uses.
 
 ## The `chat()` contract
 

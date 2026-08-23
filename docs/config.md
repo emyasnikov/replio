@@ -25,6 +25,7 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `max_tokens`                | `8192`                 | Output token cap sent to the provider. `0` = unset (provider default applies, e.g. Ollama caps at 2048). Default `8192` overrides low provider defaults |
 | `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event with no content |
 | `stream_retry_delay`        | `0.5`                  | Seconds to wait between stream retries                                  |
+| `connect_check`             | `true`                 | Test the provider connection when config changes: `/connect` probes before saving (broken values are rejected unless confirmed), `/provider` warns on a failed probe. `false` skips all probes |
 | `system_prompt`             | `""`                   | Optional system prompt, injected for every front-end (REPL, `run`, `serve`) |
 | `mode`                      | `"build"`              | Active agent mode (`build`, `plan`, or a custom mode from `modes`) |
 | `tool_calling`              | `true`                 | Enable OpenAI-compatible function calling                              |

@@ -31,6 +31,7 @@ DEFAULT_CONFIG = {
     'tool_analysis': False,
     'session_tool_max_chars': 0,
     'tool_max_result_chars': 0,
+    'connect_check': True,
     'stream_retries': 2,
     'stream_retry_delay': 0.5,
     'query_refine': False,

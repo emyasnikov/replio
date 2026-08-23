@@ -12,7 +12,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/model`                |                | Show or switch the active model (`/model gpt-4o`)              |
 | `/provider`             |                | Show or switch the active provider                             |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
-| `/connect`              |                | Interactive provider connection setup                          |
+| `/connect`              |                | Interactive provider connection setup (tests the connection before saving) |
 | `/config`               |                | Show, get, or set config values (`/config <key> <value>`)      |
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |

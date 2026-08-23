@@ -238,6 +238,125 @@ class TestProviderEndpoints(unittest.TestCase):
                          'https://api.openai.com/v1/models')
 
 
+class TestCheckConnection(unittest.TestCase):
+
+    def _provider(self, base_url, model=''):
+        return OpenAIProvider(base_url=base_url, model=model)
+
+    def _run_server(self, handler):
+        server = ThreadingHTTPServer(('127.0.0.1', 0), handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            return f'http://127.0.0.1:{server.server_port}', server
+        except BaseException:
+            server.shutdown()
+            server.server_close()
+            thread.join()
+            raise
+
+    def test_check_connection_success(self):
+        class _H(BaseHTTPRequestHandler):
+            def do_GET(self):
+                body = json.dumps({'data': [{'id': 'm1'}, {'id': 'm2'}]}).encode()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            def log_message(self, *args):
+                pass
+        base, server = self._run_server(_H)
+        try:
+            ok, msg = self._provider(base).check_connection()
+        finally:
+            server.shutdown()
+            server.server_close()
+        self.assertTrue(ok)
+        self.assertIn('2 models available', msg)
+
+    def test_check_connection_no_models(self):
+        class _H(BaseHTTPRequestHandler):
+            def do_GET(self):
+                body = json.dumps({'data': []}).encode()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            def log_message(self, *args):
+                pass
+        base, server = self._run_server(_H)
+        try:
+            ok, msg = self._provider(base).check_connection()
+        finally:
+            server.shutdown()
+            server.server_close()
+        self.assertTrue(ok)
+        self.assertIn('no models listed', msg)
+
+    def test_check_connection_notes_missing_model(self):
+        class _H(BaseHTTPRequestHandler):
+            def do_GET(self):
+                body = json.dumps({'data': [{'id': 'm1'}, {'id': 'm2'}]}).encode()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            def log_message(self, *args):
+                pass
+        base, server = self._run_server(_H)
+        try:
+            ok, msg = self._provider(base, model='nope').check_connection()
+        finally:
+            server.shutdown()
+            server.server_close()
+        self.assertTrue(ok)
+        self.assertIn('"nope" not in the model list', msg)
+
+    def test_check_connection_http_error(self):
+        class _H(BaseHTTPRequestHandler):
+            def do_GET(self):
+                body = b'{"error": {"message": "invalid api key"}}'
+                self.send_response(401)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            def log_message(self, *args):
+                pass
+        base, server = self._run_server(_H)
+        try:
+            ok, msg = self._provider(base).check_connection()
+        finally:
+            server.shutdown()
+            server.server_close()
+        self.assertFalse(ok)
+        self.assertIn('HTTP 401', msg)
+        self.assertIn('invalid api key', msg)
+
+    def test_check_connection_network_error(self):
+        import urllib.error
+        p = OpenAIProvider(base_url='http://192.0.2.1:9', model='m')
+
+        def _raise(req, *args, **kwargs):
+            raise urllib.error.URLError('connection refused')
+        with unittest.mock.patch('urllib.request.urlopen', _raise):
+            ok, msg = p.check_connection()
+        self.assertFalse(ok)
+        self.assertIn('Network error', msg)
+
+    def test_list_models_still_returns_empty_on_error(self):
+        import urllib.error
+
+        def _raise(req, *args, **kwargs):
+            raise urllib.error.URLError('boom')
+        p = OpenAIProvider(base_url='http://192.0.2.1:9')
+        with unittest.mock.patch('urllib.request.urlopen', _raise):
+            self.assertEqual(p.list_models(), [])
+
+
 class TestReasoningPayload(unittest.TestCase):
 
     def _payload(self, provider, reasoning):

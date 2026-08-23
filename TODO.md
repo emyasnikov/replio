@@ -46,7 +46,6 @@
 - [ ] Auditor agents - sub-agents that review/check a produced output (tests, code review, fact-check)
 - [ ] Generate > check > correct orchestration - run a main agent, an auditor, and a fix pass in a loop until passing
 - [ ] Custom system prompts per session
-- [ ] Config validation (test connection on change)
 - [ ] Multi-line input (detect `"""` or `'''` blocks)
 - [ ] `code_lint` / `code_format` / `code_test` / `code_debug` / `compile` - subprocess wrappers around existing CLIs (pylint, black, pytest, pdb, gcc/rustc), registered as tools with `category`/`permission`/`key_arg`
 - [ ] `git` - repository operations (status, diff, commit)
@@ -74,6 +73,7 @@
 
 ## Done
 
+- [x] Config validation (test connection on change) - /connect probe-before-save, /provider warn, connect_check toggle
 - [x] Session export to Markdown - /session export and replio export CLI render logs to Markdown
 - [x] Plan/Build modes - plan (edit+bash denied) vs build, /mode cmd + --mode flag, per-message mode
 - [x] Thinking/reasoning toggle - show_thinking (display) + reasoning (request), /thinking cmd
