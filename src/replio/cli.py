@@ -10,13 +10,13 @@ from .ui import HeadlessUI
 def _engine_from_args(args) -> Engine:
     config = Config(path=getattr(args, 'path', None))
     if getattr(args, 'provider', None):
-        config.set('provider', args.provider, persist=False)
+        config.apply('provider', args.provider)
     if getattr(args, 'model', None):
-        config.set('model', args.model, persist=False)
+        config.apply('model', args.model)
     if getattr(args, 'base_url', None):
-        config.set('base_url', args.base_url, persist=False)
+        config.apply('base_url', args.base_url)
     if getattr(args, 'mode', None):
-        config.set('mode', args.mode, persist=False)
+        config.apply('mode', args.mode)
     auto = 'allow' if getattr(args, 'approve', None) is True else 'deny'
     ui = HeadlessUI(auto=auto, verbose=getattr(args, 'verbose', False),
                     stream=getattr(args, 'output', 'json') == 'text',
@@ -80,7 +80,7 @@ def cmd_serve(args) -> int:
     from .server import HeadlessServer, ChatHandler
     config = Config(path=args.path)
     if getattr(args, 'mode', None):
-        config.set('mode', args.mode, persist=False)
+        config.apply('mode', args.mode)
     ui = HeadlessUI(auto='deny', verbose=False, stream=False,
                     show_thinking=config.get('show_thinking', True))
     engine = Engine(config, ui=ui)

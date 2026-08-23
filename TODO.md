@@ -80,9 +80,10 @@
 
 ## Done
 
+- [x] REPL `/config --global/--local` scope flags + apply() in-memory overrides (one-shot CLI, engine normalization never write files)
 - [x] Scoped config writes - api_key global-only (0600), local saves overrides only, replio config CLI
 - [x] Turn recovery - auto-continue on truncation, empty-done retried, reasoning-only not flagged empty
-- [x] Thinking captured from `reasoning` deltas (ollama.com) too, with troubleshooting doc written
+- [x] Thinking captured from `reasoning` deltas (ollama.com) too, documented in config/providers docs
 - [x] Confirm prompt `?` glyph starts at the beginning of the line, aligned with activity glyphs
 - [x] Word-level streaming buffering - buffer REPL output to word boundaries, word_streaming config
 - [x] Multi-line input - detect `"""`/`'''` blocks, one composed message, framing stripped

@@ -79,6 +79,20 @@ class TestConfigScopes(_IsolatedConfigBase):
         c.set('model', 'local-model')
         self.assertEqual(self.local(), {'model': 'local-model'})
 
+    def test_set_global_does_not_shadow_local(self):
+        c = Config(path=str(self.project))
+        c.set('model', 'local-model')
+        c.set('model', 'global-model', scope='global')
+        self.assertEqual(c.get('model'), 'local-model')
+        self.assertEqual(self.global_()['model'], 'global-model')
+        self.assertEqual(self.local()['model'], 'local-model')
+
+    def test_set_global_empty_local_value_does_not_shadow(self):
+        c = Config(path=str(self.project))
+        c.set('api_key', '', scope='local')
+        c.set('api_key', 'real-key')
+        self.assertEqual(c.get('api_key'), 'real-key')
+
     def test_unset_restores_global_fallback(self):
         c = Config(path=str(self.project))
         c.set('model', 'local-model')
@@ -100,6 +114,20 @@ class TestConfigScopes(_IsolatedConfigBase):
         c.set('model', 'global-model', scope='global')
         c.unset('model', scope='global')
         self.assertEqual(c.get('model'), 'local-model')
+
+    def test_apply_is_in_memory_only(self):
+        c = Config(path=str(self.project))
+        c.apply('temperature', 0.5)
+        self.assertEqual(c.get('temperature'), 0.5)
+        self.assertFalse(self.local_path.exists())
+        self.assertFalse(self.global_path.exists())
+
+    def test_apply_does_not_survive_reload(self):
+        c = Config(path=str(self.project))
+        c.apply('temperature', 0.5)
+        c2 = Config(path=str(self.project))
+        self.assertEqual(c2.get('temperature'),
+                         DEFAULT_CONFIG['temperature'])
 
     def test_origin(self):
         c = Config(path=str(self.project))

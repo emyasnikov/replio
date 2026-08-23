@@ -10,12 +10,17 @@ Every process merges them in memory. Nothing is ever distributed to folders. Wri
 ```bash
 # inspect in the REPL (origin: default/global/local)
 /config
-# set a value (project-local)
+# set a value (project-local, Git-like default)
 /config temperature 0.3
 # set a structured value
 /config tools.deny ["run_command", "web_search"]
+# set a single line in the global config
+/config --global temperature 0.2
+/config --global api_key <key>       # never shown in full, always global
 # remove a project-local value, falling back to global/default
 /config unset temperature
+# remove a value from the global config
+/config --global unset temperature
 # reload from disk
 /config reload
 ```
@@ -29,6 +34,8 @@ replio config set max_tokens 0 --global        # global file
 replio config unset max_tokens                 # remove from project-local
 replio config set api_key ...                  # always global, never local
 ```
+
+Deleting a project's `.replio/config.json` reverts that project to the global and built-in defaults. To keep settings across local deletions, globalize individual lines with `--global` (both the REPL `/config` and the CLI accept it), e.g. `/config --global provider ollama`, `/config --global model <model>`.
 
 ## Schema
 

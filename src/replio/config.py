@@ -146,18 +146,25 @@ class Config:
     def get(self, key, default=None):
         return self.data.get(key, default)
 
-    def set(self, key, value, scope: str = 'local', persist: bool = True):
+    def apply(self, key, value):
+        self.data[key] = value
+
+    def set(self, key, value, scope: str = 'local'):
         scope = self._resolve_scope_for(key, scope)
         raw = self._global_raw if scope == 'global' else self._local_raw
         raw[key] = value
-        self.data[key] = value
-        if persist:
-            if scope == 'global':
-                self._write_global({})
-            else:
-                self._save_local()
+        if scope == 'global':
+            local_value = self._local_raw.get(key)
+            if local_value == '':
+                local_value = None
+            if key not in self._local_raw or local_value is None:
+                self.data[key] = value
+            self._write_global({})
+        else:
+            self.data[key] = value
+            self._save_local()
 
-    def unset(self, key, scope: str = 'local', persist: bool = True):
+    def unset(self, key, scope: str = 'local'):
         scope = self._resolve_scope_for(key, scope)
         raw = self._global_raw if scope == 'global' else self._local_raw
         raw.pop(key, None)
@@ -169,11 +176,10 @@ class Config:
             self.data[key] = copy.deepcopy(DEFAULT_CONFIG[key])
         else:
             self.data.pop(key, None)
-        if persist:
-            if scope == 'global':
-                self._write_global({})
-            else:
-                self._save_local()
+        if scope == 'global':
+            self._write_global({})
+        else:
+            self._save_local()
 
     def origin(self, key: str) -> str:
         if key in self._local_raw:

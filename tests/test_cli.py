@@ -74,6 +74,14 @@ class TestCliRun(unittest.TestCase):
         rc, _ = self._run([[{'type': 'error', 'code': 500, 'message': 'boom'}]])
         self.assertEqual(rc, 1)
 
+    def test_run_overrides_do_not_persist(self):
+        self._run([[{'type': 'token', 'content': 'x'},
+                    {'type': 'done', 'reason': 'stop'}]],
+                  provider='ollama', model='override-model',
+                  base_url='https://override.example')
+        cfg = Path(self.tmp.name) / '.replio' / 'config.json'
+        self.assertFalse(cfg.exists())
+
     def test_run_overrides_apply(self):
         captured = {}
 

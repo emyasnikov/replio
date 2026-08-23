@@ -1,5 +1,6 @@
 import unittest
 import io
+import json
 from unittest.mock import patch
 
 from tests.helpers import make_chat
@@ -18,6 +19,14 @@ class TestToolCommand(unittest.TestCase):
         with patch('sys.stdout', new=out):
             self.chat.registry.dispatch(line)
         return out.getvalue()
+
+    def _global_raw(self):
+        p = self.chat.config.global_path
+        return json.loads(p.read_text()) if p.exists() else {}
+
+    def _local_raw(self):
+        p = self.chat.config.local_path
+        return json.loads(p.read_text()) if p.exists() else {}
 
     def _search_service(self):
         return self.chat._plugin_manager.service('search')
@@ -210,6 +219,40 @@ class TestToolCommand(unittest.TestCase):
             self.assertEqual(other.config.get('tools.deny'), [])
         finally:
             other._tmp.cleanup()
+
+    def test_config_default_scope_is_local(self):
+        self._dispatch('/config temperature 0.3')
+        self.assertEqual(self._local_raw().get('temperature'), 0.3)
+        self.assertEqual(self._global_raw().get('temperature'), None)
+
+    def test_config_global_flag_writes_global(self):
+        output = self._dispatch('/config --global temperature 0.3')
+        self.assertIn('(global)', output)
+        self.assertEqual(self._global_raw().get('temperature'), 0.3)
+        self.assertEqual(self._local_raw().get('temperature'), 0.7)
+
+    def test_config_global_api_key_masked(self):
+        output = self._dispatch('/config --global api_key sk-456')
+        self.assertEqual(self._global_raw().get('api_key'), 'sk-456')
+        self.assertEqual(self._local_raw().get('api_key'), '')
+        self.assertNotIn('sk-456', output)
+
+    def test_config_local_flag_explicit(self):
+        self._dispatch('/config --local temperature 0.4')
+        self.assertEqual(self._local_raw().get('temperature'), 0.4)
+        self.assertNotIn('temperature', self._global_raw())
+
+    def test_config_global_unset(self):
+        self._dispatch('/config --global temperature 0.3')
+        output = self._dispatch('/config --global unset temperature')
+        self.assertIn('(global config)', output)
+        self.assertNotIn('temperature', self._global_raw())
+        self.assertEqual(self.chat.config.get('temperature'), 0.7)
+
+    def test_config_global_list_op(self):
+        self._dispatch('/config --global tools.deny -a run_command')
+        self.assertEqual(self._global_raw().get('tools.deny'), ['run_command'])
+        self.assertEqual(self._local_raw().get('tools.deny', []), [])
 
     def test_tool_executes_via_registry(self):
         with patch.object(self._search_service(), 'search', return_value=[

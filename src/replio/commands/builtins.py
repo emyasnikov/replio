@@ -245,10 +245,16 @@ def register_builtins(registry):
         else:
             print(f'Connected to {provider} ({base_url})')
 
-    @registry.register('config', description='Show, get, set, or unset config values')
+    @registry.register('config', description='Show, get, set, or unset config values (--global for the global config)')
     def config_cmd(arg=''):
-        parts = arg.strip().split(maxsplit=1)
-        if not arg:
+        scope = 'local'
+        text = arg.strip()
+        while text.startswith('--global') or text.startswith('--local'):
+            scope = 'global' if text.startswith('--global') else 'local'
+            flag_len = len('--global') if text.startswith('--global') else len('--local')
+            text = text[flag_len:].lstrip()
+        parts = text.split(maxsplit=1)
+        if not text:
             for k, v in chat.config.data.items():
                 val = '***' if k == 'api_key' and v else v
                 print(f'  {k}: {val}  ({chat.config.origin(k)})')
@@ -267,8 +273,8 @@ def register_builtins(registry):
 
         if key == 'unset' and rest:
             k = rest.split(maxsplit=1)[0]
-            chat.config.unset(k)
-            print(f'Unset {k} (local config)')
+            chat.config.unset(k, scope=scope)
+            print(f'Unset {k} ({scope} config)')
             return
 
         if not rest:
@@ -294,8 +300,8 @@ def register_builtins(registry):
                     current.remove(it)
                     changed = True
             if changed:
-                chat.config.set(key, current)
-                print(f'Config {key} = {current}')
+                chat.config.set(key, current, scope=scope)
+                print(f'Config {key} = {current} ({scope})')
             else:
                 print(f'Config {key} unchanged ({current})')
             return
@@ -316,8 +322,10 @@ def register_builtins(registry):
             value = json.loads(rest)
         except json.JSONDecodeError:
             value = rest
-        chat.config.set(key, value)
-        print(f'Config {key} = {value}')
+        chat.config.set(key, value, scope=scope)
+        resolved = 'global' if key == 'api_key' else scope
+        shown = '***' if key == 'api_key' and value else value
+        print(f'Config {key} = {shown} ({resolved})')
 
     @registry.register('session', description='Manage saved sessions', subcommands=[
         ('new', 'Start a new session'),

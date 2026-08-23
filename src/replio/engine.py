@@ -85,7 +85,7 @@ class Engine:
         if factory is None:
             return
         if resolved != provider_name:
-            self.config.set('provider', resolved)
+            self.config.apply('provider', resolved)
 
         base_url = self.config.get('base_url')
         model = self.config.get('model')
@@ -100,9 +100,9 @@ class Engine:
                     model = factory.DEFAULT_MODEL
                     break
         if base_url != self.config.get('base_url'):
-            self.config.set('base_url', base_url)
+            self.config.apply('base_url', base_url)
         if model != self.config.get('model'):
-            self.config.set('model', model)
+            self.config.apply('model', model)
 
         self.provider = factory(
             base_url=base_url,
