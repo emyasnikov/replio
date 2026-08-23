@@ -1,4 +1,5 @@
 import io
+import sys
 import unittest
 from unittest.mock import patch
 
@@ -137,6 +138,115 @@ class TestEphemeralUI(unittest.TestCase):
         self.assertNotIn('→ Write a.md', blob)
         self.assertNotIn('[write_file: a.md]', blob)
         chat._tmp.cleanup()
+
+
+class TestWordStreaming(unittest.TestCase):
+
+    PREFIX = '\001\033[33m\002<<< \001\033[0m\002'
+
+    def setUp(self):
+        self.chat = make_chat()
+        self.ui = self.chat._ui
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def _capture(self, fn):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            fn()
+        return out.getvalue()
+
+    def test_word_streaming_default_true(self):
+        from replio.config import DEFAULT_CONFIG
+        self.assertTrue(DEFAULT_CONFIG['word_streaming'])
+
+    def test_partial_word_held_until_boundary(self):
+        def run():
+            self.ui.token('app')
+            self.ui.token('rox ')
+            self.ui.token('hard')
+        value = self._capture(run)
+        self.assertEqual(value, self.PREFIX + 'approx ')
+        self.assertEqual(self.ui._word_buffer, 'hard')
+
+    def test_flush_writes_remainder(self):
+        def run():
+            self.ui.token('app')
+            self.ui.token('rox ')
+            self.ui.token('hard')
+            self.ui.flush()
+        value = self._capture(run)
+        self.assertEqual(value, self.PREFIX + 'approx hard')
+        self.assertEqual(self.ui._word_buffer, '')
+
+    def test_multi_word_token_flushes_through_last_space(self):
+        def run():
+            self.ui.token('word1 word2 par')
+        value = self._capture(run)
+        self.assertEqual(value, self.PREFIX + 'word1 word2 ')
+        self.assertEqual(self.ui._word_buffer, 'par')
+
+    def test_newline_flushes(self):
+        def run():
+            self.ui.token('line1\n')
+            self.ui.token('par')
+        value = self._capture(run)
+        self.assertEqual(value, self.PREFIX + 'line1\n')
+        self.assertEqual(self.ui._word_buffer, 'par')
+
+    def test_footer_flushes_tail(self):
+        def run():
+            self.ui.token('hard')
+            self.ui.footer(3.0, None, 10)
+        value = self._capture(run)
+        self.assertIn('hard', value)
+        self.assertIn('(3.0s, 10 tokens)', value)
+        self.assertIn('hard\n', value)
+        self.assertLess(value.index('hard'), value.index('(3.0s'))
+
+    def test_word_streaming_off_writes_immediately(self):
+        self.chat.config.set('word_streaming', False)
+
+        def run():
+            self.ui.token('app')
+            self.ui.token('rox ')
+        self.assertEqual(self._capture(run), self.PREFIX + 'approx ')
+        self.assertEqual(self.ui._word_buffer, '')
+
+    def test_markdown_bold_across_flush_boundary(self):
+        self.chat.config.set('markdown_streaming', True)
+
+        def run():
+            self.ui.token('**bo')
+            self.ui.token('ld**: ok')
+            self.ui.flush()
+        value = self._capture(run)
+        self.assertIn('bold', value)
+        self.assertNotIn('*', value)
+
+    def test_activity_flushes_pending_word(self):
+        def run():
+            self.ui.token('par')
+            self.ui.activity('→', 'Write', 'a.md', ['+ hi'])
+        value = self._capture(run)
+        self.assertIn('par', value)
+        self.assertIn('→ Write a.md', value)
+        self.assertLess(value.index('par'), value.index('→ Write a.md'))
+
+    def test_confirm_flushes_pending_word(self):
+        def fake_input(prompt):
+            sys.stdout.write(prompt)
+            return 'n'
+
+        def run():
+            self.ui.token('par')
+            with patch('replio.ui.input', side_effect=fake_input):
+                self.ui.confirm('write_file', 'write_file a.md')
+        value = self._capture(run)
+        self.assertIn('par', value)
+        self.assertIn('write_file a.md', value)
+        self.assertLess(value.index('par'), value.index('write_file a.md'))
 
 
 if __name__ == '__main__':

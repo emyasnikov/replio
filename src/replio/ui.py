@@ -78,6 +78,7 @@ class ReplUI:
         self._spinner_stop = threading.Event()
         self._spinner_lock = threading.Lock()
         self._spinner_frame = 0
+        self._word_buffer = ''
 
     def _prefix(self):
         if self.first_content:
@@ -99,6 +100,13 @@ class ReplUI:
             sys.stdout.flush()
 
     def token(self, text):
+        if self._loop.config.get('word_streaming', True):
+            self._word_buffer += text
+            self._flush_words()
+        else:
+            self._render(text)
+
+    def _render(self, text):
         self._prefix()
         if self._loop.config.get('markdown_streaming'):
             for seg, ansi in render_markdown(text, self.md_state):
@@ -107,7 +115,23 @@ class ReplUI:
             self._write(text)
         self.content_newline = text.endswith('\n')
 
+    def _flush_words(self):
+        last = -1
+        for i, ch in enumerate(self._word_buffer):
+            if ch.isspace():
+                last = i
+        if last == -1:
+            return
+        self._render(self._word_buffer[:last + 1])
+        self._word_buffer = self._word_buffer[last + 1:]
+
+    def flush(self):
+        if self._word_buffer:
+            self._render(self._word_buffer)
+            self._word_buffer = ''
+
     def thinking_begin(self):
+        self.flush()
         if not self._loop.config.get('show_thinking', True):
             self._start_spinner()
             return
@@ -146,12 +170,14 @@ class ReplUI:
             sys.stdout.flush()
 
     def thinking(self, text):
+        self.flush()
         if not self._loop.config.get('show_thinking', True):
             return
         self._write(text, '\033[90m')
         self.content_newline = text.endswith('\n')
 
     def thinking_end(self, duration):
+        self.flush()
         self._stop_spinner()
         if self._loop.config.get('show_thinking', True):
             sys.stdout.write('\n')
@@ -161,33 +187,41 @@ class ReplUI:
         self.content_newline = True
 
     def warning(self, msg):
+        self.flush()
         self._emit(f'[warning] {msg}', '\033[93m')
 
     def error(self, code, msg):
+        self.flush()
         label = f'[Error {code}]' if code else '[Error]'
         self._emit(f'{label} {msg}', '\033[91m')
 
     def tool_status(self, name, value, body):
+        self.flush()
         self._emit(f'[{name}: {value}]', '\033[90m')
         for line in body:
             self._emit(line, '\033[90m')
 
     def activity(self, glyph, verb, label, body):
+        self.flush()
         self._emit(f'{glyph} {verb} {label}', '\033[90m')
         for line in body:
             self._emit(line, '\033[90m')
 
     def tool_error(self, msg):
+        self.flush()
         self._emit(f'! {msg.split(chr(10), 1)[0]}', '\033[90m')
 
     def tool_result(self, output):
+        self.flush()
         for line in output.splitlines():
             self._emit(line, '\033[90m')
 
     def tool_refine(self, old, new):
+        self.flush()
         self._emit(f'[refine: "{old}" → "{new}"]', '\033[90m')
 
     def footer(self, duration, usage, tokens):
+        self.flush()
         if not self.content_newline:
             sys.stdout.write('\n')
             sys.stdout.flush()
@@ -198,9 +232,11 @@ class ReplUI:
         self.content_newline = True
 
     def info(self, msg):
+        self.flush()
         self._emit(msg)
 
     def confirm(self, name, label):
+        self.flush()
         try:
             answer = input(
                 f'\001\033[90m\002  ? {label} - approve? [y/N] \001\033[0m\002'

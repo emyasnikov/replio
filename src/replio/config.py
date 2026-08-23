@@ -40,6 +40,7 @@ DEFAULT_CONFIG = {
     'show_thinking': False,
     'reasoning': 'auto',
     'markdown_streaming': False,
+    'word_streaming': True,
     'show_context_size': True,
     'clear_screen': True,
     'show_version': True,

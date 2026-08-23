@@ -68,10 +68,10 @@
   - [ ] RBAC - role-based access control for enterprise deployments
   - [ ] Queue-based scaling - many concurrent sensor/chat feeds without blocking the loop
 - [ ] Session import from Markdown/JSON
-- [ ] Word-level streaming buffering: avoid mid-word breaks by buffering tokens until a space character
 
 ## Done
 
+- [x] Word-level streaming buffering - buffer REPL output to word boundaries, word_streaming config
 - [x] Multi-line input - detect `"""`/`'''` blocks, one composed message, framing stripped
 - [x] Config validation (test connection on change) - /connect probe-before-save, /provider warn, connect_check toggle
 - [x] Session export to Markdown - /session export and replio export CLI render logs to Markdown

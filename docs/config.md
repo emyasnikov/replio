@@ -42,6 +42,7 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `show_thinking`             | `false`                | Stream thinking/reasoning tokens dimmed. When off, thinking is shown only as an animated spinner plus a `+ Thought N.Ns` summary (display only - does not change what is sent to the model) |
 | `reasoning`                 | `"auto"`               | Request reasoning from the model and control its token budget: `false`/`"off"` = do not request, `true`/`"on"`/`"auto"` = request with provider default, `"low"`/`"medium"`/`"high"` = explicit budget hint. Mapping is provider-specific (OpenAI `reasoning_effort`, Claude `thinking.budget_tokens`, Qwen `enable_thinking`) |
 | `markdown_streaming`        | `false`                | Basic markdown-aware streaming                                         |
+| `word_streaming`            | `true`                 | Buffer REPL output to word boundaries so words render fully formed (no mid-word pauses). `false` streams character-by-character |
 | `show_context_size`         | `true`                 | Dimmed context-size line after each response                           |
 | `clear_screen`              | `true`                 | Clear the screen before the REPL banner                                |
 | `show_version`              | `true`                 | Show the version in the REPL banner                                    |

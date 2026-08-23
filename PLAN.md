@@ -8,11 +8,9 @@ Working backlog for the next tasks, ranked by effort, urgency (hardening current
 - Urgency: how much the task hardens or de-risks existing functionality.
 - Importance: coverage of documented use-case gaps and competitor features named in `docs/vs/`.
 
-## Tier 1 - do next (small effort, hardens core, high value)
+## Tier 1 - completed
 
-| Task | Effort | Urgency | Importance | Why |
-|------|--------|---------|------------|-----|
-| Word-level streaming buffering | S | Low-Med (polish) | Medium | Stops mid-word breaks, visible output quality. |
+Session export to Markdown, config validation (test connection on change), multi-line input, and word-level streaming buffering. Change details are in `CHANGELOG.md`.
 
 ## Tier 2 - next (medium effort, high use-case + competitive value)
 
@@ -38,8 +36,8 @@ Working backlog for the next tasks, ranked by effort, urgency (hardening current
 
 ## Execution order
 
-Each task follows the AGENTS.md doc conventions: build, add `unittest` tests, mark `[x]` in `TODO.md`, log under a new version section at the top of `CHANGELOG.md`, and sync the `pyproject.toml` version.
+Each task follows the AGENTS.md doc conventions: build, add `unittest` tests, mark `[x]` in `TODO.md`, log under the current version section in `CHANGELOG.md`, in sync with `pyproject.toml`.
 
-1. Tier 1 (remaining): Session export to Markdown -> Config validation -> Multi-line input -> Word-level streaming buffering
-2. Tier 2 (after Tier 1, order to be re-ranked against the backlog at that point)
+1. Tier 1 complete (v0.18.0) - session export, config validation, multi-line input, word-level streaming
+2. Tier 2 (next, order to be re-ranked against the backlog at that point)
 3. Tier 3 roadmap phases, one phase at a time, docs-first
