@@ -280,7 +280,7 @@ class TestConnectCommand(unittest.TestCase):
 
     def test_connect_saves_on_success(self):
         with patch.object(self.chat, 'check_connection',
-                          return_value=(True, '3 models available')):
+                          return_value=(True, '3 models available', [])):
             output = self._dispatch(['', '', 'sk-123', ''])
         self.assertIn('Connected to ollama (https://test.api.com)', output)
         self.assertIn('- 3 models available', output)
@@ -290,7 +290,7 @@ class TestConnectCommand(unittest.TestCase):
 
     def test_connect_failure_declined_leaves_config(self):
         with patch.object(self.chat, 'check_connection',
-                          return_value=(False, 'HTTP 401: bad key')):
+                          return_value=(False, 'HTTP 401: bad key', [])):
             output = self._dispatch(['', '', 'sk-bad', '', 'n'])
         self.assertIn('[Error] Connection test failed: HTTP 401: bad key', output)
         self.assertIn('Connection not saved', output)
@@ -299,7 +299,7 @@ class TestConnectCommand(unittest.TestCase):
 
     def test_connect_failure_accepted_saves(self):
         with patch.object(self.chat, 'check_connection',
-                          return_value=(False, 'HTTP 500: boom')):
+                          return_value=(False, 'HTTP 500: boom', [])):
             output = self._dispatch(['', '', 'sk-risk', '', 'y'])
         self.assertIn('Connected to ollama (https://test.api.com)', output)
         self.assertEqual(self.chat.config.get('api_key'), 'sk-risk')
@@ -315,7 +315,7 @@ class TestConnectCommand(unittest.TestCase):
 
     def test_connect_passes_probe_entered_values(self):
         with patch.object(self.chat, 'check_connection',
-                          return_value=(True, 'ok')) as probe:
+                          return_value=(True, 'ok', [])) as probe:
             self._dispatch(['my-provider', 'https://x.example/v1', 'sk-x', 'm1'])
         probe.assert_called_once_with(
             base_url='https://x.example/v1', api_key='sk-x',
@@ -323,12 +323,74 @@ class TestConnectCommand(unittest.TestCase):
 
     def test_connect_detects_provider_before_probe(self):
         with patch.object(self.chat, 'check_connection',
-                          return_value=(True, 'ok')) as probe:
+                          return_value=(True, 'ok', [])) as probe:
             output = self._dispatch(['ollama', 'https://api.groq.com/openai/v1', '', ''])
         probe.assert_called_once_with(
             base_url='https://api.groq.com/openai/v1', api_key='',
             model='test-model', provider='groq')
         self.assertIn('Detected provider "groq"', output)
+
+    def test_connect_offers_models_on_mismatch(self):
+        with patch.object(self.chat, 'check_connection',
+                          return_value=(True, '2 models available '
+                                       '(configured model "test-model" not in the model list)',
+                                       ['gpt-x', 'llama2'])) as probe:
+            output = self._dispatch(['', '', '', '', 'y'])
+        probe.assert_called_once_with(
+            base_url='https://test.api.com', api_key='',
+            model='test-model', provider='ollama')
+        self.assertIn('2 models available from ollama (https://test.api.com)', output)
+        self.assertIn('- gpt-x', output)
+        self.assertIn('- llama2', output)
+
+    def test_connect_models_offer_declined(self):
+        with patch.object(self.chat, 'check_connection',
+                          return_value=(True, '2 models available', ['gpt-x', 'llama2'])):
+            output = self._dispatch(['', '', '', '', 'n'])
+        self.assertIn('Connected to ollama (https://test.api.com)', output)
+        self.assertNotIn('- gpt-x', output)
+        self.assertNotIn('- llama2', output)
+
+
+class TestModelsCommand(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def _dispatch(self, line):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat.registry.dispatch(line)
+        return out.getvalue()
+
+    def test_models_lists_available(self):
+        with patch.object(self.chat, 'list_models',
+                          return_value=(['m1', 'm2'], None)):
+            output = self._dispatch('/models')
+        self.assertIn('2 models available from ollama (https://test.api.com)', output)
+        self.assertIn('- m1', output)
+        self.assertIn('- m2', output)
+
+    def test_models_error(self):
+        with patch.object(self.chat, 'list_models',
+                          return_value=([], 'HTTP 401: bad key')):
+            output = self._dispatch('/models')
+        self.assertIn('[Error] Failed to list models: HTTP 401: bad key', output)
+        self.assertIn('run /connect to fix', output)
+
+    def test_models_empty(self):
+        with patch.object(self.chat, 'list_models', return_value=([], None)):
+            output = self._dispatch('/models')
+        self.assertIn('No models listed from ollama (https://test.api.com)', output)
+
+    def test_models_notes_missing_configured_model(self):
+        with patch.object(self.chat, 'list_models',
+                          return_value=(['a', 'b'], None)):
+            output = self._dispatch('/models')
+        self.assertIn('(configured model "test-model" not in the model list)', output)
 
 
 class TestProviderWarn(unittest.TestCase):
@@ -347,7 +409,7 @@ class TestProviderWarn(unittest.TestCase):
 
     def test_provider_failed_probe_warns(self):
         with patch.object(self.chat, 'check_connection',
-                          return_value=(False, 'HTTP 500: boom')):
+                          return_value=(False, 'HTTP 500: boom', [])):
             output = self._dispatch('/provider openai')
         self.assertIn('Provider set to: openai', output)
         self.assertIn('Warning: connection test failed - HTTP 500: boom', output)
@@ -355,7 +417,7 @@ class TestProviderWarn(unittest.TestCase):
 
     def test_provider_success_no_warning(self):
         with patch.object(self.chat, 'check_connection',
-                          return_value=(True, 'ok')):
+                          return_value=(True, 'ok', [])):
             output = self._dispatch('/provider openai')
         self.assertIn('Provider set to: openai', output)
         self.assertNotIn('Warning', output)

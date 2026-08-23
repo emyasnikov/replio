@@ -111,16 +111,32 @@ class Engine:
 
     def check_connection(self, base_url: str | None = None, api_key: str | None = None,
                          model: str | None = None,
-                         provider: str | None = None) -> tuple[bool, str]:
+                         provider: str | None = None) -> tuple[bool, str, list[str]]:
+        from .providers.base import _connection_message
         provider = provider or self.config.get('provider')
         base_url = self.config.get('base_url') if base_url is None else base_url
         api_key = self.config.get('api_key') if api_key is None else api_key
         model = model or self.config.get('model')
         factory, _, _ = self._resolve_provider_factory(provider, base_url)
         if factory is None:
-            return False, f'No provider registered for "{provider}"'
+            return False, f'No provider registered for "{provider}"', []
         probe = factory(base_url=base_url, api_key=api_key, model=model)
-        return probe.check_connection()
+        models, error = probe._fetch_models()
+        if error:
+            return False, error, []
+        return True, _connection_message(models, model), models
+
+    def list_models(self, provider: str | None = None,
+                    base_url: str | None = None) -> tuple[list[str], str | None]:
+        provider = provider or self.config.get('provider')
+        base_url = self.config.get('base_url') if base_url is None else base_url
+        factory, _, _ = self._resolve_provider_factory(provider, base_url)
+        if factory is None:
+            return [], f'No provider registered for "{provider}"'
+        probe = factory(base_url=base_url,
+                        api_key=self.config.get('api_key'),
+                        model=self.config.get('model'))
+        return probe._fetch_models()
 
     def session_auto_save(self):
         if self.current_session and self.current_session.messages:

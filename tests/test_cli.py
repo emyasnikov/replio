@@ -6,7 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from replio.cli import cmd_run, cmd_export, cmd_plugins
+from replio.cli import cmd_run, cmd_export, cmd_models, cmd_plugins
 from replio.main import main
 from replio import get_version
 from replio.sessions.manager import Session
@@ -287,6 +287,57 @@ class TestCliExport(unittest.TestCase):
             rc = main(['export', 'alpha', '--path', self.path])
         self.assertEqual(rc, 0)
         self.assertIn('Exported session: alpha', out.getvalue())
+
+
+class TestCliModels(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.path = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _args(self, **kw):
+        base = dict(path=self.path)
+        base.update(kw)
+        return SimpleNamespace(**base)
+
+    def _capture(self, args, list_result):
+        engine = MagicMock()
+        engine.list_models.return_value = list_result
+        with patch('replio.cli.Engine', return_value=engine):
+            out = io.StringIO()
+            err = io.StringIO()
+            with patch('sys.stdout', new=out), patch('sys.stderr', new=err):
+                rc = cmd_models(args)
+        return rc, out.getvalue(), err.getvalue()
+
+    def test_models_lists_available(self):
+        rc, out, _ = self._capture(self._args(), (['m1', 'm2'], None))
+        self.assertEqual(rc, 0)
+        self.assertIn('2 models available from', out)
+        self.assertIn('- m1', out)
+
+    def test_models_error_exit_code(self):
+        rc, _, err = self._capture(self._args(), ([], 'HTTP 500: boom'))
+        self.assertEqual(rc, 1)
+        self.assertIn('HTTP 500: boom', err)
+
+    def test_models_empty(self):
+        rc, out, _ = self._capture(self._args(), ([], None))
+        self.assertEqual(rc, 0)
+        self.assertIn('No models listed', out)
+
+    def test_models_main_dispatch(self):
+        engine = MagicMock()
+        engine.list_models.return_value = (['m1'], None)
+        with patch('replio.cli.Engine', return_value=engine):
+            out = io.StringIO()
+            with patch('sys.stdout', new=out):
+                rc = main(['models', '--path', self.path])
+        self.assertEqual(rc, 0)
+        self.assertIn('1 models available from', out.getvalue())
 
 
 class TestCliVersion(unittest.TestCase):

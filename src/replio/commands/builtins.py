@@ -45,6 +45,12 @@ def _tool_rows(chat):
             n, chat._tool_registry.permission_for(n)))]
 
 
+def _render_models(models, provider, base_url):
+    print(f'{len(models)} models available from {provider} ({base_url}):')
+    for m in models:
+        print(f'  - {m}')
+
+
 def _render_tool_detail(chat, name):
     info = chat._tool_registry.info(name)
     if not info:
@@ -110,7 +116,7 @@ def register_builtins(registry):
             chat._reinit_provider()
             print(f'Provider set to: {chat.config.get("provider")}')
             if chat.config.get('connect_check', True):
-                ok, msg = chat.check_connection()
+                ok, msg, _ = chat.check_connection()
                 if not ok:
                     print(f'  Warning: connection test failed - {msg}')
                     print('  Run /connect to fix provider settings')
@@ -159,6 +165,27 @@ def register_builtins(registry):
         if arg == 'plan':
             print('  Read-only: write and exec tools are disabled')
 
+    @registry.register('models', aliases=['model-list'],
+                       description='List models available from the connected provider')
+    def models_cmd(_=None):
+        provider = chat.config.get('provider')
+        base_url = chat.config.get('base_url')
+        try:
+            models, error = chat.list_models()
+        except Exception as e:
+            models, error = [], str(e)
+        if error:
+            print(f'[Error] Failed to list models: {error}')
+            print(f'  probing {provider} ({base_url}) - run /connect to fix')
+            return
+        if not models:
+            print(f'No models listed from {provider} ({base_url})')
+            return
+        _render_models(models, provider, base_url)
+        model = chat.config.get('model')
+        if model and model not in models:
+            print(f'  (configured model "{model}" not in the model list)')
+
     @registry.register('connect', description='Set up provider connection interactively')
     def connect_cmd(_=None):
         from ..providers import PROVIDERS, detect_provider
@@ -185,7 +212,7 @@ def register_builtins(registry):
 
         checkout = chat.config.get('connect_check', True)
         if checkout:
-            ok, msg = chat.check_connection(
+            ok, msg, models = chat.check_connection(
                 base_url=base_url, api_key=api_key, model=model, provider=provider)
             if not ok:
                 print(f'  [Error] Connection test failed: {msg}')
@@ -207,6 +234,14 @@ def register_builtins(registry):
         chat._reinit_provider()
         if checkout:
             print(f'Connected to {provider} ({base_url}) - {msg}')
+            if model and models and model not in models:
+                try:
+                    answer = input('  Show available models? [y/N] ').strip().lower()
+                except (EOFError, KeyboardInterrupt):
+                    print()
+                    return
+                if answer in ('y', 'yes'):
+                    _render_models(models, provider, base_url)
         else:
             print(f'Connected to {provider} ({base_url})')
 

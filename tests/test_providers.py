@@ -1,6 +1,7 @@
 import unittest
 import tempfile
 import json
+import io
 import threading
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -355,6 +356,18 @@ class TestCheckConnection(unittest.TestCase):
         p = OpenAIProvider(base_url='http://192.0.2.1:9')
         with unittest.mock.patch('urllib.request.urlopen', _raise):
             self.assertEqual(p.list_models(), [])
+
+    def test_list_models_silent_on_error(self):
+        import urllib.error
+
+        def _raise(req, *args, **kwargs):
+            raise urllib.error.URLError('boom')
+        p = OpenAIProvider(base_url='http://192.0.2.1:9')
+        out = io.StringIO()
+        with unittest.mock.patch('urllib.request.urlopen', _raise):
+            with unittest.mock.patch('sys.stdout', new=out):
+                p.list_models()
+        self.assertEqual(out.getvalue(), '')
 
 
 class TestReasoningPayload(unittest.TestCase):

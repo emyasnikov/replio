@@ -36,8 +36,9 @@ When the configured provider name is unknown, or when `base_url` matches a known
 
 ## Setting up
 
-- `/connect` - interactive setup: provider, base URL, API key, model. Detects the provider from the entered base URL, then **tests the connection** (a `GET <base_url>/v1/models` probe) before saving: broken values are rejected unless you confirm `Save anyway?`.
+- `/connect` - interactive setup: provider, base URL, API key, model. Detects the provider from the entered base URL, then **tests the connection** (a `GET <base_url>/v1/models` probe) before saving: broken values are rejected unless you confirm `Save anyway?`. When the configured model is missing from the list, it offers `Show available models?` so you can pick the right name.
 - `/model <name>` - show or switch the active model.
+- `/models` (alias `/model-list`) - list the models the connected provider advertises; `replio models` does the same headlessly (exit `1` on a failed probe).
 - `/provider <name>` - show or switch the active provider. After switching, the connection is probed and a warning is shown on failure (`/connect` is the fix).
 - `replio run --provider ... --model ... --base-url ...` - headless overrides.
 

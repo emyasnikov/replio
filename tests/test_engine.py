@@ -287,13 +287,13 @@ class TestEngineCheckConnection(unittest.TestCase):
     def tearDown(self):
         self.engine._tmp.cleanup()
 
-    def _factory(self, ok, msg):
+    def _factory(self, models, error=None):
         captured = {}
 
         def _f(**kwargs):
             captured.update(kwargs)
             p = MagicMock()
-            p.check_connection.return_value = (ok, msg)
+            p._fetch_models.return_value = (list(models), error)
             return p
         _f.DEFAULT_BASE_URL = 'https://test.api.com'
         _f.DEFAULT_MODEL = 'test-model'
@@ -301,47 +301,86 @@ class TestEngineCheckConnection(unittest.TestCase):
         return _f
 
     def test_check_connection_resolves_and_probes(self):
-        factory = self._factory(True, '3 models available')
+        factory = self._factory(['m1', 'm2'])
         with patch('replio.providers.PROVIDERS', {'ollama': factory}):
-            ok, msg = self.engine.check_connection()
+            ok, msg, models = self.engine.check_connection()
         self.assertTrue(ok)
-        self.assertEqual(msg, '3 models available')
+        self.assertIn('2 models available', msg)
+        self.assertEqual(models, ['m1', 'm2'])
         self.assertEqual(factory.captured['base_url'], 'https://test.api.com')
         self.assertEqual(factory.captured['model'], 'test-model')
         self.assertEqual(factory.captured['api_key'], '')
 
-    def test_check_connection_overrides_win(self):
-        factory = self._factory(False, 'HTTP 401: bad')
+    def test_check_connection_model_mismatch_note(self):
+        factory = self._factory(['a', 'b'])
         with patch('replio.providers.PROVIDERS', {'ollama': factory}):
-            ok, msg = self.engine.check_connection(
+            ok, msg, models = self.engine.check_connection(model='zzz')
+        self.assertTrue(ok)
+        self.assertIn('"zzz" not in the model list', msg)
+        self.assertEqual(models, ['a', 'b'])
+
+    def test_check_connection_overrides_win(self):
+        factory = self._factory([], error='HTTP 401: bad')
+        with patch('replio.providers.PROVIDERS', {'ollama': factory}):
+            ok, msg, models = self.engine.check_connection(
                 base_url='https://other.example', api_key='sk-new', model='m2')
         self.assertFalse(ok)
+        self.assertEqual(msg, 'HTTP 401: bad')
+        self.assertEqual(models, [])
         self.assertEqual(factory.captured['base_url'], 'https://other.example')
         self.assertEqual(factory.captured['api_key'], 'sk-new')
         self.assertEqual(factory.captured['model'], 'm2')
 
     def test_check_connection_unknown_factory(self):
         with patch('replio.providers.PROVIDERS', {}):
-            ok, msg = self.engine.check_connection(
+            ok, msg, models = self.engine.check_connection(
                 provider='nope', base_url='http://localhost:11434')
         self.assertFalse(ok)
         self.assertIn('No provider registered', msg)
+        self.assertEqual(models, [])
 
     def test_check_connection_does_not_mutate_state(self):
         before = self.engine.provider
-        factory = self._factory(True, 'ok')
+        factory = self._factory(['ok-model'])
         with patch('replio.providers.PROVIDERS', {'ollama': factory}):
             self.engine.check_connection(base_url='https://other.example')
         self.assertIs(self.engine.provider, before)
         self.assertEqual(self.engine.config.get('base_url'), 'https://test.api.com')
 
     def test_check_connection_detects_from_base_url(self):
-        factory = self._factory(True, 'ok')
+        factory = self._factory(['g1'])
         with patch('replio.providers.PROVIDERS', {'groq': factory}):
-            ok, msg = self.engine.check_connection(
+            ok, msg, _ = self.engine.check_connection(
                 provider='nope', base_url='https://api.groq.com/openai/v1')
         self.assertTrue(ok)
         self.assertEqual(factory.captured['base_url'], 'https://api.groq.com/openai/v1')
+
+    def test_list_models_returns_models(self):
+        factory = self._factory(['m1', 'm2'])
+        with patch('replio.providers.PROVIDERS', {'ollama': factory}):
+            models, error = self.engine.list_models()
+        self.assertIsNone(error)
+        self.assertEqual(models, ['m1', 'm2'])
+
+    def test_list_models_returns_error(self):
+        factory = self._factory([], error='HTTP 403: forbidden')
+        with patch('replio.providers.PROVIDERS', {'ollama': factory}):
+            models, error = self.engine.list_models()
+        self.assertEqual(models, [])
+        self.assertEqual(error, 'HTTP 403: forbidden')
+
+    def test_list_models_unknown_factory(self):
+        with patch('replio.providers.PROVIDERS', {}):
+            models, error = self.engine.list_models(
+                provider='nope', base_url='http://localhost:11434')
+        self.assertEqual(models, [])
+        self.assertIn('No provider registered', error)
+
+    def test_list_models_respects_overrides(self):
+        factory = self._factory(['x'])
+        with patch('replio.providers.PROVIDERS', {'ollama': factory}):
+            self.engine.list_models(base_url='https://other.example')
+        self.assertEqual(factory.captured['base_url'], 'https://other.example')
 
 
 class TestEngineSinks(unittest.TestCase):

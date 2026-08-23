@@ -175,21 +175,14 @@ class OpenAICompatibleProvider(BaseProvider):
         return f'{base}/v1/chat/completions'
 
     def list_models(self) -> list[str]:
-        models, error = self._fetch_models()
-        if error:
-            print(f'\001\033[91m\002[Error]\001\033[0m\002 Failed to list models: {error}')
+        models, _ = self._fetch_models()
         return models
 
     def check_connection(self) -> tuple[bool, str]:
         models, error = self._fetch_models()
         if error:
             return False, error
-        if not models:
-            return True, 'connected (no models listed)'
-        note = ''
-        if self.model and self.model not in models:
-            note = f' (configured model "{self.model}" not in the model list)'
-        return True, f'{len(models)} models available{note}'
+        return True, _connection_message(models, self.model)
 
     def _fetch_models(self) -> tuple[list[str], str | None]:
         base = self.base_url.rstrip('/')
@@ -206,3 +199,12 @@ class OpenAICompatibleProvider(BaseProvider):
         except Exception as e:
             return [], str(e)
         return [m['id'] for m in data.get('data', []) if isinstance(m, dict) and 'id' in m], None
+
+
+def _connection_message(models: list[str], model: str) -> str:
+    if not models:
+        return 'connected (no models listed)'
+    note = ''
+    if model and model not in models:
+        note = f' (configured model "{model}" not in the model list)'
+    return f'{len(models)} models available{note}'

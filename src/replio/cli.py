@@ -57,6 +57,25 @@ def cmd_export(args) -> int:
     return 0
 
 
+def cmd_models(args) -> int:
+    from .ui import NullUI
+    config = Config(path=getattr(args, 'path', None))
+    engine = Engine(config, ui=NullUI())
+    models, error = engine.list_models()
+    if error:
+        print(f'Error: {error}', file=sys.stderr)
+        return 1
+    provider = config.get('provider')
+    base_url = config.get('base_url')
+    if not models:
+        print(f'No models listed from {provider} ({base_url})')
+        return 0
+    print(f'{len(models)} models available from {provider} ({base_url}):')
+    for m in models:
+        print(f'  - {m}')
+    return 0
+
+
 def cmd_serve(args) -> int:
     from .server import HeadlessServer, ChatHandler
     config = Config(path=args.path)

@@ -9,8 +9,9 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/help`                 | `/h`           | Show available commands and tools (`/help <cmd|tool>` for detail) |
 | `/exit`                 | `/quit`, `/q`  | Save and exit                                                  |
 | `/version`              | `/v`           | Show the Replio version                                       |
-| `/model`                |                | Show or switch the active model (`/model gpt-4o`)              |
-| `/provider`             |                | Show or switch the active provider                             |
+| `/model`                 |                | Show or switch the active model (`/model gpt-4o`)              |
+| `/models`                | `/model-list` | List models available from the connected provider              |
+| `/provider`              |                | Show or switch the active provider                             |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
 | `/connect`              |                | Interactive provider connection setup (tests the connection before saving) |
 | `/config`               |                | Show, get, or set config values (`/config <key> <value>`)      |
@@ -26,7 +27,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 ## CLI
 
 ```
-usage: replio [-h] [--path PATH] [-v] {run,export,serve,mcp,plugins} ...
+usage: replio [-h] [--path PATH] [-v] {run,export,models,serve,mcp,plugins} ...
 ```
 
 Global:
@@ -62,6 +63,14 @@ Export a saved session to Markdown (see [session.md](session.md)).
 |------------------|------------------------------|-----------------------------------|
 | `name`           | **Required**                 | Session name to export            |
 | `--out`          | `.replio/exports/<name>.md`  | Output file, `-` for stdout       |
+| `--path`         |                              | Project path                      |
+
+### `replio models`
+
+List the models the connected provider advertises.
+
+| Flag             | Default                      | Description                       |
+|------------------|------------------------------|-----------------------------------|
 | `--path`         |                              | Project path                      |
 
 ### `replio serve`
