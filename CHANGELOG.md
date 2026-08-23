@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.19.0
+
+- Confirm prompts align with activity glyphs - the `?` prefix starts at the beginning of the line (no leading indent), so a confirm like `? read_file x.txt - approve? [y/N]` sits flush under its `% Search` / `← Read` activity line
+
 ## v0.18.0 - 2026-08-23
 
 - Word-level streaming buffering - the REPL now buffers streamed tokens to word boundaries and prints whole words as they complete, so responses render smoothly without mid-word pauses or breaks. The `<<< ` prefix appears on the first printed word, indentation and newlines flush correctly, and the trailing partial word is written before any status line, confirm prompt, or the turn footer. `HeadlessUI` and `NullUI` stream unchanged, and the content persisted to sessions is untouched. Gated by the new `word_streaming` config (default `true`), off restores character-by-character streaming

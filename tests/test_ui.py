@@ -248,6 +248,18 @@ class TestWordStreaming(unittest.TestCase):
         self.assertIn('write_file a.md', value)
         self.assertLess(value.index('par'), value.index('write_file a.md'))
 
+    def test_confirm_question_marks_start_of_line(self):
+        def fake_input(prompt):
+            sys.stdout.write(prompt)
+            return 'n'
+
+        def run():
+            with patch('replio.ui.input', side_effect=fake_input):
+                self.ui.confirm('write_file', 'write_file a.md')
+        value = self._capture(run)
+        self.assertIn('? write_file a.md - approve? [y/N]', value)
+        self.assertNotIn('  ? ', value)
+
 
 if __name__ == '__main__':
     unittest.main()

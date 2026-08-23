@@ -42,7 +42,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_tool_calling.py` | Tool-calling flow: single and multiple calls, unknown tools, query refinement |
 | `test_tool_policy.py` | `ToolPolicy`: allow/ask/deny, worktree escalation, deny/allowlist precedence |
 | `test_tool_registry.py` | Tool registration metadata, schema, refine flags, `_config` pass-through, activity params strings, fs tool glyphs (`* List` / `* Grep`) |
-| `test_ui.py` | UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, `!` tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm) |
+| `test_ui.py` | UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, `!` tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm), confirm `?` glyph at line start |
 
 `tests/helpers.py` provides `make_chat(config_data)` - a `ChatLoop` with a mocked provider - used by most tests to drive the engine without a model.
 

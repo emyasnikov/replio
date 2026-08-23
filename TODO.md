@@ -80,6 +80,7 @@
 
 ## Done
 
+- [x] Confirm prompt `?` glyph starts at the beginning of the line, aligned with activity glyphs
 - [x] Word-level streaming buffering - buffer REPL output to word boundaries, word_streaming config
 - [x] Multi-line input - detect `"""`/`'''` blocks, one composed message, framing stripped
 - [x] Config validation (test connection on change) - /connect probe-before-save, /provider warn, connect_check toggle
