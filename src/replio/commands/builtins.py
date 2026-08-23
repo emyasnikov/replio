@@ -51,6 +51,46 @@ def _render_models(models, provider, base_url):
         print(f'  - {m}')
 
 
+def _active_model(chat, entry):
+    return (entry.provider == chat.config.get('provider')
+            and entry.base_url == chat.config.get('base_url')
+            and entry.model == chat.config.get('model'))
+
+
+def _render_known_models(chat):
+    entries = chat.models.all()
+    if not entries:
+        print('No models configured yet - run /connect to add one')
+        return
+    for group, items in chat.models.grouped():
+        print(group + ':')
+        for e in items:
+            active = '>' if _active_model(chat, e) else ' '
+            key = ' (key)' if e.api_key else ''
+            print(f'  {active} {e.model}{key}')
+
+
+def _render_online_models(chat, provider_arg):
+    provider = (provider_arg.strip() or chat.config.get('provider')).strip()
+    candidates = [e for e in chat.models.all() if e.provider == provider]
+    base_url = candidates[0].base_url if candidates else chat.config.get('base_url')
+    api_key = next((e.api_key for e in candidates if e.api_key), None)
+    model = candidates[0].model if candidates else chat.config.get('model')
+    try:
+        models, error = chat.list_models(provider=provider, base_url=base_url,
+                                         api_key=api_key, model=model)
+    except Exception as e:
+        models, error = [], str(e)
+    if error:
+        print(f'[Error] Failed to list models: {error}')
+        print(f'  probing {provider} ({base_url}) - run /connect to fix')
+        return
+    if not models:
+        print(f'No models listed from {provider} ({base_url})')
+        return
+    _render_models(models, provider, base_url)
+
+
 def _render_tool_detail(chat, name):
     info = chat._tool_registry.info(name)
     if not info:
@@ -100,14 +140,27 @@ def register_builtins(registry):
     def version_cmd(_=None):
         print(f'Replio {get_version()}')
 
-    @registry.register('model', description='Show or switch the active model')
+    @registry.register('model', description='Show or switch the model; `model list` shows configured models, `model list --online [provider]` probes a provider')
     def model_cmd(arg=''):
-        if arg:
-            chat.config.set('model', arg.strip())
-            chat.provider.model = chat.config.get('model')
-            print(f'Model set to: {chat.config.get("model")}')
-        else:
-            print(f'Current model: {chat.config.get("model")}')
+        arg = arg.strip()
+        if not arg:
+            print(f'Current model: {chat.config.get("model")} '
+                  f'({chat.config.get("provider")} @ {chat.config.get("base_url")})')
+            return
+        if arg.startswith('list'):
+            rest = arg[len('list'):].strip()
+            if not rest:
+                _render_known_models(chat)
+            elif rest.startswith('--online'):
+                _render_online_models(chat, rest[len('--online'):].strip())
+            else:
+                print('Usage: /model list [--online [provider]]')
+            return
+        chat.config.set('model', arg)
+        chat.provider.model = chat.config.get('model')
+        chat.models.touch(chat.config.get('provider'),
+                          chat.config.get('base_url'), arg)
+        print(f'Model set to: {arg}')
 
     @registry.register('provider', description='Show or switch the active provider')
     def provider_cmd(arg=''):
@@ -193,6 +246,16 @@ def register_builtins(registry):
         pm = getattr(chat, '_plugin_manager', None)
         if pm is not None:
             providers.update(pm.provider_classes())
+        registry = chat.models
+        known = registry.all()
+        fresh = (chat.config.get('provider') == 'ollama'
+                 and chat.config.get('base_url') == 'https://api.ollama.com'
+                 and chat.config.get('model') == 'llama3.2')
+        if known and fresh:
+            print('Known models (global):')
+            for i, e in enumerate(known, 1):
+                key = ' (key)' if e.api_key else ''
+                print(f'  {i}. [{e.provider}] {e.model} - {e.base_url}{key}')
         print('Setting up provider connection:')
         provider = input(
             f'  Provider [{chat.config.get("provider")}]: '
@@ -200,10 +263,23 @@ def register_builtins(registry):
         base_url = input(
             f'  Base URL [{chat.config.get("base_url")}]: '
         ).strip() or chat.config.get('base_url')
-        api_key = input('  API key (leave empty to skip): ').strip()
         model = input(
             f'  Model [{chat.config.get("model")}]: '
         ).strip() or chat.config.get('model')
+        picked = None
+        if model.startswith('#'):
+            try:
+                picked = known[int(model[1:]) - 1]
+            except (ValueError, IndexError):
+                print(f'  Unknown model number "{model}"')
+                return
+            provider, base_url, model = picked.provider, picked.base_url, picked.model
+        api_key = ''
+        if picked is not None:
+            print(f'  API key: stored key {picked.api_key and "(present)" or "(missing)"}')
+            api_key = input('  API key [<stored>]: ').strip() or picked.api_key
+        else:
+            api_key = input('  API key (leave empty to skip): ').strip()
 
         detected = detect_provider(base_url)
         if detected in providers and detected != 'openai-compatible' and detected != provider:
@@ -225,15 +301,20 @@ def register_builtins(registry):
                     print('  Connection not saved - run /connect again with corrected values')
                     return
 
+        was_known = registry.find(provider, base_url, model) is not None
+        registry.put(provider, base_url, model, api_key)
         chat.config.set('base_url', base_url)
         chat.config.set('provider', provider)
         chat.config.set('model', model)
-        if api_key:
-            chat.config.set('api_key', api_key)
 
         chat._reinit_provider()
+        verb = 'Updated' if was_known else 'Added'
         if checkout:
             print(f'Connected to {provider} ({base_url}) - {msg}')
+        else:
+            print(f'Connected to {provider} ({base_url})')
+        print(f'  {verb} to global model list: {provider} ({base_url}) - {model}')
+        if checkout:
             if model and models and model not in models:
                 try:
                     answer = input('  Show available models? [y/N] ').strip().lower()
@@ -242,8 +323,6 @@ def register_builtins(registry):
                     return
                 if answer in ('y', 'yes'):
                     _render_models(models, provider, base_url)
-        else:
-            print(f'Connected to {provider} ({base_url})')
 
     @registry.register('config', description='Show, get, set, or unset config values (--global for the global config)')
     def config_cmd(arg=''):

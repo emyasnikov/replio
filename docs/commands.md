@@ -9,11 +9,11 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/help`                 | `/h`           | Show available commands and tools (`/help <cmd|tool>` for detail) |
 | `/exit`                 | `/quit`, `/q`  | Save and exit                                                  |
 | `/version`              | `/v`           | Show the Replio version                                       |
-| `/model`                 |                | Show or switch the active model (`/model gpt-4o`)              |
+| `/model`                 |                | Show or switch the active model; `model list` shows configured (global) models, `model list --online [provider]` probes a provider's available models |
 | `/models`                | `/model-list` | List models available from the connected provider              |
 | `/provider`              |                | Show or switch the active provider                             |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
-| `/connect`              |                | Interactive provider connection setup (tests the connection before saving) |
+| `/connect`              |                | Interactive provider connection setup (tests the connection before saving). Appends the model to the global `models.json` registry (storing the API key there, not in config); on a fresh project with known models it offers a numbered picker (`#N`) to reuse one |
 | `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)`. `api_key` always writes to the global config |
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |

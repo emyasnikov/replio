@@ -64,6 +64,13 @@ class Engine:
             self._ui = NullUI()
         return self._ui
 
+    @property
+    def models(self):
+        if getattr(self, '_models', None) is None:
+            from .models import ModelRegistry
+            self._models = ModelRegistry()
+        return self._models
+
     def _resolve_provider_factory(self, provider: str, base_url: str):
         from .providers import PROVIDERS, detect_provider
         merged = dict(PROVIDERS)
@@ -86,6 +93,7 @@ class Engine:
             return
         if resolved != provider_name:
             self.config.apply('provider', resolved)
+            provider_name = resolved
 
         base_url = self.config.get('base_url')
         model = self.config.get('model')
@@ -104,9 +112,14 @@ class Engine:
         if model != self.config.get('model'):
             self.config.apply('model', model)
 
+        api_key = self.config.get('api_key')
+        entry = self.models.find(provider_name, base_url, model)
+        if entry is not None and entry.api_key:
+            api_key = entry.api_key
+
         self.provider = factory(
             base_url=base_url,
-            api_key=self.config.get('api_key'),
+            api_key=api_key,
             model=model,
             temperature=self.config.get('temperature'),
             max_tokens=self.config.get('max_tokens'),
@@ -131,15 +144,17 @@ class Engine:
         return True, _connection_message(models, model), models
 
     def list_models(self, provider: str | None = None,
-                    base_url: str | None = None) -> tuple[list[str], str | None]:
+                    base_url: str | None = None,
+                    api_key: str | None = None,
+                    model: str | None = None) -> tuple[list[str], str | None]:
         provider = provider or self.config.get('provider')
         base_url = self.config.get('base_url') if base_url is None else base_url
+        api_key = self.config.get('api_key') if api_key is None else api_key
+        model = self.config.get('model') if model is None else model
         factory, _, _ = self._resolve_provider_factory(provider, base_url)
         if factory is None:
             return [], f'No provider registered for "{provider}"'
-        probe = factory(base_url=base_url,
-                        api_key=self.config.get('api_key'),
-                        model=self.config.get('model'))
+        probe = factory(base_url=base_url, api_key=api_key, model=model)
         return probe._fetch_models()
 
     def session_auto_save(self):

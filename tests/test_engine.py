@@ -69,6 +69,20 @@ class TestEngine(unittest.TestCase):
     def tearDown(self):
         self.engine._tmp.cleanup()
 
+    def test_reinit_provider_uses_registry_api_key(self):
+        self.engine.models.put('ollama', 'https://test.api.com',
+                               'test-model', 'reg-key')
+        self.engine.config.apply('api_key', 'cfg-key')
+        self.engine._reinit_provider()
+        self.assertEqual(self.engine.provider.api_key, 'reg-key')
+
+    def test_reinit_provider_falls_back_to_config_api_key(self):
+        self.engine.config.apply('api_key', 'cfg-key')
+        self.assertIsNone(self.engine.models.find(
+            'ollama', 'https://test.api.com', 'test-model'))
+        self.engine._reinit_provider()
+        self.assertEqual(self.engine.provider.api_key, 'cfg-key')
+
     def test_chat_returns_turn_result(self):
         self.engine.provider.chat.return_value = [
             {'type': 'token', 'content': 'Hello world'},

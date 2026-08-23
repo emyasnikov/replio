@@ -80,6 +80,7 @@
 
 ## Done
 
+- [x] Global model registry - /connect appends models + keys, /model list/--online, picker reuse
 - [x] REPL `/config --global/--local` scope flags + apply() in-memory overrides (one-shot CLI, engine normalization never write files)
 - [x] Scoped config writes - api_key global-only (0600), local saves overrides only, replio config CLI
 - [x] Turn recovery - auto-continue on truncation, empty-done retried, reasoning-only not flagged empty

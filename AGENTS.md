@@ -49,6 +49,7 @@ Replio/
 │   ├── main.py              # CLI arg parsing + bootstrap (default REPL, run, serve)
 │   ├── cli.py               # `replio run` / `replio serve` headless entry points
 │   ├── config.py            # JSON config (global + local merge)
+│   ├── models.py            # global model registry - models.json (connections + keys)
 │   ├── engine.py            # Headless agent core - Engine + TurnResult
 │   ├── chat.py              # ChatLoop(Engine) - REPL shell with readline
 │   ├── ui.py                # UISink - ReplUI / HeadlessUI / NullUI renderers

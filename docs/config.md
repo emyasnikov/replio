@@ -116,3 +116,13 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 ```
 
 Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the project worktree escalate to `ask` automatically.
+
+## Model registry (not config)
+
+A global catalogue of configured models lives separately from config in `~/.config/replio/models.json` (written `0600` when it holds keys). It is **not** part of the config merge - `/config` never lists or writes it, and it has no local scope. It is managed only through `/connect` and `/model`:
+
+- `/connect` appends (or updates) an entry `{provider, base_url, model, api_key}` and records the key there, **not** in `config.api_key`. The active model still comes from `config.model`, so a project can use any model via its local config while the registry remembers every connection.
+- `/model list` shows the configured models grouped by provider with the active one marked `>`, and `(key)` for entries that have a stored key.
+- `/model list --online [provider]` probes a provider's advertised models live (default: current provider).
+
+`config.api_key` remains readable (redacted) as a legacy fallback for projects that set provider/base_url/model by hand via `/config`; `/connect` no longer writes it. Deleting a project config cannot lose the registry - it is global by design.

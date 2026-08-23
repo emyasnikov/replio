@@ -324,12 +324,16 @@ class TestConnectCommand(unittest.TestCase):
     def test_connect_saves_on_success(self):
         with patch.object(self.chat, 'check_connection',
                           return_value=(True, '3 models available', [])):
-            output = self._dispatch(['', '', 'sk-123', ''])
+            output = self._dispatch(['', '', '', 'sk-123'])
         self.assertIn('Connected to ollama (https://test.api.com)', output)
         self.assertIn('- 3 models available', output)
+        self.assertIn('Added to global model list', output)
         self.assertEqual(self.chat.config.get('base_url'), 'https://test.api.com')
-        self.assertEqual(self.chat.config.get('api_key'), 'sk-123')
+        self.assertEqual(self.chat.config.get('api_key'), '')
         self.assertEqual(self.chat.config.get('model'), 'test-model')
+        entry = self.chat.models.find('ollama', 'https://test.api.com',
+                                      'test-model')
+        self.assertEqual(entry.api_key, 'sk-123')
 
     def test_connect_failure_declined_leaves_config(self):
         with patch.object(self.chat, 'check_connection',
@@ -343,23 +347,29 @@ class TestConnectCommand(unittest.TestCase):
     def test_connect_failure_accepted_saves(self):
         with patch.object(self.chat, 'check_connection',
                           return_value=(False, 'HTTP 500: boom', [])):
-            output = self._dispatch(['', '', 'sk-risk', '', 'y'])
+            output = self._dispatch(['', '', '', 'sk-risk', 'y'])
         self.assertIn('Connected to ollama (https://test.api.com)', output)
-        self.assertEqual(self.chat.config.get('api_key'), 'sk-risk')
+        self.assertEqual(self.chat.config.get('api_key'), '')
+        entry = self.chat.models.find('ollama', 'https://test.api.com',
+                                      'test-model')
+        self.assertEqual(entry.api_key, 'sk-risk')
 
     def test_connect_check_disabled_skips_probe(self):
         self.chat.config.set('connect_check', False)
         with patch.object(self.chat, 'check_connection') as probe:
-            output = self._dispatch(['', '', 'sk-123', ''])
+            output = self._dispatch(['', '', '', 'sk-123'])
         probe.assert_not_called()
         self.assertIn('Connected to ollama (https://test.api.com)', output)
         self.assertNotIn('models available', output)
-        self.assertEqual(self.chat.config.get('api_key'), 'sk-123')
+        self.assertEqual(self.chat.config.get('api_key'), '')
+        entry = self.chat.models.find('ollama', 'https://test.api.com',
+                                      'test-model')
+        self.assertEqual(entry.api_key, 'sk-123')
 
     def test_connect_passes_probe_entered_values(self):
         with patch.object(self.chat, 'check_connection',
                           return_value=(True, 'ok', [])) as probe:
-            self._dispatch(['my-provider', 'https://x.example/v1', 'sk-x', 'm1'])
+            self._dispatch(['my-provider', 'https://x.example/v1', 'm1', 'sk-x'])
         probe.assert_called_once_with(
             base_url='https://x.example/v1', api_key='sk-x',
             model='m1', provider='my-provider')
@@ -393,6 +403,100 @@ class TestConnectCommand(unittest.TestCase):
         self.assertIn('Connected to ollama (https://test.api.com)', output)
         self.assertNotIn('- gpt-x', output)
         self.assertNotIn('- llama2', output)
+
+    def test_connect_enters_fresh_state_for_picker(self):
+        self.chat.config.set('provider', 'ollama')
+        self.chat.config.set('base_url', 'https://api.ollama.com')
+        self.chat.config.set('model', 'llama3.2')
+
+    def test_connect_picker_reuses_known_model(self):
+        self.chat.config.set('provider', 'ollama')
+        self.chat.config.set('base_url', 'https://api.ollama.com')
+        self.chat.config.set('model', 'llama3.2')
+        self.chat.models.put('openai', 'https://api.openai.com/v1',
+                             'gpt-4o', 'oak')
+        with patch.object(self.chat, 'check_connection',
+                          return_value=(True, 'ok', [])) as probe:
+            output = self._dispatch(['', '', '#1', ''])
+        self.assertIn('Known models (global):', output)
+        self.assertIn('[openai] gpt-4o', output)
+        probe.assert_called_once_with(
+            base_url='https://api.openai.com/v1', api_key='oak',
+            model='gpt-4o', provider='openai')
+        self.assertEqual(self.chat.config.get('provider'), 'openai')
+        self.assertEqual(self.chat.config.get('model'), 'gpt-4o')
+        self.assertEqual(self.chat.config.get('api_key'), '')
+        self.assertIn('Updated to global model list', output)
+
+    def test_connect_picker_hidden_when_configured(self):
+        self.chat.models.put('openai', 'https://api.openai.com/v1',
+                             'gpt-4o', 'oak')
+        with patch.object(self.chat, 'check_connection',
+                          return_value=(True, 'ok', [])):
+            output = self._dispatch(['', '', '', ''])
+        self.assertNotIn('Known models', output)
+
+    def test_connect_picker_bad_number(self):
+        self.chat.config.set('provider', 'ollama')
+        self.chat.config.set('base_url', 'https://api.ollama.com')
+        self.chat.config.set('model', 'llama3.2')
+        self.chat.models.put('openai', 'https://api.openai.com/v1',
+                             'gpt-4o', 'oak')
+        output = self._dispatch(['', '', '#9', ''])
+        self.assertIn('Unknown model number "#9"', output)
+
+
+class TestModelCommand(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def _dispatch(self, line):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat.registry.dispatch(line)
+        return out.getvalue()
+
+    def test_model_switch_touches_registry(self):
+        self.chat.models.put('ollama', 'https://test.api.com',
+                             'test-model', 'k')
+        output = self._dispatch('/model test-model')
+        self.assertIn('Model set to: test-model', output)
+        entry = self.chat.models.find('ollama', 'https://test.api.com',
+                                      'test-model')
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.api_key, 'k')
+
+    def test_model_list_shows_configured(self):
+        self.chat.models.put('openai', 'https://api.openai.com/v1',
+                             'gpt-4o', 'k')
+        output = self._dispatch('/model list')
+        self.assertIn('openai (https://api.openai.com/v1):', output)
+        self.assertIn('gpt-4o', output)
+        self.assertIn('(key)', output)
+
+    def test_model_list_empty(self):
+        output = self._dispatch('/model list')
+        self.assertIn('No models configured yet', output)
+
+    def test_model_list_online_probes_provider(self):
+        self.chat.models.put('openai', 'https://api.openai.com/v1',
+                             'gpt-4o', 'oak')
+        with patch.object(self.chat, 'list_models',
+                          return_value=(['gpt-4o', 'gpt-5'], None)) as lm:
+            output = self._dispatch('/model list --online openai')
+        lm.assert_called_once_with(
+            provider='openai', base_url='https://api.openai.com/v1',
+            api_key='oak', model='gpt-4o')
+        self.assertIn('gpt-4o', output)
+        self.assertIn('gpt-5', output)
+
+    def test_model_list_online_usage(self):
+        output = self._dispatch('/model list extra')
+        self.assertIn('Usage: /model list', output)
 
 
 class TestModelsCommand(unittest.TestCase):
