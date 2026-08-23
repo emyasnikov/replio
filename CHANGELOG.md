@@ -2,6 +2,10 @@
 
 ## v0.19.0
 
+- Config writes are now scoped and secure - `api_key` is always stored in the global config (`~/.config/replio/config.json`, written `0600`), never in a project file. The local file holds only explicitly selected keys (a save never re-writes the merged config, so a global secret can't be copied down). Loading a config with a local `api_key` migrates it to the global file. `replio config get/set/unset` CLI (with `--global`/`--local`, `--show-origin`, JSON values) and `/config unset` + origin display in the listing. One-shot CLI overrides (`replio run --provider/--model/--base-url/--mode`) are no longer persisted
+- Turn recovery for autonomous agents - on truncation (`finish_reason=length`) with a partial answer, `auto_continue` (default `true`) re-requests the turn with a "continue exactly where you stopped" instruction and stitches the parts into one message (capped by `auto_continue_max`, default `2`). A stream that completes with no content is retried (`stream_retries`) before being flagged empty. Reasoning-only turns (thinking present, no content) are no longer errors. Partial output is persisted whenever the turn produced content or thinking
+- Thinking is captured from `reasoning` as well as `reasoning_content` deltas - ollama.com streams chain-of-thought under `reasoning`, so reasoning shows in the REPL and sessions for those endpoints instead of being silently dropped (tokens still counted against `max_tokens`)
+- Diagnosed a real truncation+empty-response pairing: a low explicit `max_tokens`, the dropped `reasoning` delta key, and no continuation. See the new `docs/troubleshooting.md` (migration landed live: local `max_tokens` dropped, global `max_tokens 0`, `api_key` moved to global)
 - Confirm prompts align with activity glyphs - the `?` prefix starts at the beginning of the line (no leading indent), so a confirm like `? read_file x.txt - approve? [y/N]` sits flush under its `% Search` / `← Read` activity line
 
 ## v0.18.0 - 2026-08-23

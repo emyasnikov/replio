@@ -55,6 +55,21 @@ class TestOllamaStreaming(unittest.TestCase):
         ])
         self.assertEqual(events[0], {'type': 'thinking', 'content': 'think...'})
 
+    def test_thinking_event_ollama_reasoning_key(self):
+        events = self._chat([
+            {'delta': {'reasoning': 'chain of thought...'}},
+            {'delta': {'content': 'Answer'}},
+            {'delta': {}, 'finish_reason': 'stop'},
+        ])
+        self.assertEqual(events[0], {'type': 'thinking', 'content': 'chain of thought...'})
+
+    def test_reasoning_content_preferred_over_reasoning(self):
+        events = self._chat([
+            {'delta': {'reasoning_content': 'primary', 'reasoning': 'secondary'}},
+            {'delta': {}, 'finish_reason': 'stop'},
+        ])
+        self.assertEqual(events[0], {'type': 'thinking', 'content': 'primary'})
+
     def test_tools_passed_to_stream_payload(self):
         schema = [{'type': 'function', 'function': {'name': 'web_search'}}]
         with patch('replio.providers.base.stream_sse') as mock_sse:

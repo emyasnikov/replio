@@ -14,6 +14,7 @@ from replio.ui import ReplUI
 
 def make_chat(config_data: dict | None = None) -> ChatLoop:
     temp_dir = tempfile.TemporaryDirectory()
+    Config.GLOBAL_DIR = Path(temp_dir.name) / 'global-home'
     data = {
         'tool_calling': True,
         'provider': 'ollama',

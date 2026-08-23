@@ -1,16 +1,33 @@
 # Configuration
 
-Config is a single JSON object. Global config lives at `~/.config/replio/config.json`. A local config at `.replio/config.json` (in the project path) merges on top, and local values win.
+Config is a single JSON object read from two files, merged per key with project-local values winning:
+
+1. **Global** - `~/.config/replio/config.json` (user-wide defaults, credentials).
+2. **Local** - `.replio/config.json` in the project path (project overrides).
+
+Every process merges them in memory. Nothing is ever distributed to folders. Writes default to the **local** file and hold only the keys you actually selected - a save never re-writes the merged config. `api_key` is special-cased and always stored in the **global** file (written with `0600` perms), never in a project file. Loading a config that has a local `api_key` moves it to the global file and drops it locally.
 
 ```bash
-# inspect in the REPL
+# inspect in the REPL (origin: default/global/local)
 /config
-# set a value
+# set a value (project-local)
 /config temperature 0.3
 # set a structured value
 /config tools.deny ["run_command", "web_search"]
+# remove a project-local value, falling back to global/default
+/config unset temperature
 # reload from disk
 /config reload
+```
+
+The `replio config` CLI does the same headlessly and is fully scriptable:
+
+```bash
+replio config get max_tokens --show-origin     # one or more values + where they come from
+replio config set max_tokens 0                 # project-local
+replio config set max_tokens 0 --global        # global file
+replio config unset max_tokens                 # remove from project-local
+replio config set api_key ...                  # always global, never local
 ```
 
 ## Schema
@@ -25,6 +42,8 @@ Config is a single JSON object. Global config lives at `~/.config/replio/config.
 | `max_tokens`                | `8192`                 | Output token cap sent to the provider. `0` = unset (provider default applies, e.g. Ollama caps at 2048). Default `8192` overrides low provider defaults |
 | `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event with no content |
 | `stream_retry_delay`        | `0.5`                  | Seconds to wait between stream retries                                  |
+| `auto_continue`             | `true`                 | On truncation (`finish_reason=length`) with a partial answer, re-request the turn with a "continue" instruction and stitch the parts into one message |
+| `auto_continue_max`         | `2`                    | Max continuation rounds per turn before the truncation is reported     |
 | `connect_check`             | `true`                 | Test the provider connection when config changes: `/connect` probes before saving (broken values are rejected unless confirmed), `/provider` warns on a failed probe. `false` skips all probes |
 | `system_prompt`             | `""`                   | Optional system prompt, injected for every front-end (REPL, `run`, `serve`) |
 | `mode`                      | `"build"`              | Active agent mode (`build`, `plan`, or a custom mode from `modes`) |

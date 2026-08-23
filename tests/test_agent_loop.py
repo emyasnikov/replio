@@ -137,9 +137,21 @@ class TestAgentLoop(unittest.TestCase):
         ]
         self._run()
         self.assertEqual(self._assistant_msgs(), [])
+        self.assertEqual(self.chat.provider.chat.call_count, 3)
         errors = self.chat.current_session.errors
         self.assertEqual(len(errors), 1)
         self.assertIn('empty response', errors[0]['message'])
+
+    def test_empty_done_retried_then_succeeds(self):
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'done', 'reason': 'stop'}],
+            [{'type': 'token', 'content': 'Back on track'},
+             {'type': 'done', 'reason': 'stop'}],
+        ]
+        self._run()
+        self.assertEqual(self.chat.provider.chat.call_count, 2)
+        self.assertEqual(self.chat.current_session.errors, [])
+        self.assertEqual(self._assistant_msgs()[0]['content'], 'Back on track')
 
     def test_mid_stream_exception_is_caught_and_logged(self):
         def _raising():
@@ -155,6 +167,7 @@ class TestAgentLoop(unittest.TestCase):
 
     def test_length_finish_logs_truncation_error(self):
         self.chat.config.set('max_tokens', 500)
+        self.chat.config.set('auto_continue', False)
         self.chat.provider.chat.return_value = [
             {'type': 'token', 'content': 'Part of an answer'},
             {'type': 'done', 'reason': 'length'},
@@ -167,6 +180,7 @@ class TestAgentLoop(unittest.TestCase):
 
     def test_length_finish_unset_limit_mentions_provider_default(self):
         self.chat.config.set('max_tokens', 0)
+        self.chat.config.set('auto_continue', False)
         self.chat.provider.chat.return_value = [
             {'type': 'token', 'content': 'Part of an answer'},
             {'type': 'done', 'reason': 'length'},
@@ -176,6 +190,58 @@ class TestAgentLoop(unittest.TestCase):
         self.assertEqual(len(errors), 1)
         self.assertIn('provider\'s default max_tokens limit', errors[0]['message'])
         self.assertNotIn('(0)', errors[0]['message'])
+
+    def test_length_finish_auto_continues_until_completion(self):
+        self.chat.config.set('auto_continue', True)
+        self.chat.config.set('auto_continue_max', 3)
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'token', 'content': 'Part 1'},
+             {'type': 'done', 'reason': 'length'}],
+            [{'type': 'token', 'content': ' Part 2'},
+             {'type': 'done', 'reason': 'length'}],
+            [{'type': 'token', 'content': ' End'},
+             {'type': 'done', 'reason': 'stop'}],
+        ]
+        self._run()
+        self.assertEqual(self.chat.provider.chat.call_count, 3)
+        self.assertEqual(self.chat.current_session.errors, [])
+        msgs = self._assistant_msgs()
+        self.assertEqual(len(msgs), 1)
+        self.assertEqual(msgs[0]['content'], 'Part 1 Part 2 End')
+        continuation = self.chat.provider.chat.call_args_list[1].args[0][-1]
+        self.assertEqual(continuation['role'], 'user')
+        self.assertIn('Continue exactly where you stopped.',
+                      continuation['content'])
+
+    def test_length_finish_auto_continue_obeyed_cap_then_truncates(self):
+        self.chat.config.set('auto_continue', True)
+        self.chat.config.set('auto_continue_max', 1)
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'token', 'content': 'A'},
+             {'type': 'done', 'reason': 'length'}],
+            [{'type': 'token', 'content': 'B'},
+             {'type': 'done', 'reason': 'length'}],
+            [{'type': 'token', 'content': 'C'},
+             {'type': 'done', 'reason': 'length'}],
+        ]
+        self._run()
+        self.assertEqual(self.chat.provider.chat.call_count, 2)
+        errors = self.chat.current_session.errors
+        self.assertEqual(len(errors), 1)
+        self.assertIn('truncated', errors[0]['message'])
+        self.assertEqual(self._assistant_msgs()[0]['content'], 'AB')
+
+    def test_reasoning_only_turn_is_not_flagged_empty(self):
+        self.chat.provider.chat.return_value = [
+            {'type': 'thinking', 'content': 'reasoned but did not answer'},
+            {'type': 'done', 'reason': 'stop'},
+        ]
+        self._run()
+        self.assertEqual(self.chat.current_session.errors, [])
+        msgs = self._assistant_msgs()
+        self.assertEqual(len(msgs), 1)
+        self.assertEqual(msgs[0]['content'], '')
+        self.assertEqual(msgs[0]['thinking'], 'reasoned but did not answer')
 
     def test_context_size_printed_after_response(self):
         self.chat.provider.chat.return_value = [

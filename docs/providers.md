@@ -50,7 +50,7 @@ Connection probing is gated by the `connect_check` config (default `true`). Set 
 
 | Event | Payload | Meaning |
 |-------|---------|---------|
-| `thinking` | `content` | Reasoning tokens (from `reasoning_content` deltas) |
+| `thinking` | `content` | Reasoning tokens (from `reasoning_content` or `reasoning` deltas - some OpenAI-compatible endpoints such as ollama.com use `reasoning`) |
 | `token` | `content` | Streamed content token(s) |
 | `tool_calls` | `tool_calls` | Completed function-call objects requested by the model |
 | `error` | `code`, `message` | Provider/network/HTTP error |
@@ -62,7 +62,7 @@ The loop runs one SSE stream per turn. When the model only produces content, tha
 
 ## How the provider works
 
-`OpenAICompatibleProvider` (`src/replio/providers/base.py`) builds an OpenAI-format payload (`model`, `messages`, `temperature`, optional `max_tokens`, optional `tools`, `stream`), POSTs it to `<base_url>/v1/chat/completions`, and streams the SSE response line by line. Streaming deltas are accumulated: `reasoning_content` becomes `thinking` events, `content` becomes `token` events, and fragmented `tool_calls` deltas are reassembled by index into complete function-call objects. HTTP and network errors are returned as `error` events.
+`OpenAICompatibleProvider` (`src/replio/providers/base.py`) builds an OpenAI-format payload (`model`, `messages`, `temperature`, optional `max_tokens`, optional `tools`, `stream`), POSTs it to `<base_url>/v1/chat/completions`, and streams the SSE response line by line. Streaming deltas are accumulated: `reasoning_content` (or `reasoning` on endpoints such as ollama.com) becomes `thinking` events, `content` becomes `token` events, and fragmented `tool_calls` deltas are reassembled by index into complete function-call objects. HTTP and network errors are returned as `error` events.
 
 `max_tokens` defaults to `8192` (sent to the provider, overriding low provider-side defaults like Ollama's 2048 cap). Set it to `0` to omit it from the payload, in which case the provider's own default applies. Hitting the limit prints a warning and logs a session `errors` entry - the warning text distinguishes a configured cap from the provider's default.
 

@@ -10,13 +10,13 @@ from .ui import HeadlessUI
 def _engine_from_args(args) -> Engine:
     config = Config(path=getattr(args, 'path', None))
     if getattr(args, 'provider', None):
-        config.set('provider', args.provider)
+        config.set('provider', args.provider, persist=False)
     if getattr(args, 'model', None):
-        config.set('model', args.model)
+        config.set('model', args.model, persist=False)
     if getattr(args, 'base_url', None):
-        config.set('base_url', args.base_url)
+        config.set('base_url', args.base_url, persist=False)
     if getattr(args, 'mode', None):
-        config.set('mode', args.mode)
+        config.set('mode', args.mode, persist=False)
     auto = 'allow' if getattr(args, 'approve', None) is True else 'deny'
     ui = HeadlessUI(auto=auto, verbose=getattr(args, 'verbose', False),
                     stream=getattr(args, 'output', 'json') == 'text',
@@ -80,7 +80,7 @@ def cmd_serve(args) -> int:
     from .server import HeadlessServer, ChatHandler
     config = Config(path=args.path)
     if getattr(args, 'mode', None):
-        config.set('mode', args.mode)
+        config.set('mode', args.mode, persist=False)
     ui = HeadlessUI(auto='deny', verbose=False, stream=False,
                     show_thinking=config.get('show_thinking', True))
     engine = Engine(config, ui=ui)
@@ -112,6 +112,62 @@ def cmd_mcp(args) -> int:
               file=sys.stderr)
         return 1
     service.serve_stdio(engine)
+    return 0
+
+
+def _redact(config: Config, key: str, value) -> str:
+    if key == 'api_key' and value:
+        return '***'
+    return str(value)
+
+
+def _parse_config_value(value: str | None):
+    if value is None:
+        return _MISSING_VALUE
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        return value
+
+
+_MISSING_VALUE = object()
+
+
+def cmd_config(args) -> int:
+    config = Config(path=getattr(args, 'path', None))
+    scope = 'global' if getattr(args, 'global_', False) else 'local'
+    action = getattr(args, 'action', None)
+
+    if action == 'get':
+        keys = getattr(args, 'key', None)
+        if not keys:
+            keys = list(config.data)
+        elif isinstance(keys, str):
+            keys = [keys]
+        for key in keys:
+            val = config.get(key)
+            line = f'{key} = {_redact(config, key, val)}'
+            if getattr(args, 'show_origin', False):
+                line += f'  ({config.origin(key)})'
+            print(line)
+        return 0
+
+    if action == 'set':
+        value = _parse_config_value(args.value)
+        if value is _MISSING_VALUE:
+            print(f'Error: a value is required to set "{args.key}"', file=sys.stderr)
+            return 1
+        config.set(args.key, value, scope=scope)
+        resolved = 'global' if args.key == 'api_key' else scope
+        print(f'{args.key} = {_redact(config, args.key, value)} '
+              f'(saved to {resolved} config)')
+        return 0
+
+    if action == 'unset':
+        config.unset(args.key, scope=scope)
+        print(f'Unset {args.key} ({scope} config)')
+        return 0
+
     return 0
 
 

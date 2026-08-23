@@ -135,7 +135,7 @@ class OpenAICompatibleProvider(BaseProvider):
             if not choices:
                 continue
             delta = choices[0].get('delta', {})
-            reasoning = delta.get('reasoning_content', '')
+            reasoning = delta.get('reasoning_content', '') or delta.get('reasoning', '')
             if reasoning:
                 yield {'type': 'thinking', 'content': reasoning}
                 continue

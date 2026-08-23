@@ -114,6 +114,8 @@ Turn-level failures are appended to the `errors` array, separate from the messag
 
 Messages and errors are only ever appended. Compaction stores the summary in a new `command` record and leaves the earlier messages in place. Loading a session never rewrites history. The only transformations happen at serialization time (below), never to the in-memory log.
 
+An `assistant` message is written whenever the turn produced content **or** thinking - so a truncated mid-reasoning turn still persists its thinking, and a reasoning-only turn (thinking present, no content) is recorded rather than lost. Empty turns (no content, no thinking) persist nothing.
+
 ## Serialization-time transforms
 
 Two config keys reshape `tool` message content when the session is written to disk, without touching the stored messages themselves:

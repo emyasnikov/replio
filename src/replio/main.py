@@ -57,6 +57,28 @@ def _add_mcp_parser(sub):
                    help='Project path (default: current directory)')
 
 
+def _add_config_parser(sub):
+    p = sub.add_parser('config',
+                       help='Show, set, or unset config values (global or project-local scope)')
+    p.add_argument('--path', default=argparse.SUPPRESS,
+                   help='Project path (default: current directory)')
+    g = p.add_subparsers(dest='action', required=True)
+    gg = g.add_parser('get', help='Show effective values (one or more keys, default: all)')
+    gg.add_argument('key', nargs='*')
+    gg.add_argument('--show-origin', action='store_true',
+                    help='Also print where each value comes from (default/global/local)')
+    gs = g.add_parser('set', help='Set a config value')
+    gs.add_argument('key')
+    gs.add_argument('value', nargs='?')
+    gu = g.add_parser('unset', help='Remove a config value from the selected scope')
+    gu.add_argument('key')
+    for sub in (gg, gs, gu):
+        sub.add_argument('--global', dest='global_', action='store_true',
+                         help='Use the global config file (~/.config/replio/config.json)')
+        sub.add_argument('--local', dest='local_', action='store_true',
+                         help='Use the project-local config file (default)')
+
+
 def _add_plugins_parser(sub):
     p = sub.add_parser('plugins', help='Manage plugins (list, install, update, uninstall)')
     p.add_argument('--path', default=argparse.SUPPRESS,
@@ -92,6 +114,7 @@ def main(argv=None):
     _add_models_parser(sub)
     _add_serve_parser(sub)
     _add_mcp_parser(sub)
+    _add_config_parser(sub)
     _add_plugins_parser(sub)
     args = parser.parse_args(argv)
 
@@ -110,6 +133,9 @@ def main(argv=None):
     if args.command == 'mcp':
         from .cli import cmd_mcp
         return cmd_mcp(args)
+    if args.command == 'config':
+        from .cli import cmd_config
+        return cmd_config(args)
 
     config = Config(path=args.path)
     chat = ChatLoop(config)

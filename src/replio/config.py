@@ -1,5 +1,7 @@
 import copy
 import json
+import os
+import sys
 from pathlib import Path
 
 
@@ -34,6 +36,8 @@ DEFAULT_CONFIG = {
     'connect_check': True,
     'stream_retries': 2,
     'stream_retry_delay': 0.5,
+    'auto_continue': True,
+    'auto_continue_max': 2,
     'query_refine': False,
     'query_refine_min_words': 3,
     'query_refine_context': 4,
@@ -63,25 +67,40 @@ DEFAULT_CONFIG = {
     'plugins': ['replio-core-websearch', 'replio-core-fs', 'replio-core-exec', 'replio-core-mcp'],
 }
 
+_MISSING = object()
+
 
 class Config:
+    GLOBAL_DIR: Path | None = None
+
     def __init__(self, path: str | None = None):
-        self.global_path = Path.home() / '.config' / 'replio' / 'config.json'
+        global_home = self.GLOBAL_DIR if self.GLOBAL_DIR is not None else Path.home()
+        self.global_path = global_home / '.config' / 'replio' / 'config.json'
         if path:
             self.local_path = Path(path).resolve() / '.replio' / 'config.json'
         else:
             self.local_path = Path.cwd() / '.replio' / 'config.json'
         self.data = copy.deepcopy(DEFAULT_CONFIG)
+        self._global_raw: dict = {}
+        self._local_raw: dict = {}
         self._load()
 
     def _load(self):
-        for p in [self.global_path, self.local_path]:
-            if p.exists():
-                with open(p) as f:
-                    self.data.update(json.load(f))
+        if self.global_path.exists():
+            with open(self.global_path) as f:
+                self._global_raw = json.load(f)
+            self.data.update(self._global_raw)
+        if self.local_path.exists():
+            with open(self.local_path) as f:
+                self._local_raw = json.load(f)
+            self.data.update(self._local_raw)
         self._migrate()
 
     def _migrate(self):
+        self._migrate_plugins()
+        self._migrate_api_key()
+
+    def _migrate_plugins(self):
         if 'plugins.enabled' in self.data or 'plugins.deny' in self.data:
             plugins = list(self.data.get('plugins') or DEFAULT_CONFIG['plugins'])
             enabled = self.data.pop('plugins.enabled', None)
@@ -91,20 +110,91 @@ class Config:
             if denied:
                 blocked = set(str(n) for n in denied)
                 plugins = [n for n in plugins if n not in blocked]
-            self.data['plugins'] = plugins
+            self._local_raw.pop('plugins.enabled', None)
+            self._local_raw.pop('plugins.deny', None)
+            self.set('plugins', plugins)
+
+    def _migrate_api_key(self):
+        local_key = self._local_raw.get('api_key')
+        if not local_key:
+            return
+        if self._global_raw.get('api_key'):
+            self._local_raw.pop('api_key', None)
+            self.data['api_key'] = self._global_raw['api_key']
+            self._save_local()
+            print(f'[config] local api_key removed - global config takes precedence '
+                  f'({self.global_path})', file=sys.stderr)
+            return
+        self.set('api_key', local_key)
+        self._local_raw.pop('api_key', None)
+        self._save_local()
+        print(f'[config] api_key moved to global config ({self.global_path})',
+              file=sys.stderr)
+
+    @staticmethod
+    def _resolve_scope_for(key: str, scope: str) -> str:
+        if key == 'api_key':
+            return 'global'
+        return scope
 
     def reload(self):
         self.data = copy.deepcopy(DEFAULT_CONFIG)
+        self._global_raw = {}
+        self._local_raw = {}
         self._load()
-
-    def save(self):
-        self.local_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.local_path, 'w') as f:
-            json.dump(self.data, f, indent=2)
 
     def get(self, key, default=None):
         return self.data.get(key, default)
 
-    def set(self, key, value):
+    def set(self, key, value, scope: str = 'local', persist: bool = True):
+        scope = self._resolve_scope_for(key, scope)
+        raw = self._global_raw if scope == 'global' else self._local_raw
+        raw[key] = value
         self.data[key] = value
-        self.save()
+        if persist:
+            if scope == 'global':
+                self._write_global({})
+            else:
+                self._save_local()
+
+    def unset(self, key, scope: str = 'local', persist: bool = True):
+        scope = self._resolve_scope_for(key, scope)
+        raw = self._global_raw if scope == 'global' else self._local_raw
+        raw.pop(key, None)
+        other_raw = self._local_raw if scope == 'global' else self._global_raw
+        fallback = other_raw.get(key, _MISSING)
+        if fallback is not _MISSING:
+            self.data[key] = fallback
+        elif key in DEFAULT_CONFIG:
+            self.data[key] = copy.deepcopy(DEFAULT_CONFIG[key])
+        else:
+            self.data.pop(key, None)
+        if persist:
+            if scope == 'global':
+                self._write_global({})
+            else:
+                self._save_local()
+
+    def origin(self, key: str) -> str:
+        if key in self._local_raw:
+            return 'local'
+        if key in self._global_raw:
+            return 'global'
+        return 'default'
+
+    def save(self):
+        self._save_local()
+
+    def _save_local(self):
+        self.local_path.parent.mkdir(parents=True, exist_ok=True)
+        self.local_path.write_text(json.dumps(self._local_raw, indent=2))
+
+    def _write_global(self, patch: dict):
+        self._global_raw.update(patch)
+        self.global_path.parent.mkdir(parents=True, exist_ok=True)
+        self.global_path.write_text(json.dumps(self._global_raw, indent=2))
+        if self._global_raw.get('api_key'):
+            try:
+                os.chmod(self.global_path, 0o600)
+            except OSError:
+                pass

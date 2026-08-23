@@ -245,13 +245,13 @@ def register_builtins(registry):
         else:
             print(f'Connected to {provider} ({base_url})')
 
-    @registry.register('config', description='Show, get, or set config values')
+    @registry.register('config', description='Show, get, set, or unset config values')
     def config_cmd(arg=''):
         parts = arg.strip().split(maxsplit=1)
         if not arg:
             for k, v in chat.config.data.items():
                 val = '***' if k == 'api_key' and v else v
-                print(f'  {k}: {val}')
+                print(f'  {k}: {val}  ({chat.config.origin(k)})')
             return
         key = parts[0]
         rest = parts[1].strip() if len(parts) > 1 else ''
@@ -265,11 +265,17 @@ def register_builtins(registry):
                     print(f'  {k}: {old[k]} → {chat.config.get(k)} - run /provider or /connect to apply')
             return
 
+        if key == 'unset' and rest:
+            k = rest.split(maxsplit=1)[0]
+            chat.config.unset(k)
+            print(f'Unset {k} (local config)')
+            return
+
         if not rest:
             val = chat.config.get(key)
             if key == 'api_key':
                 val = '***' if val else val
-            print(f'  {key}: {val}')
+            print(f'  {key}: {val}  ({chat.config.origin(key)})')
             return
 
         if rest in ('-a', '-r') or rest.startswith('-a ') or rest.startswith('-r '):

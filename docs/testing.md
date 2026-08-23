@@ -22,9 +22,10 @@ Run tests before committing changes to verify core logic isn't broken.
 
 | File | Covers |
 |------|--------|
-| `test_agent_loop.py` | Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty/truncated-stream multi-attempt retry, recovery hint after failed tool-call rounds, truncation error messages (configured cap vs provider default) |
+| `test_agent_loop.py` | Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty/truncated-stream multi-attempt retry, recovery hint after failed tool-call rounds, truncation error messages (configured cap vs provider default), auto-continue on truncation (stitch + cap + continue instruction), reasoning-only turn not flagged empty, empty-done retried |
 | `test_bundled_plugins.py` | Bundled plugin discovery, tool registration, search service, bundled update/uninstall blocking |
 | `test_cli.py` | `replio run`: JSON/text output, session-id persistence, exit codes. `replio export`: default/custom/stdout targets, unknown session. `replio models`: listing, error/empty, `main` dispatch |
+| `test_config.py` | Config scopes: local-only saves, `--global` writes, `api_key` forced global (+ `0600`), unset fallback/origin, global>local merge, local `api_key` migration, `replio config` CLI (get/set/unset, JSON values, show-origin) |
 | `test_commands.py` | Slash-command registration and `/help` output (aliases, subcommands, tools listed under `/tool`, mode-filtered listings), `/connect` probe-before-commit (decline/reject, model-mismatch show offer), `/models` listing/error/empty, `/provider` warn |
 | `test_completion.py` | Readline tab completion: commands, session names, plugin names, tool names |
 | `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-message `mode`, glyph param suffix gating, `!` error-line rendering and `show_errors` gating, `check_connection`/`list_models` probe resolution and overrides without state mutation |
@@ -32,7 +33,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_machine_tools.py` | `read_file` / `list_dir` behavior: numbering, offsets, headers, size probe (`limit=0`), `tool_max_result_chars` cap, error paths, `run_command` cwd validation and timeout clamp |
 | `test_mcp.py` | MCP plugin: JSON-RPC framing, stdio/HTTP transports, modern/legacy negotiation, tool import + prefixing, server dispatch (`initialize`/`discover`/`tools/*`/`resources/*`), `_meta` validation, policy integration |
 | `test_modes.py` | Mode resolution and policy merging: built-ins (`build`/`plan`), custom modes, unknown fallback, instruction composition |
-| `test_ollama_provider.py` | Streaming provider: fragmented tool-call reassembly, thinking events, payload construction |
+| `test_ollama_provider.py` | Streaming provider: fragmented tool-call reassembly, thinking events (`reasoning_content` and `reasoning` keys), payload construction |
 | `test_plugins.py` | Plugin manager: manifest compat ranges, discovery precedence, registration hooks, install/update/uninstall |
 | `test_providers.py` | Provider defaults, override behavior, `detect_provider`, endpoint normalization, POST-preserving redirects, `check_connection` probe (success/empty/model note/HTTP/network), `list_models` silent-on-error |
 | `test_repl_input.py` | REPL input: multi-line `"""`/`'''` block detection, framing strip (pure, lead-in, indentation preserved), EOF exit during an open block, slash commands single-line |

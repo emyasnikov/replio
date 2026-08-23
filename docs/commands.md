@@ -14,7 +14,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/provider`              |                | Show or switch the active provider                             |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
 | `/connect`              |                | Interactive provider connection setup (tests the connection before saving) |
-| `/config`               |                | Show, get, or set config values (`/config <key> <value>`)      |
+| `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`). The listing appends each key's origin: `(default)`, `(global)`, or `(local)`. `api_key` always writes to the global config |
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
 | `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
@@ -27,7 +27,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 ## CLI
 
 ```
-usage: replio [-h] [--path PATH] [-v] {run,export,models,serve,mcp,plugins} ...
+usage: replio [-h] [--path PATH] [-v] {run,export,models,serve,mcp,config,plugins} ...
 ```
 
 Global:
@@ -72,6 +72,23 @@ List the models the connected provider advertises.
 | Flag             | Default                      | Description                       |
 |------------------|------------------------------|-----------------------------------|
 | `--path`         |                              | Project path                      |
+
+### `replio config`
+
+Scoped, scriptable config management (same layers as `/config` - see [config.md](config.md)).
+
+```bash
+replio config get [key ...] [--show-origin]   # effective values, default all keys
+replio config set <key> <value> [--global]    # JSON-parseable value, default local
+replio config unset <key> [--global]          # drop a value from the selected scope
+```
+
+| Flag             | Default                      | Description                       |
+|------------------|------------------------------|-----------------------------------|
+| `--global`       |                              | Operate on `~/.config/replio/config.json` |
+| `--local`        | (default)                    | Operate on the project `.replio/config.json` |
+| `--path`         |                              | Project path                      |
+| `--show-origin`  |                              | `get` only - append default/global/local |
 
 ### `replio serve`
 
