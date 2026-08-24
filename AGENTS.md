@@ -126,7 +126,7 @@ Replio/
 - Precedence: name-level `deny` / allow-whitelist > category action from `tool_permission` > worktree escalation (read/write/list outside the worktree becomes `ask`)
 - The worktree is the directory holding the local `.replio/` - i.e. the launch directory, or `--path`. Launching from `~` makes the whole home directory the worktree, so subdirectories (including other projects) do **not** escalate. Launch inside the project or pass `--path` for project-scoped prompting
 - `bash: ask` by default - every `run_command` confirms. Set `tool_permission.bash = "allow"` to disable prompting
-- Confirm prompts and tool status are ephemeral REPL UI - never persisted to session files
+- Confirm prompts and tool status are ephemeral REPL UI - never persisted to session files. The permission decision itself (granted / declined / denied) is recorded in the session `permissions` audit array
 - Full policy flow and registration metadata in `docs/tools.md`. Threat model in `docs/security.md`
 - Sandboxed exec (namespace/container isolation) and per-agent permission profiles are planned future work (see TODO)
 

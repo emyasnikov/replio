@@ -1,4 +1,5 @@
 import json
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -6,23 +7,29 @@ from pathlib import Path
 class Session:
     def __init__(self, name: str, messages: list | None = None,
                  errors: list | None = None,
+                 permissions: list | None = None,
                  created_at: str | None = None,
                  updated_at: str | None = None):
         now = datetime.now(timezone.utc).isoformat(timespec='seconds')
         self.name = name
         self.messages = messages or []
         self.errors = errors or []
+        self.permissions = permissions or []
         self.created_at = created_at or now
         self.updated_at = updated_at or now
 
     def _touch(self):
         self.updated_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
 
+    def _next_id(self) -> str:
+        return f'msg_{uuid.uuid4().hex[:16]}'
+
     def add_message(self, role: str, content: str, **kwargs):
         msg = {'role': role, 'content': content}
         msg['timestamp'] = kwargs.pop(
             'timestamp', datetime.now(timezone.utc).isoformat(timespec='seconds')
         )
+        msg['id'] = kwargs.pop('id', self._next_id())
         msg.update(kwargs)
         self.messages.append(msg)
         self._touch()
@@ -30,6 +37,16 @@ class Session:
     def add_error(self, code, message: str, timestamp: str | None = None):
         ts = timestamp or datetime.now(timezone.utc).isoformat(timespec='seconds')
         self.errors.append({'code': code, 'message': message, 'timestamp': ts})
+        self._touch()
+
+    def add_permission(self, tool: str, action: str, decision: str,
+                       path: str | None = None, timestamp: str | None = None):
+        ts = timestamp or datetime.now(timezone.utc).isoformat(timespec='seconds')
+        entry = {'tool': tool, 'action': action, 'decision': decision,
+                 'timestamp': ts}
+        if path is not None:
+            entry['path'] = path
+        self.permissions.append(entry)
         self._touch()
 
     def to_dict(self, tool_max_chars: int = 0, noise_tools: list[str] | None = None):
@@ -51,6 +68,7 @@ class Session:
             'name': self.name,
             'messages': messages,
             'errors': self.errors,
+            'permissions': self.permissions,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
         }
@@ -61,6 +79,7 @@ class Session:
             data['name'],
             data.get('messages', []),
             data.get('errors', []),
+            data.get('permissions', []),
             data.get('created_at'),
             data.get('updated_at'),
         )

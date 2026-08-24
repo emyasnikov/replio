@@ -41,7 +41,8 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
   "created_at": "2026-08-17T12:00:00+00:00",
   "updated_at": "2026-08-17T12:05:15+00:00",
   "messages": [],
-  "errors": []
+  "errors": [],
+  "permissions": []
 }
 ```
 
@@ -52,6 +53,7 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 | `updated_at` | string | ISO 8601 UTC timestamp, bumped on every appended message |
 | `messages` | array | The conversation log, append-only |
 | `errors` | array | Turn-level errors (provider, network, agent loop) |
+| `permissions` | array | Audit log of tool permission decisions (see below) |
 
 ## Message schema
 
@@ -61,6 +63,7 @@ Every message has at least `role`, `content`, and `timestamp` (ISO 8601 UTC). Th
 |-------|-----------|-------------|
 | `role` | all | `user`, `assistant`, `tool`, `command`, or `system` |
 | `content` | all | Message text, or `null` for an assistant tool-call message |
+| `id` | all | Stable message identifier (`msg_<hex>`), auto-assigned on creation |
 | `timestamp` | all | ISO 8601 UTC timestamp |
 | `duration` | `assistant` | Response time in seconds |
 | `model` | `assistant` | Model that produced the response |
@@ -109,6 +112,25 @@ Turn-level failures are appended to the `errors` array, separate from the messag
 ```
 
 `code` is the HTTP status where one exists, otherwise `0`. Errors include provider auth/network failures, stream EOF or empty completions, `max_tokens` truncation, and unexpected exceptions from the agent loop.
+
+## Permissions
+
+Every tool permission resolution is recorded to the `permissions` array, making the log an audit trail of what the agent was allowed to do:
+
+```json
+{"tool": "run_command", "action": "ask", "decision": "granted", "path": "/home/me/proj", "timestamp": "2026-08-17T12:40:00+00:00"}
+{"tool": "write_file", "action": "deny", "decision": "denied", "path": "/home/me/proj/a.md", "timestamp": "2026-08-17T12:41:00+00:00"}
+```
+
+| Field | Description |
+|-------|-------------|
+| `tool` | The tool name |
+| `action` | The resolved policy action: `allow`, `ask`, or `deny` |
+| `decision` | The outcome: `granted` (ran), `declined` (user refused an `ask`), or `denied` (blocked by policy) |
+| `path` | The tool's `path_arg` value when the tool has one (e.g. the file or command target) |
+| `timestamp` | ISO 8601 UTC timestamp |
+
+Entries are append-only and never removed. Recording is always on - there is no config switch, so the log stays a reliable audit record.
 
 ## Append-only semantics
 

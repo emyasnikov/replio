@@ -57,6 +57,50 @@ class TestSessionModel(unittest.TestCase):
         s2 = Session.from_dict(d)
         self.assertEqual(s2.errors, d['errors'])
 
+    def test_message_id_assigned_unique(self):
+        s = Session('s1')
+        s.add_message('user', 'a')
+        s.add_message('user', 'b')
+        ids = [m['id'] for m in s.messages]
+        self.assertTrue(all(i.startswith('msg_') for i in ids))
+        self.assertEqual(len(set(ids)), 2)
+
+    def test_message_id_explicit_wins(self):
+        s = Session('s1')
+        s.add_message('user', 'a', id='msg_custom')
+        self.assertEqual(s.messages[0]['id'], 'msg_custom')
+
+    def test_message_id_round_trip_and_legacy_tolerated(self):
+        s = Session('s1')
+        s.add_message('user', 'a')
+        s2 = Session.from_dict(s.to_dict())
+        self.assertEqual(s2.messages[0]['id'], s.messages[0]['id'])
+        legacy = {'name': 'old', 'messages': [{'role': 'user', 'content': 'x',
+                                               'timestamp': 't'}],
+                  'errors': [], 'created_at': 'c', 'updated_at': 'u'}
+        s3 = Session.from_dict(legacy)
+        self.assertNotIn('id', s3.messages[0])
+
+    def test_permissions_persist_and_round_trip(self):
+        s = Session('s1')
+        s.add_permission('run_command', 'ask', 'granted', path='/tmp/x')
+        s.add_permission('write_file', 'deny', 'denied', path='/tmp/a.md')
+        d = s.to_dict()
+        self.assertEqual(len(d['permissions']), 2)
+        self.assertEqual(d['permissions'][0]['tool'], 'run_command')
+        self.assertEqual(d['permissions'][0]['action'], 'ask')
+        self.assertEqual(d['permissions'][0]['decision'], 'granted')
+        self.assertEqual(d['permissions'][0]['path'], '/tmp/x')
+        self.assertIn('timestamp', d['permissions'][0])
+        s2 = Session.from_dict(d)
+        self.assertEqual(s2.permissions, d['permissions'])
+
+    def test_permission_without_path(self):
+        s = Session('s1')
+        s.add_permission('web_search', 'allow', 'granted')
+        entry = s.permissions[0]
+        self.assertNotIn('path', entry)
+
     def test_save_load_round_trip(self):
         tmp = tempfile.TemporaryDirectory()
         try:

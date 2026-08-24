@@ -195,6 +195,61 @@ class TestEngine(unittest.TestCase):
         self.engine._ui = HeadlessUI(auto='allow')
         self.assertEqual(self.engine._confirm_tool('run_command', {'command': 'echo hi'}), True)
 
+    def _register_probe(self, config_action: str = 'ask'):
+        self.engine.config.set('tool_permission', {'bash': config_action})
+        self.engine._init_tooling()
+        params = {'type': 'object', 'properties': {
+            'path': {'type': 'string'}, 'cmd': {'type': 'string'}}}
+        self.engine._tool_registry.register(
+            'probe', 'probe tool', params, permission='bash',
+            path_arg='path', key_arg='cmd')(lambda **kw: 'ok')
+
+    def test_permission_recorded_for_ask_granted(self):
+        self._register_probe('ask')
+        self.engine._ui = HeadlessUI(auto='allow')
+        self.engine._run_tool('probe', {'cmd': 'echo hi'})
+        perms = self.engine.current_session.permissions
+        self.assertEqual(len(perms), 1)
+        self.assertEqual(perms[0]['tool'], 'probe')
+        self.assertEqual(perms[0]['action'], 'ask')
+        self.assertEqual(perms[0]['decision'], 'granted')
+        self.assertIn('timestamp', perms[0])
+
+    def test_permission_recorded_for_ask_declined(self):
+        self._register_probe('ask')
+        self.engine._ui = HeadlessUI(auto='deny')
+        out = self.engine._run_tool('probe', {'cmd': 'echo hi'})
+        self.assertEqual(out, '[cancelled] User declined the probe call')
+        perms = self.engine.current_session.permissions
+        self.assertEqual(len(perms), 1)
+        self.assertEqual(perms[0]['action'], 'ask')
+        self.assertEqual(perms[0]['decision'], 'declined')
+
+    def test_permission_recorded_for_deny(self):
+        self._register_probe('deny')
+        out = self.engine._run_tool('probe', {'cmd': 'echo hi'})
+        self.assertIn('disabled by tool policy', out)
+        perms = self.engine.current_session.permissions
+        self.assertEqual(len(perms), 1)
+        self.assertEqual(perms[0]['action'], 'deny')
+        self.assertEqual(perms[0]['decision'], 'denied')
+
+    def test_permission_recorded_for_allow(self):
+        self._register_probe('allow')
+        self.engine._run_tool('probe', {'cmd': 'echo hi'})
+        perms = self.engine.current_session.permissions
+        self.assertEqual(len(perms), 1)
+        self.assertEqual(perms[0]['action'], 'allow')
+        self.assertEqual(perms[0]['decision'], 'granted')
+
+    def test_permission_with_path_recorded(self):
+        self._register_probe('ask')
+        self.engine._ui = HeadlessUI(auto='allow')
+        self.engine._run_tool('probe', {'path': '/definitely/not/here.txt'})
+        perms = self.engine.current_session.permissions
+        self.assertEqual(perms[0]['path'], '/definitely/not/here.txt')
+        self.assertEqual(perms[0]['decision'], 'granted')
+
     def test_show_tool_status_renders_params_when_enabled(self):
         ui = _CaptureUI()
         self.engine._init_tooling()

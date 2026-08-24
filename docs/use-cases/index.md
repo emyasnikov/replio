@@ -8,7 +8,7 @@ The use-case guides in this folder assess how that core fits a specific audience
 
 The following capabilities exist now and are the foundation any evaluation builds on:
 
-- **Auditability by design** - every session is a complete, append-only log. Each message, tool call and its result, reasoning (`thinking`), and error is persisted with timestamps, duration, model, and provider. Entries are never removed. Compaction only trims the provider context, never the log. See the session format in [docs/session.md](../session.md).
+- **Auditability by design** - every session is a complete, append-only log. Each message, tool call and its result, reasoning (`thinking`), and error is persisted with timestamps, duration, model, and provider, and every tool permission decision is recorded in the session `permissions` array. Entries are never removed. Compaction only trims the provider context, never the log. See the session format in [docs/session.md](../session.md).
 - **Zero-dependency core** - Python standard library only. Nothing to audit, no supply chain, no lockfile churn. In a regulated environment this is a supply-chain and security property, not just a convenience.
 - **Local-first data sovereignty** - config and session logs live on your disk. All provider traffic is outbound. No external logging or telemetry service holds your data. Data stays on your infrastructure.
 - **Permissions and isolation** - every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmations for anything outside an agent's worktree. Headless agents auto-deny anything that would require confirmation, so an agent's reachable surface is exactly what its config allows.

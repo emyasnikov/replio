@@ -27,6 +27,19 @@
 
 ## Open
 
+- [ ] Session log full-restructuring (deferred) - restructure `messages` from flat role-attribute dicts into a typed `parts` model, borrowing OpenCode's session file structure (`.opencode/sessions/ses_*.json`). Deferred: the current flat format already reconstructs every conversation element, so this is architectural polish / ecosystem alignment, not a correctness fix. See the detailed spec below. Do NOT migrate existing `.replio/sessions/*.json` - they are historical and remain readable as-is
+  - Reference - OpenCode stores each turn as `{role, messageId, timestamp, parts[]}` where `parts` are typed objects:
+    - `{"type": "text", "text": ...}` - assistant/user content
+    - `{"type": "thinking", "text": ...}` - reasoning as its own part (not an attribute of the message)
+    - `{"type": "tool", "toolName, toolInput, toolOutput, isError}` - tool call and result co-located in one object
+    - `[step-start]` / `[step-finish]` text parts delimit steps within a turn
+    - Top-level: `{_id, title, startedAt, updatedAt, compactedAt, parentId, subSessions[], turns[], permissions[], errors[]}`
+  - Recommended target (role-level parts + co-located tool part):
+    - Each message becomes `{"id": "msg_<hex>", "role": ..., "timestamp": ..., <role meta>, "parts": [...]}`
+    - Part types: `text`, `thinking`, and `tool` (co-locating `id`/`tool`/`input`/`output`/`is_error`/`analysis`) so a single assistant message holds thinking + answer + each tool step, dropping the separate `tool`-role messages
+    - `_provider_messages()` reconstructs the OpenAI payload (`assistant.tool_calls` + `tool`-role results) from the parts (engine.py `_provider_messages`/`_clean_messages`)
+  - Optional, larger alternative - full turn-level parts + `[step-start]`/`[step-finish]` markers aggregating the multi-round tool loop into one assistant message per user turn (larger agent-loop change)
+  - Touch points: `sessions/manager.py` (part-building helpers, `to_dict`/`from_dict`), `engine.py` (`_agent_loop` persistence, `_execute_tool_calls`, `_provider_messages`, `_clean_messages`, `compact_session`, `preview_session`, `_auto_name_session`), `sessions/render.py`, `docs/session.md`; server `/sessions` + `/chat` are unaffected (names + `TurnResult` only)
 - [ ] `run_command` command allowlist - allow only safe shell commands (e.g. `pytest`, `ruff`, `git diff`, `python -m unittest`) via a `tool_permission.bash_allow` key rather than all-or-none `bash`. Match by startswith on each chained segment over `&&`/`||`/`;`/`|`/`&`, reject shell-script forms (heredocs, multi-line) (programming-fleet requirement from `docs/usage/programming.md`)
 - [ ] Thinking visibility - `/thinking on` + `reasoning` config documented, per-provider `reasoning_content` check so reasoning shows in the REPL
 - [ ] `/spawn` command - launch a scoped `replio serve` agent from the REPL (home -> project path), supervise (health/list/stop) and delegate to it (`docs/fleet.md`)
@@ -80,6 +93,8 @@
 
 ## Done
 
+- [x] Session audit trail - permission decisions (allow/ask/deny -> granted/declined/denied) recorded in a session `permissions` array, always-on
+- [x] Stable message ids - `msg_<hex>` auto-assigned to every session message
 - [x] Global model registry - /connect appends models + keys, /model list/--online, picker reuse
 - [x] REPL `/config --global/--local` scope flags + apply() in-memory overrides (one-shot CLI, engine normalization never write files)
 - [x] Scoped config writes - api_key global-only (0600), local saves overrides only, replio config CLI

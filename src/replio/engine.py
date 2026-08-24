@@ -542,16 +542,25 @@ class Engine:
         path = cleaned.get(path_arg) if path_arg else None
         action = policy.action(name, registry.permission_for(name), path)
         if action == 'deny':
+            self._log_permission(name, action, 'denied', path)
             return f'Error: tool "{name}" is disabled by tool policy'
         if action == 'ask':
-            if not self._confirm_tool(name, args):
+            granted = self._confirm_tool(name, args)
+            self._log_permission(name, action, 'granted' if granted else 'declined', path)
+            if not granted:
                 return f'[cancelled] User declined the {name} call'
+        else:
+            self._log_permission(name, action, 'granted', path)
         if self.config.get('tool_status_visible', True):
             self._show_tool_status(name, args)
         result = registry.execute(name, args, config=self.config)
         if result.startswith('Error') and self.config.get('show_errors', True):
             self.ui.tool_error(result)
         return result
+
+    def _log_permission(self, name: str, action: str, decision: str,
+                        path: str | None = None):
+        self.current_session.add_permission(name, action, decision, path)
 
     def _confirm_tool(self, name: str, args: dict) -> bool:
         key_arg = self._tool_registry.key_arg_for(name)

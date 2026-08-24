@@ -16,7 +16,6 @@ Finished REPL hardening first: multi-line input, word-level streaming buffering.
 | Task | Effort | Provides |
 |------|--------|----------|
 | Surface soft tool results as dimmed info lines | S | `(empty file)`, `(no matches)` notes visible in the REPL |
-| Thinking visibility | S | `/thinking on` + `reasoning` config documented, per-provider `reasoning_content` check |
 
 ## Developer workflow
 

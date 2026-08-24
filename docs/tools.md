@@ -93,6 +93,8 @@ Every tool call is gated by `ToolPolicy` (`src/replio/tools/policy.py`), the sin
 
 Actions are `allow` (no prompt), `ask` (y/N confirm in the loop), or `deny` (tool filtered from the provider schema and refused on direct calls).
 
+Every permission resolution and its outcome (granted / declined / denied) is recorded to the session `permissions` array as an append-only audit trail - see [session.md](session.md).
+
 Resolution precedence:
 
 1. **Name-level** - `tools.deny` (always denied) and `tools.allow` (when non-empty, an allowlist - everything else is denied).
