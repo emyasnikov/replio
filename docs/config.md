@@ -66,10 +66,12 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 | `query_refine_min_words`    | `3`                    | Minimum query length before refinement applies                         |
 | `query_refine_context`      | `4`                    | Recent-message context to inject into refinement                       |
 | `show_thinking`             | `false`                | Stream thinking/reasoning tokens dimmed. When off, thinking is shown only as an animated spinner plus a `+ Thought N.Ns` summary (display only - does not change what is sent to the model) |
+| `show_thought_duration`     | `true`                 | When thinking is streamed (`show_thinking` on), print a dimmed `(Thought N.Ns)` line after each thinking block. Off hides it |
 | `reasoning`                 | `"auto"`               | Request reasoning from the model and control its token budget: `false`/`"off"` = do not request, `true`/`"on"`/`"auto"` = request with provider default, `"low"`/`"medium"`/`"high"` = explicit budget hint. Mapping is provider-specific (OpenAI `reasoning_effort`, Claude `thinking.budget_tokens`, Qwen `enable_thinking`) |
 | `markdown_streaming`        | `false`                | Basic markdown-aware streaming                                         |
 | `word_streaming`            | `true`                 | Buffer REPL output to word boundaries so words render fully formed (no mid-word pauses). `false` streams character-by-character |
 | `show_context_size`         | `true`                 | Dimmed context-size line after each response                           |
+| `footer_tokens`             | `["context"]`          | Which token counts the footer shows, in order, joined by `/`. `context` = `<n> tokens` (context/input size, chars/4 fallback), `in`/`out`/`thinking` = `<n>t` from provider usage (unavailable counts are skipped). Empty list hides the token section entirely |
 | `clear_screen`              | `true`                 | Clear the screen before the REPL banner                                |
 | `show_version`              | `true`                 | Show the version in the REPL banner                                    |
 | `compact_keep`              | `4`                    | Messages to keep when compacting the provider context                  |

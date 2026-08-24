@@ -182,6 +182,8 @@ class ReplUI:
         if self._loop.config.get('show_thinking', True):
             sys.stdout.write('\n')
             sys.stdout.flush()
+            if self._loop.config.get('show_thought_duration', True):
+                self._emit(f'(Thought {duration:.1f}s)', '\033[90m')
         else:
             self._emit(f'+ Thought {duration:.1f}s', '\033[90m')
         self.content_newline = True
@@ -220,13 +222,27 @@ class ReplUI:
         self.flush()
         self._emit(f'[refine: "{old}" → "{new}"]', '\033[90m')
 
-    def footer(self, duration, usage, tokens):
+    def _footer_tokens(self, counts):
+        parts = []
+        for key in self._loop.config.get('footer_tokens', ['context']):
+            n = counts.get(key)
+            if n is None:
+                continue
+            if key == 'context':
+                parts.append(f'{n:,} tokens')
+            else:
+                parts.append(f'{n}t')
+        return '/'.join(parts)
+
+    def footer(self, duration, counts):
         self.flush()
         if not self.content_newline:
             sys.stdout.write('\n')
             sys.stdout.flush()
         if self._loop.config.get('show_context_size', True):
-            self._emit(f'({duration:.1f}s, {tokens:,} tokens)', '\033[90m')
+            seg = self._footer_tokens(counts)
+            body = f'({duration:.1f}s, {seg})' if seg else f'({duration:.1f}s)'
+            self._emit(body, '\033[90m')
         else:
             self._emit(f'({duration:.1f}s)', '\033[90m')
         self.content_newline = True
@@ -281,7 +297,7 @@ class NullUI:
     def tool_refine(self, old, new):
         pass
 
-    def footer(self, duration, usage, tokens):
+    def footer(self, duration, counts):
         pass
 
     def info(self, msg):
@@ -293,11 +309,14 @@ class NullUI:
 
 class HeadlessUI:
     def __init__(self, auto: str = 'deny', verbose: bool = False, stream: bool = True,
-                 show_thinking: bool = True):
+                 show_thinking: bool = True, show_thought_duration: bool = True,
+                 footer_tokens: list | None = None):
         self.auto = auto
         self.verbose = verbose
         self.stream = stream
         self.show_thinking = show_thinking
+        self.show_thought_duration = show_thought_duration
+        self.footer_tokens = footer_tokens or ['context']
 
     def token(self, text):
         if self.stream:
@@ -318,6 +337,8 @@ class HeadlessUI:
             return
         if self.show_thinking:
             sys.stderr.write('\n')
+            if self.show_thought_duration:
+                sys.stderr.write(f'(Thought {duration:.1f}s)\n')
         else:
             sys.stderr.write(f'+ Thought {duration:.1f}s\n')
 
@@ -352,9 +373,19 @@ class HeadlessUI:
         if self.verbose:
             sys.stderr.write(f'[refine: "{old}" → "{new}"]\n')
 
-    def footer(self, duration, usage, tokens):
+    def footer(self, duration, counts):
         if self.stream:
-            sys.stderr.write(f'({duration:.1f}s, {tokens:,} tokens)\n')
+            parts = []
+            for key in self.footer_tokens:
+                n = counts.get(key)
+                if n is None:
+                    continue
+                parts.append(f'{n:,} tokens' if key == 'context' else f'{n}t')
+            seg = '/'.join(parts)
+            if seg:
+                sys.stderr.write(f'({duration:.1f}s, {seg})\n')
+            else:
+                sys.stderr.write(f'({duration:.1f}s)\n')
 
     def info(self, msg):
         if self.verbose:

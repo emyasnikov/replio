@@ -399,6 +399,34 @@ class TestEngineCheckConnection(unittest.TestCase):
 
 class TestEngineSinks(unittest.TestCase):
 
+    def test_usage_counts_extraction(self):
+        engine = make_engine()
+        try:
+            counts = engine._usage_counts({
+                'prompt_tokens': 12, 'completion_tokens': 8,
+                'completion_tokens_details': {'reasoning_tokens': 5},
+            })
+            self.assertEqual(counts['in'], 12)
+            self.assertEqual(counts['out'], 8)
+            self.assertEqual(counts['thinking'], 5)
+            self.assertEqual(counts['context'], 12)
+        finally:
+            engine._tmp.cleanup()
+
+    def test_usage_counts_fallback_reasoning_and_empty(self):
+        engine = make_engine()
+        try:
+            counts = engine._usage_counts({
+                'prompt_tokens': 3, 'reasoning_tokens': 4})
+            self.assertEqual(counts['thinking'], 4)
+            counts = engine._usage_counts(None)
+            self.assertNotIn('in', counts)
+            self.assertNotIn('out', counts)
+            self.assertNotIn('thinking', counts)
+            self.assertIn('context', counts)
+        finally:
+            engine._tmp.cleanup()
+
     def test_null_ui_confirm_denies(self):
         from replio.ui import NullUI
         self.assertEqual(NullUI().confirm('x', 'x'), False)

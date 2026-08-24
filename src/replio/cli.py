@@ -20,7 +20,9 @@ def _engine_from_args(args) -> Engine:
     auto = 'allow' if getattr(args, 'approve', None) is True else 'deny'
     ui = HeadlessUI(auto=auto, verbose=getattr(args, 'verbose', False),
                     stream=getattr(args, 'output', 'json') == 'text',
-                    show_thinking=config.get('show_thinking', True))
+                    show_thinking=config.get('show_thinking', True),
+                    show_thought_duration=config.get('show_thought_duration', True),
+                    footer_tokens=config.get('footer_tokens', ['context']))
     return Engine(config, ui=ui)
 
 
@@ -82,7 +84,8 @@ def cmd_serve(args) -> int:
     if getattr(args, 'mode', None):
         config.apply('mode', args.mode)
     ui = HeadlessUI(auto='deny', verbose=False, stream=False,
-                    show_thinking=config.get('show_thinking', True))
+                    show_thinking=config.get('show_thinking', True),
+                    footer_tokens=config.get('footer_tokens', ['context']))
     engine = Engine(config, ui=ui)
     pm = getattr(engine, '_plugin_manager', None)
     mcp_service = pm.service('mcp_server') if pm is not None else None
@@ -103,7 +106,8 @@ def cmd_serve(args) -> int:
 def cmd_mcp(args) -> int:
     config = Config(path=args.path)
     ui = HeadlessUI(auto='deny', verbose=False, stream=False,
-                    show_thinking=config.get('show_thinking', True))
+                    show_thinking=config.get('show_thinking', True),
+                    footer_tokens=config.get('footer_tokens', ['context']))
     engine = Engine(config, ui=ui)
     pm = getattr(engine, '_plugin_manager', None)
     service = pm.service('mcp_server') if pm is not None else None

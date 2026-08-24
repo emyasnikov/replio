@@ -408,7 +408,7 @@ class Engine:
                     reasoning=self.config.get('reasoning'),
                     mode=self.config.get('mode'),
                 )
-                self.ui.footer(duration, usage, self._context_tokens(usage))
+                self.ui.footer(duration, self._usage_counts(usage))
             self.session_auto_save()
 
         duration = round((datetime.now(timezone.utc) - turn_start).total_seconds(), 1)
@@ -718,6 +718,24 @@ class Engine:
         msgs = self._provider_messages()
         chars = sum(len(m.get('content') or '') for m in msgs)
         return max(1, chars // 4)
+
+    def _usage_counts(self, usage: dict | None = None) -> dict:
+        counts: dict = {}
+        if isinstance(usage, dict):
+            prompt = usage.get('prompt_tokens')
+            if isinstance(prompt, int) and prompt > 0:
+                counts['in'] = prompt
+            completion = usage.get('completion_tokens')
+            if isinstance(completion, int) and completion > 0:
+                counts['out'] = completion
+            details = usage.get('completion_tokens_details') or {}
+            thinking = details.get('reasoning_tokens')
+            if not isinstance(thinking, int):
+                thinking = usage.get('reasoning_tokens')
+            if isinstance(thinking, int) and thinking > 0:
+                counts['thinking'] = thinking
+        counts['context'] = self._context_tokens(usage)
+        return counts
 
     def _human_chars(self, n: int) -> str:
         if n >= 1_000_000:

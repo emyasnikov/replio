@@ -125,6 +125,24 @@ class TestThinkingSpinner(unittest.TestCase):
         self.assertIsNone(self.chat._ui._spinner_thread)
         self.assertIn('+ Thought 1.0s', out.getvalue())
 
+    def test_thinking_end_streamed_prints_thought_duration(self):
+        self.chat.config.set('show_thinking', True)
+        self.chat.config.set('show_thought_duration', True)
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat._ui.thinking_end(2.5)
+        value = out.getvalue()
+        self.assertIn('(Thought 2.5s)', value)
+        self.assertNotIn('+ Thought', value)
+
+    def test_thinking_end_streamed_hides_thought_duration_when_off(self):
+        self.chat.config.set('show_thinking', True)
+        self.chat.config.set('show_thought_duration', False)
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat._ui.thinking_end(1.0)
+        self.assertNotIn('Thought', out.getvalue())
+
 
 class TestEphemeralUI(unittest.TestCase):
 
@@ -198,12 +216,44 @@ class TestWordStreaming(unittest.TestCase):
     def test_footer_flushes_tail(self):
         def run():
             self.ui.token('hard')
-            self.ui.footer(3.0, None, 10)
+            self.ui.footer(3.0, {'context': 10})
         value = self._capture(run)
         self.assertIn('hard', value)
         self.assertIn('(3.0s, 10 tokens)', value)
         self.assertIn('hard\n', value)
         self.assertLess(value.index('hard'), value.index('(3.0s'))
+
+    def test_footer_token_parts_selected(self):
+        self.chat.config.set('footer_tokens', ['in', 'thinking', 'out'])
+        def run():
+            self.ui.footer(3.0, {'in': 12, 'thinking': 5, 'out': 8})
+        value = self._capture(run)
+        self.assertIn('(3.0s, 12t/5t/8t)', value)
+
+    def test_footer_token_parts_skip_unavailable(self):
+        self.chat.config.set('footer_tokens', ['in', 'thinking', 'out'])
+        def run():
+            self.ui.footer(3.0, {'in': 12})
+        value = self._capture(run)
+        self.assertIn('(3.0s, 12t)', value)
+        self.assertNotIn('thinking', value)
+
+    def test_footer_token_parts_empty_hides_tokens(self):
+        self.chat.config.set('footer_tokens', [])
+        def run():
+            self.ui.footer(3.0, {'context': 10})
+        value = self._capture(run)
+        self.assertIn('(3.0s)', value)
+        self.assertNotIn('tokens', value)
+
+    def test_footer_show_context_size_off_hides_tokens(self):
+        self.chat.config.set('show_context_size', False)
+        self.chat.config.set('footer_tokens', ['in', 'out'])
+        def run():
+            self.ui.footer(3.0, {'in': 12, 'out': 8})
+        value = self._capture(run)
+        self.assertIn('(3.0s)', value)
+        self.assertNotIn('t', value)
 
     def test_word_streaming_off_writes_immediately(self):
         self.chat.config.set('word_streaming', False)
