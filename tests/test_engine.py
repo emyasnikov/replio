@@ -56,6 +56,10 @@ class _CaptureUI:
     def tool_error(self, msg):
         self.labels.append(f'! {msg.split(chr(10), 1)[0]}')
 
+    def tool_note(self, output):
+        lines = [l for l in output.splitlines() if l]
+        self.labels.append(f'[{lines[-1]}]')
+
     def confirm(self, name, label):
         self.labels.append(f'confirm: {label}')
         return True
@@ -303,6 +307,37 @@ class TestEngine(unittest.TestCase):
         self.engine._run_tool('run_command', {'command': 'echo hi'})
         self.assertEqual(ui.labels, ['confirm: run_command echo hi', '$ Run echo hi'])
         self.assertFalse(any(l.startswith('! ') for l in ui.labels))
+
+    def test_run_tool_note_renders_soft_result(self):
+        ui = _CaptureUI()
+        self.engine._init_tooling()
+        self.engine._ui = ui
+        empty = Path(self.engine._tmp.name) / 'empty.txt'
+        empty.write_text('')
+        out = self.engine._run_tool('read_file', {'path': str(empty)})
+        self.assertIn('(empty file)', out)
+        self.assertEqual(ui.labels, [
+            f'← Read {empty}',
+            '[(empty file)]',
+        ])
+
+    def test_run_tool_note_suppressed_when_hidden(self):
+        ui = _CaptureUI()
+        self.engine._init_tooling()
+        self.engine._ui = ui
+        self.engine.config.set('show_notes', False)
+        empty = Path(self.engine._tmp.name) / 'empty.txt'
+        empty.write_text('')
+        self.engine._run_tool('read_file', {'path': str(empty)})
+        self.assertEqual(ui.labels, [f'← Read {empty}'])
+
+    def test_run_tool_no_note_for_normal_result(self):
+        ui = _CaptureUI()
+        self.engine._init_tooling()
+        self.engine._ui = ui
+        (Path(self.engine._tmp.name) / 'found.txt').write_text('hi')
+        self.engine._run_tool('glob', {'pattern': '*.txt', 'path': self.engine._tmp.name})
+        self.assertFalse(any(l.startswith('[') for l in ui.labels))
 
     def test_denied_ask_tool_feeds_cancelled_result(self):
         self.engine.provider.chat.side_effect = [

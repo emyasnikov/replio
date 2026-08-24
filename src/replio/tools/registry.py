@@ -25,7 +25,8 @@ class ToolRegistry:
                  status: Callable[[dict], str] | None = None,
                  echo: bool = False, glyph: str = '', verb: str = '',
                  aliases: list[str] | None = None,
-                 param_aliases: dict | None = None):
+                 param_aliases: dict | None = None,
+                 note: Callable[[str], bool] | None = None):
         def wrapper(fn):
             def build_schema(tool_name: str) -> dict:
                 return {
@@ -51,6 +52,7 @@ class ToolRegistry:
                 'glyph': glyph,
                 'verb': verb,
                 'param_aliases': dict(param_aliases or {}),
+                'note': note,
                 'schema': build_schema(name),
             }
             self._tools[name] = entry
@@ -119,6 +121,15 @@ class ToolRegistry:
     def echo_for(self, name: str) -> bool:
         canon, tool = self._canonical(name)
         return bool(tool and tool.get('echo'))
+
+    def is_note_result(self, name: str, result: str) -> bool:
+        canon, tool = self._canonical(name)
+        if not tool or not tool.get('note'):
+            return False
+        try:
+            return bool(tool['note'](result))
+        except Exception:
+            return False
 
     def refine_required(self, name: str) -> bool:
         canon, tool = self._canonical(name)

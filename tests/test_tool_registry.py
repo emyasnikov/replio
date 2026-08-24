@@ -146,6 +146,17 @@ class TestToolRegistry(unittest.TestCase):
         self.assertFalse(self.registry.echo_for('write_file'))
         self.assertFalse(self.registry.echo_for('nonexistent'))
 
+    def test_note_metadata(self):
+        self.assertTrue(self.registry.is_note_result('read_file', '# a.txt - 0 lines, 0 chars\n(empty file)'))
+        self.assertTrue(self.registry.is_note_result('glob', '(no matches for "*.py")'))
+        self.assertTrue(self.registry.is_note_result('grep', '(no matches for "foo")'))
+        self.assertTrue(self.registry.is_note_result('web_search', 'No search results found.'))
+        self.assertTrue(self.registry.is_note_result('fetch_page', '(end of content)'))
+        self.assertTrue(self.registry.is_note_result('open', '(empty content)'))
+        self.assertFalse(self.registry.is_note_result('read_file', '(empty directory)'))
+        self.assertFalse(self.registry.is_note_result('web_search', 'Some results found.'))
+        self.assertFalse(self.registry.is_note_result('nonexistent', '(empty file)'))
+
     def test_activity_category_defaults(self):
         self.assertEqual(self.registry.activity('web_search', {'query': 'hi there'}),
                          ('%', 'Search', 'hi there', ''))

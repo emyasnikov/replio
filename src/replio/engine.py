@@ -450,6 +450,7 @@ class Engine:
             output = self._run_tool(name, args)
             if (self.config.get('tool_status_visible', True)
                     and self._tool_registry.echo_for(name) and output
+                    and not self._tool_registry.is_note_result(name, output)
                     and not output.startswith(('[cancelled]', 'Error'))):
                 self.ui.tool_result(output)
             executed.append({'name': name, 'arguments': args})
@@ -556,6 +557,9 @@ class Engine:
         result = registry.execute(name, args, config=self.config)
         if result.startswith('Error') and self.config.get('show_errors', True):
             self.ui.tool_error(result)
+        elif (registry.is_note_result(name, result)
+              and self.config.get('show_notes', True)):
+            self.ui.tool_note(result)
         return result
 
     def _log_permission(self, name: str, action: str, decision: str,

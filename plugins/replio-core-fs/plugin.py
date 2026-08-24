@@ -100,6 +100,7 @@ def register_tools(registry):
         short='Read the contents of a text file',
         aliases=['read', 'view'],
         param_aliases={'file': 'path'},
+        note=lambda r: r.endswith('(empty file)'),
     )
     def read_file(path: str, offset: int = 1, limit: int = 500,
                   _config=None) -> str:
@@ -153,6 +154,7 @@ def register_tools(registry):
         param_aliases={'directory': 'path'},
         glyph='*',
         verb='List',
+        note=lambda r: r == '(empty directory)',
     )
     def list_dir(path: str = '.', depth: int = 1, _config=None) -> str:
         p = Path(path).expanduser()
@@ -242,6 +244,7 @@ def register_tools(registry):
         short='Find files matching a glob pattern',
         glyph='*',
         verb='Glob',
+        note=lambda r: r.startswith('(no matches for'),
     )
     def glob(pattern: str, path: str = '.', _config=None) -> str:
         base = Path(path).expanduser()
@@ -292,6 +295,7 @@ def register_tools(registry):
         param_aliases={'query': 'pattern'},
         glyph='*',
         verb='Grep',
+        note=lambda r: r.startswith('(no matches for'),
     )
     def grep(pattern: str, path: str = '.', glob: str = '*',
              _config=None) -> str:

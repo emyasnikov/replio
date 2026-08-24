@@ -213,6 +213,11 @@ class ReplUI:
         self.flush()
         self._emit(f'! {msg.split(chr(10), 1)[0]}', '\033[90m')
 
+    def tool_note(self, output):
+        self.flush()
+        lines = [l for l in output.splitlines() if l]
+        self._emit(lines[-1], '\033[90m')
+
     def tool_result(self, output):
         self.flush()
         for line in output.splitlines():
@@ -291,6 +296,9 @@ class NullUI:
     def tool_error(self, msg):
         pass
 
+    def tool_note(self, output):
+        pass
+
     def tool_result(self, output):
         pass
 
@@ -364,6 +372,11 @@ class HeadlessUI:
     def tool_error(self, msg):
         if self.verbose:
             sys.stderr.write(f'! {msg.split(chr(10), 1)[0]}\n')
+
+    def tool_note(self, output):
+        if self.verbose:
+            lines = [l for l in output.splitlines() if l]
+            sys.stderr.write(lines[-1] + '\n')
 
     def tool_result(self, output):
         if self.verbose:

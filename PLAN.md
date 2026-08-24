@@ -9,14 +9,6 @@ Sourced from the use-case gap (`docs/use-cases/`), competitor parity (`docs/vs/`
 - Effort: S < M < L
 - Provides: the capability the task delivers
 
-## REPL polish
-
-Finished REPL hardening first: multi-line input, word-level streaming buffering. Remaining:
-
-| Task | Effort | Provides |
-|------|--------|----------|
-| Surface soft tool results as dimmed info lines | S | `(empty file)`, `(no matches)` notes visible in the REPL |
-
 ## Developer workflow
 
 Repo-aware coding assistance: version control, lint/format/test wrappers, scoped shell policy, per-worktree context.

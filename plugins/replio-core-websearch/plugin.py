@@ -136,6 +136,7 @@ def register_tools(registry):
         key_arg='query',
         short='Search the web',
         param_aliases={'q': 'query'},
+        note=lambda r: r == 'No search results found.',
     )
     def web_search(query: str) -> str:
         results = SERVICE.search(query)
@@ -168,6 +169,7 @@ def register_tools(registry):
         glyph='↓',
         verb='Fetch',
         param_aliases={'cursor': 'offset'},
+        note=lambda r: r in ('(end of content)', '(empty content)'),
     )
     def fetch_page(url: str, offset: int = 0) -> str:
         return _fetch_text(url, offset)
@@ -200,6 +202,7 @@ def register_tools(registry):
         verb='Open',
         status=_open_status,
         param_aliases={'cursor': 'offset'},
+        note=lambda r: r in ('(end of content)', '(empty content)'),
     )
     def open(url: str | None = None, id=None, offset: int = 0) -> str:
         target, err = _open_target(url, id)

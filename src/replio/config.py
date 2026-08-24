@@ -30,6 +30,7 @@ DEFAULT_CONFIG = {
     'glyph_lines': True,
     'glyph_params': True,
     'show_errors': True,
+    'show_notes': True,
     'tool_analysis': False,
     'session_tool_max_chars': 0,
     'tool_max_result_chars': 0,
