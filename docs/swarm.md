@@ -22,6 +22,14 @@ The two compose. A swarm can run on top of a fleet, with each swarm agent being 
 - **Generate to check to correct**: run a main agent, an auditor, and a fix pass in a loop until the auditor passes.
 - **PM/dev/tester orchestration**: multiple specialized agents cooperating on one outcome as a user-facing pattern.
 
+## Personas and delegation
+
+Personas are named agent definitions - a system prompt, optional model override, and optional per-agent tool permissions - stored in a single JSON catalog with global + local merge (schema and permission rule in [personas.md](personas.md)). `delegate(persona, task)` spawns a sub-agent that runs the task with the persona's prompt, session, and model, and returns the result. Delegation resolves its permission from the selected persona: a configured persona uses its own `tool_permission` overrides (category `delegate` defaults to `ask`), while a temporary persona created only for parallel work defaults to `deny` until opted in.
+
+In-process sub-engines run with a quiet UI so they do not interleave with the caller's REPL, execute synchronously (one sub-agent at a time), and keep their own namespaced session (`delegate_<persona>_<ts>`). The `delegate` tool surfaces which persona and task are running and returns the final answer as its result. Live in-REPL progress of a running sub-agent is a deferred enhancement - `Engine.chat()` is a single blocking call and does not yet expose a progress channel.
+
+A document pipeline is a typical use: a lead agent asks a `researcher` for findings, hands those to a `writer`, has a `referencer` collect citations into a `.bib` file, and runs an `editor` to check the result against the original prompt. This is team orchestration built on personas and delegation.
+
 ## In-process vs. cross-process
 
 | | In-process | Cross-process |

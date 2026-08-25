@@ -26,6 +26,11 @@
 
 ## Open
 
+- [ ] Persona directory scan for export/import - read `.replio/personas/*.md` (front-matter personas) to import and export personas to Markdown, paralleling the sessions Markdown export/import
+- [ ] Delegation progress in the REPL - show which sub-agent is working on which task and its live status. Foundation: `delegate` returns the task and final result. Live in-REPL progress during a run is a later enhancement - needs a progress channel read out of the sub-engine loop, which the single blocking `Engine.chat()` does not surface today
+- [ ] Auto team selection - the lead agent picks personas from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern; e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor)
+- [ ] Skills registry - `.replio/skills/` or `.replio/skills.json`, persona-attachable capability sets distinct from tools/plugins, checked/installed per agent
+- [ ] Personas registry - single `.replio/personas.json`, global + local merge mirroring `models.py:ModelRegistry`, fields name + system prompt + optional model override + optional per-persona `tool_permission` + skills
 - [ ] Session log full-restructuring (deferred) - restructure `messages` from flat role-attribute dicts into a typed `parts` model, borrowing OpenCode's session file structure (`.opencode/sessions/ses_*.json`). Deferred: the current flat format already reconstructs every conversation element, so this is architectural polish / ecosystem alignment, not a correctness fix. See the detailed spec below. Do NOT migrate existing `.replio/sessions/*.json` - they are historical and remain readable as-is
   - Reference - OpenCode stores each turn as `{role, messageId, timestamp, parts[]}` where `parts` are typed objects:
     - `{"type": "text", "text": ...}` - assistant/user content
