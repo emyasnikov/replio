@@ -523,7 +523,12 @@ def register_builtins(registry):
                 current = chat.sessions.current.name if chat.sessions.current else ''
                 for s in sessions:
                     marker = '  <-- current' if s == current else ''
-                    print(f'  {s}{marker}')
+                    child = ''
+                    if s.startswith('delegate_'):
+                        data = chat.sessions.read(s)
+                        if data and getattr(data, 'parent_id', ''):
+                            child = f'  (child of {data.parent_id})'
+                    print(f'  {s}{marker}{child}')
             else:
                 print('  No sessions found')
         elif action == 'preview':
@@ -625,7 +630,7 @@ def register_builtins(registry):
         except json.JSONDecodeError:
             print('Usage: /tool <name> {"key": "value"}')
             return
-        print(chat._run_tool(name, arguments))
+        print(chat._run_tool(name, arguments, echo=False))
 
     @registry.register('plugins', aliases=['plugin'],
                        description='Manage plugins', subcommands=[

@@ -270,21 +270,21 @@ git -C ~/replio-agents/workspace/repo worktree remove ~/replio-agents/workspace/
 
 The fleet above isolates roles by process, worktree, and container. A lighter setup needs no Docker at all: one REPL lead agent delegates tasks to persona sub-agents, and the sub-agent's final answer is handed back.
 
-The bundled `programming` team (`planner`, `programmer`, `tester`, `code-reviewer`) ships with system prompts and per-persona permissions (see [personas.md](../personas.md) and [swarm.md](../swarm.md)). To let the lead delegate to a coding persona without prompting, pre-approve it in the local persona catalog (`.replio/personas.json`), which overrides only that field of the bundled persona:
+The bundled `programming` team (`planner`, `programmer`, `tester`, `code-reviewer`) ships with system prompts and per-persona permissions (see [personas.md](../personas.md) and [swarm.md](../swarm.md)). Delegation defaults to `allow`, so the lead can delegate to any configured persona without a prompt. To require a confirmation for a specific persona (for example, to keep write-heavy work gated), override only its `delegate` field in the local persona catalog (`.replio/personas.json`):
 
 ```json
 {
-  "programmer": { "tool_permission": { "delegate": "allow" } }
+  "programmer": { "tool_permission": { "delegate": "ask" } }
 }
 ```
 
-Other personas keep the default `delegate: ask`, so each delegation to them confirms in the REPL. Then either `/tool` runs a sub-agent, or the lead model proposes it as any other tool:
+Then either `/tool` runs a sub-agent, or the lead model proposes it as any other tool:
 
 ```text
 /tool delegate {"persona": "programmer", "task": "Implement the task against the plan; run the tests and report changed files."}
 ```
 
-The result is the sub-agent's final answer, printed in the REPL (`delegate_echo`, default on) and fed back to the lead model. Every delegation writes its own complete `delegate_<persona>_<ts>` session log under the lead's `.replio/sessions/`, so the audit trail is per sub-agent.
+The result is the sub-agent's final answer, printed in the REPL (`delegate_echo`, default on) and fed back to the lead model. Every delegation writes its own complete `delegate_<persona>_<ts>` session log under the lead's `.replio/sessions/`, linked to the lead session via `sub_sessions`/`parent_id`, so the audit trail is per sub-agent. If the sub-agent finishes without prose, the delegate result summarizes its activity (files written, test runs) from that log instead of reporting empty.
 
 The trust trade-off is the deciding factor between the two paths:
 

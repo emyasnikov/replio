@@ -19,7 +19,7 @@ Resolution precedence (see [tools.md](tools.md) for the full flow):
 
 The worktree is the directory holding the local `.replio/` - the launch directory, or `--path`. A `read_file` / `list_dir` / `write_file` / `glob` / `grep` on a path outside it escalates to `ask`, so an agent cannot silently reach files beyond its scope. Launching from `~` makes home the worktree, so subdirectories do not escalate. Launch inside the project or pass `--path` for project-scoped prompting.
 
-`bash` defaults to `ask`, so every `run_command` confirms unless `tool_permission.bash = "allow"` is set explicitly. `delegate` also defaults to `ask`, refined per invocation by the target persona's own permission.
+`bash` defaults to `ask`, so every `run_command` confirms unless `tool_permission.bash = "allow"` is set explicitly. `delegate` defaults to `allow`, refined per invocation by the target persona's own permission (a persona may set `delegate: "ask"` to confirm).
 
 ## Headless agents are confined
 
@@ -27,7 +27,7 @@ In headless mode (`replio serve` / `replio run`), `ask`-gated tools are denied o
 
 ## Delegation
 
-The `delegate` tool runs a task under a persona as an in-process sub-agent. A sub-agent shares the caller's worktree and tool policy, narrowed by the persona's `tool_permission` carve, so it can reach exactly what the caller can minus what the carve denies. Ask-gated tools are auto-denied inside a sub-agent (no interactive confirm), so its effective permissions are the categories its carve allows. The permission resolves per invocation from the target persona: a configured persona uses its own `tool_permission` (category `delegate` defaults to `ask`), and a persona outside the registry is denied outright. Delegation is recorded in the session `permissions` audit array like any tool call, and each sub-agent's work persists as its own `delegate_<persona>_<ts>` session log. For delegation across trust boundaries, run separate `replio serve` processes scoped to their own folders and delegate over the API instead - see [fleet.md](fleet.md).
+The `delegate` tool runs a task under a persona as an in-process sub-agent. A sub-agent shares the caller's worktree and tool policy, narrowed by the persona's `tool_permission` carve, so it can reach exactly what the caller can minus what the carve denies. Ask-gated tools are auto-denied inside a sub-agent (no interactive confirm), so its effective permissions are the categories its carve allows. The permission resolves per invocation from the target persona: a configured persona uses its own `tool_permission` (category `delegate` defaults to `allow`; set `ask` on a persona to confirm each delegation), and a persona outside the registry is denied outright. Delegation is recorded in the session `permissions` audit array like any tool call, and each sub-agent's work persists as its own `delegate_<persona>_<ts>` session log. For delegation across trust boundaries, run separate `replio serve` processes scoped to their own folders and delegate over the API instead - see [fleet.md](fleet.md).
 
 ## Modes
 
@@ -61,7 +61,7 @@ Tool results and fetched content are untrusted input returned to the model. Defe
 |-------|---------|
 | Filesystem | Worktree-scoped `allow`/`ask`/`deny`, escalation outside the worktree |
 | Shell | `run_command` gated by `bash: ask` by default, headless auto-deny |
-| Delegation | Per-persona per-invocation resolution (`delegate: ask` default, non-registry personas denied), sub-agents auto-deny `ask` and share only the caller's carve, own `delegate_*` session logs |
+| Delegation | Per-persona per-invocation resolution (`delegate: allow` default, set `ask` per persona; non-registry personas denied), sub-agents auto-deny `ask` and share only the caller's carve, own `delegate_*` session logs |
 | Network | Explicit tools (`web_search`, `fetch_page`), `web` permission |
 | Provider context | Policy-filtered tool schema, argument cleaning, bounded tool results |
 | Session data | Append-only local logs, local file ownership |

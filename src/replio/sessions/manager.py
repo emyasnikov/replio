@@ -9,7 +9,9 @@ class Session:
                  errors: list | None = None,
                  permissions: list | None = None,
                  created_at: str | None = None,
-                 updated_at: str | None = None):
+                 updated_at: str | None = None,
+                 parent_id: str = '',
+                 sub_sessions: list | None = None):
         now = datetime.now(timezone.utc).isoformat(timespec='seconds')
         self.name = name
         self.messages = messages or []
@@ -17,6 +19,8 @@ class Session:
         self.permissions = permissions or []
         self.created_at = created_at or now
         self.updated_at = updated_at or now
+        self.parent_id = parent_id or ''
+        self.sub_sessions = sub_sessions or []
 
     def _touch(self):
         self.updated_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
@@ -71,6 +75,8 @@ class Session:
             'permissions': self.permissions,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
+            'parent_id': self.parent_id,
+            'sub_sessions': self.sub_sessions,
         }
 
     @classmethod
@@ -82,6 +88,8 @@ class Session:
             data.get('permissions', []),
             data.get('created_at'),
             data.get('updated_at'),
+            data.get('parent_id', ''),
+            data.get('sub_sessions', []),
         )
 
 

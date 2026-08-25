@@ -84,7 +84,8 @@ class ToolRegistry:
                 args[target] = args.pop(alias)
         return {k: v for k, v in args.items() if k in props and v is not None}
 
-    def execute(self, name: str, arguments: dict, config=None) -> str:
+    def execute(self, name: str, arguments: dict, config=None,
+                echo: bool = True) -> str:
         canon, tool = self._canonical(name)
         if not tool:
             return f'Error: unknown tool "{name}"'
@@ -95,6 +96,8 @@ class ToolRegistry:
                 params = inspect.signature(fn).parameters
                 if '_config' in params:
                     args = {**args, '_config': config}
+                if '_echo' in params:
+                    args = {**args, '_echo': echo}
             except (TypeError, ValueError):
                 pass
         try:

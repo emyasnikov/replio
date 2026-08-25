@@ -36,6 +36,8 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertIs(sub.provider, self.chat.provider)
         self.assertIs(sub._plugin_manager, self.chat._plugin_manager)
         self.assertTrue(sub.current_session.name.startswith('delegate_writer'))
+        self.assertEqual(sub.current_session.parent_id,
+                         self.chat.current_session.name)
 
     def test_subagent_applies_persona_prompt_mode_permissions(self):
         sub = self.chat._new_sub_engine('writer')
@@ -80,6 +82,11 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertEqual(data['messages'][0]['role'], 'user')
         self.assertEqual(data['messages'][-1]['role'], 'assistant')
         self.assertEqual(data['messages'][-1]['content'], 'Draft ready.')
+        self.assertEqual(data['parent_id'], self.chat.current_session.name)
+        self.assertIn(result.session, self.chat.current_session.sub_sessions)
+        self.chat.sessions.save(self.chat.current_session)
+        parent = self.chat.sessions.read(self.chat.current_session.name)
+        self.assertIn(result.session, parent.sub_sessions)
 
     def test_run_subagent_unknown_persona_raises(self):
         with self.assertRaises(ValueError):

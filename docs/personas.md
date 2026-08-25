@@ -21,7 +21,7 @@ Schema (per entry):
   "model": "deepseek-r1",
   "skills": [],
   "tags": ["research", "writing"],
-  "tool_permission": { "web": "allow", "delegate": "ask" }
+  "tool_permission": { "web": "allow", "delegate": "allow" }
 }
 ```
 
@@ -65,10 +65,10 @@ The bundled catalog ships two pre-carved teams, useful as delegation targets and
 
 `delegate` resolves its permission from the target persona rather than from a single tool-level default:
 
-- A configured persona uses its own `tool_permission` overrides. The default for the `delegate` category is `ask`.
+- A configured persona uses its own `tool_permission` overrides. The default for the `delegate` category is `allow` (delegation runs without a prompt); set `delegate: "ask"` on a persona to confirm each delegation to it.
 - A temporary persona created only to run a task in parallel defaults to `deny` until you opt in.
 
-The rule keeps delegated side effects gated like any `ask`-level tool while letting an administrator pre-approve the capabilities of known personas.
+The rule lets known personas delegate freely while keeping every other tool gated as configured, and an administrator can still tighten any persona to `ask`.
 
 ## Relationship to /agent, skills, and fleets
 

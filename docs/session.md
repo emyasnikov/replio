@@ -44,7 +44,9 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
   "updated_at": "2026-08-17T12:05:15+00:00",
   "messages": [],
   "errors": [],
-  "permissions": []
+  "permissions": [],
+  "parent_id": "",
+  "sub_sessions": []
 }
 ```
 
@@ -56,6 +58,10 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 | `messages` | array | The conversation log, append-only |
 | `errors` | array | Turn-level errors (provider, network, agent loop) |
 | `permissions` | array | Audit log of tool permission decisions (see below) |
+| `parent_id` | string | Name of the session this one was spawned from (sub-agent sessions set it; empty otherwise) |
+| `sub_sessions` | array | Names of sessions spawned from this one (delegations; the delegate sets a sub-agent's `parent_id` here) |
+
+`/session preview` prints the `parent` and `sub-sessions` links; `/session list` annotates `delegate_*` children with their parent.
 
 ## Message schema
 

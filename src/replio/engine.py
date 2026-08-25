@@ -207,11 +207,16 @@ class Engine:
                      plugin_manager=self._plugin_manager, provider=provider)
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
         sub.load_or_create_session(f'delegate_{persona_name}_{ts}')
+        sub.current_session.parent_id = self.current_session.name
         return sub
 
     def run_subagent(self, persona_name: str, task: str) -> TurnResult:
         sub = self._new_sub_engine(persona_name)
-        return sub.chat(task)
+        result = sub.chat(task)
+        if result.session and result.session not in self.current_session.sub_sessions:
+            self.current_session.sub_sessions.append(result.session)
+            self.session_auto_save()
+        return result
 
     def chat(self, text: str, autoname: bool = True) -> TurnResult:
         now = datetime.now(timezone.utc)
@@ -581,7 +586,7 @@ class Engine:
                        n, self._tool_registry.permission_for(n))}
         return self._tool_registry.schema_filtered(allowed)
 
-    def _run_tool(self, name: str, args: dict) -> str:
+    def _run_tool(self, name: str, args: dict, echo: bool = True) -> str:
         registry = self._tool_registry
         policy = self._tool_policy
         cleaned = registry.clean_args(name, args)
@@ -600,7 +605,7 @@ class Engine:
             self._log_permission(name, action, 'granted', path)
         if self.config.get('tool_status_visible', True):
             self._show_tool_status(name, args)
-        result = registry.execute(name, args, config=self.config)
+        result = registry.execute(name, args, config=self.config, echo=echo)
         if result.startswith('Error') and self.config.get('show_errors', True):
             self.ui.tool_error(result)
         elif (registry.is_note_result(name, result)
@@ -819,4 +824,8 @@ class Engine:
         self.ui.info('    roles: ' + ' · '.join(f'{k} {v}' for k, v in counts.items()))
         if tools:
             self.ui.info('    tools: ' + ', '.join(tools))
+        if s.parent_id:
+            self.ui.info(f'    parent: {s.parent_id}')
+        if s.sub_sessions:
+            self.ui.info('    sub-sessions: ' + ', '.join(s.sub_sessions))
         return s

@@ -25,7 +25,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 
 `/session export <name> [out]` renders a saved session as Markdown (see [session.md](session.md)).
 
-Delegation is a normal tool: the lead agent proposes it, or you run it directly - `/tool delegate {"persona": "researcher", "task": "..."}` routes through the same tool policy. A configured persona uses its own `delegate` permission (default `ask`); a persona outside the registry is denied. See [personas.md](personas.md) and [swarm.md](swarm.md).
+Delegation is a normal tool: the lead agent proposes it, or you run it directly - `/tool delegate {"persona": "researcher", "task": "..."}` routes through the same tool policy. A configured persona delegates without prompting (`delegate` category defaults to `allow`; set a persona's `delegate` to `ask` to confirm), and a persona outside the registry is denied. See [personas.md](personas.md) and [swarm.md](swarm.md).
 
 ## CLI
 
