@@ -26,6 +26,7 @@
 
 ## Open
 
+- [ ] Interactive delegation focus - REPL jumps in/out of the active sub-agent (request or automatic on delegate), arrows switch between concurrent `delegate_*` session logs rendered from their own saved logs (opencode-style sub-agent views)
 - [ ] Jobs registry - named team configurations ("writing" = researcher > writer > referencer > editor, "programming" = planner > programmer > tester > code-reviewer) referencing bundled personas with ordering and handoff, selectable for delegation and auto team selection; design after the `delegate` tool lands
 - [ ] Persona directory scan for export/import - read `.replio/personas/*.md` (front-matter personas) to import and export personas to Markdown, paralleling the sessions Markdown export/import
 - [ ] Delegation progress in the REPL - show which sub-agent is working on which task and its live status. Foundation: `delegate` returns the task and final result. Live in-REPL progress during a run is a later enhancement - needs a progress channel read out of the sub-engine loop, which the single blocking `Engine.chat()` does not surface today
@@ -79,7 +80,6 @@
 - [ ] Sandboxed exec - namespace/container isolation for `run_command` (documented, planned for a later version)
 - [ ] Per-agent permission profiles - `tool_permission` becomes per-agent when `/agent` personas land
 - [ ] `/agent` personas - per-agent system prompt, session namespace, optional model override
-- [ ] `delegate(persona, task)` tool > sub-agent loop returning a result
 - [ ] PM/dev/tester team orchestration as a user-facing pattern
 - [ ] Headless web API plugin-first - stdlib `http.server` fallback, richer framework (FastAPI) via the dependency plugin
 - [ ] Enterprise plugins (stdlib-first, third-party deps optional):
@@ -98,6 +98,7 @@
 ## Done
 
 - [x] In-process sub-engine - Engine.run_subagent: persona overrides, NullUI, delegate_ session
+- [x] `delegate` tool - core, per-persona permission resolver, delegate_echo result display
 - [x] Personas registry - global+local personas.json merge, /persona command, docs/personas.md
 - [x] Soft tool results surfaced as dimmed info lines - `(empty file)`, `(no matches)`, `(end of content)` notes, gated by `show_notes`
 - [x] Session audit trail - permission decisions (allow/ask/deny -> granted/declined/denied) recorded in a session `permissions` array, always-on

@@ -27,6 +27,7 @@ DEFAULT_CONFIG = {
     },
     'tool_calling': True,
     'tool_status_visible': True,
+    'delegate_echo': True,
     'glyph_lines': True,
     'glyph_params': True,
     'show_errors': True,
@@ -59,6 +60,7 @@ DEFAULT_CONFIG = {
     'tools.deny': [],
     'tool_permission': {
         'bash': 'ask',
+        'delegate': 'ask',
         'edit': 'allow',
         'list': 'allow',
         'mcp': 'ask',

@@ -26,7 +26,8 @@ class ToolRegistry:
                  echo: bool = False, glyph: str = '', verb: str = '',
                  aliases: list[str] | None = None,
                  param_aliases: dict | None = None,
-                 note: Callable[[str], bool] | None = None):
+                 note: Callable[[str], bool] | None = None,
+                 permission_fn: Callable[[dict], str] | None = None):
         def wrapper(fn):
             def build_schema(tool_name: str) -> dict:
                 return {
@@ -53,6 +54,7 @@ class ToolRegistry:
                 'verb': verb,
                 'param_aliases': dict(param_aliases or {}),
                 'note': note,
+                'permission_fn': permission_fn,
                 'schema': build_schema(name),
             }
             self._tools[name] = entry
@@ -138,6 +140,10 @@ class ToolRegistry:
     def permission_for(self, name: str) -> str:
         canon, tool = self._canonical(name)
         return tool['permission'] if tool else 'web'
+
+    def resolver_for(self, name: str) -> Callable | None:
+        canon, tool = self._canonical(name)
+        return tool.get('permission_fn') if tool else None
 
     def path_arg_for(self, name: str) -> str | None:
         canon, tool = self._canonical(name)

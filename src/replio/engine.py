@@ -557,17 +557,24 @@ class Engine:
             return None
         from .tools.registry import ToolRegistry
         from .tools.policy import ToolPolicy
+        from .tools.delegate import register_delegate_tool
         from .modes import merge_policy
         self._tool_registry = ToolRegistry()
+        register_delegate_tool(self._tool_registry, self)
         plugin_manager = getattr(self, '_plugin_manager', None)
         if plugin_manager is not None:
             plugin_manager.register_tools(self._tool_registry)
         permissions, allow, deny = merge_policy(self.config)
+        resolvers = {
+            n: fn for n in self._tool_registry.names()
+            if (fn := self._tool_registry.resolver_for(n)) is not None
+        }
         self._tool_policy = ToolPolicy(
             permissions=permissions,
             allow=allow,
             deny=deny,
             worktree=self.config.local_path.parent.parent,
+            resolvers=resolvers,
         )
         allowed = {n for n in self._tool_registry.names()
                    if self._tool_policy.allowed(
@@ -580,7 +587,7 @@ class Engine:
         cleaned = registry.clean_args(name, args)
         path_arg = registry.path_arg_for(name)
         path = cleaned.get(path_arg) if path_arg else None
-        action = policy.action(name, registry.permission_for(name), path)
+        action = policy.action(name, registry.permission_for(name), path, args)
         if action == 'deny':
             self._log_permission(name, action, 'denied', path)
             return f'Error: tool "{name}" is disabled by tool policy'

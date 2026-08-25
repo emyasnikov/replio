@@ -101,6 +101,37 @@ class TestToolPolicy(unittest.TestCase):
         p = self.policy(permissions={'read': 'allow'})
         self.assertEqual(p.action('read_file', 'read', '~/x.txt'), 'ask')
 
+    def test_resolver_refines_action(self):
+        p = self.policy(permissions={'delegate': 'ask'},
+                        resolvers={'delegate': lambda args: 'allow'
+                                   if args.get('persona') == 'known' else 'deny'})
+        self.assertEqual(p.action('delegate', 'delegate', args={'persona': 'known'}),
+                         'allow')
+        self.assertEqual(p.action('delegate', 'delegate', args={'persona': 'temp'}),
+                         'deny')
+
+    def test_resolver_ignored_without_args(self):
+        p = self.policy(permissions={'delegate': 'ask'},
+                        resolvers={'delegate': lambda args: 'allow'})
+        self.assertEqual(p.action('delegate', 'delegate', args=None), 'ask')
+
+    def test_resolver_does_not_override_deny_list(self):
+        p = self.policy(permissions={}, deny=['delegate'],
+                        resolvers={'delegate': lambda args: 'allow'})
+        self.assertEqual(p.action('delegate', 'delegate',
+                                  args={'persona': 'known'}), 'deny')
+
+    def test_resolver_ignores_invalid_value(self):
+        p = self.policy(permissions={'delegate': 'ask'},
+                        resolvers={'delegate': lambda args: 'bogus'})
+        self.assertEqual(p.action('delegate', 'delegate',
+                                  args={'persona': 'x'}), 'ask')
+
+    def test_allowed_ignores_resolver(self):
+        p = self.policy(permissions={'delegate': 'ask'},
+                        resolvers={'delegate': lambda args: 'deny'})
+        self.assertTrue(p.allowed('delegate', 'delegate'))
+
 
 if __name__ == '__main__':
     unittest.main()

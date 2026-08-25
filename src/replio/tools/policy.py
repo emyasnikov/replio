@@ -3,11 +3,13 @@ from pathlib import Path
 
 class ToolPolicy:
     def __init__(self, permissions: dict, allow: list | None = None,
-                 deny: list | None = None, worktree: Path | None = None):
+                 deny: list | None = None, worktree: Path | None = None,
+                 resolvers: dict | None = None):
         self.permissions = dict(permissions or {})
         self.allow = set(allow or [])
         self.deny = set(deny or [])
         self.worktree = worktree.resolve() if worktree else None
+        self.resolvers = dict(resolvers or {})
 
     def _base_action(self, name: str, permission_key: str) -> str:
         if name in self.deny:
@@ -30,8 +32,17 @@ class ToolPolicy:
             return True
 
     def action(self, name: str, permission_key: str,
-               path: str | None = None) -> str:
+               path: str | None = None, args: dict | None = None) -> str:
         action = self._base_action(name, permission_key)
+        if action != 'deny' and args is not None:
+            resolver = self.resolvers.get(name)
+            if resolver is not None:
+                try:
+                    resolved = resolver(args)
+                except Exception:
+                    resolved = None
+                if resolved in ('allow', 'ask', 'deny'):
+                    action = resolved
         if action == 'allow' and path and self._outside_worktree(path):
             return 'ask'
         return action
