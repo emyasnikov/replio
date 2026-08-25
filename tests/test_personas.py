@@ -131,6 +131,30 @@ class TestPersonaRegistry(unittest.TestCase):
         self.assertEqual(reg.find('programmer').tool_permission['bash'], 'allow')
         self.assertEqual(reg.find('editor').tool_permission['edit'], 'deny')
 
+    def test_bundled_tags(self):
+        reg = self.bundled()
+        self.assertEqual(reg.find('researcher').tags, ['research', 'writing'])
+        self.assertEqual(reg.find('writer').tags, ['writing'])
+        self.assertEqual(reg.find('editor').tags, ['writing', 'review'])
+        self.assertEqual(reg.find('code-reviewer').tags,
+                         ['programming', 'review'])
+        self.assertEqual(reg.find('programmer').tags, ['programming'])
+
+    def test_tags_roundtrip(self):
+        reg = self.reg()
+        reg.put(Persona(name='x', tags=['writing', 'review']))
+        p = reg.find('x')
+        self.assertEqual(p.tags, ['writing', 'review'])
+
+    def test_tags_merge_local_replaces_bundled(self):
+        reg = self.bundled()
+        reg.put(Persona(name='researcher', tags=['custom']), scope='local')
+        p = reg.find('researcher')
+        self.assertEqual(p.tags, ['custom'])
+        self.assertEqual(reg.origin('researcher'), 'merged')
+        self.assertTrue(reg.remove('researcher'))
+        self.assertEqual(reg.find('researcher').tags, ['research', 'writing'])
+
     def test_bundled_overridden_by_global_and_local(self):
         reg = self.bundled()
         reg.put(Persona(name='researcher', system_prompt='global variant'),
@@ -174,6 +198,25 @@ class TestPersonaCommand(unittest.TestCase):
         self.assertIn('8 personas', out)
         self.assertIn('researcher', out)
         self.assertIn('(bundled)', out)
+
+    def test_list_shows_tags(self):
+        out = self._persona()
+        self.assertIn('tags=research,writing', out)
+        self.assertIn('tags=programming', out)
+
+    def test_list_filter_by_tag(self):
+        out = self._persona('list programming')
+        self.assertIn('programmer', out)
+        self.assertIn('code-reviewer', out)
+        self.assertNotIn('researcher ', out)
+        out = self._persona('list review')
+        self.assertIn('editor', out)
+        self.assertIn('code-reviewer', out)
+
+    def test_list_unknown_tag(self):
+        out = self._persona('list nonexistent')
+        self.assertIn('no personas tagged "nonexistent"', out)
+        self.assertIn('known tags', out)
 
     def test_new_then_list(self):
         self._persona('new custom')

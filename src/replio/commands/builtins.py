@@ -240,9 +240,9 @@ def register_builtins(registry):
             print(f'  (configured model "{model}" not in the model list)')
 
     @registry.register('persona', description='Manage personas', subcommands=[
-        ('list', 'List personas'),
+        ('list', 'List personas (list <tag> filters by tag)'),
         ('show', 'Show a persona definition'),
-        ('new', 'Create a new persona (local)'),
+        ('new', 'Create or override a persona (local)'),
         ('remove', 'Remove a persona'),
     ])
     def persona_cmd(arg=''):
@@ -251,18 +251,31 @@ def register_builtins(registry):
         parts = arg.strip().split(maxsplit=1)
         action = parts[0] if parts else ''
         if not action or action == 'list':
+            tag = ''
+            if action == 'list' and len(parts) > 1:
+                tag = parts[1].strip()
             personas = pr.all()
+            if tag:
+                personas = [p for p in personas if tag in p.tags]
             if not personas:
-                print('  (no personas configured)')
-                print('  Create one with /persona new <name>, or edit '
-                      f'{pr.local_path}')
+                if tag:
+                    print(f'  (no personas tagged "{tag}")')
+                    known = ', '.join(sorted({t for p in pr.all()
+                                              for t in p.tags}))
+                    if known:
+                        print(f'  known tags: {known}')
+                else:
+                    print('  (no personas configured)')
+                    print('  Create one with /persona new <name>, or edit '
+                          f'{pr.local_path}')
                 return
-            print(f'{len(personas)} personas:')
+            label = f' tagged "{tag}"' if tag else ''
+            print(f'{len(personas)} personas{label}:')
             for p in personas:
                 model = f' [{p.model}]' if p.model else ''
-                skills = f' skills={",".join(p.skills)}' if p.skills else ''
+                tags = f' tags={",".join(p.tags)}' if p.tags else ''
                 origin = f' ({pr.origin(p.name)})'
-                print(f'  - {p.name}{model}{skills}{origin}')
+                print(f'  - {p.name}{model}{tags}{origin}')
             return
         if action == 'show':
             name = parts[1].strip() if len(parts) > 1 else ''
@@ -275,6 +288,8 @@ def register_builtins(registry):
                 return
             print(f'{p.name} ({pr.origin(p.name)})')
             print(f'  system_prompt: {p.system_prompt or "(empty)"}')
+            if p.tags:
+                print(f'  tags: {", ".join(p.tags)}')
             if p.model:
                 print(f'  model: {p.model}')
             if p.skills:

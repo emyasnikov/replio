@@ -20,6 +20,7 @@ Schema (per entry):
   "system_prompt": "You are a web researcher. Gather sources, evaluate them, and report findings.",
   "model": "deepseek-r1",
   "skills": [],
+  "tags": ["research", "writing"],
   "tool_permission": { "web": "allow", "delegate": "ask" }
 }
 ```
@@ -30,16 +31,35 @@ Fields:
 - `system_prompt` - the persona's system prompt, injected when it runs.
 - `model` - optional; overrides the caller's model when the persona runs. Falls back to the caller's model when empty.
 - `skills` - optional list of skill names; reserved for the skills registry (see TODO).
+- `tags` - optional list of job tags for grouping and filtering (`/persona list <tag>`). The bundled set uses a controlled vocabulary: `research`, `writing`, `programming`, `review`.
 - `tool_permission` - optional per-agent overrides of `tool_permission` categories. This is the per-agent permission profile.
+
+### Default personas
+
+The bundled catalog ships two pre-carved teams, useful as delegation targets and as templates for your own personas. All leave `model` and `skills` empty (they inherit the caller's model) and differ only in `tool_permission`:
+
+| persona | role | tags | edit | bash | web | read |
+|---|---|---|---|---|---|---|
+| `researcher` | gathers and evaluates web sources, returns findings | research, writing | deny | deny | allow | allow |
+| `writer` | turns a findings brief into a document, returns file path | writing | allow | deny | deny | allow |
+| `referencer` | resolves citations into a `.bib` file | writing | allow | deny | deny | allow |
+| `editor` | auditor: checks a document against the prompt and sources | writing, review | deny | deny | deny | allow |
+| `planner` | decomposes a task into an ordered, verifiable plan | programming | deny | deny | allow | allow |
+| `programmer` | implements a change and runs the tests until green | programming | allow | allow | deny | allow |
+| `tester` | writes and runs tests, reports failures | programming | allow | allow | deny | allow |
+| `code-reviewer` | auditor: reviews a change, returns findings | programming, review | deny | allow | deny | allow |
+
+"allow" echoes the caller's category default; "deny" is explicit. Override any persona by creating a local (or global) entry with the same `name`:
 
 ## Command
 
 `/persona` manages the registry:
 
-- `/persona` - list personas, marking each one's origin (`local` / `global` / `merged`).
+- `/persona` - list personas, marking each one's origin (`bundled` / `local` / `global` / `merged`) and tags.
+- `/persona list <tag>` - list only personas carrying the tag (e.g. `/persona list programming`); unknown tags print the known tags.
 - `/persona show <name>` - show a persona's full definition.
-- `/persona new <name> [system prompt]` - create a persona in the local catalog (edit the JSON for full fields).
-- `/persona remove <name>` - remove a persona from the local catalog.
+- `/persona new <name> [system prompt]` - create a persona in the local catalog (edit the JSON for full fields, including tags). Using an existing name overrides that persona.
+- `/persona remove <name>` - remove a persona from the local catalog. Bundled personas cannot be removed (override them instead).
 
 ## Delegation and permissions
 

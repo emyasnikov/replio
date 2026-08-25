@@ -26,6 +26,7 @@
 
 ## Open
 
+- [ ] Jobs registry - named team configurations ("writing" = researcher > writer > referencer > editor, "programming" = planner > programmer > tester > code-reviewer) referencing bundled personas with ordering and handoff, selectable for delegation and auto team selection; design after the `delegate` tool lands
 - [ ] Persona directory scan for export/import - read `.replio/personas/*.md` (front-matter personas) to import and export personas to Markdown, paralleling the sessions Markdown export/import
 - [ ] Delegation progress in the REPL - show which sub-agent is working on which task and its live status. Foundation: `delegate` returns the task and final result. Live in-REPL progress during a run is a later enhancement - needs a progress channel read out of the sub-engine loop, which the single blocking `Engine.chat()` does not surface today
 - [ ] Auto team selection - the lead agent picks personas from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern; e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor)

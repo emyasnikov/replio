@@ -13,6 +13,7 @@ class Persona:
     system_prompt: str = ''
     model: str = ''
     skills: list = field(default_factory=list)
+    tags: list = field(default_factory=list)
     tool_permission: dict = field(default_factory=dict)
 
     @classmethod
@@ -22,6 +23,7 @@ class Persona:
             system_prompt=d.get('system_prompt', ''),
             model=d.get('model', ''),
             skills=list(d.get('skills') or []),
+            tags=list(d.get('tags') or []),
             tool_permission=dict(d.get('tool_permission') or {}),
         )
 
