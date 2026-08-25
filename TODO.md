@@ -97,6 +97,7 @@
 
 ## Done
 
+- [x] In-process sub-engine - Engine.run_subagent: persona overrides, NullUI, delegate_ session
 - [x] Personas registry - global+local personas.json merge, /persona command, docs/personas.md
 - [x] Soft tool results surfaced as dimmed info lines - `(empty file)`, `(no matches)`, `(end of content)` notes, gated by `show_notes`
 - [x] Session audit trail - permission decisions (allow/ask/deny -> granted/declined/denied) recorded in a session `permissions` array, always-on

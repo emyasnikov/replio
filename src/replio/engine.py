@@ -45,12 +45,19 @@ CONTINUE_INSTRUCTION = ('Continue exactly where you stopped. '
 
 
 class Engine:
-    def __init__(self, config: Config, ui=None):
+    def __init__(self, config: Config, ui=None, plugin_manager=None,
+                 provider=None):
         self.config = config
         self._ui = ui
-        self._plugin_manager = PluginManager(config)
-        self._plugin_manager.load()
-        self._reinit_provider()
+        if plugin_manager is None:
+            self._plugin_manager = PluginManager(config)
+            self._plugin_manager.load()
+        else:
+            self._plugin_manager = plugin_manager
+        if provider is None:
+            self._reinit_provider()
+        else:
+            self.provider = provider
         sessions_dir = config.local_path.parent / 'sessions'
         self.sessions = SessionManager(sessions_dir)
         self.current_session = self.sessions.create()
@@ -181,6 +188,30 @@ class Engine:
         else:
             self.current_session = self.sessions.create()
         return self.current_session
+
+    def _new_sub_engine(self, persona_name: str, provider=None) -> 'Engine':
+        persona = self.personas.find(persona_name)
+        if persona is None:
+            raise ValueError(f'Unknown persona: {persona_name}')
+        sub_config = Config(path=str(self.config.local_path.parent.parent))
+        sub_config.apply('system_prompt', persona.system_prompt)
+        if persona.model:
+            sub_config.apply('model', persona.model)
+        permissions = dict(self.config.get('tool_permission') or {})
+        permissions.update(persona.tool_permission)
+        sub_config.apply('tool_permission', permissions)
+        sub_config.apply('mode', 'build')
+        if provider is None and not persona.model:
+            provider = self.provider
+        sub = Engine(sub_config, ui=NullUI(),
+                     plugin_manager=self._plugin_manager, provider=provider)
+        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+        sub.load_or_create_session(f'delegate_{persona_name}_{ts}')
+        return sub
+
+    def run_subagent(self, persona_name: str, task: str) -> TurnResult:
+        sub = self._new_sub_engine(persona_name)
+        return sub.chat(task)
 
     def chat(self, text: str, autoname: bool = True) -> TurnResult:
         now = datetime.now(timezone.utc)
