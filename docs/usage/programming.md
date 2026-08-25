@@ -266,6 +266,33 @@ Then release the worktree:
 git -C ~/replio-agents/workspace/repo worktree remove ~/replio-agents/workspace/feature-hello
 ```
 
+## Alternative: in-process delegation (no containers)
+
+The fleet above isolates roles by process, worktree, and container. A lighter setup needs no Docker at all: one REPL lead agent delegates tasks to persona sub-agents, and the sub-agent's final answer is handed back.
+
+The bundled `programming` team (`planner`, `programmer`, `tester`, `code-reviewer`) ships with system prompts and per-persona permissions (see [personas.md](../personas.md) and [swarm.md](../swarm.md)). To let the lead delegate to a coding persona without prompting, pre-approve it in the local persona catalog (`.replio/personas.json`), which overrides only that field of the bundled persona:
+
+```json
+{
+  "programmer": { "tool_permission": { "delegate": "allow" } }
+}
+```
+
+Other personas keep the default `delegate: ask`, so each delegation to them confirms in the REPL. Then either `/tool` runs a sub-agent, or the lead model proposes it as any other tool:
+
+```text
+/tool delegate {"persona": "programmer", "task": "Implement the task against the plan; run the tests and report changed files."}
+```
+
+The result is the sub-agent's final answer, printed in the REPL (`delegate_echo`, default on) and fed back to the lead model. Every delegation writes its own complete `delegate_<persona>_<ts>` session log under the lead's `.replio/sessions/`, so the audit trail is per sub-agent.
+
+The trust trade-off is the deciding factor between the two paths:
+
+- **Fleet** - roles are isolated by process, worktree, and container. A misbehaving agent cannot touch another folder or run commands its config forbids, and headless `ask`-gated tools auto-deny. Use this when roles must not share a scope or when agents run untrusted prompts.
+- **In-process delegation** - the sub-agent shares the lead's worktree and tool policy; ask-gated tools auto-deny (no interactive confirm), so its effective permissions are exactly its persona carve. Fast and single-session, but the sub-agent is not independent - it shares the lead's process and scope. Use it when the lead is trusted to delegate appropriately and workload does not need process isolation.
+
+A hybrid also works: run the fleet for the wide, multi-worktree pipeline, and use delegation inside a role (e.g. the lead delegating research to `researcher`, or the implementer delegating review to `code-reviewer`).
+
 ## Security hardening
 
 - **Secrets** - API keys live in each agent's `.replio/config.json`, never in git and never in a session log by hand. Sessions capture tool results verbatim, so avoid pasting credentials into prompts.
@@ -295,5 +322,5 @@ Everything above uses only features shipped in the current release. The followin
 |--------------------|-----------------------------------|
 | `git` tool (status/diff/commit as gated tools) | git through `run_command` behind `bash: ask`, merge by hand |
 | `run_command` command allowlist (e.g. only `pytest`, `ruff`) | Role separation, per-role containers, and `tools.allow` instead |
-| `delegate` tool + `/agent` personas + auditor agents | Separate processes over `POST /chat`, manual hand-off between roles |
+| `/agent` personas command + auditor agents | `delegate` tool + bundled personas (in-process sub-agents), see the in-process section below; auditors still need a review role |
 | `code_lint` / `code_format` / `code_test` wrappers | Plain `run_command` calls from the tester config |

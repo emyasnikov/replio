@@ -72,6 +72,6 @@ The rule keeps delegated side effects gated like any `ask`-level tool while lett
 
 ## Relationship to /agent, skills, and fleets
 
-- `/agent` is the planned user-facing way to select and run a persona in an interactive session.
+- `/agent` is the planned interactive way to pick a persona and run with it; today you run a persona directly through the `delegate` tool (the lead model proposes it, or `/tool delegate {"persona": ..., "task": ...}`), which builds the in-process sub-engine from this catalog.
 - Skills (a dedicated registry) are a separate capability layer attached to a persona, distinct from tools and plugins.
 - A persona runs either in-process as a sub-engine (the default for delegation) or as a scoped `replio serve` process in a fleet; in-process variants share the caller's privileges, cross-process variants are confined by the target agent's worktree and `tool_permission` (see [fleet.md](fleet.md)).

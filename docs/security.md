@@ -13,16 +13,21 @@ Every tool call is gated by `ToolPolicy` (`src/replio/tools/policy.py`) with thr
 Resolution precedence (see [tools.md](tools.md) for the full flow):
 
 1. Name-level `tools.deny` and the `tools.allow` allowlist.
-2. The category action from `tool_permission` (`read` / `list` / `edit` / `bash` / `web`).
-3. Worktree escalation: `read` / `list` / `write` tools on paths outside the worktree escalate `allow` to `ask`.
+2. The category action from `tool_permission` (`read` / `list` / `edit` / `bash` / `web` / `delegate`).
+3. A per-invocation resolver (`permission_fn`) that refines the action from the tool's current arguments - e.g. `delegate` resolves per persona: a configured persona uses its own `tool_permission`, a persona outside the registry is denied (see [personas.md](personas.md)).
+4. Worktree escalation: `read` / `list` / `write` tools on paths outside the worktree escalate `allow` to `ask`.
 
 The worktree is the directory holding the local `.replio/` - the launch directory, or `--path`. A `read_file` / `list_dir` / `write_file` / `glob` / `grep` on a path outside it escalates to `ask`, so an agent cannot silently reach files beyond its scope. Launching from `~` makes home the worktree, so subdirectories do not escalate. Launch inside the project or pass `--path` for project-scoped prompting.
 
-`bash` defaults to `ask`, so every `run_command` confirms unless `tool_permission.bash = "allow"` is set explicitly.
+`bash` defaults to `ask`, so every `run_command` confirms unless `tool_permission.bash = "allow"` is set explicitly. `delegate` also defaults to `ask`, refined per invocation by the target persona's own permission.
 
 ## Headless agents are confined
 
 In headless mode (`replio serve` / `replio run`), `ask`-gated tools are denied outright - the headless UI auto-answers with the configured `--yes` / `--no` policy. An agent's reachable surface is therefore exactly its `allow` tools on paths inside its worktree. This is the isolation boundary that makes one-agent-per-process fleets safe: a crash or a misbehaving agent cannot touch another agent's folder or run commands it was not given. See [fleet.md](fleet.md).
+
+## Delegation
+
+The `delegate` tool runs a task under a persona as an in-process sub-agent. A sub-agent shares the caller's worktree and tool policy, narrowed by the persona's `tool_permission` carve, so it can reach exactly what the caller can minus what the carve denies. Ask-gated tools are auto-denied inside a sub-agent (no interactive confirm), so its effective permissions are the categories its carve allows. The permission resolves per invocation from the target persona: a configured persona uses its own `tool_permission` (category `delegate` defaults to `ask`), and a persona outside the registry is denied outright. Delegation is recorded in the session `permissions` audit array like any tool call, and each sub-agent's work persists as its own `delegate_<persona>_<ts>` session log. For delegation across trust boundaries, run separate `replio serve` processes scoped to their own folders and delegate over the API instead - see [fleet.md](fleet.md).
 
 ## Modes
 
@@ -56,6 +61,7 @@ Tool results and fetched content are untrusted input returned to the model. Defe
 |-------|---------|
 | Filesystem | Worktree-scoped `allow`/`ask`/`deny`, escalation outside the worktree |
 | Shell | `run_command` gated by `bash: ask` by default, headless auto-deny |
+| Delegation | Per-persona per-invocation resolution (`delegate: ask` default, non-registry personas denied), sub-agents auto-deny `ask` and share only the caller's carve, own `delegate_*` session logs |
 | Network | Explicit tools (`web_search`, `fetch_page`), `web` permission |
 | Provider context | Policy-filtered tool schema, argument cleaning, bounded tool results |
 | Session data | Append-only local logs, local file ownership |
@@ -63,4 +69,4 @@ Tool results and fetched content are untrusted input returned to the model. Defe
 
 ## Planned hardening
 
-Sandboxed exec (namespace/container isolation for `run_command`), per-agent permission profiles, and per-plugin virtualenv isolation are planned future work (see [TODO.md](../TODO.md) and [plugins.md](plugins.md)).
+Sandboxed exec (namespace/container isolation for `run_command`) and per-plugin virtualenv isolation are planned future work (see [TODO.md](../TODO.md) and [plugins.md](plugins.md)).

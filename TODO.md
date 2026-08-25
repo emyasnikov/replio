@@ -5,7 +5,7 @@
 - Immutable agent config - `replio serve` agents must never be able to change their own configuration, permissions, or tool list (control-plane rule from the use-case reference architecture)
 - Hash-chained / tamper-evident audit log - additive on session logs (enterprise.md recommendation), hash-chained append or WORM storage
 - Single-purpose agent fleet with "one agent per process, scoped to a folder" as the headline pattern. README + `docs/fleet.md` set the niche
-- Fleet and swarm orchestration as the two layers - fleet: supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), swarm: `/agent` personas, `delegate` tool, auditor agents, generate > check > correct
+- Fleet and swarm orchestration as the two layers - fleet: supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), swarm: `/agent` personas, auditor agents, generate > check > correct
 - Community presence - decide on Discord/X channels and fill the README community link slots
 - Add multiuser capability or queue for API requests (request queue, per-token rate limits)
 - Add ReadTheDocs documentation and GitHub Pages website
@@ -27,9 +27,9 @@
 ## Open
 
 - [ ] Interactive delegation focus - REPL jumps in/out of the active sub-agent (request or automatic on delegate), arrows switch between concurrent `delegate_*` session logs rendered from their own saved logs (opencode-style sub-agent views)
-- [ ] Jobs registry - named team configurations ("writing" = researcher > writer > referencer > editor, "programming" = planner > programmer > tester > code-reviewer) referencing bundled personas with ordering and handoff, selectable for delegation and auto team selection; design after the `delegate` tool lands
+- [ ] Jobs registry - named team configurations ("writing" = researcher > writer > referencer > editor, "programming" = planner > programmer > tester > code-reviewer) referencing bundled personas with ordering and handoff, selectable for delegation and auto team selection
 - [ ] Persona directory scan for export/import - read `.replio/personas/*.md` (front-matter personas) to import and export personas to Markdown, paralleling the sessions Markdown export/import
-- [ ] Delegation progress in the REPL - show which sub-agent is working on which task and its live status. Foundation: `delegate` returns the task and final result. Live in-REPL progress during a run is a later enhancement - needs a progress channel read out of the sub-engine loop, which the single blocking `Engine.chat()` does not surface today
+- [ ] Delegation progress in the REPL - live status of which sub-agent is working and its progress mid-run. `delegate` already surfaces the task and the final result (plus a sub footer via `delegate_echo`); the next step is a progress channel read out of the sub-engine loop, which the single blocking `Engine.chat()` does not expose today
 - [ ] Auto team selection - the lead agent picks personas from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern; e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor)
 - [ ] Skills registry - `.replio/skills/` or `.replio/skills.json`, persona-attachable capability sets distinct from tools/plugins, checked/installed per agent
 - [ ] Session log full-restructuring (deferred) - restructure `messages` from flat role-attribute dicts into a typed `parts` model, borrowing OpenCode's session file structure (`.opencode/sessions/ses_*.json`). Deferred: the current flat format already reconstructs every conversation element, so this is architectural polish / ecosystem alignment, not a correctness fix. See the detailed spec below. Do NOT migrate existing `.replio/sessions/*.json` - they are historical and remain readable as-is
@@ -59,7 +59,7 @@
 - [ ] Session recall - full-text search across past sessions (grep/index over `.replio/sessions/`) so an agent can answer from its own history
 - [ ] Tool dry-run mode - propose tool args/effects without executing (enterprise tool-gateway requirement)
 - [ ] Context-aware cross-plugin tool router - virtual tool names (`open`, `search`, ...) dispatch per-argument to the matching plugin handler via `register_handler(name, match=...)` (e.g. `open https://...` > replio-core-websearch, `open ../...` > replio-core-fs), with merged schemas and args-aware policy accessors
-- [ ] Swarm orchestration - agent cooperation layer (`docs/swarm.md`): `/agent` personas, `delegate` tool, auditor agents, generate > check > correct, and team patterns as sub-tasks below
+- [ ] Swarm orchestration - agent cooperation layer (`docs/swarm.md`): `/agent` personas, auditor agents, generate > check > correct, and team patterns as sub-tasks below
 - [ ] Fleet orchestration - supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), the fleet orchestration layer in `docs/fleet.md`
 - [ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
 - [ ] Agent folder watcher - internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps
@@ -78,9 +78,8 @@
 - [ ] `docs_search` - local grep + DuckDuckGo for documentation lookups
 - [ ] Workspace sessions - tools write into a scoped `--workspace` dir, optional `--git` sync
 - [ ] Sandboxed exec - namespace/container isolation for `run_command` (documented, planned for a later version)
-- [ ] Per-agent permission profiles - `tool_permission` becomes per-agent when `/agent` personas land
-- [ ] `/agent` personas - per-agent system prompt, session namespace, optional model override
-- [ ] PM/dev/tester team orchestration as a user-facing pattern
+- [ ] `/agent` personas - interactive persona selection/run UX (persona registry, sub-engine, and `delegate` landed; the `/agent` command itself remains)
+- [ ] PM/dev/tester team orchestration as a user-facing pattern (the personas + `delegate` primitives landed; needs the jobs/team-config layer to be a pattern)
 - [ ] Headless web API plugin-first - stdlib `http.server` fallback, richer framework (FastAPI) via the dependency plugin
 - [ ] Enterprise plugins (stdlib-first, third-party deps optional):
   - [ ] Data ingestion - `read_stream` / `write_stream` (MQTT, OPC-UA, Modbus)
@@ -97,6 +96,7 @@
 
 ## Done
 
+- [x] Per-agent permission profiles - persona tool_permission drives sub-agent policy
 - [x] In-process sub-engine - Engine.run_subagent: persona overrides, NullUI, delegate_ session
 - [x] `delegate` tool - core, per-persona permission resolver, delegate_echo result display
 - [x] Personas registry - global+local personas.json merge, /persona command, docs/personas.md

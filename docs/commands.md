@@ -17,12 +17,15 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)`. `api_key` always writes to the global config |
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
+| `/persona`              |                | Manage personas: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [personas.md](personas.md) |
 | `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
 | `/plugins`              | `/plugin`      | Manage plugins: `list`, `enable`, `disable`, `install`, `update`, `uninstall` |
 
 `/help` renders commands with their subcommands indented below, and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.
 
 `/session export <name> [out]` renders a saved session as Markdown (see [session.md](session.md)).
+
+Delegation is a normal tool: the lead agent proposes it, or you run it directly - `/tool delegate {"persona": "researcher", "task": "..."}` routes through the same tool policy. A configured persona uses its own `delegate` permission (default `ask`); a persona outside the registry is denied. See [personas.md](personas.md) and [swarm.md](swarm.md).
 
 ## CLI
 

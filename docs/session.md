@@ -8,6 +8,8 @@ Each session is one JSON file: `.replio/sessions/<name>.json`, next to the local
 
 Names are either explicit (`/session new <name>`, `/session load <name>`, `replio run --session-id <name>`) or auto-generated as `<timestamp>_<first-message-slug>`, for example `20260817_120000_what_is_oee`.
 
+Delegation writes each sub-agent's log as its own session: `delegate_<persona>_<ts>_<task-slug>` (e.g. `delegate_researcher_20260817_120100_compare_competitor`). These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/session list`, exportable, loadable - so lead and sub-agent logs stay separate and complete.
+
 ## Managing sessions
 
 | Command | Purpose |
@@ -130,7 +132,7 @@ Every tool permission resolution is recorded to the `permissions` array, making 
 | `path` | The tool's `path_arg` value when the tool has one (e.g. the file or command target) |
 | `timestamp` | ISO 8601 UTC timestamp |
 
-Entries are append-only and never removed. Recording is always on - there is no config switch, so the log stays a reliable audit record.
+Per-invocation (resolver-based) actions are recorded the same way - for example `delegate` logs the action resolved from the target persona, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - there is no config switch, so the log stays a reliable audit record.
 
 ## Append-only semantics
 

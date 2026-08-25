@@ -99,14 +99,14 @@ curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
 Three ways to combine Replio into larger systems:
 
 - **MCP (Model Context Protocol)** - work alongside other AI tools. Connect to external MCP servers (stdio or HTTP) to import their tools, or expose Replio's own tools and sessions as an MCP server for other agents (Claude, opencode, ...) via `replio mcp` or `POST /mcp` on `replio serve`. See [docs/mcp.md](docs/mcp.md)
-- **Swarm** - make agents cooperate on a task with `/agent` personas and the `delegate` tool, so a lead agent splits work across specialized sub-agents and auditors. See [docs/swarm.md](docs/swarm.md)
+- **Swarm** - make agents cooperate: a persona catalog (bundled defaults plus global/local `.replio/personas.json`), the `delegate` tool that runs a task under a persona as an in-process sub-agent with its own session log, and `/persona` for management, so a lead agent splits work across specialized sub-agents. See [docs/swarm.md](docs/swarm.md) and [docs/personas.md](docs/personas.md)
 - **Fleet** - run many scoped agents side by side, each a `replio serve` process confined to its own folder, worktree and permissions, orchestrated under a supervisor. See [docs/fleet.md](docs/fleet.md)
 
 Fleet and swarm are two layers: fleet keeps agents alive, swarm gets the job done, and both compose with MCP for cross-tool interoperability.
 
 ## Roadmap
 
-Fleet orchestration (running many scoped agents under a supervisor) and swarm orchestration (agents cooperating through personas and delegation) are the two orchestration layers being built next. See [docs/fleet.md](docs/fleet.md) and [docs/swarm.md](docs/swarm.md). Open tasks live in [TODO.md](TODO.md).
+The swarm foundations are live - personas (bundled catalog + `/persona`), the in-process sub-agent engine, and the `delegate` tool. Building next: fleet orchestration (running many scoped agents under a supervisor), auditor agents and generate > check > correct, the interactive `/agent` command and delegation focus, and jobs/team orchestration. See [docs/fleet.md](docs/fleet.md) and [docs/swarm.md](docs/swarm.md). Open tasks live in [TODO.md](TODO.md).
 
 ## Contributing
 

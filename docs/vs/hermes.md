@@ -71,7 +71,7 @@ This is Hermes's defining differentiator - a closed learning loop that persists 
 | Feature | Replio | Hermes |
 |---------|--------|--------|
 | Scheduled tasks | None | Built-in cron scheduler with delivery to any platform |
-| Delegation | Planned (roadmap - `delegate` tool, swarm) | Isolated subagents, background process management, PTY mode for interactive CLIs |
+| Delegation | Yes - `delegate` tool with persona sub-agents (in-process, own session logs); fleet/swarm orchestration and auditors on the roadmap | Isolated subagents, background process management, PTY mode for interactive CLIs |
 
 ## Community & Ecosystem
 

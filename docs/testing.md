@@ -36,14 +36,17 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_modes.py` | Mode resolution and policy merging: built-ins (`build`/`plan`), custom modes, unknown fallback, instruction composition |
 | `test_ollama_provider.py` | Streaming provider: fragmented tool-call reassembly, thinking events (`reasoning_content` and `reasoning` keys), payload construction |
 | `test_plugins.py` | Plugin manager: manifest compat ranges, discovery precedence, registration hooks, install/update/uninstall |
+| `test_delegate.py` | `delegate` tool: persona allow/ask/deny resolution, confirm grant/decline, unknown-persona deny, `delegate_echo` on/off display + sub footer, `/tool delegate` path, sub-agent session persistence |
+| `test_personas.py` | `PersonaRegistry`: bundled/global/local merge and precedence, bundles (bundled/global/local origin), tags roundtrip + merge, put/remove/reload, `/persona` command (list/show/new override/remove, `list <tag>` filter, bundled remove rejected) |
 | `test_providers.py` | Provider defaults, override behavior, `detect_provider`, endpoint normalization, POST-preserving redirects, `check_connection` probe (success/empty/model note/HTTP/network), `list_models` silent-on-error |
 | `test_repl_input.py` | REPL input: multi-line `"""`/`'''` block detection, framing strip (pure, lead-in, indentation preserved), EOF exit during an open block, slash commands single-line |
 | `test_server.py` | `replio serve` HTTP API: `/chat`, `/sessions`, `/health`, `/version` |
 | `test_session_log.py` | Session model: append-only serialization, `tool_max_chars` truncation, metadata |
 | `test_session_render.py` | Session Markdown export: renderer output per role, error section, `/session export` dispatch and file/stdout targets |
+| `test_subagent.py` | In-process sub-engine: provider/plugin/worktree inheritance, persona prompt/mode/tool_permission application, model override, `NullUI`, unknown persona, full `run_subagent` flow + persisted `delegate_*` session, ask-gated tool cancellation |
 | `test_tool_calling.py` | Tool-calling flow: single and multiple calls, unknown tools, query refinement |
-| `test_tool_policy.py` | `ToolPolicy`: allow/ask/deny, worktree escalation, deny/allowlist precedence |
-| `test_tool_registry.py` | Tool registration metadata, schema, refine flags, note-result predicates, `_config` pass-through, activity params strings, fs tool glyphs (`* List` / `* Grep`) |
+| `test_tool_policy.py` | `ToolPolicy`: allow/ask/deny, worktree escalation, deny/allowlist precedence, per-invocation resolver (refines non-deny base, skipped without args, cannot override deny list) |
+| `test_tool_registry.py` | Tool registration metadata, schema, refine flags, note-result predicates, `_config` pass-through, activity params strings, fs tool glyphs (`* List` / `* Grep`), `permission_fn` storage + `resolver_for` |
 | `test_ui.py` | UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, `!` tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm), confirm `?` glyph at line start |
 
 `tests/helpers.py` provides `make_chat(config_data)` - a `ChatLoop` with a mocked provider - used by most tests to drive the engine without a model.
