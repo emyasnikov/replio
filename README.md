@@ -3,11 +3,11 @@
 **An lightweight tooling core for fleets of single-purpose agents.**
 
 <p>
+  <a href="https://pypi.org/project/replio/"><img src="https://img.shields.io/pypi/v/replio" alt="PyPI version"></a>
   <img src="https://img.shields.io/badge/python-%3E%3D3.10-blue" alt="Python >=3.10">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
-  <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="Zero dependencies">
-  <img src="https://img.shields.io/pypi/v/replio" alt="PyPI version">
   <img src="https://img.shields.io/github/actions/workflow/status/emyasnikov/replio/ci.yml?branch=main" alt="CI">
+  <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="Zero dependencies">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
 </p>
 
 Replio is deliberately small and auditable zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, headless CLI or HTTP API. Each process is a self-contained, scoped agent in one folder with its config, model and tool permissions. Light enough for one machine to hold a fleet of focused agents.
