@@ -30,8 +30,10 @@ Fields:
 
 `/persona` manages the registry:
 
-- `/persona` - list personas, marking the active one.
+- `/persona` - list personas, marking each one's origin (`local` / `global` / `merged`).
 - `/persona show <name>` - show a persona's full definition.
+- `/persona new <name> [system prompt]` - create a persona in the local catalog (edit the JSON for full fields).
+- `/persona remove <name>` - remove a persona from the local catalog.
 
 ## Delegation and permissions
 

@@ -239,6 +239,75 @@ def register_builtins(registry):
         if model and model not in models:
             print(f'  (configured model "{model}" not in the model list)')
 
+    @registry.register('persona', description='Manage personas', subcommands=[
+        ('list', 'List personas'),
+        ('show', 'Show a persona definition'),
+        ('new', 'Create a new persona (local)'),
+        ('remove', 'Remove a persona'),
+    ])
+    def persona_cmd(arg=''):
+        from ..personas import Persona
+        pr = chat.personas
+        parts = arg.strip().split(maxsplit=1)
+        action = parts[0] if parts else ''
+        if not action or action == 'list':
+            personas = pr.all()
+            if not personas:
+                print('  (no personas configured)')
+                print('  Create one with /persona new <name>, or edit '
+                      f'{pr.local_path}')
+                return
+            print(f'{len(personas)} personas:')
+            for p in personas:
+                model = f' [{p.model}]' if p.model else ''
+                skills = f' skills={",".join(p.skills)}' if p.skills else ''
+                origin = f' ({pr.origin(p.name)})'
+                print(f'  - {p.name}{model}{skills}{origin}')
+            return
+        if action == 'show':
+            name = parts[1].strip() if len(parts) > 1 else ''
+            if not name:
+                print('Usage: /persona show <name>')
+                return
+            p = pr.find(name)
+            if p is None:
+                print(f'Persona not found: {name}')
+                return
+            print(f'{p.name} ({pr.origin(p.name)})')
+            print(f'  system_prompt: {p.system_prompt or "(empty)"}')
+            if p.model:
+                print(f'  model: {p.model}')
+            if p.skills:
+                print(f'  skills: {", ".join(p.skills)}')
+            if p.tool_permission:
+                print('  tool_permission: '
+                      + json.dumps(p.tool_permission))
+            return
+        if action == 'new':
+            rest = parts[1].strip() if len(parts) > 1 else ''
+            if not rest:
+                print('Usage: /persona new <name> [system prompt]')
+                return
+            name = rest.split(maxsplit=1)[0]
+            prompt = rest[len(name):].strip()
+            if pr.find(name) is not None:
+                print(f'Persona already exists: {name}')
+                return
+            pr.put(Persona(name=name, system_prompt=prompt), scope='local')
+            print(f'Created persona: {name} (local) - edit {pr.local_path}')
+            return
+        if action == 'remove':
+            name = parts[1].strip() if len(parts) > 1 else ''
+            if not name:
+                print('Usage: /persona remove <name>')
+                return
+            if pr.remove(name):
+                print(f'Removed persona: {name} (local)')
+            else:
+                print(f'No local persona to remove: {name}')
+            return
+        print('Usage: /persona [list|show <name>|new <name> [prompt]|remove <name>]')
+
     @registry.register('connect', description='Set up provider connection interactively')
     def connect_cmd(_=None):
         from ..providers import PROVIDERS, detect_provider

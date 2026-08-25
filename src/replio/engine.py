@@ -71,6 +71,14 @@ class Engine:
             self._models = ModelRegistry()
         return self._models
 
+    @property
+    def personas(self):
+        if getattr(self, '_personas', None) is None:
+            from .personas import PersonaRegistry
+            self._personas = PersonaRegistry(
+                local_path=self.config.local_path.parent / 'personas.json')
+        return self._personas
+
     def _resolve_provider_factory(self, provider: str, base_url: str):
         from .providers import PROVIDERS, detect_provider
         merged = dict(PROVIDERS)

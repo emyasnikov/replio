@@ -1,7 +1,10 @@
 # Changelog
 
-## v0.19.0 - 2026-08-24
+## v0.20.0
 
+- Personas registry - personas defined as a named catalog (system prompt, optional model override, optional skills and per-persona `tool_permission`), stored in single JSON files merged global (`~/.config/replio/personas.json`) then local (`.replio/personas.json`), field-by-field with local winning and empty local fields inheriting from global. `PersonaRegistry` (ModelRegistry-style, `personas.py`), `/persona` command (`list` / `show` / `new` / `remove`), `Engine.personas` accessor, `docs/personas.md` and a `Personas and delegation` section in `docs/swarm.md` (per-persona `delegate` permission rule and the document-pipeline use case). Covered by `tests/test_personas.py` (11 registry + 5 command tests)
+
+## v0.19.0 - 2026-08-24
 - Soft tool results now render as dimmed info lines - bundled tools declare a `note` predicate (read-only callable on the raw result) via registration metadata, and the shared dispatch point `_run_tool` echoes the note line under the activity line when it fires. `(empty file)`, `(empty directory)`, `(no matches for "x")`, `(end of content)`/`(empty content)`, and `No search results found.` were previously invisible in the REPL (only persisted + fed to the model), while only `Error:` results rendered. Gated by the new `show_notes` config (default `true`); error/note checks sit side by side so a result cannot double-render, and the `echo` path excludes note results
 - Session audit trail - every tool permission resolution and its outcome (`allow`/`ask`/`deny` -> `granted`/`declined`/`denied`, with the tool's `path` when present) is recorded to a new append-only session `permissions` array. Always-on with no config switch. Replaces the old "confirm prompts are ephemeral" guarantee in docs (`AGENTS.md`, `tools.md`, `security.md`, `use-cases/index.md`, `session.md`)
 - Stable message identifiers - every session message now carries an `id` (`msg_<hex>`) auto-assigned on creation, for cross-referencing and future delegation (`sub_sessions`). Legacy messages without an `id` remain readable
