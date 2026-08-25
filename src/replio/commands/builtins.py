@@ -290,11 +290,14 @@ def register_builtins(registry):
                 return
             name = rest.split(maxsplit=1)[0]
             prompt = rest[len(name):].strip()
-            if pr.find(name) is not None:
-                print(f'Persona already exists: {name}')
-                return
+            existing = pr.find(name)
+            prev_origin = pr.origin(name)
             pr.put(Persona(name=name, system_prompt=prompt), scope='local')
-            print(f'Created persona: {name} (local) - edit {pr.local_path}')
+            if existing is not None:
+                print(f'Overrode persona: {name} (was {prev_origin}) - '
+                      f'edit {pr.local_path}')
+            else:
+                print(f'Created persona: {name} (local) - edit {pr.local_path}')
             return
         if action == 'remove':
             name = parts[1].strip() if len(parts) > 1 else ''
@@ -303,6 +306,10 @@ def register_builtins(registry):
                 return
             if pr.remove(name):
                 print(f'Removed persona: {name} (local)')
+            elif pr.is_bundled(name):
+                print(f'{name} is bundled with replio - override it with '
+                      '/persona new <name>, or edit the local personas file, '
+                      'instead of removing')
             else:
                 print(f'No local persona to remove: {name}')
             return

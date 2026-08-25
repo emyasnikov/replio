@@ -54,17 +54,24 @@ def _load_scope(path: Path) -> dict[str, dict[str, Any]]:
 
 
 class PersonaRegistry:
+    BUNDLED_FILENAME = 'bundled_personas.json'
+
     def __init__(self, global_dir: Path | None = None,
-                 local_path: Path | None = None):
+                 local_path: Path | None = None,
+                 bundled_path: Path | None = None):
         base = global_dir if global_dir is not None else (Config.GLOBAL_DIR or Path.home())
         self.global_path = base / '.config' / 'replio' / 'personas.json'
         self.local_path = Path(local_path) if local_path is not None else (
             Path.cwd() / '.replio' / 'personas.json')
+        self.bundled_path = Path(bundled_path) if bundled_path is not None else (
+            Path(__file__).with_name(self.BUNDLED_FILENAME))
+        self._bundled: dict[str, dict[str, Any]] = {}
         self._global: dict[str, dict[str, Any]] = {}
         self._local: dict[str, dict[str, Any]] = {}
         self._load()
 
     def _load(self):
+        self._bundled = _load_scope(self.bundled_path)
         self._global = _load_scope(self.global_path)
         self._local = _load_scope(self.local_path)
 
@@ -77,10 +84,11 @@ class PersonaRegistry:
         os.replace(tmp, path)
 
     def _merged_entries(self) -> dict[str, dict[str, Any]]:
-        names = set(self._global) | set(self._local)
+        names = set(self._bundled) | set(self._global) | set(self._local)
         merged: dict[str, dict[str, Any]] = {}
         for name in names:
             entry: dict[str, Any] = {}
+            entry.update(self._bundled.get(name, {}))
             entry.update(self._global.get(name, {}))
             entry.update(self._local.get(name, {}))
             entry['name'] = name
@@ -102,13 +110,19 @@ class PersonaRegistry:
     def origin(self, name: str) -> str:
         has_local = name in self._local
         has_global = name in self._global
+        has_bundled = name in self._bundled
         if has_local and has_global:
             return 'merged'
         if has_local:
-            return 'local'
+            return 'merged' if has_bundled else 'local'
         if has_global:
-            return 'global'
+            return 'merged' if has_bundled else 'global'
+        if has_bundled:
+            return 'bundled'
         return ''
+
+    def is_bundled(self, name: str) -> bool:
+        return name in self._bundled
 
     def put(self, persona: Persona, scope: str = 'local') -> Persona:
         raw = self._local if scope == 'local' else self._global

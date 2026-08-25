@@ -4,7 +4,13 @@ A persona is a named agent definition: a system prompt, an optional model overri
 
 ## Storage
 
-Personas live in a single JSON catalog per scope, merged exactly like config: global first, then local, with local winning per field. The local catalog lives at `.replio/personas.json` and the global one at `~/.config/replio/personas.json`. Merging is field-by-field for the same `name`, mirroring `Config._load` and `models.py:ModelRegistry`.
+Personas come from three layers, merged exactly like config: bundled first, then global, then local, with local winning per field. Precedence mirrors bundled plugins (`bundled < global < local`):
+
+- **Bundled** - the read-only default catalog shipped in the package (`src/replio/bundled_personas.json`). Always present, never writable, overridable by any other layer.
+- **Global** - `~/.config/replio/personas.json`.
+- **Local** - `.replio/personas.json`.
+
+Merging is field-by-field for the same `name`: a local or global entry overrides only the fields it sets, so an unset local field (e.g. no `model`) inherits from the layer below.
 
 Schema (per entry):
 

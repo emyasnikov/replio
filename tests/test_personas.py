@@ -4,10 +4,14 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from replio import personas as personas_mod
 from replio.personas import Persona, PersonaRegistry
 from replio.config import Config
 
 from tests.helpers import make_chat
+
+BUNDLED = Path(personas_mod.__file__).with_name(
+    PersonaRegistry.BUNDLED_FILENAME)
 
 
 class TestPersonaRegistry(unittest.TestCase):
@@ -20,9 +24,17 @@ class TestPersonaRegistry(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def reg(self, global_dir=None, local_path=None):
+    def reg(self, global_dir=None, local_path=None, bundled_path=None):
+        if bundled_path is None:
+            bundled_path = self.base / 'nobundled' / 'personas.json'
         return PersonaRegistry(global_dir=global_dir or self.base,
-                               local_path=local_path or self.local)
+                               local_path=local_path or self.local,
+                               bundled_path=bundled_path)
+
+    def bundled(self, local_path=None):
+        return PersonaRegistry(global_dir=self.base,
+                               local_path=local_path or self.local,
+                               bundled_path=BUNDLED)
 
     def test_paths(self):
         reg = self.reg()
@@ -105,6 +117,42 @@ class TestPersonaRegistry(unittest.TestCase):
         self.local.write_text('{invalid')
         self.assertEqual(self.reg().all(), [])
 
+    def test_bundled_defaults_loaded(self):
+        reg = self.bundled()
+        names = reg.names()
+        self.assertEqual(len(names), 8)
+        for expected in ('researcher', 'writer', 'referencer', 'editor',
+                         'planner', 'programmer', 'tester', 'code-reviewer'):
+            self.assertIn(expected, names)
+        self.assertEqual(reg.origin('researcher'), 'bundled')
+        researcher = reg.find('researcher')
+        self.assertEqual(researcher.tool_permission['edit'], 'deny')
+        self.assertEqual(researcher.tool_permission['web'], 'allow')
+        self.assertEqual(reg.find('programmer').tool_permission['bash'], 'allow')
+        self.assertEqual(reg.find('editor').tool_permission['edit'], 'deny')
+
+    def test_bundled_overridden_by_global_and_local(self):
+        reg = self.bundled()
+        reg.put(Persona(name='researcher', system_prompt='global variant'),
+                scope='global')
+        p = reg.find('researcher')
+        self.assertEqual(p.system_prompt, 'global variant')
+        self.assertEqual(p.tool_permission['edit'], 'deny')
+        self.assertEqual(reg.origin('researcher'), 'merged')
+        reg.put(Persona(name='researcher', system_prompt='local variant'),
+                scope='local')
+        self.assertEqual(reg.find('researcher').system_prompt, 'local variant')
+
+    def test_bundled_restored_after_override_removed(self):
+        reg = self.bundled()
+        bundled_prompt = reg.find('researcher').system_prompt
+        reg.put(Persona(name='researcher', system_prompt='mine'), scope='local')
+        self.assertEqual(reg.find('researcher').system_prompt, 'mine')
+        self.assertTrue(reg.remove('researcher'))
+        p = reg.find('researcher')
+        self.assertEqual(p.system_prompt, bundled_prompt)
+        self.assertEqual(reg.origin('researcher'), 'bundled')
+
 
 class TestPersonaCommand(unittest.TestCase):
 
@@ -121,30 +169,44 @@ class TestPersonaCommand(unittest.TestCase):
             self.chat.registry.dispatch('/persona ' + arg)
         return buf.getvalue()
 
-    def test_list_empty(self):
+    def test_list_shows_bundled(self):
         out = self._persona()
-        self.assertIn('no personas configured', out)
+        self.assertIn('8 personas', out)
+        self.assertIn('researcher', out)
+        self.assertIn('(bundled)', out)
 
     def test_new_then_list(self):
-        self._persona('new researcher')
+        self._persona('new custom')
         out = self._persona()
-        self.assertIn('researcher', out)
+        self.assertIn('custom', out)
 
     def test_show(self):
         self._persona('new researcher Web search agent')
         out = self._persona('show researcher')
         self.assertIn('Web search agent', out)
 
-    def test_new_duplicate_rejected(self):
-        self._persona('new x')
-        out = self._persona('new x')
-        self.assertIn('already exists', out)
+    def test_new_overrides_existing(self):
+        self._persona('new x one')
+        out = self._persona('new x two')
+        self.assertIn('Overrode persona: x', out)
+        out = self._persona('show x')
+        self.assertIn('two', out)
 
-    def test_remove(self):
+    def test_remove_local(self):
         self._persona('new x')
         out = self._persona('remove x')
         self.assertIn('Removed persona: x', out)
-        self.assertIn('no personas configured', self._persona())
+
+    def test_remove_bundled_rejected(self):
+        out = self._persona('remove researcher')
+        self.assertIn('bundled with replio', out)
+
+    def test_override_bundled_then_remove(self):
+        self._persona('new researcher local text')
+        out = self._persona('show researcher')
+        self.assertIn('local text', out)
+        out = self._persona('remove researcher')
+        self.assertIn('Removed persona: researcher', out)
 
 
 if __name__ == '__main__':
