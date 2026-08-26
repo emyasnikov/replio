@@ -6,9 +6,17 @@ Sessions are complete, append-only conversation logs. Every message, tool call a
 
 Each session is one JSON file: `.replio/sessions/<name>.json`, next to the local `.replio/config.json`.
 
-Names are either explicit (`/session new <name>`, `/session load <name>`, `replio run --session-id <name>`) or auto-generated as `<timestamp>_<first-message-slug>`, for example `20260817_120000_what_is_oee`.
+Names are either explicit (`/session new <name>`, `/session load <name>`, `replio run --session-id <name>`) or auto-generated as `ses_<timestamp>_<first-message-slug>`, for example `ses_20260817_120000_what_is_oee`.
 
-Delegation writes each sub-agent's log as its own session: `delegate_<persona>_<ts>_<task-slug>` (e.g. `delegate_researcher_20260817_120100_compare_competitor`). These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/session list`, exportable, loadable - so lead and sub-agent logs stay separate and complete.
+Session files carry a type prefix so the three kinds stay distinguishable at a glance:
+
+| Prefix | Kind | Example |
+|--------|------|---------|
+| `ses_` | Interactive/auto sessions | `ses_20260817_120000_what_is_oee.json` |
+| `job_` | Jobs - one fresh file per run | `job_20260826_110230_nightly_report.json` |
+| `sub_` | Delegation sub-agents | `sub_20260817_120100_researcher.json` |
+
+Delegation writes each sub-agent's log as its own session: `sub_<ts>_<persona>` (e.g. `sub_20260817_120100_researcher`; the legacy `delegate_<persona>_<ts>` names remain readable). These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/session list` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.
 
 ## Managing sessions
 
@@ -61,7 +69,7 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 | `parent_id` | string | Name of the session this one was spawned from (sub-agent sessions set it; empty otherwise) |
 | `sub_sessions` | array | Names of sessions spawned from this one (delegations; the delegate sets a sub-agent's `parent_id` here) |
 
-`/session preview` prints the `parent` and `sub-sessions` links; `/session list` annotates `delegate_*` children with their parent.
+`/session preview` prints the `parent` and `sub-sessions` links; `/session list` annotates `sub_*` (and legacy `delegate_*`) children with their parent.
 
 ## Message schema
 

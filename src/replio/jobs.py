@@ -327,6 +327,17 @@ def validate_schedule(schedule: dict):
         raise ValueError('schedule needs one of: cron, interval, at')
 
 
+def _sanitize(name: str) -> str:
+    cleaned = ''.join(c for c in name if c.isalnum() or c in '-_ ').strip()
+    cleaned = cleaned.replace(' ', '_')
+    return cleaned or 'job'
+
+
+def job_session_name(name: str, when: datetime) -> str:
+    ts = when.strftime('%Y%m%d_%H%M%S')
+    return f'job_{ts}_{_sanitize(name)}'
+
+
 def task_file_path(worktree: Path, job: 'Job') -> Path:
     if job.task_file:
         path = Path(job.task_file)
@@ -497,7 +508,7 @@ def render_show(registry: JobRegistry, name: str, print=print) -> bool:
     print(f'  schedule:   {describe_schedule(job)}')
     if job.prompt:
         print(f'  prompt:     {job.prompt}')
-    print(f'  session:    {job.session or f"job.{job.name}"}')
+    print(f'  session:    {job.session or "per-run job_<ts>_<name>"}')
     if job.task_file:
         print(f'  task file:  {job.task_file} '
               '(edit it - changes apply on the next run)')

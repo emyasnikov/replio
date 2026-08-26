@@ -111,7 +111,7 @@ replio jobs daemon [--tick 15] [--quiet]        # scheduler loop, Ctrl-C to stop
 | `--prompt` | Optional short per-run trigger; required only when `--file` is not given |
 | `--file` | Markdown task file describing the job (default `.replio/jobs/<name>.md`, template-created if missing). Linked - edits apply on the next run |
 | `--cron` / `--interval` / `--at` | Exactly one schedule (required) |
-| `--session` | Session name; default `job.<name>` |
+| `--session` | Stable session name; default is a fresh per-run `job_<ts>_<name>` file |
 | `--mode` | Mode override (`plan`, `build`, or custom) |
 | `--provider` / `--model` | Provider / model overrides |
 | `--persona` | Apply a persona's system prompt, model, and tool permissions |
@@ -139,20 +139,18 @@ A job runs with `HeadlessUI(auto='deny')` - the same posture as `replio serve`. 
 
 `timeout` runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so a timed-out job should be inspected with `replio jobs show <name>` before a manual retry.
 
-## Memory across runs and the session file
+## Session files per run
 
-The **compact memory** is the run-memory file ([Run memory](#run-memory)): a rolling summary that is injected into every run and keeps the model oriented no matter how many runs have happened. The **full memory** is the session file:
+The **compact memory** is the run-memory file ([Run memory](#run-memory)): a rolling summary that is injected into every run and keeps the model oriented no matter how many runs have happened. Session files are the per-run audit:
 
-**Yes, all runs of one job share a single session file** - `.replio/sessions/job.<name>.json` (default `job.<name>`; override with `--session`). Every run is appended to the same append-only log, so the run-memory summarizer has the full picture, and with `--max-context` unset the model sees the whole history too. The model never re-discovers prior state (the common failure mode of stateless cron jobs).
-
-Two consequences to know about:
-
-- **The file grows, by design.** Sessions are complete audit logs and are never rewritten (compaction only trims what the model *sees*). A job you are testing (like a `testXXX.txt` writer) will grow its session fast. Keep it, read `/session export job.<name>` or `replio jobs show <name>` for the summary, and use `--max-context` to bound the model's view.
-- **Context needs to be bounded, or the model drowns.** Pass `--max-context N`: before each run the scheduler summarizes the older history into a compact summary and trims the provider context to the recent messages (the append-only file is untouched, the audit survives). Without it, provider context grows with the file until it hits window limits. The job register itself keeps only the most recent 100 runs.
+- **By default each run gets a fresh session file**: `job_<YYYYMMDD>_<HHMMSS>_<name>.json` (e.g. `job_20260826_110230_nightly_report.json`), distinct from interactive sessions (`ses_...`) and delegation sub-agents (`sub_...`). No single file grows forever; every run is a complete, self-contained log. A same-second collision is resolved with a `_2` suffix. Retries within one run share that run's file (the retry sees the failed attempt's context).
+- **`--session <name>` opts into a stable, growing session** instead - useful when you want one continuous transcript.
+- `--max-context N` still bounds an exceptionally long single run: before a run the scheduler summarizes older history and trims the provider context (the append-only file is untouched).
+- The job register keeps the most recent 100 runs, each recording its session file.
 
 ## How a run executes
 
-Each attempt builds a fresh headless `Engine` from the job's overrides, loads the job's stable session (`job.<name>` by default), and calls `chat()` once. The system prompt is composed from the persona (if set), the linked task file (`## Job task`), `--system-prompt`, and the rolling run memory (`## Run memory`); with none of them a generic recurring-job prompt is layered in, telling the model this is a recurring job with earlier context. After the run finishes, the run is summarized into `.replio/jobs/<name>.memory.md` for the next run. Because the session is stable, `--max-context` aside, later runs also carry the context of earlier ones, and a retry continues from the failed attempt's trail with a "Previous attempt failed. Retry this job" header. `replio jobs run --verbose` streams the live turn (tokens to stdout, tool activity to stderr) before the summary; `replio jobs run` prints the final answer headlessly.
+Each attempt builds a fresh headless `Engine` from the job's overrides, using the run's session file (fresh `job_<ts>_<name>`, or the `--session` override), and calls `chat()` once. The system prompt is composed from the persona (if set), the linked task file (`## Job task`), `--system-prompt`, and the rolling run memory (`## Run memory`); with none of them a generic recurring-job prompt is layered in, telling the model this is a recurring job with earlier context. After the run finishes, the run is summarized into `.replio/jobs/<name>.memory.md` for the next run, so continuity lives in the memory file rather than in a growing session. A retry continues from the failed attempt's trail (same run's session file) with a "Previous attempt failed. Retry this job" header. `replio jobs run --verbose` streams the live turn (tokens to stdout, tool activity to stderr) before the summary; `replio jobs run` prints the final answer headlessly.
 
 ## Scheduling semantics
 
@@ -160,4 +158,4 @@ The daemon (`replio jobs daemon`) wakes on the `--tick` interval (default 15s), 
 
 ## Session logs
 
-Each job writes to `.replio/sessions/job.<name>.json`, a complete append-only log of every run: user prompts, assistant answers, tool calls and results, thinking, errors, and the `permissions` audit array. That is the durable record a `verified` or `failed` status points to. `replio jobs show <name>` prints the matching run history and the last output; `/session export job.<name>` renders the transcript to Markdown.
+Each run writes a complete append-only log at `.replio/sessions/job_<ts>_<name>.json` (or the `--session` override): user prompts, assistant answers, tool calls and results, thinking, errors, and the `permissions` audit array. That is the durable record a `verified` or `failed` status points to. `replio jobs show <name>` prints the run history and each run's session file plus the last output; `/session export job_<ts>_<name>` renders one run's transcript to Markdown.

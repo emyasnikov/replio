@@ -102,9 +102,10 @@
 
 ## Done
 
+- [x] Per-run job sessions - `job_<ts>_<name>` files, unified `ses_`/`sub_`/`job_` naming
 - [x] Job run memory - rolling `.memory.md` run summary injected into each run, seeded with prior memory
 - [x] Job task definition as linked Markdown - `--file` templated task files, `replio jobs edit`
-- [x] Job memory - stable `job.<name>` session across runs, `--max-context` auto-compaction, 100-run history cap
+- [x] Job context management - `--max-context` auto-compaction, 100-run history cap, per-run session files
 - [x] Job per-run approval - `--require-approval` parks each run in `waiting_approval` until a human approves it
 - [x] Jobs diagnostics - `replio jobs status` (fired count, last error, uptime) + last output in `show`
 - [x] Watchable job runs - `replio jobs run --verbose` streams the live turn; headless `run` prints the answer

@@ -20,8 +20,9 @@ class TestSubAgentEngine(unittest.TestCase):
         self.chat._tmp.cleanup()
 
     def _delegate_log(self, persona):
-        files = sorted(self.sessions_dir.glob(f'delegate_{persona}_*.json'))
-        self.assertTrue(files, f'no delegate_{persona} session saved')
+        files = sorted(f for f in self.sessions_dir.glob('sub_*.json')
+                       if f.stem.endswith(f'_{persona}'))
+        self.assertTrue(files, f'no sub_*_{persona} session saved')
         return json.loads(files[-1].read_text())
 
     def _tool_call(self, name='run_command', args='{"command": "echo hi"}'):
@@ -35,7 +36,8 @@ class TestSubAgentEngine(unittest.TestCase):
         sub = self.chat._new_sub_engine('writer')
         self.assertIs(sub.provider, self.chat.provider)
         self.assertIs(sub._plugin_manager, self.chat._plugin_manager)
-        self.assertTrue(sub.current_session.name.startswith('delegate_writer'))
+        self.assertTrue(sub.current_session.name.startswith('sub_'))
+        self.assertTrue(sub.current_session.name.endswith('_writer'))
         self.assertEqual(sub.current_session.parent_id,
                          self.chat.current_session.name)
 
@@ -77,7 +79,8 @@ class TestSubAgentEngine(unittest.TestCase):
         ]
         result = self.chat.run_subagent('writer', 'write the doc')
         self.assertEqual(result.content, 'Draft ready.')
-        self.assertTrue(result.session.startswith('delegate_writer'))
+        self.assertTrue(result.session.startswith('sub_'))
+        self.assertTrue(result.session.endswith('_writer'))
         data = self._delegate_log('writer')
         self.assertEqual(data['messages'][0]['role'], 'user')
         self.assertEqual(data['messages'][-1]['role'], 'assistant')

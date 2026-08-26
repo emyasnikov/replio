@@ -596,6 +596,59 @@ class TestScheduler(unittest.TestCase):
         fresh = Job('fresh', {'interval': 60}, prompt='p', status='approved')
         self.assertNotIn('## Run memory', system_prompt_for(fresh, worktree))
 
+    def test_per_run_session_files_differ(self):
+        calls = []
+
+        def fake_build(config, job, verbose, stream=False, session_name=None):
+            calls.append(session_name)
+            session_dir = config.local_path.parent / 'sessions'
+            session_dir.mkdir(parents=True, exist_ok=True)
+            (session_dir / f'{session_name}.json').write_text('{}')
+            return ScriptedEngine([TurnResult(status='ok', content='x',
+                                              duration=0.1, session=session_name)])
+        with patch('replio.scheduler._build_engine', side_effect=fake_build):
+            job = Job('nightly', {'interval': 60}, prompt='p', status='approved')
+            self.registry.put(job)
+            self.scheduler.run_job(job)
+            self.scheduler.run_job(job)
+        self.assertEqual(len(calls), 2)
+        self.assertNotEqual(calls[0], calls[1])
+        for session in calls:
+            self.assertRegex(session, r'job_\d{8}_\d{6}_nightly(?:_\d+)?')
+
+    def test_explicit_session_stays_stable(self):
+        calls = []
+
+        def fake_build(config, job, verbose, stream=False, session_name=None):
+            calls.append(session_name)
+            return ScriptedEngine([TurnResult(status='ok', content='x',
+                                              duration=0.1, session=session_name)])
+        with patch('replio.scheduler._build_engine', side_effect=fake_build):
+            job = Job('stable', {'interval': 60}, prompt='p', status='approved',
+                      session='myjobby')
+            self.registry.put(job)
+            self.scheduler.run_job(job)
+            self.scheduler.run_job(job)
+        self.assertEqual(calls, ['myjobby', 'myjobby'])
+
+    def test_fresh_job_session_dedupes_collision(self):
+        from replio.scheduler import _fresh_job_session
+        from datetime import datetime
+        sessions_dir = self.config.local_path.parent / 'sessions'
+        sessions_dir.mkdir(parents=True, exist_ok=True)
+        when = datetime(2026, 8, 26, 10, 30, 5)
+        (sessions_dir / 'job_20260826_103005_nightly.json').write_text('{}')
+        name = _fresh_job_session(sessions_dir, 'nightly', when)
+        self.assertEqual(name, 'job_20260826_103005_nightly_2')
+
+    def test_job_session_name_format(self):
+        from replio.jobs import job_session_name
+        from datetime import datetime
+        when = datetime(2026, 8, 26, 10, 30, 5)
+        self.assertEqual(job_session_name('nightly report', when),
+                         'job_20260826_103005_nightly_report')
+        self.assertTrue(job_session_name('!!!', when).startswith('job_20260826_103005_'))
+
 
 class TestRender(unittest.TestCase):
     def test_list_and_show(self):

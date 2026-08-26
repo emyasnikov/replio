@@ -206,13 +206,13 @@ class Engine:
         sub = Engine(sub_config, ui=NullUI(),
                      plugin_manager=self._plugin_manager, provider=provider)
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-        sub.load_or_create_session(f'delegate_{persona_name}_{ts}')
+        sub.load_or_create_session(f'sub_{ts}_{persona_name}')
         sub.current_session.parent_id = self.current_session.name
         return sub
 
     def run_subagent(self, persona_name: str, task: str) -> TurnResult:
         sub = self._new_sub_engine(persona_name)
-        result = sub.chat(task)
+        result = sub.chat(task, autoname=False)
         if result.session and result.session not in self.current_session.sub_sessions:
             self.current_session.sub_sessions.append(result.session)
             self.session_auto_save()
@@ -244,6 +244,7 @@ class Engine:
         if len(user_msgs) != 1:
             return
         ts = self.current_session.name
+        base = ts if ts.startswith('ses_') else f'ses_{ts}'
         truncated = content[:40]
         space = truncated.rfind(' ')
         if space > 0:
@@ -253,7 +254,7 @@ class Engine:
         if not msg_part:
             return
         old = self.sessions.sessions_dir / f'{self.current_session.name}.json'
-        self.current_session.name = f'{ts}_{msg_part.lower()}'
+        self.current_session.name = f'{base}_{msg_part.lower()}'
         new = self.sessions.sessions_dir / f'{self.current_session.name}.json'
         if old.exists() and old != new:
             old.rename(new)

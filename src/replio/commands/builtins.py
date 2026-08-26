@@ -525,7 +525,7 @@ def register_builtins(registry):
                 for s in sessions:
                     marker = '  <-- current' if s == current else ''
                     child = ''
-                    if s.startswith('delegate_'):
+                    if s.startswith(('delegate_', 'sub_')):
                         data = chat.sessions.read(s)
                         if data and getattr(data, 'parent_id', ''):
                             child = f'  (child of {data.parent_id})'

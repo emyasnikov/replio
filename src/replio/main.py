@@ -118,7 +118,8 @@ def _add_jobs_parser(sub):
     sched.add_argument('--cron', help='5-field cron expression (minute hour dom month dow)')
     sched.add_argument('--interval', type=int, help='Seconds between runs (min 60)')
     sched.add_argument('--at', help='One-shot run at an ISO datetime (e.g. 2026-08-27T02:00:00Z)')
-    ga.add_argument('--session', help='Session name (default: job.<name>)')
+    ga.add_argument('--session', help='Stable session name (default: a fresh '
+                    'job_<ts>_<name> file per run)')
     ga.add_argument('--mode', help='Agent mode override (plan, build, or custom)')
     ga.add_argument('--provider', help='Provider override')
     ga.add_argument('--model', help='Model override')

@@ -2,16 +2,27 @@ import sys
 import time
 import threading
 from datetime import datetime, timezone
+from pathlib import Path
 
 from .config import Config
 from .engine import Engine, TurnResult
-from .jobs import (Job, JobRun, JobRegistry, compute_next_run, parse_dt,
-                   read_memory, system_prompt_for, write_memory)
+from .jobs import (Job, JobRun, JobRegistry, compute_next_run, job_session_name,
+                   parse_dt, read_memory, system_prompt_for, write_memory)
 from .ui import HeadlessUI
 
 
+def _fresh_job_session(sessions_dir: Path, name: str, when: datetime) -> str:
+    base = job_session_name(name, when)
+    candidate = base
+    n = 1
+    while (Path(sessions_dir) / f'{candidate}.json').exists():
+        n += 1
+        candidate = f'{base}_{n}'
+    return candidate
+
+
 def _build_engine(config: Config, job: Job, verbose: bool,
-                  stream: bool = False) -> Engine:
+                  stream: bool = False, session_name: str | None = None) -> Engine:
     sub_config = Config(path=str(config.local_path.parent.parent))
     persona = None
     if job.persona:
@@ -47,7 +58,7 @@ def _build_engine(config: Config, job: Job, verbose: bool,
                     show_thinking=sub_config.get('show_thinking', True),
                     footer_tokens=sub_config.get('footer_tokens', ['context']))
     engine = Engine(sub_config, ui=ui)
-    engine.load_or_create_session(job.session or f'job.{job.name}')
+    engine.load_or_create_session(session_name or job.session or f'job.{job.name}')
     return engine
 
 
@@ -115,6 +126,11 @@ class JobScheduler:
         job.status = 'executing'
         job.next_run_at = ''
         self.registry.save()
+        run_started = datetime.now(timezone.utc)
+        run_session = job.session
+        if not run_session:
+            run_session = _fresh_job_session(
+                self.config.local_path.parent / 'sessions', job.name, run_started)
         retries = max(0, int(job.retries or 0))
         backoff = max(0.0, float(job.backoff or 0))
         attempt = 0
@@ -125,12 +141,12 @@ class JobScheduler:
             started = datetime.now(timezone.utc)
             try:
                 engine = _build_engine(self.config, job, self.verbose,
-                                       self.stream)
+                                       self.stream, run_session)
             except ValueError as e:
                 run = JobRun(started_at=started.isoformat(timespec='seconds'),
                              finished_at=started.isoformat(timespec='seconds'),
                              status='failed', reason=str(e), attempt=attempt,
-                             session=job.session or f'job.{job.name}')
+                             session=run_session)
                 job.history.append(run)
                 self.registry.save()
                 self._finish(job, run, started)

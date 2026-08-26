@@ -44,7 +44,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_server.py` | `replio serve` HTTP API: `/chat`, `/sessions`, `/health`, `/version` |
 | `test_session_log.py` | Session model: append-only serialization, `tool_max_chars` truncation, metadata |
 | `test_session_render.py` | Session Markdown export: renderer output per role, error section, `/session export` dispatch and file/stdout targets |
-| `test_subagent.py` | In-process sub-engine: provider/plugin/worktree inheritance, persona prompt/mode/tool_permission application, model override, `NullUI`, unknown persona, full `run_subagent` flow + persisted `delegate_*` session with `parent_id`, ask-gated tool cancellation, parent `sub_sessions` linkage |
+| `test_subagent.py` | In-process sub-engine: provider/plugin/worktree inheritance, persona prompt/mode/tool_permission application, model override, `NullUI`, unknown persona, full `run_subagent` flow + persisted `sub_*` session with `parent_id`, ask-gated tool cancellation, parent `sub_sessions` linkage |
 | `test_tool_calling.py` | Tool-calling flow: single and multiple calls, unknown tools, query refinement |
 | `test_tool_policy.py` | `ToolPolicy`: allow/ask/deny, worktree escalation, deny/allowlist precedence, per-invocation resolver (refines non-deny base, skipped without args, cannot override deny list) |
 | `test_tool_registry.py` | Tool registration metadata, schema, refine flags, note-result predicates, `_config` pass-through, activity params strings, fs tool glyphs (`* List` / `* Grep`), `permission_fn` storage + `resolver_for` |
