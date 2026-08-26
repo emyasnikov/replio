@@ -36,7 +36,6 @@ class TestBundledPlugins(unittest.TestCase):
         self.assertTrue({'web_search', 'fetch_page'} <= tools)
         self.assertTrue({'read_file', 'list_dir', 'write_file', 'glob', 'grep'} <= tools)
         self.assertIn('run_command', tools)
-        self.assertTrue({'mcp_connect', 'mcp_list', 'mcp_disconnect'} <= tools)
 
     def test_search_service_registered(self):
         self.pm.load()

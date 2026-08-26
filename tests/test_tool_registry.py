@@ -2,19 +2,16 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from replio.config import Config
-from replio.plugins.manager import PluginManager
 from replio.tools.registry import ToolRegistry
+
+from tests.helpers import make_bundled_tool_registry
 
 
 class TestToolRegistry(unittest.TestCase):
 
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
-        self.pm = PluginManager(Config(path=self._tmp.name))
-        self.pm.load()
-        self.registry = ToolRegistry()
-        self.pm.register_tools(self.registry)
+        self.registry = make_bundled_tool_registry(self._tmp.name)
 
     def tearDown(self):
         self._tmp.cleanup()

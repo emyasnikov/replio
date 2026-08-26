@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.22.0
+
+- Test cleanup - extracted the duplicated bundled-tool registry harness into `tests/helpers.make_bundled_tool_registry()` (shared by `test_machine_tools.py` and `test_tool_registry.py`), dropped the redundant `mcp_*` tool-presence assertion from `test_bundled_plugins.py` (owned by the `test_mcp.py` registration suite), and single-sourced the fs/exec cap-config setup. Docs: `docs/testing.md` helper note
+
 ## v0.21.0 - 2026-08-26
 
 - Legacy support removal (breaking, dev-stage) - dropped the `delegate_*` session prefix: `/session list` annotates `sub_*` children only and old `delegate_*` files get no special handling. Dropped `--max-context` (per-run fresh session files plus the rolling run-memory summary make history capping unnecessary). Dropped the config migrations (`plugins.enabled`/`plugins.deny` -> `plugins`, and local `api_key` -> global); old keys are simply ignored. Removed `config.api_key` entirely - API keys live only in the global model registry (`~/.config/replio/models.json`, via `/connect`), the engine no longer falls back to `config.api_key` (`_reinit_provider`/`check_connection`/`list_models` resolve from the registry), and `/config` + `replio config` treat `api_key` as an ordinary key (no forced-global write, masking, or `0600`). Tests updated; docs synced (`config.md`, `providers.md`, `security.md`, `deploy.md`, `usage/programming.md`, `session.md`, `testing.md`)
@@ -26,6 +30,7 @@
 - Personas registry - personas defined as a named catalog (system prompt, optional model override, optional skills and per-persona `tool_permission`), stored in single JSON files merged global (`~/.config/replio/personas.json`) then local (`.replio/personas.json`), field-by-field with local winning and empty local fields inheriting from global. `PersonaRegistry` (ModelRegistry-style, `personas.py`), `/persona` command (`list` / `show` / `new` / `remove`), `Engine.personas` accessor, `docs/personas.md` and a `Personas and delegation` section in `docs/swarm.md` (per-persona `delegate` permission rule and the document-pipeline use case). Covered by `tests/test_personas.py` (11 registry + 5 command tests)
 
 ## v0.19.0 - 2026-08-24
+
 - Soft tool results now render as dimmed info lines - bundled tools declare a `note` predicate (read-only callable on the raw result) via registration metadata, and the shared dispatch point `_run_tool` echoes the note line under the activity line when it fires. `(empty file)`, `(empty directory)`, `(no matches for "x")`, `(end of content)`/`(empty content)`, and `No search results found.` were previously invisible in the REPL (only persisted + fed to the model), while only `Error:` results rendered. Gated by the new `show_notes` config (default `true`); error/note checks sit side by side so a result cannot double-render, and the `echo` path excludes note results
 - Session audit trail - every tool permission resolution and its outcome (`allow`/`ask`/`deny` -> `granted`/`declined`/`denied`, with the tool's `path` when present) is recorded to a new append-only session `permissions` array. Always-on with no config switch. Replaces the old "confirm prompts are ephemeral" guarantee in docs (`AGENTS.md`, `tools.md`, `security.md`, `use-cases/index.md`, `session.md`)
 - Stable message identifiers - every session message now carries an `id` (`msg_<hex>`) auto-assigned on creation, for cross-referencing and future delegation (`sub_sessions`). Legacy messages without an `id` remain readable

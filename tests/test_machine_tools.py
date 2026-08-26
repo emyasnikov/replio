@@ -3,8 +3,8 @@ import tempfile
 from pathlib import Path
 
 from replio.config import Config
-from replio.plugins.manager import PluginManager
-from replio.tools.registry import ToolRegistry
+
+from tests.helpers import make_bundled_tool_registry
 
 
 class TestMachineTools(unittest.TestCase):
@@ -12,15 +12,10 @@ class TestMachineTools(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
-        self._cfg_tmp = tempfile.TemporaryDirectory()
-        self.pm = PluginManager(Config(path=self._cfg_tmp.name))
-        self.pm.load()
-        self.registry = ToolRegistry()
-        self.pm.register_tools(self.registry)
+        self.registry = make_bundled_tool_registry(self.root)
 
     def tearDown(self):
         self._tmp.cleanup()
-        self._cfg_tmp.cleanup()
 
     def run_tool(self, name, **args):
         return self.registry.execute(name, args)
@@ -73,7 +68,7 @@ class TestMachineTools(unittest.TestCase):
         content = '\n'.join(f'line{i} line{i} line{i} line{i} line{i}'
                             for i in range(1, 201))
         (self.root / 'big.txt').write_text(content)
-        cfg = Config(path=self._cfg_tmp.name)
+        cfg = Config(path=str(self.root))
         cfg.data['tool_max_result_chars'] = 1000
         out = self.run_tool_cfg('read_file', cfg, path=str(self.root / 'big.txt'))
         self.assertIn('... (truncated)', out)
@@ -205,7 +200,7 @@ class TestMachineTools(unittest.TestCase):
         self.assertEqual(mod._clamp_timeout(None), mod.DEFAULT_TIMEOUT)
 
     def test_run_command_cap_truncates(self):
-        cfg = Config(path=self._cfg_tmp.name)
+        cfg = Config(path=str(self.root))
         cfg.data['tool_max_result_chars'] = 20
         out = self.run_tool_cfg('run_command', cfg,
                                 command='seq 1 1000', cwd=str(self.root))
