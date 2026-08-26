@@ -102,6 +102,7 @@
 
 ## Done
 
+- [x] Job run memory - rolling `.memory.md` run summary injected into each run, seeded with prior memory
 - [x] Job task definition as linked Markdown - `--file` templated task files, `replio jobs edit`
 - [x] Job memory - stable `job.<name>` session across runs, `--max-context` auto-compaction, 100-run history cap
 - [x] Job per-run approval - `--require-approval` parks each run in `waiting_approval` until a human approves it

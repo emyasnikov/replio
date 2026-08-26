@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from .config import Config
 from .engine import Engine, TurnResult
 from .jobs import (Job, JobRun, JobRegistry, compute_next_run, parse_dt,
-                   system_prompt_for)
+                   read_memory, system_prompt_for, write_memory)
 from .ui import HeadlessUI
 
 
@@ -133,7 +133,9 @@ class JobScheduler:
                              session=job.session or f'job.{job.name}')
                 job.history.append(run)
                 self.registry.save()
-                return self._finish(job, run, started)
+                self._finish(job, run, started)
+                self._update_memory(None, job, run)
+                return run
             if attempt == 1:
                 self._maybe_compact(engine, job)
             if attempt > 1:
@@ -168,7 +170,36 @@ class JobScheduler:
                       f'(attempt {attempt}/{retries + 1})')
             if delay > 0:
                 time.sleep(delay)
-        return self._finish(job, run, finished)
+        self._finish(job, run, finished)
+        self._update_memory(engine, job, run)
+        return run
+
+    def _update_memory(self, engine, job: Job, run: JobRun):
+        worktree = self.config.local_path.parent.parent
+        summary = None
+        if engine is not None:
+            try:
+                messages = []
+                prior = read_memory(worktree, job)
+                if prior:
+                    messages.append(
+                        {'role': 'system',
+                         'content': f'Previous run memory:\n{prior}'})
+                messages += list(engine.current_session.messages)
+                summary = engine._summarize(messages)
+                if summary:
+                    summary = str(summary).strip()
+            except Exception:
+                summary = None
+        if not summary:
+            summary = f'Run {run.started_at}: {run.status}.'
+            if run.content:
+                summary += f'\n{run.content}'
+            elif run.reason:
+                summary += f'\nError: {run.reason}'
+            summary = summary[:1500]
+        write_memory(worktree, job, summary)
+        self._out(f'{job.name}: run memory updated')
 
     def _finish(self, job: Job, run: JobRun, finished: datetime) -> JobRun:
         job.last_run_at = run.started_at

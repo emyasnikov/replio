@@ -11,9 +11,9 @@ from unittest.mock import patch
 from replio.config import Config
 from replio.engine import TurnResult
 from replio.jobs import (Job, JobRun, JobRegistry, compute_next_run, ensure_task_file,
-                         next_run, parse_cron_field, parse_dt, render_list,
-                         render_show, render_status, describe_schedule,
-                         system_prompt_for, validate_schedule)
+                         next_run, parse_cron_field, parse_dt, read_memory,
+                         render_list, render_show, render_status, describe_schedule,
+                         system_prompt_for, validate_schedule, write_memory)
 from replio.scheduler import JobScheduler
 
 TZ = timezone.utc
@@ -527,6 +527,74 @@ class TestScheduler(unittest.TestCase):
         job = Job('plain', {'interval': 60}, prompt='p', status='approved')
         text = system_prompt_for(job, worktree)
         self.assertIn('recurring autonomous job', text)
+
+    def test_memory_written_after_run(self):
+        self._patch_engine([
+            TurnResult(status='ok', content='wrote 3 files', duration=0.2,
+                       session='job.mm'),
+        ])
+        job = Job('mm', {'interval': 60}, prompt='p', status='approved')
+        self.registry.put(job)
+        run = self.scheduler.run_job(job)
+        memory = read_memory(Path(self.tmp.name), job)
+        self.assertEqual(run.status, 'verified')
+        self.assertIn('verified', memory)
+        self.assertIn('wrote 3 files', memory)
+
+    def test_memory_uses_summarize_when_available(self):
+        eng = ScriptedEngine([
+            TurnResult(status='ok', content='raw output', duration=0.2,
+                       session='job.sd')])
+        eng.current_session.messages = [{'role': 'user', 'content': 'run one'}]
+        eng.seen = None
+
+        def _summarize(msgs):
+            eng.seen = msgs
+            return 'compiled memory summary'
+        eng._summarize = _summarize
+        with patch('replio.scheduler._build_engine', return_value=eng):
+            job = Job('sd', {'interval': 60}, prompt='p', status='approved')
+            self.scheduler.run_job(job)
+        memory = read_memory(Path(self.tmp.name), job)
+        self.assertEqual(memory, 'compiled memory summary')
+
+    def test_memory_seeds_next_run_summarize(self):
+        eng = ScriptedEngine([
+            TurnResult(status='ok', content='run two', duration=0.2,
+                       session='job.seed')])
+        eng.current_session.messages = [{'role': 'user', 'content': 'run two'}]
+        eng.seen = None
+
+        def _summarize(msgs):
+            eng.seen = msgs
+            return 'second summary'
+        eng._summarize = _summarize
+        worktree = Path(self.tmp.name)
+        write_memory(worktree, Job('seed', {'interval': 60}), 'first summary')
+        with patch('replio.scheduler._build_engine', return_value=eng):
+            job = Job('seed', {'interval': 60}, prompt='p', status='approved')
+            self.scheduler.run_job(job)
+        self.assertTrue(any(
+            'Previous run memory' in (m.get('content') or '') for m in eng.seen))
+        self.assertEqual(read_memory(worktree, job), 'second summary')
+
+    def test_memory_recorded_when_engine_cannot_start(self):
+        job = Job('boom', {'interval': 60}, prompt='p', persona='ghost',
+                  status='approved')
+        self.registry.put(job)
+        self.scheduler.run_job(job)
+        memory = read_memory(Path(self.tmp.name), job)
+        self.assertIn('Unknown persona', memory)
+
+    def test_memory_injected_into_system_prompt(self):
+        worktree = Path(self.tmp.name)
+        job = Job('mmo', {'interval': 60}, prompt='p', status='approved')
+        write_memory(worktree, job, 'earlier runs produced report-v3.md')
+        text = system_prompt_for(job, worktree)
+        self.assertIn('## Run memory', text)
+        self.assertIn('report-v3.md', text)
+        fresh = Job('fresh', {'interval': 60}, prompt='p', status='approved')
+        self.assertNotIn('## Run memory', system_prompt_for(fresh, worktree))
 
 
 class TestRender(unittest.TestCase):

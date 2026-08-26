@@ -351,6 +351,26 @@ def read_task_file(worktree: Path, job: 'Job') -> str | None:
     return None
 
 
+def memory_file_path(worktree: Path, job: 'Job') -> Path:
+    return (Path(worktree) / '.replio' / 'jobs' / f'{job.name}.memory.md').resolve()
+
+
+def read_memory(worktree: Path, job: 'Job') -> str:
+    path = memory_file_path(worktree, job)
+    if path.exists():
+        return path.read_text().strip()
+    return ''
+
+
+def write_memory(worktree: Path, job: 'Job', text: str) -> Path:
+    path = memory_file_path(worktree, job)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix('.memory.md.tmp')
+    tmp.write_text(text)
+    os.replace(tmp, path)
+    return path
+
+
 def system_prompt_for(job: 'Job', worktree: Path, persona=None) -> str:
     parts = []
     if persona is not None and getattr(persona, 'system_prompt', ''):
@@ -365,6 +385,9 @@ def system_prompt_for(job: 'Job', worktree: Path, persona=None) -> str:
             parts.append(f'## Job task\n\n{body}')
     if job.system_prompt:
         parts.append(job.system_prompt)
+    memory = read_memory(worktree, job)
+    if memory:
+        parts.append(f'## Run memory\n\n{memory}')
     if not parts:
         parts.append(DEFAULT_JOB_SYSTEM_PROMPT)
     return '\n\n'.join(parts).strip()
@@ -478,6 +501,14 @@ def render_show(registry: JobRegistry, name: str, print=print) -> bool:
     if job.task_file:
         print(f'  task file:  {job.task_file} '
               '(edit it - changes apply on the next run)')
+    worktree = registry.path.parent.parent
+    memory_text = read_memory(worktree, job)
+    memory_rel = str(memory_file_path(worktree, job).relative_to(Path(worktree)))
+    if memory_text:
+        print(f'  memory:     {memory_rel}')
+        print(f'    last run memory: {" ".join(memory_text.split())[:120]}')
+    else:
+        print(f'  memory:     {memory_rel} (written after the first run)')
     if job.mode:
         print(f'  mode:       {job.mode}')
     if job.persona:
