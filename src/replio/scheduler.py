@@ -110,18 +110,6 @@ class JobScheduler:
             stream.write(f'[job] {msg}\n')
             stream.flush()
 
-    def _maybe_compact(self, engine, job: Job):
-        limit = max(0, int(job.max_context or 0))
-        if limit <= 0:
-            return
-        try:
-            size = len(engine._provider_messages())
-        except AttributeError:
-            return
-        if size >= limit:
-            engine.compact_session()
-            self._out(f'{job.name}: auto-compacted context ({size} messages)')
-
     def run_job(self, job: Job) -> JobRun:
         job.status = 'executing'
         job.next_run_at = ''
@@ -152,8 +140,6 @@ class JobScheduler:
                 self._finish(job, run, started)
                 self._update_memory(None, job, run)
                 return run
-            if attempt == 1:
-                self._maybe_compact(engine, job)
             if attempt > 1:
                 prompt = (f'[Previous attempt {attempt - 1} failed. Retry this '
                           f'job and finish it.]\n\n{job.prompt}')

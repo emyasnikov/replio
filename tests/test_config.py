@@ -60,22 +60,9 @@ class TestConfigScopes(_IsolatedConfigBase):
         self.assertFalse(self.local_path.exists())
         self.assertEqual(c.get('max_tokens'), 0)
 
-    def test_api_key_always_goes_global(self):
-        c = Config(path=str(self.project))
-        c.set('api_key', 'secret')
-        self.assertNotIn('api_key', self.local())
-        self.assertEqual(self.global_()['api_key'], 'secret')
-        self.assertEqual(c.get('api_key'), 'secret')
-
-    def test_global_file_restricted_when_contains_api_key(self):
-        c = Config(path=str(self.project))
-        c.set('api_key', 'secret')
-        mode = self.global_path.stat().st_mode & 0o777
-        self.assertEqual(mode, 0o600)
-
     def test_local_holds_only_local_selection(self):
         c = Config(path=str(self.project))
-        c.set('api_key', 'secret')
+        c.set('max_tokens', 0, scope='global')
         c.set('model', 'local-model')
         self.assertEqual(self.local(), {'model': 'local-model'})
 
@@ -89,9 +76,9 @@ class TestConfigScopes(_IsolatedConfigBase):
 
     def test_set_global_empty_local_value_does_not_shadow(self):
         c = Config(path=str(self.project))
-        c.set('api_key', '', scope='local')
-        c.set('api_key', 'real-key')
-        self.assertEqual(c.get('api_key'), 'real-key')
+        c.set('max_tokens', '', scope='local')
+        c.set('max_tokens', 4096, scope='global')
+        self.assertEqual(c.get('max_tokens'), 4096)
 
     def test_unset_restores_global_fallback(self):
         c = Config(path=str(self.project))
@@ -143,23 +130,6 @@ class TestConfigScopes(_IsolatedConfigBase):
         c.set('temperature', 0.9)
         c2 = Config(path=str(self.project))
         self.assertEqual(c2.get('temperature'), 0.9)
-
-
-class TestApiKeyMigration(_IsolatedConfigBase):
-
-    def test_local_api_key_moved_to_global(self):
-        self.local_path.write_text(json.dumps({'api_key': 'secret', 'model': 'm'}))
-        Config(path=str(self.project))
-        self.assertEqual(self.global_()['api_key'], 'secret')
-        self.assertEqual(self.local(), {'model': 'm'})
-
-    def test_local_api_key_dropped_when_global_exists(self):
-        self.global_path.parent.mkdir(parents=True)
-        self.global_path.write_text(json.dumps({'api_key': 'global-key'}))
-        self.local_path.write_text(json.dumps({'api_key': 'local-key'}))
-        c = Config(path=str(self.project))
-        self.assertEqual(c.get('api_key'), 'global-key')
-        self.assertEqual(self.local(), {})
 
 
 class TestConfigCli(_IsolatedConfigBase):
@@ -215,12 +185,12 @@ class TestConfigCli(_IsolatedConfigBase):
         self.assertEqual(rc, 1)
         self.assertFalse(self.local_path.exists())
 
-    def test_set_api_key_routes_to_global(self):
+    def test_set_api_key_is_a_normal_key(self):
         rc, _ = self._run(self._args(action='set', key='api_key',
                                      value='cli-secret'))
         self.assertEqual(rc, 0)
-        self.assertEqual(self.global_()['api_key'], 'cli-secret')
-        self.assertNotIn('api_key', self.local())
+        self.assertEqual(self.local()['api_key'], 'cli-secret')
+        self.assertNotIn('api_key', self.global_())
 
     def test_unset_local(self):
         Config(path=str(self.project)).set('max_tokens', 2048)

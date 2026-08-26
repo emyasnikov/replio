@@ -134,9 +134,6 @@ def _add_jobs_parser(sub):
                     help='Base backoff seconds, doubled per retry')
     ga.add_argument('--timeout', type=int, default=0,
                     help='Max seconds for a run (0 = no cap)')
-    ga.add_argument('--max-context', type=int, default=0,
-                    help='Auto-compact the session when it exceeds this many provider messages '
-                         '(0 = never)')
     ga.add_argument('--require-approval', action='store_true',
                     help='Arm only one run per approve - each run parks in waiting_approval '
                          'until a human approves it')

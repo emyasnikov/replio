@@ -16,19 +16,18 @@ Providers are the model backends. Replio speaks OpenAI-compatible `/v1/chat/comp
 
 ## Configuration
 
-`provider`, `base_url`, `model`, `api_key`, `temperature`, and `max_tokens` are configured in the global or local config (see [config.md](config.md)):
+`provider`, `base_url`, `model`, `temperature`, and `max_tokens` are configured in the global or local config (see [config.md](config.md)); the API key is **not** a config value - it is resolved from the global model registry (`~/.config/replio/models.json`, managed via `/connect`):
 
 ```json
 {
   "provider": "openai",
   "base_url": "https://api.openai.com/v1",
   "model": "gpt-4o-mini",
-  "api_key": "",
   "temperature": 0.7
 }
 ```
 
-The API key is read from the `api_key` config value (global or local `.replio/config.json`), no environment variable is consulted.
+The engine looks up the API key for the active `provider`/`base_url`/`model` in the model registry (a `(key)` entry from `/connect`), falling back to `""` - no environment variable is consulted.
 
 ## Auto-detection
 

@@ -427,8 +427,7 @@ def register_builtins(registry):
         parts = text.split(maxsplit=1)
         if not text:
             for k, v in chat.config.data.items():
-                val = '***' if k == 'api_key' and v else v
-                print(f'  {k}: {val}  ({chat.config.origin(k)})')
+                print(f'  {k}: {v}  ({chat.config.origin(k)})')
             return
         key = parts[0]
         rest = parts[1].strip() if len(parts) > 1 else ''
@@ -450,8 +449,6 @@ def register_builtins(registry):
 
         if not rest:
             val = chat.config.get(key)
-            if key == 'api_key':
-                val = '***' if val else val
             print(f'  {key}: {val}  ({chat.config.origin(key)})')
             return
 
@@ -494,9 +491,7 @@ def register_builtins(registry):
         except json.JSONDecodeError:
             value = rest
         chat.config.set(key, value, scope=scope)
-        resolved = 'global' if key == 'api_key' else scope
-        shown = '***' if key == 'api_key' and value else value
-        print(f'Config {key} = {shown} ({resolved})')
+        print(f'Config {key} = {value} ({scope})')
 
     @registry.register('session', description='Manage saved sessions', subcommands=[
         ('new', 'Start a new session'),
@@ -525,7 +520,7 @@ def register_builtins(registry):
                 for s in sessions:
                     marker = '  <-- current' if s == current else ''
                     child = ''
-                    if s.startswith(('delegate_', 'sub_')):
+                    if s.startswith('sub_'):
                         data = chat.sessions.read(s)
                         if data and getattr(data, 'parent_id', ''):
                             child = f'  (child of {data.parent_id})'

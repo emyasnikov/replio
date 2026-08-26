@@ -41,8 +41,10 @@ class TestDelegateTool(unittest.TestCase):
                     tool_permission={'delegate': 'allow'}), scope='local')
 
     def _delegate_logs(self, persona):
-        return sorted(f for f in self.sessions_dir.glob('sub_*.json')
-                      if f.stem.endswith(f'_{persona}'))
+        return sorted(
+            f for f in self.sessions_dir.glob('sub_*.json')
+            if json.loads(f.read_text()).get('parent_id')
+            == self.chat.current_session.name)
 
     def _sub_footer_called(self):
         for c in self.chat._ui.footer.call_args_list:
@@ -193,7 +195,7 @@ class TestDelegateTool(unittest.TestCase):
         from types import SimpleNamespace
         from replio.sessions.manager import Session
         from replio.tools.delegate import _format_result
-        subname = 'sub_programmer_20260825_000000_create_x'
+        subname = 'sub_20260825_000000_ses_20260825_000000_parent'
         sess = Session(subname, messages=[
             {'role': 'user', 'content': 'build the dungeon'},
             {'role': 'assistant', 'tool_calls': [{'id': 'c1'}]},

@@ -178,7 +178,6 @@ class Job:
     retries: int = 3
     backoff: float = 60.0
     timeout: int = 0
-    max_context: int = 0
     require_approval: bool = False
     approval_pending: bool = False
     enabled: bool = True
@@ -215,7 +214,6 @@ class Job:
             'retries': self.retries,
             'backoff': self.backoff,
             'timeout': self.timeout,
-            'max_context': self.max_context,
             'require_approval': self.require_approval,
             'approval_pending': self.approval_pending,
             'enabled': self.enabled,
@@ -244,7 +242,6 @@ class Job:
             retries=d.get('retries', 3),
             backoff=d.get('backoff', 60.0),
             timeout=d.get('timeout', 0),
-            max_context=d.get('max_context', 0),
             require_approval=d.get('require_approval', False),
             approval_pending=d.get('approval_pending', False),
             enabled=d.get('enabled', True),
@@ -536,8 +533,6 @@ def render_show(registry: JobRegistry, name: str, print=print) -> bool:
         print(f'  system_prompt: {job.system_prompt[:80]}')
     print(f'  durability: retries={job.retries} backoff={job.backoff}s '
           f'timeout={f"{job.timeout}s" if job.timeout else "none"}')
-    if job.max_context:
-        print(f'  context:    auto-compact above {job.max_context} messages')
     if job.require_approval:
         pending = 'yes (approved for next run)' if job.approval_pending \
             else 'no (each run waits for approval)'

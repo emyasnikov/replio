@@ -14,7 +14,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/provider`              |                | Show or switch the active provider                             |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
 | `/connect`              |                | Interactive provider connection setup (tests the connection before saving). Appends the model to the global `models.json` registry (storing the API key there, not in config); on a fresh project with known models it offers a numbered picker (`#N`) to reuse one |
-| `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)`. `api_key` always writes to the global config |
+| `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)` |
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
 | `/persona`              |                | Manage personas: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [personas.md](personas.md) |
@@ -122,7 +122,7 @@ Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, 
 | `list`        | Table of jobs: schedule, status, next and last run                       |
 | `status`      | Runtime summary per job: fired count, last error, uptime, approval state |
 | `show`        | `replio jobs show <name>` - definition plus full run history + last output|
-| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`; `--prompt` optional when `--file` is given), plus `--mode`, `--provider`/`--model`, `--persona`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--max-context N`, `--require-approval`, `--approval auto` |
+| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`; `--prompt` optional when `--file` is given), plus `--mode`, `--provider`/`--model`, `--persona`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approval auto` |
 | `approve`     | `approve <name>` - activate a job (or arm the next run for `--require-approval` jobs) |
 | `reject`      | `reject <name>` - send back to proposed and disable                       |
 | `enable` / `disable` / `stop` | Toggle the enabled gate (`stop` = `disable`)                     |

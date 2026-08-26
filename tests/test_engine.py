@@ -13,6 +13,7 @@ from replio.ui import HeadlessUI, NullUI
 
 def make_engine(config_data: dict | None = None) -> Engine:
     temp_dir = tempfile.TemporaryDirectory()
+    Config.GLOBAL_DIR = Path(temp_dir.name) / 'global-home'
     data = {
         'tool_calling': True,
         'provider': 'ollama',
@@ -80,12 +81,12 @@ class TestEngine(unittest.TestCase):
         self.engine._reinit_provider()
         self.assertEqual(self.engine.provider.api_key, 'reg-key')
 
-    def test_reinit_provider_falls_back_to_config_api_key(self):
+    def test_reinit_provider_no_registry_key_is_empty(self):
         self.engine.config.apply('api_key', 'cfg-key')
         self.assertIsNone(self.engine.models.find(
             'ollama', 'https://test.api.com', 'test-model'))
         self.engine._reinit_provider()
-        self.assertEqual(self.engine.provider.api_key, 'cfg-key')
+        self.assertEqual(self.engine.provider.api_key, '')
 
     def test_chat_returns_turn_result(self):
         self.engine.provider.chat.return_value = [

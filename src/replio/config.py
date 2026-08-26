@@ -1,7 +1,5 @@
 import copy
 import json
-import os
-import sys
 from pathlib import Path
 
 
@@ -9,7 +7,6 @@ DEFAULT_CONFIG = {
     'provider': 'ollama',
     'model': 'llama3.2',
     'base_url': 'https://api.ollama.com',
-    'api_key': '',
     'temperature': 0.7,
     'max_tokens': 8192,
     'system_prompt': '',
@@ -99,48 +96,6 @@ class Config:
             with open(self.local_path) as f:
                 self._local_raw = json.load(f)
             self.data.update(self._local_raw)
-        self._migrate()
-
-    def _migrate(self):
-        self._migrate_plugins()
-        self._migrate_api_key()
-
-    def _migrate_plugins(self):
-        if 'plugins.enabled' in self.data or 'plugins.deny' in self.data:
-            plugins = list(self.data.get('plugins') or DEFAULT_CONFIG['plugins'])
-            enabled = self.data.pop('plugins.enabled', None)
-            denied = self.data.pop('plugins.deny', None)
-            if enabled is not None:
-                plugins = [str(n) for n in enabled] if enabled else []
-            if denied:
-                blocked = set(str(n) for n in denied)
-                plugins = [n for n in plugins if n not in blocked]
-            self._local_raw.pop('plugins.enabled', None)
-            self._local_raw.pop('plugins.deny', None)
-            self.set('plugins', plugins)
-
-    def _migrate_api_key(self):
-        local_key = self._local_raw.get('api_key')
-        if not local_key:
-            return
-        if self._global_raw.get('api_key'):
-            self._local_raw.pop('api_key', None)
-            self.data['api_key'] = self._global_raw['api_key']
-            self._save_local()
-            print(f'[config] local api_key removed - global config takes precedence '
-                  f'({self.global_path})', file=sys.stderr)
-            return
-        self.set('api_key', local_key)
-        self._local_raw.pop('api_key', None)
-        self._save_local()
-        print(f'[config] api_key moved to global config ({self.global_path})',
-              file=sys.stderr)
-
-    @staticmethod
-    def _resolve_scope_for(key: str, scope: str) -> str:
-        if key == 'api_key':
-            return 'global'
-        return scope
 
     def reload(self):
         self.data = copy.deepcopy(DEFAULT_CONFIG)
@@ -155,7 +110,6 @@ class Config:
         self.data[key] = value
 
     def set(self, key, value, scope: str = 'local'):
-        scope = self._resolve_scope_for(key, scope)
         raw = self._global_raw if scope == 'global' else self._local_raw
         raw[key] = value
         if scope == 'global':
@@ -170,7 +124,6 @@ class Config:
             self._save_local()
 
     def unset(self, key, scope: str = 'local'):
-        scope = self._resolve_scope_for(key, scope)
         raw = self._global_raw if scope == 'global' else self._local_raw
         raw.pop(key, None)
         other_raw = self._local_raw if scope == 'global' else self._global_raw
@@ -204,8 +157,3 @@ class Config:
         self._global_raw.update(patch)
         self.global_path.parent.mkdir(parents=True, exist_ok=True)
         self.global_path.write_text(json.dumps(self._global_raw, indent=2))
-        if self._global_raw.get('api_key'):
-            try:
-                os.chmod(self.global_path, 0o600)
-            except OSError:
-                pass

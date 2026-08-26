@@ -231,11 +231,11 @@ class TestToolCommand(unittest.TestCase):
         self.assertEqual(self._global_raw().get('temperature'), 0.3)
         self.assertEqual(self._local_raw().get('temperature'), 0.7)
 
-    def test_config_global_api_key_masked(self):
+    def test_config_global_api_key_writes_global(self):
         output = self._dispatch('/config --global api_key sk-456')
         self.assertEqual(self._global_raw().get('api_key'), 'sk-456')
         self.assertEqual(self._local_raw().get('api_key'), '')
-        self.assertNotIn('sk-456', output)
+        self.assertIn('sk-456', output)
 
     def test_config_local_flag_explicit(self):
         self._dispatch('/config --local temperature 0.4')

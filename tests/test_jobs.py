@@ -193,13 +193,12 @@ class TestJobModel(unittest.TestCase):
 
     def test_round_trip_carries_new_fields(self):
         job = Job('a', {'interval': 60}, status='waiting_approval',
-                  require_approval=True, approval_pending=True, max_context=80,
+                  require_approval=True, approval_pending=True,
                   created_at='2026-08-26T08:00:00+00:00')
         restored = Job.from_dict(job.to_dict())
         self.assertEqual(restored.status, 'waiting_approval')
         self.assertTrue(restored.require_approval)
         self.assertTrue(restored.approval_pending)
-        self.assertEqual(restored.max_context, 80)
         self.assertEqual(restored.created_at, '2026-08-26T08:00:00+00:00')
 
     def test_round_trip_carries_task_file(self):
@@ -466,23 +465,6 @@ class TestScheduler(unittest.TestCase):
             self.assertEqual(len(job.history), 2)
             self.assertEqual(job.status, 'waiting_approval')
 
-    def test_max_context_triggers_compaction(self):
-        class BigEngine(ScriptedEngine):
-            def _provider_messages(self):
-                return list(range(100))
-
-            def compact_session(self):
-                self.compacted = True
-
-        engine = BigEngine([TurnResult(status='ok', content='ok', duration=0.1,
-                                       session='job.b')])
-        engine.compacted = False
-        with patch('replio.scheduler._build_engine', return_value=engine):
-            job = Job('b', {'interval': 60}, prompt='p', status='approved',
-                      max_context=50)
-            self.scheduler.run_job(job)
-        self.assertTrue(engine.compacted)
-
     def test_run_content_captured(self):
         self._patch_engine([
             TurnResult(status='ok', content='hello from the job', duration=0.2,
@@ -704,7 +686,7 @@ class TestJobsCli(unittest.TestCase):
         namespace = SimpleNamespace(path=str(self.base), tools_deny=[],
                                     tool_permission=[], approval='manual',
                                     retries=3, backoff=60.0, timeout=0,
-                                    max_context=0, require_approval=False,
+                                    require_approval=False,
                                     session='', mode='', provider='', model='',
                                     persona='', system_prompt='', file='',
                                     no_retry=False, verbose=False,

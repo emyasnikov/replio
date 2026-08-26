@@ -3,6 +3,7 @@ import time
 import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from pathlib import Path
 
 from .config import Config
 from .sessions.manager import SessionManager
@@ -42,6 +43,26 @@ class TurnResult:
 
 CONTINUE_INSTRUCTION = ('Continue exactly where you stopped. '
                         'Do not repeat what was already written.')
+
+
+def _sanitize_session(name: str, limit: int = 64) -> str:
+    cleaned = ''.join(c for c in str(name) if c.isalnum() or c in '-_.')
+    cleaned = cleaned.strip('-_ .').replace(' ', '_')
+    if not cleaned:
+        cleaned = 'parent'
+    if len(cleaned) > limit:
+        cleaned = cleaned[-limit:]
+    return cleaned
+
+
+def _sub_session_name(ts: str, parent: str, sessions_dir: Path) -> str:
+    base = f'sub_{ts}_{_sanitize_session(parent)}'
+    candidate = base
+    n = 1
+    while (Path(sessions_dir) / f'{candidate}.json').exists():
+        n += 1
+        candidate = f'{base}_{n}'
+    return candidate
 
 
 class Engine:
@@ -127,10 +148,8 @@ class Engine:
         if model != self.config.get('model'):
             self.config.apply('model', model)
 
-        api_key = self.config.get('api_key')
         entry = self.models.find(provider_name, base_url, model)
-        if entry is not None and entry.api_key:
-            api_key = entry.api_key
+        api_key = entry.api_key if entry is not None else ''
 
         self.provider = factory(
             base_url=base_url,
@@ -147,8 +166,10 @@ class Engine:
         from .providers.base import _connection_message
         provider = provider or self.config.get('provider')
         base_url = self.config.get('base_url') if base_url is None else base_url
-        api_key = self.config.get('api_key') if api_key is None else api_key
         model = model or self.config.get('model')
+        if api_key is None:
+            entry = self.models.find(provider, base_url, model)
+            api_key = entry.api_key if entry is not None else ''
         factory, _, _ = self._resolve_provider_factory(provider, base_url)
         if factory is None:
             return False, f'No provider registered for "{provider}"', []
@@ -164,8 +185,10 @@ class Engine:
                     model: str | None = None) -> tuple[list[str], str | None]:
         provider = provider or self.config.get('provider')
         base_url = self.config.get('base_url') if base_url is None else base_url
-        api_key = self.config.get('api_key') if api_key is None else api_key
         model = self.config.get('model') if model is None else model
+        if api_key is None:
+            entry = self.models.find(provider, base_url, model)
+            api_key = entry.api_key if entry is not None else ''
         factory, _, _ = self._resolve_provider_factory(provider, base_url)
         if factory is None:
             return [], f'No provider registered for "{provider}"'
@@ -206,7 +229,8 @@ class Engine:
         sub = Engine(sub_config, ui=NullUI(),
                      plugin_manager=self._plugin_manager, provider=provider)
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-        sub.load_or_create_session(f'sub_{ts}_{persona_name}')
+        sub.load_or_create_session(_sub_session_name(
+            ts, self.current_session.name, self.sessions.sessions_dir))
         sub.current_session.parent_id = self.current_session.name
         return sub
 
@@ -244,7 +268,7 @@ class Engine:
         if len(user_msgs) != 1:
             return
         ts = self.current_session.name
-        base = ts if ts.startswith('ses_') else f'ses_{ts}'
+        base = f'ses_{ts}'
         truncated = content[:40]
         space = truncated.rfind(' ')
         if space > 0:

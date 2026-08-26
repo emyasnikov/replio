@@ -20,7 +20,6 @@ Jobs live in `.replio/jobs.json` next to the sessions, one register per worktree
       "retries": 3,
       "backoff": 60,
       "timeout": 0,
-      "max_context": 0,
       "require_approval": false,
       "task_file": "jobs/nightly_report.md",
       "enabled": true,
@@ -121,7 +120,6 @@ replio jobs daemon [--tick 15] [--quiet]        # scheduler loop, Ctrl-C to stop
 | `--retries N` | Retries after a failed attempt; default `3` |
 | `--backoff SECONDS` | Base backoff, doubled per retry; default `60` |
 | `--timeout SECONDS` | Max seconds for one attempt; `0` (default) = no cap |
-| `--max-context N` | Auto-compact the session when the provider context exceeds N messages (`0` = never) |
 | `--require-approval` | Arm only one run per approve - every run parks in `waiting_approval` until a human approves it |
 | `--approval auto` | Start `approved` instead of `proposed` |
 
@@ -145,7 +143,6 @@ The **compact memory** is the run-memory file ([Run memory](#run-memory)): a rol
 
 - **By default each run gets a fresh session file**: `job_<YYYYMMDD>_<HHMMSS>_<name>.json` (e.g. `job_20260826_110230_nightly_report.json`), distinct from interactive sessions (`ses_...`) and delegation sub-agents (`sub_...`). No single file grows forever; every run is a complete, self-contained log. A same-second collision is resolved with a `_2` suffix. Retries within one run share that run's file (the retry sees the failed attempt's context).
 - **`--session <name>` opts into a stable, growing session** instead - useful when you want one continuous transcript.
-- `--max-context N` still bounds an exceptionally long single run: before a run the scheduler summarizes older history and trims the provider context (the append-only file is untouched).
 - The job register keeps the most recent 100 runs, each recording its session file.
 
 ## How a run executes

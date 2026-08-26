@@ -27,7 +27,7 @@ In headless mode (`replio serve` / `replio run`), `ask`-gated tools are denied o
 
 ## Delegation
 
-The `delegate` tool runs a task under a persona as an in-process sub-agent. A sub-agent shares the caller's worktree and tool policy, narrowed by the persona's `tool_permission` carve, so it can reach exactly what the caller can minus what the carve denies. Ask-gated tools are auto-denied inside a sub-agent (no interactive confirm), so its effective permissions are the categories its carve allows. The permission resolves per invocation from the target persona: a configured persona uses its own `tool_permission` (category `delegate` defaults to `allow`; set `ask` on a persona to confirm each delegation), and a persona outside the registry is denied outright. Delegation is recorded in the session `permissions` audit array like any tool call, and each sub-agent's work persists as its own `sub_<ts>_<persona>` session log (legacy `delegate_*` names remain readable). For delegation across trust boundaries, run separate `replio serve` processes scoped to their own folders and delegate over the API instead - see [fleet.md](fleet.md).
+The `delegate` tool runs a task under a persona as an in-process sub-agent. A sub-agent shares the caller's worktree and tool policy, narrowed by the persona's `tool_permission` carve, so it can reach exactly what the caller can minus what the carve denies. Ask-gated tools are auto-denied inside a sub-agent (no interactive confirm), so its effective permissions are the categories its carve allows. The permission resolves per invocation from the target persona: a configured persona uses its own `tool_permission` (category `delegate` defaults to `allow`; set `ask` on a persona to confirm each delegation), and a persona outside the registry is denied outright. Delegation is recorded in the session `permissions` audit array like any tool call, and each sub-agent's work persists as its own `sub_<ts>_<parent-session>` session log (suffix = the calling session id). For delegation across trust boundaries, run separate `replio serve` processes scoped to their own folders and delegate over the API instead - see [fleet.md](fleet.md).
 
 ## Modes
 
@@ -45,7 +45,7 @@ Sessions are complete, append-only logs: every message, tool call with its argum
 
 - **Local-first** - config and session logs live on your disk. All provider traffic is outbound. There is no external telemetry or logging service holding enterprise data.
 - **Zero dependencies** - the core is Python stdlib only, so there is no supply chain to audit and no lockfile churn. Plugins may add third-party deps, imported lazily and only when the plugin is used.
-- **API keys** - stored in config (global or local `.replio/config.json`). Keep keys out of repositories.
+- **API keys** - stored in the global model registry (`~/.config/replio/models.json`, written `0600` when it holds keys), never in config and never in a session log by hand. Keep keys out of repositories.
 
 ## Plugins
 

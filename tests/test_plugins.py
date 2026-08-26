@@ -236,14 +236,6 @@ class TestPluginsConfig(PluginTestBase):
         self.assertEqual(pm.get('a').status, 'loaded')
         self.assertEqual(pm.get('b').status, 'loaded')
 
-    def test_legacy_enabled_deny_migrated(self):
-        write_plugin(self.plugins_dir, 'a', SIMPLE_TOOL_PLUGIN, {'name': 'a'})
-        write_plugin(self.plugins_dir, 'b', SIMPLE_TOOL_PLUGIN, {'name': 'b'})
-        pm = self.make_pm({'plugins.enabled': ['a'], 'plugins.deny': ['b']})
-        pm.load()
-        self.assertEqual(pm.get('a').status, 'loaded')
-        self.assertEqual(pm.get('b').status, 'disabled')
-
 
 class TestEntryErrors(PluginTestBase):
 

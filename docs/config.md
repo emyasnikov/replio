@@ -5,7 +5,7 @@ Config is a single JSON object read from two files, merged per key with project-
 1. **Global** - `~/.config/replio/config.json` (user-wide defaults, credentials).
 2. **Local** - `.replio/config.json` in the project path (project overrides).
 
-Every process merges them in memory. Nothing is ever distributed to folders. Writes default to the **local** file and hold only the keys you actually selected - a save never re-writes the merged config. `api_key` is special-cased and always stored in the **global** file (written with `0600` perms), never in a project file. Loading a config that has a local `api_key` moves it to the global file and drops it locally.
+Every process merges them in memory. Nothing is ever distributed to folders. Writes default to the **local** file and hold only the keys you actually selected - a save never re-writes the merged config. API keys are not part of the config: they live in the global model registry (`~/.config/replio/models.json`) and are managed through `/connect` (see [Models](#model-registry-keys)).
 
 ```bash
 # inspect in the REPL (origin: default/global/local)
@@ -16,7 +16,6 @@ Every process merges them in memory. Nothing is ever distributed to folders. Wri
 /config tools.deny ["run_command", "web_search"]
 # set a single line in the global config
 /config --global temperature 0.2
-/config --global api_key <key>       # never shown in full, always global
 # remove a project-local value, falling back to global/default
 /config unset temperature
 # remove a value from the global config
@@ -32,7 +31,6 @@ replio config get max_tokens --show-origin     # one or more values + where they
 replio config set max_tokens 0                 # project-local
 replio config set max_tokens 0 --global        # global file
 replio config unset max_tokens                 # remove from project-local
-replio config set api_key ...                  # always global, never local
 ```
 
 Deleting a project's `.replio/config.json` reverts that project to the global and built-in defaults. To keep settings across local deletions, globalize individual lines with `--global` (both the REPL `/config` and the CLI accept it), e.g. `/config --global provider ollama`, `/config --global model <model>`.
@@ -44,7 +42,6 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 | `provider`                  | `"ollama"`             | Provider name (`ollama`, `openai`, `groq`, `anthropic`, `openai-compatible`) |
 | `model`                     | `"llama3.2"`           | Model name                                                             |
 | `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
-| `api_key`                   | `""`                   | Provider API key                                                       |
 | `temperature`               | `0.7`                  | Sampling temperature                                                   |
 | `max_tokens`                | `8192`                 | Output token cap sent to the provider. `0` = unset (provider default applies, e.g. Ollama caps at 2048). Default `8192` overrides low provider defaults |
 | `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event with no content |
@@ -126,8 +123,8 @@ Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refuse
 
 A global catalogue of configured models lives separately from config in `~/.config/replio/models.json` (written `0600` when it holds keys). It is **not** part of the config merge - `/config` never lists or writes it, and it has no local scope. It is managed only through `/connect` and `/model`:
 
-- `/connect` appends (or updates) an entry `{provider, base_url, model, api_key}` and records the key there, **not** in `config.api_key`. The active model still comes from `config.model`, so a project can use any model via its local config while the registry remembers every connection.
+- `/connect` appends (or updates) an entry `{provider, base_url, model, api_key}` - **the registry is the only place API keys live**. The active model still comes from `config.model`, so a project can use any model via its local config while the registry remembers every connection.
 - `/model list` shows the configured models grouped by provider with the active one marked `>`, and `(key)` for entries that have a stored key.
 - `/model list --online [provider]` probes a provider's advertised models live (default: current provider).
 
-`config.api_key` remains readable (redacted) as a legacy fallback for projects that set provider/base_url/model by hand via `/config`; `/connect` no longer writes it. Deleting a project config cannot lose the registry - it is global by design.
+The engine resolves the API key for the active `provider`/`base_url`/`model` from the registry (matching entry or `""`); there is no `api_key` config key anymore, and `replio config set api_key` would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.

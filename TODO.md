@@ -105,14 +105,14 @@
 - [x] Per-run job sessions - `job_<ts>_<name>` files, unified `ses_`/`sub_`/`job_` naming
 - [x] Job run memory - rolling `.memory.md` run summary injected into each run, seeded with prior memory
 - [x] Job task definition as linked Markdown - `--file` templated task files, `replio jobs edit`
-- [x] Job context management - `--max-context` auto-compaction, 100-run history cap, per-run session files
+- [x] Job context management - per-run `job_*` session files, `ses_`/`sub_` naming, 100-run history cap
 - [x] Job per-run approval - `--require-approval` parks each run in `waiting_approval` until a human approves it
 - [x] Jobs diagnostics - `replio jobs status` (fired count, last error, uptime) + last output in `show`
 - [x] Watchable job runs - `replio jobs run --verbose` streams the live turn; headless `run` prints the answer
 - [x] Richer job runs - `--persona`/`--system-prompt`, default recurring-job system prompt, tool carve
 - [x] Scheduled / durable jobs - `replio jobs`: registry, daemon, cron, retries, approval gate
 - [x] Per-agent permission profiles - persona tool_permission drives sub-agent policy
-- [x] In-process sub-engine - Engine.run_subagent: persona overrides, NullUI, delegate_ session
+- [x] In-process sub-engine - Engine.run_subagent: persona overrides, NullUI, sub_ session
 - [x] `delegate` tool - core, per-persona permission resolver, delegate_echo result display
 - [x] Personas registry - global+local personas.json merge, /persona command, docs/personas.md
 - [x] Soft tool results surfaced as dimmed info lines - `(empty file)`, `(no matches)`, `(end of content)` notes, gated by `show_notes`
@@ -120,7 +120,7 @@
 - [x] Stable message ids - `msg_<hex>` auto-assigned to every session message
 - [x] Global model registry - /connect appends models + keys, /model list/--online, picker reuse
 - [x] REPL `/config --global/--local` scope flags + apply() in-memory overrides (one-shot CLI, engine normalization never write files)
-- [x] Scoped config writes - api_key global-only (0600), local saves overrides only, replio config CLI
+- [x] Scoped config writes - local saves overrides only, replio config CLI; API keys live in the model registry
 - [x] Turn recovery - auto-continue on truncation, empty-done retried, reasoning-only not flagged empty
 - [x] Thinking captured from `reasoning` deltas (ollama.com) too, documented in config/providers docs
 - [x] Confirm prompt `?` glyph starts at the beginning of the line, aligned with activity glyphs

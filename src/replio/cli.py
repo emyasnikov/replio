@@ -120,12 +120,6 @@ def cmd_mcp(args) -> int:
     return 0
 
 
-def _redact(config: Config, key: str, value) -> str:
-    if key == 'api_key' and value:
-        return '***'
-    return str(value)
-
-
 def _parse_config_value(value: str | None):
     if value is None:
         return _MISSING_VALUE
@@ -150,8 +144,7 @@ def cmd_config(args) -> int:
         elif isinstance(keys, str):
             keys = [keys]
         for key in keys:
-            val = config.get(key)
-            line = f'{key} = {_redact(config, key, val)}'
+            line = f'{key} = {config.get(key)}'
             if getattr(args, 'show_origin', False):
                 line += f'  ({config.origin(key)})'
             print(line)
@@ -163,9 +156,7 @@ def cmd_config(args) -> int:
             print(f'Error: a value is required to set "{args.key}"', file=sys.stderr)
             return 1
         config.set(args.key, value, scope=scope)
-        resolved = 'global' if args.key == 'api_key' else scope
-        print(f'{args.key} = {_redact(config, args.key, value)} '
-              f'(saved to {resolved} config)')
+        print(f'{args.key} = {value} (saved to {scope} config)')
         return 0
 
     if action == 'unset':
@@ -308,7 +299,6 @@ def cmd_jobs(args) -> int:
             retries=getattr(args, 'retries', 3),
             backoff=getattr(args, 'backoff', 60.0),
             timeout=getattr(args, 'timeout', 0),
-            max_context=getattr(args, 'max_context', 0),
             require_approval=require_approval,
             enabled=args.approval == 'auto',
             status='approved' if args.approval == 'auto' else 'proposed',
