@@ -191,6 +191,27 @@ class TestDiscovery(PluginTestBase):
         self.assertEqual(info.version, '9.9.9')
         self.assertFalse(info.global_)
 
+    def test_src_entry_with_sibling_import(self):
+        pdir = self.plugins_dir / 'srclay'
+        src = pdir / 'src'
+        src.mkdir(parents=True)
+        with open(pdir / 'manifest.json', 'w') as f:
+            json.dump({'name': 'srclay', 'entry': 'src/plugin.py'}, f)
+        (src / 'helper.py').write_text('VALUE = "from-helper"\n')
+        (src / 'plugin.py').write_text(
+            'import helper\n'
+            'def register_tools(registry):\n'
+            '    @registry.register("peek", "Peek", '
+            '{"type": "object", "properties": {}})\n'
+            '    def peek():\n'
+            '        return helper.VALUE\n')
+        self.pm.load()
+        info = self.pm.get('srclay')
+        self.assertEqual(info.status, 'loaded')
+        reg = ToolRegistry()
+        self.pm.register_tools(reg)
+        self.assertEqual(reg.execute('peek', {}), 'from-helper')
+
 
 class TestCompatibility(PluginTestBase):
 
@@ -393,6 +414,57 @@ class TestEngineIntegration(PluginTestBase):
         with redirect_stdout(buf):
             engine.registry.dispatch('/plugins')
         self.assertIn('hello', buf.getvalue())
+
+
+class TestPluginsTestCommand(PluginTestBase):
+
+    def _write_test_plugin(self, suite_body='        self.assertTrue(True)\n'):
+        write_plugin(self.plugins_dir, 'hello', SIMPLE_TOOL_PLUGIN, SIMPLE_MANIFEST)
+        tdir = self.plugins_dir / 'hello' / 'tests'
+        tdir.mkdir(exist_ok=True)
+        (tdir / 'test_hello.py').write_text(
+            'import unittest\n'
+            'class TestHello(unittest.TestCase):\n'
+            '    def test_ok(self):\n'
+            f'{suite_body}'
+        )
+
+    def _cmd(self, **kw):
+        import io
+        from contextlib import redirect_stderr, redirect_stdout
+        from types import SimpleNamespace
+        from replio.cli import cmd_plugins
+        args = dict(action='test', path=str(self.root), verbose=False)
+        args.update(kw)
+        out, err = io.StringIO(), io.StringIO()
+        with redirect_stdout(out), redirect_stderr(err):
+            return cmd_plugins(SimpleNamespace(**args))
+
+    def test_load_plugin_test_suite(self):
+        from replio.plugins.manager import load_plugin_test_suite
+        self._write_test_plugin()
+        suite = load_plugin_test_suite(self.plugins_dir / 'hello')
+        self.assertEqual(suite.countTestCases(), 1)
+
+    def test_cli_test_runs_named(self):
+        self._write_test_plugin()
+        self.assertEqual(self._cmd(name='hello'), 0)
+
+    def test_cli_test_all_runs_each_plugin(self):
+        self._write_test_plugin()
+        write_plugin(self.plugins_dir, 'other', SIMPLE_TOOL_PLUGIN, {'name': 'other'})
+        self.assertEqual(self._cmd(name=None), 0)
+
+    def test_cli_test_unknown_returns_1(self):
+        self.assertEqual(self._cmd(name='nope'), 1)
+
+    def test_cli_test_no_tests_returns_1(self):
+        write_plugin(self.plugins_dir, 'hello', SIMPLE_TOOL_PLUGIN, SIMPLE_MANIFEST)
+        self.assertEqual(self._cmd(name='hello'), 1)
+
+    def test_cli_test_failing_suite_returns_1(self):
+        self._write_test_plugin('        self.assertTrue(False)\n')
+        self.assertEqual(self._cmd(name='hello'), 1)
 
 
 if __name__ == '__main__':

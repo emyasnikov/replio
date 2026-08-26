@@ -4,6 +4,12 @@
   "description": "Shell command execution - bundled with replio",
   "replio_version": ">=0.13.0,<1.0",
   "python": ">=3.10",
-  "entry": "plugin.py",
-  "provides": {"tools": ["run_command"], "providers": [], "commands": []}
+  "entry": "src/plugin.py",
+  "provides": {
+    "tools": [
+      "run_command"
+    ],
+    "providers": [],
+    "commands": []
+  }
 }

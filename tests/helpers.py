@@ -9,16 +9,7 @@ from replio.sessions.manager import SessionManager
 from replio.commands.registry import CommandRegistry
 from replio.commands.builtins import register_builtins
 from replio.plugins.manager import PluginManager
-from replio.tools.registry import ToolRegistry
 from replio.ui import ReplUI
-
-
-def make_bundled_tool_registry(workdir: str) -> ToolRegistry:
-    pm = PluginManager(Config(path=str(Path(workdir) / 'cfg')))
-    pm.load()
-    registry = ToolRegistry()
-    pm.register_tools(registry)
-    return registry
 
 
 def make_chat(config_data: dict | None = None) -> ChatLoop:

@@ -1,18 +1,42 @@
+import importlib.util
+import sys
 import unittest
 import tempfile
 from pathlib import Path
 
-from replio.config import Config
+SRC = Path(__file__).resolve().parents[1] / 'src'
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
-from tests.helpers import make_bundled_tool_registry
+from replio.tools.registry import ToolRegistry
 
 
-class TestMachineTools(unittest.TestCase):
+def _load_plugin(name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(name, str(path))
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+fs_plugin = _load_plugin('replio_fs_plugin', SRC / 'plugin.py')
+
+
+class _Cfg:
+    def __init__(self, **kw):
+        self.data = kw
+
+    def get(self, key, default=None):
+        return self.data.get(key, default)
+
+
+class TestFsTools(unittest.TestCase):
 
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
-        self.registry = make_bundled_tool_registry(self.root)
+        self.registry = ToolRegistry()
+        fs_plugin.register_tools(self.registry)
 
     def tearDown(self):
         self._tmp.cleanup()
@@ -68,9 +92,8 @@ class TestMachineTools(unittest.TestCase):
         content = '\n'.join(f'line{i} line{i} line{i} line{i} line{i}'
                             for i in range(1, 201))
         (self.root / 'big.txt').write_text(content)
-        cfg = Config(path=str(self.root))
-        cfg.data['tool_max_result_chars'] = 1000
-        out = self.run_tool_cfg('read_file', cfg, path=str(self.root / 'big.txt'))
+        out = self.run_tool_cfg('read_file', _Cfg(tool_max_result_chars=1000),
+                                path=str(self.root / 'big.txt'))
         self.assertIn('... (truncated)', out)
         self.assertNotIn('200|', out)
 
@@ -168,45 +191,6 @@ class TestMachineTools(unittest.TestCase):
             finally:
                 os.chdir(orig)
 
-    def test_run_command_success(self):
-        out = self.run_tool('run_command', command='echo hello', cwd=str(self.root))
-        self.assertIn('exit 0', out)
-        self.assertIn('hello', out)
-
-    def test_run_command_nonzero_exit(self):
-        out = self.run_tool('run_command', command='exit 3', cwd=str(self.root))
-        self.assertIn('exit 3', out)
-
-    def test_run_command_timeout(self):
-        out = self.run_tool('run_command', command='sleep 5', cwd=str(self.root), timeout=1)
-        self.assertIn('timed out', out)
-
-    def test_run_command_missing_cwd(self):
-        out = self.run_tool('run_command', command='echo hi',
-                            cwd='/definitely/not/a/real/dir')
-        self.assertIn("Error: cwd not found: /definitely/not/a/real/dir", out)
-
-    def test_run_command_clamps_timeout(self):
-        import importlib.util
-        from replio.plugins.manager import PluginManager
-        entry = PluginManager._bundled_dir() / 'replio-core-exec' / 'plugin.py'
-        spec = importlib.util.spec_from_file_location('_test_exec_plugin', str(entry))
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        self.assertEqual(mod._clamp_timeout(10000), mod.MAX_TIMEOUT)
-        self.assertEqual(mod._clamp_timeout(5), 5)
-        self.assertEqual(mod._clamp_timeout(0), 1)
-        self.assertEqual(mod._clamp_timeout('nonsense'), mod.DEFAULT_TIMEOUT)
-        self.assertEqual(mod._clamp_timeout(None), mod.DEFAULT_TIMEOUT)
-
-    def test_run_command_cap_truncates(self):
-        cfg = Config(path=str(self.root))
-        cfg.data['tool_max_result_chars'] = 20
-        out = self.run_tool_cfg('run_command', cfg,
-                                command='seq 1 1000', cwd=str(self.root))
-        self.assertIn('... (truncated)', out)
-        self.assertNotIn('\n1000', out)
-
     def test_glob_recursive(self):
         (self.root / 'src').mkdir()
         (self.root / 'src' / 'app.py').write_text('x')
@@ -274,7 +258,6 @@ class TestMachineTools(unittest.TestCase):
             'read_file': ('read', 'read', 'path', 'path'),
             'list_dir': ('read', 'list', 'path', 'path'),
             'write_file': ('write', 'edit', 'path', 'path'),
-            'run_command': ('exec', 'bash', None, 'command'),
             'glob': ('read', 'list', 'path', 'pattern'),
             'grep': ('read', 'list', 'path', 'pattern'),
         }
@@ -282,6 +265,32 @@ class TestMachineTools(unittest.TestCase):
             self.assertEqual(self.registry.permission_for(name), permission, name)
             self.assertEqual(self.registry.path_arg_for(name), path_arg, name)
             self.assertEqual(self.registry.key_arg_for(name), key_arg, name)
+
+    def test_write_file_new_file_preview(self):
+        path = str(self.root / 'new.md')
+        value, body = self.registry.status_parts(
+            'write_file', {'path': path, 'content': 'First line\nSecond line\n'})
+        self.assertEqual(value, path)
+        self.assertEqual(body[:2], ['+ First line', '+ Second line'])
+        self.assertEqual(body[-1],
+                         f'({Path(path).resolve()} - 2 lines, 23 chars, created)')
+
+    def test_write_file_existing_file_diff(self):
+        p = self.root / 'edit.md'
+        p.write_text('old line\n')
+        value, body = self.registry.status_parts(
+            'write_file', {'path': str(p), 'content': 'new line\n'})
+        self.assertEqual(value, str(p))
+        self.assertIn('-old line', body)
+        self.assertIn('+new line', body)
+        self.assertEqual(body[-1], f'({p.resolve()} - 1 lines, 9 chars, overwritten)')
+
+    def test_write_file_append_summary(self):
+        p = self.root / 'append.md'
+        p.write_text('a\n')
+        value, body = self.registry.status_parts(
+            'write_file', {'path': str(p), 'content': 'b\n', 'mode': 'a'})
+        self.assertEqual(body[-1], f'({p.resolve()} - 1 lines, 2 chars, appended)')
 
 
 if __name__ == '__main__':

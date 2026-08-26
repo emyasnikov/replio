@@ -95,6 +95,9 @@ def _add_plugins_parser(sub):
     pu.add_argument('name', help='Plugin name')
     pun = g.add_parser('uninstall', help='Remove an installed plugin')
     pun.add_argument('name', help='Plugin name')
+    pt = g.add_parser('test', help='Run a plugin\'s bundled test suite')
+    pt.add_argument('name', nargs='?', help='Plugin name (default: all plugins with tests)')
+    pt.add_argument('--verbose', action='store_true', help='Verbose unittest output')
 
 
 def _add_jobs_parser(sub):
@@ -199,6 +202,9 @@ def main(argv=None):
     if args.command == 'mcp':
         from .cli import cmd_mcp
         return cmd_mcp(args)
+    if args.command == 'plugins':
+        from .cli import cmd_plugins
+        return cmd_plugins(args)
     if args.command == 'config':
         from .cli import cmd_config
         return cmd_config(args)

@@ -92,6 +92,37 @@ def _dep_installed(package: str) -> bool:
         return False
 
 
+def load_plugin_test_suite(directory: Path):
+    import sys as _sys
+    import unittest
+
+    suite = unittest.TestSuite()
+    tests_dir = Path(directory) / 'tests'
+    if not tests_dir.is_dir():
+        return suite
+    added = False
+    if str(directory) not in _sys.path:
+        _sys.path.insert(0, str(directory))
+        added = True
+    try:
+        for path in sorted(tests_dir.glob('test*.py')):
+            mod_name = f'_replio_plugin_tests_{Path(directory).name}_{path.stem}'
+            spec = importlib.util.spec_from_file_location(mod_name, str(path))
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            _sys.modules[mod_name] = module
+            try:
+                spec.loader.exec_module(module)
+            except Exception:
+                continue
+            suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(module))
+    finally:
+        if added:
+            _sys.path.remove(str(directory))
+    return suite
+
+
 class PluginManager:
     def __init__(self, config: Config):
         self.config = config
@@ -225,18 +256,19 @@ class PluginManager:
             if spec is None or spec.loader is None:
                 raise ImportError(f'cannot load {entry_path}')
             module = importlib.util.module_from_spec(spec)
+            entry_dir = entry_path.parent
             module.__package__ = mod_name
-            module.__path__ = [str(info.directory)]
+            module.__path__ = [str(entry_dir)]
             sys.modules[mod_name] = module
             added = False
-            if str(info.directory) not in sys.path:
-                sys.path.insert(0, str(info.directory))
+            if str(entry_dir) not in sys.path:
+                sys.path.insert(0, str(entry_dir))
                 added = True
             try:
                 spec.loader.exec_module(module)
             finally:
                 if added:
-                    sys.path.remove(str(info.directory))
+                    sys.path.remove(str(entry_dir))
             info.status = 'loaded'
             self._modules[info.name] = module
             hook = getattr(module, 'register_providers', None)

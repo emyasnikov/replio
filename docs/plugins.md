@@ -14,14 +14,19 @@ First-party plugins ship with replio and are listed in the default `plugins` con
 
 ## Plugin layout
 
-A plugin is a directory with a `manifest.json` and an entry module, or a bare `.py` file (name = filename, defaults apply):
+A plugin is a directory with a `manifest.json`, an entry module, and an optional unit-test suite. Source modules live under `src/` and tests under `tests/` (a bare `.py` file at the root is also accepted - name = filename, defaults apply):
 
 ```
 ~/.config/replio/plugins/web-scraper/
   manifest.json
-  plugin.py          # entry module
-  helpers.py         # sibling modules, importable by the entry
+  src/
+    plugin.py          # entry module (manifest "entry" points here)
+    helpers.py         # sibling modules, importable by the entry
+  tests/
+    test_plugins.py    # optional - run by `replio plugins test` and the core suite
 ```
+
+The entry module may sit anywhere under the plugin directory - `manifest.json` `"entry"` is a path relative to the plugin root (default `plugin.py`). Sibling imports resolve from the entry module's own directory, so a `src/` layout works the same as a flat one.
 
 ## Manifest
 
@@ -46,7 +51,7 @@ A plugin is a directory with a `manifest.json` and an entry module, or a bare `.
 | `description`    | `""`          | Shown in `/plugins` and `replio plugins list` |
 | `replio_version` | `""`          | Semver range the plugin is compatible with (`>=0.12.0,<1.0`). Incompatible plugins are skipped at load |
 | `python`         | `""`          | Minimum/maximum Python, same range syntax (`>=3.10`) |
-| `entry`          | `"plugin.py"` | Module to load |
+| `entry`          | `"plugin.py"` | Module to load, relative to the plugin directory (may point into `src/`) |
 | `requires`       | `[]`          | Third-party packages, metadata for status and `--deps` install, never imported by the core |
 | `provides`       | `{}`          | Declared tools/providers/commands for `/plugins` display |
 | `source`         | `""`          | Origin recorded on install, used by `update` |
@@ -125,10 +130,12 @@ replio plugins list
 replio plugins install <git-url|path> --deps
 replio plugins update <name>
 replio plugins uninstall <name>
+replio plugins test [name]
 ```
 
 - `install` clones a git URL or copies a local directory into `.replio/plugins/` (or `~/.config/replio/plugins/` with `--global`), records `source`, and with `--deps` runs `pip install` on the declared `requires`.
 - `update` runs `git pull` for remote sources or re-copies a local path.
+- `test` runs a plugin's `tests/` unit suite (`--verbose` for per-test output); without a name it runs every plugin that has one. The core test suite also runs these through `tests/test_plugin_suites.py`.
 - Bundled plugins report an error for `update` and `uninstall`. Disable them instead.
 
 ## Status

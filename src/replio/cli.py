@@ -168,10 +168,12 @@ def cmd_config(args) -> int:
 
 
 def cmd_plugins(args) -> int:
-    from .plugins.manager import PluginManager, PluginError
+    from .plugins.manager import PluginManager, PluginError, load_plugin_test_suite
     config = Config(path=getattr(args, 'path', None))
     pm = PluginManager(config)
     pm.load()
+    if args.action == 'test':
+        return _plugins_run_tests(pm, args)
     if args.action == 'list':
         infos = sorted(pm.status(), key=lambda i: i.name)
         if not infos:
@@ -209,6 +211,33 @@ def cmd_plugins(args) -> int:
         print(f'Error: {e}', file=sys.stderr)
         return 1
     return 0
+
+
+def _plugins_run_tests(pm, args) -> int:
+    import unittest
+
+    from .plugins.manager import load_plugin_test_suite
+
+    name = getattr(args, 'name', None)
+    infos = [pm.get(name)] if name else [i for i in pm.status()]
+    if name and infos[0] is None:
+        print(f'Plugin not found: {name}', file=sys.stderr)
+        return 1
+    failed = False
+    for info in infos:
+        suite = load_plugin_test_suite(info.directory)
+        count = suite.countTestCases()
+        if name and count == 0:
+            print(f'Plugin has no test suite: {info.name}', file=sys.stderr)
+            return 1
+        if count == 0:
+            continue
+        print(f'Running {info.name} tests ({count})...')
+        result = unittest.TextTestRunner(
+            stream=sys.stderr, verbosity=2 if getattr(args, 'verbose', False) else 1,
+        ).run(suite)
+        failed = failed or not result.wasSuccessful()
+    return 1 if failed else 0
 
 
 def cmd_jobs(args) -> int:

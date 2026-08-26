@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import sys
 import tempfile
@@ -6,16 +7,25 @@ import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-PLUGIN_DIR = Path(__file__).resolve().parent.parent / 'plugins' / 'replio-core-mcp'
-if str(PLUGIN_DIR) not in sys.path:
-    sys.path.insert(0, str(PLUGIN_DIR))
+SRC_DIR = Path(__file__).resolve().parents[1] / 'src'
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+
+def _load_plugin(name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(name, str(path))
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
 
 import jsonrpc
 import client as mcp_client
 from client_stdio import StdioTransport, TransportError as StdioTransportError
 from client_http import HttpTransport
 import server as mcp_server
-import plugin as mcp_plugin
+mcp_plugin = _load_plugin('replio_mcp_plugin', SRC_DIR / 'plugin.py')
 from replio.tools.registry import ToolRegistry
 from replio.tools.policy import ToolPolicy
 

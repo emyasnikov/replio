@@ -1,42 +1,122 @@
-import tempfile
 import unittest
-from pathlib import Path
 
 from replio.tools.registry import ToolRegistry
-
-from tests.helpers import make_bundled_tool_registry
 
 
 class TestToolRegistry(unittest.TestCase):
 
     def setUp(self):
-        self._tmp = tempfile.TemporaryDirectory()
-        self.registry = make_bundled_tool_registry(self._tmp.name)
+        self.registry = ToolRegistry()
 
-    def tearDown(self):
-        self._tmp.cleanup()
+        @self.registry.register(
+            name='search_web', description='Search the web',
+            parameters={
+                'type': 'object',
+                'properties': {'query': {'type': 'string'}},
+                'required': ['query'],
+            },
+            refine=True, category='search', permission='web', key_arg='query',
+            short='Search the web', param_aliases={'q': 'query'},
+            note=lambda r: r == 'No results found.',
+        )
+        def search_web(query):
+            return f'results for {query}'
 
-    def test_web_search_requires_refine(self):
-        self.assertTrue(self.registry.refine_required('web_search'))
+        @self.registry.register(
+            name='run_cmd', description='Run a shell command',
+            parameters={
+                'type': 'object',
+                'properties': {
+                    'command': {'type': 'string'},
+                    'cwd': {'type': 'string'},
+                    'timeout': {'type': 'integer'},
+                },
+                'required': ['command'],
+            },
+            category='exec', permission='bash', key_arg='command',
+            short='Run a shell command', echo=True,
+            aliases=['exec'], param_aliases={'cmd': 'command'},
+            glyph='$', verb='Run',
+        )
+        def run_cmd(command, cwd=None, timeout=30):
+            return f'ran {command}'
 
-    def test_fetch_page_no_refine(self):
-        self.assertFalse(self.registry.refine_required('fetch_page'))
+        @self.registry.register(
+            name='read_doc', description='Read a file',
+            parameters={
+                'type': 'object',
+                'properties': {
+                    'path': {'type': 'string'},
+                    'limit': {'type': 'integer'},
+                },
+                'required': ['path'],
+            },
+            category='read', permission='read', path_arg='path', key_arg='path',
+            glyph='←', verb='Read', param_aliases={'file': 'path'},
+            note=lambda r: r.endswith('(empty)'),
+        )
+        def read_doc(path, limit=0):
+            return path
 
-    def test_unknown_tool_no_refine(self):
+        @self.registry.register(
+            name='list_dir', description='List a directory',
+            parameters={
+                'type': 'object',
+                'properties': {'path': {'type': 'string'}},
+                'required': ['path'],
+            },
+            category='read', permission='list', path_arg='path', key_arg='path',
+            glyph='*', verb='List',
+        )
+        def list_dir(path):
+            return path
+
+        @self.registry.register(
+            name='glob_files', description='Glob',
+            parameters={
+                'type': 'object',
+                'properties': {'pattern': {'type': 'string'}},
+                'required': ['pattern'],
+            },
+            category='read', permission='list', key_arg='pattern',
+            glyph='*', verb='Glob',
+        )
+        def glob_files(pattern):
+            return pattern
+
+        @self.registry.register(
+            name='write_doc', description='Write a file',
+            parameters={
+                'type': 'object',
+                'properties': {
+                    'path': {'type': 'string'},
+                    'content': {'type': 'string'},
+                },
+                'required': ['path', 'content'],
+            },
+            category='write', permission='edit', path_arg='path', key_arg='path',
+            glyph='→', verb='Write',
+            status=lambda args: f"{args.get('path')}\n"
+                                + '\n'.join(f'+ {l}'
+                                            for l in args.get('content', '').splitlines()),
+        )
+        def write_doc(path, content):
+            return content
+
+    def test_refine_metadata(self):
+        self.assertTrue(self.registry.refine_required('search_web'))
+        self.assertFalse(self.registry.refine_required('read_doc'))
         self.assertFalse(self.registry.refine_required('nonexistent'))
 
     def test_names(self):
-        self.assertIn('web_search', self.registry.names())
-        self.assertIn('fetch_page', self.registry.names())
+        self.assertIn('search_web', self.registry.names())
+        self.assertIn('read_doc', self.registry.names())
 
-    def test_schema(self):
+    def test_schema_order_includes_aliases(self):
         names = [s['function']['name'] for s in self.registry.schema()]
         self.assertEqual(names, [
-            'run_command', 'bash', 'exec',
-            'read_file', 'read', 'view', 'list_dir', 'ls', 'write_file',
-            'glob', 'grep',
-            'mcp_connect', 'mcp_list', 'mcp_disconnect',
-            'web_search', 'fetch_page', 'open',
+            'search_web', 'run_cmd', 'exec',
+            'read_doc', 'list_dir', 'glob_files', 'write_doc',
         ])
 
     def test_execute_drops_undeclared_and_none_args(self):
@@ -87,118 +167,87 @@ class TestToolRegistry(unittest.TestCase):
         self.assertTrue(reg.refine_required('do_stuff'))
 
     def test_permission_metadata(self):
-        self.assertEqual(self.registry.permission_for('web_search'), 'web')
-        self.assertEqual(self.registry.permission_for('fetch_page'), 'read')
-        self.assertEqual(self.registry.key_arg_for('web_search'), 'query')
-        self.assertEqual(self.registry.path_arg_for('fetch_page'), None)
+        self.assertEqual(self.registry.permission_for('search_web'), 'web')
+        self.assertEqual(self.registry.permission_for('read_doc'), 'read')
+        self.assertEqual(self.registry.key_arg_for('search_web'), 'query')
+        self.assertEqual(self.registry.path_arg_for('read_doc'), 'path')
+        self.assertEqual(self.registry.path_arg_for('search_web'), None)
 
     def test_schema_filtered(self):
-        schema = self.registry.schema_filtered({'web_search'})
+        schema = self.registry.schema_filtered({'search_web'})
         names = [s['function']['name'] for s in schema]
-        self.assertEqual(names, ['web_search'])
+        self.assertEqual(names, ['search_web'])
 
     def test_status_parts_uses_key_arg_value(self):
         value, body = self.registry.status_parts(
-            'web_search', {'query': 'latest python', 'junk': 1})
+            'search_web', {'query': 'latest python', 'junk': 1})
         self.assertEqual(value, 'latest python')
         self.assertEqual(body, [])
 
     def test_status_parts_truncates_long_value(self):
-        value, body = self.registry.status_parts('run_command', {'command': 'x' * 200})
+        value, body = self.registry.status_parts('run_cmd', {'command': 'x' * 200})
         self.assertEqual(len(value), 80)
         self.assertEqual(body, [])
+
+    def test_status_parts_custom_status_source_note_or_status(self):
+        value, body = self.registry.status_parts(
+            'write_doc', {'path': 'a.md', 'content': 'First line\nSecond line\n'})
+        self.assertEqual(value, 'a.md')
+        self.assertEqual(body[:2], ['+ First line', '+ Second line'])
 
     def test_status_parts_unknown_tool(self):
         value, body = self.registry.status_parts('nonexistent', {})
         self.assertEqual(value, 'nonexistent')
         self.assertEqual(body, [])
 
-    def test_write_file_new_file_preview(self):
-        path = str(Path(self._tmp.name) / 'new.md')
-        value, body = self.registry.status_parts(
-            'write_file', {'path': path, 'content': 'First line\nSecond line\n'})
-        self.assertEqual(value, path)
-        self.assertEqual(body[:2], ['+ First line', '+ Second line'])
-        self.assertEqual(body[-1], f'({Path(path).resolve()} - 2 lines, 23 chars, created)')
-
-    def test_write_file_existing_file_diff(self):
-        p = Path(self._tmp.name) / 'edit.md'
-        p.write_text('old line\n')
-        value, body = self.registry.status_parts(
-            'write_file', {'path': str(p), 'content': 'new line\n'})
-        self.assertEqual(value, str(p))
-        self.assertIn('-old line', body)
-        self.assertIn('+new line', body)
-        self.assertEqual(body[-1], f'({p.resolve()} - 1 lines, 9 chars, overwritten)')
-
-    def test_write_file_append_summary(self):
-        p = Path(self._tmp.name) / 'append.md'
-        p.write_text('a\n')
-        value, body = self.registry.status_parts(
-            'write_file', {'path': str(p), 'content': 'b\n', 'mode': 'a'})
-        self.assertEqual(body[-1], f'({p.resolve()} - 1 lines, 2 chars, appended)')
-
     def test_echo_metadata(self):
-        self.assertTrue(self.registry.echo_for('run_command'))
-        self.assertFalse(self.registry.echo_for('write_file'))
+        self.assertTrue(self.registry.echo_for('run_cmd'))
+        self.assertFalse(self.registry.echo_for('write_doc'))
         self.assertFalse(self.registry.echo_for('nonexistent'))
 
     def test_note_metadata(self):
-        self.assertTrue(self.registry.is_note_result('read_file', '# a.txt - 0 lines, 0 chars\n(empty file)'))
-        self.assertTrue(self.registry.is_note_result('glob', '(no matches for "*.py")'))
-        self.assertTrue(self.registry.is_note_result('grep', '(no matches for "foo")'))
-        self.assertTrue(self.registry.is_note_result('web_search', 'No search results found.'))
-        self.assertTrue(self.registry.is_note_result('fetch_page', '(end of content)'))
-        self.assertTrue(self.registry.is_note_result('open', '(empty content)'))
-        self.assertFalse(self.registry.is_note_result('read_file', '(empty directory)'))
-        self.assertFalse(self.registry.is_note_result('web_search', 'Some results found.'))
-        self.assertFalse(self.registry.is_note_result('nonexistent', '(empty file)'))
+        self.assertTrue(self.registry.is_note_result('search_web', 'No results found.'))
+        self.assertTrue(self.registry.is_note_result('read_doc', '# x\n(empty)'))
+        self.assertFalse(self.registry.is_note_result('read_doc', '(empty dir)'))
+        self.assertFalse(self.registry.is_note_result('search_web', 'Some results found.'))
+        self.assertFalse(self.registry.is_note_result('nonexistent', '(empty)'))
 
     def test_activity_category_defaults(self):
-        self.assertEqual(self.registry.activity('web_search', {'query': 'hi there'}),
+        self.assertEqual(self.registry.activity('search_web', {'query': 'hi there'}),
                          ('%', 'Search', 'hi there', ''))
-        self.assertEqual(self.registry.activity('run_command', {'command': 'echo hi'}),
+        self.assertEqual(self.registry.activity('run_cmd', {'command': 'echo hi'}),
                          ('$', 'Run', 'echo hi', ''))
-        self.assertEqual(self.registry.activity('write_file', {'path': 'a.md', 'content': 'x'}),
+        self.assertEqual(self.registry.activity('write_doc', {'path': 'a.md', 'content': 'x'}),
                          ('→', 'Write', 'a.md', 'content=x'))
-        self.assertEqual(self.registry.activity('read_file', {'path': 'a.py'}),
+        self.assertEqual(self.registry.activity('read_doc', {'path': 'a.py'}),
                          ('←', 'Read', 'a.py', ''))
 
     def test_activity_params_exclude_key_arg_in_schema_order(self):
         self.assertEqual(
-            self.registry.activity('open', {'url': 'https://example.com', 'offset': 0}),
-            ('↓', 'Open', 'https://example.com', 'offset=0'))
-        self.assertEqual(
-            self.registry.activity('run_command',
+            self.registry.activity('run_cmd',
                                    {'command': 'ls', 'cwd': '/workspace', 'timeout': 10000}),
             ('$', 'Run', 'ls', 'cwd=/workspace, timeout=10000'))
 
     def test_activity_params_aliases_resolved(self):
         self.assertEqual(
-            self.registry.activity('read_file', {'file': 'a.py', 'limit': 5}),
+            self.registry.activity('read_doc', {'file': 'a.py', 'limit': 5}),
             ('←', 'Read', 'a.py', 'limit=5'))
 
     def test_activity_per_tool_override(self):
-        self.assertEqual(self.registry.activity('glob', {'pattern': '**/*.py'}),
+        self.assertEqual(self.registry.activity('glob_files', {'pattern': '**/*.py'}),
                          ('*', 'Glob', '**/*.py', ''))
-        self.assertEqual(self.registry.activity('fetch_page', {'url': 'https://x.dev/p'}),
-                         ('↓', 'Fetch', 'https://x.dev/p', ''))
-
-    def test_activity_fs_list_and_grep_glyphs(self):
-        self.assertEqual(self.registry.activity('list_dir', {'path': 'x', 'depth': 2}),
-                         ('*', 'List', 'x', 'depth=2'))
-        self.assertEqual(self.registry.activity('grep', {'pattern': 'foo', 'path': 'src'}),
-                         ('*', 'Grep', 'foo', 'path=src'))
+        self.assertEqual(self.registry.activity('list_dir', {'path': 'x'}),
+                         ('*', 'List', 'x', ''))
 
     def test_activity_truncates_long_value(self):
-        glyph, verb, label, params = self.registry.activity('run_command', {'command': 'x' * 200})
+        glyph, verb, label, params = self.registry.activity('run_cmd', {'command': 'x' * 200})
         self.assertEqual((glyph, verb), ('$', 'Run'))
         self.assertEqual(len(label), 80)
         self.assertEqual(params, '')
 
     def test_activity_missing_key_arg_falls_back_to_name(self):
-        self.assertEqual(self.registry.activity('run_command', {}),
-                         ('$', 'Run', 'run_command', ''))
+        self.assertEqual(self.registry.activity('run_cmd', {}),
+                         ('$', 'Run', 'run_cmd', ''))
 
     def test_activity_unknown_tool(self):
         self.assertIsNone(self.registry.activity('nonexistent', {}))

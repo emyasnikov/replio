@@ -80,7 +80,7 @@ Replio/
 │   └── utils/
 │       ├── __init__.py
 │       └── http.py          # urllib-based SSE streaming
-└── plugins/                 # bundled plugins (shipped as replio.plugins.bundled)
+└── plugins/                 # bundled plugins (shipped as replio.plugins.bundled); each is {src/, tests/}
     └── replio-core-exec/        # run_command
     ├── replio-core-fs/          # read_file, list_dir, write_file, glob, grep
     ├── replio-core-websearch/   # web_search, fetch_page + search service
@@ -152,7 +152,7 @@ The chat() event contract and full provider reference are in `docs/providers.md`
 
 ### Adding a Plugin
 Plugins are external repositories - never modify the core to add optional functionality:
-1. Create a plugin directory with a `manifest.json` (`name`, `version`, `replio_version` semver range, `python` range, `entry` default `plugin.py`, `requires` third-party deps, `provides`) and an entry module
+1. Create a plugin directory with a `manifest.json` (`name`, `version`, `replio_version` semver range, `python` range, `entry` default `plugin.py` - may point into `src/`, `requires` third-party deps, `provides`), an entry module under `src/`, and an optional `tests/` unit suite (stdlib `unittest`, found by `replio plugins test` and the core suite)
 2. The entry module may define `register_tools(registry)`, `register_providers(providers: dict)`, `register_commands(commands)`, and `register_services(services)` - same decorators as core builtins
 3. Import third-party deps lazily **inside** tool functions, the core never imports them
 4. Install via `/plugins install <git-url|path>` or `replio plugins install`. Activation is the `plugins` config list (empty = all), and `install`/`uninstall`/`enable`/`disable` maintain it automatically

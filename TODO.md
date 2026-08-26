@@ -60,7 +60,7 @@
   - [ ] WhatsApp adapter - business-API HTTP channel
   - [ ] More adapters (Discord, Signal, email)
   - [ ] Remote auth + session scoping + headless deny
-- [ ] Plugin test harness - plugins ship a test suite, `replio plugins test <name>` runs it (bundled plugin tests stay in the core until externalization)
+- [ ] Plugin test harness - `replio plugins test <name>` ships; bundled plugin suites live next to the plugins (`plugins/<name>/tests/`, discovered by the core suite). Remaining: external plugins are expected to ship a test suite and `replio plugins test` is the runner for them
 - [ ] Project instructions file - per-worktree `AGENTS.md`-style context auto-loaded into the system prompt (claude-code `CLAUDE.md` parity)
 - [ ] Session recall - full-text search across past sessions (grep/index over `.replio/sessions/`) so an agent can answer from its own history
 - [ ] Tool dry-run mode - propose tool args/effects without executing (enterprise tool-gateway requirement)

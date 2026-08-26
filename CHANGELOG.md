@@ -2,7 +2,8 @@
 
 ## v0.22.0
 
-- Test cleanup - extracted the duplicated bundled-tool registry harness into `tests/helpers.make_bundled_tool_registry()` (shared by `test_machine_tools.py` and `test_tool_registry.py`), dropped the redundant `mcp_*` tool-presence assertion from `test_bundled_plugins.py` (owned by the `test_mcp.py` registration suite), and single-sourced the fs/exec cap-config setup. Docs: `docs/testing.md` helper note
+- Bundled plugins restructured to `plugins/<name>/{src,tests}` - plugin code lives in `src/` (manifest `entry` points there; the loader puts the entry module's directory on `sys.path`, so sibling imports resolve from `src/`), and each bundled plugin ships its own unit suite in `tests/`. `replio-core-fs` + `replio-core-exec` suites moved out of `test_machine_tools.py`, `replio-core-mcp` out of `test_mcp.py` (now in-repo `src/`), and `replio-core-websearch` gains coverage for the DDG parser, display formatters, text extractor, and `open` target resolution. The core suite discovers the plugin suites via `tests/test_plugin_suites.py`; `replio plugins test [name]` runs them headless (a missing `plugins` dispatch in `replio main` was also fixed). `test_tool_registry.py` decoupled onto synthetic tools (plugin-specific registration metadata lives in the plugin suites); the redundant `mcp_*` presence check was dropped from `test_bundled_plugins.py`. Packaging ships `src/` + `tests/`; docs synced (`plugins.md`, `testing.md`)
+- Test cleanup - dropped the redundant `mcp_*` tool-presence assertion from `test_bundled_plugins.py` (owned by the `test_mcp.py` registration suite) and single-sourced the fs/exec cap-config setup
 
 ## v0.21.0 - 2026-08-26
 

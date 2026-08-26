@@ -31,12 +31,10 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-message `mode`, glyph param suffix gating, `!` error-line rendering and `show_errors` gating, soft-result note-line rendering and `show_notes` gating, `check_connection`/`list_models` probe resolution and overrides without state mutation, `_reinit_provider` registry-only API key resolution (no config fallback) |
 | `test_http.py` | SSE streaming: data parsing, `done` marker, multi-byte split across chunks, HTTP errors, POST-preserving redirects (loopback server) |
 | `test_jobs.py` | Job model + registry (round-trip incl. `require_approval`/`task_file`/`created_at`, runnable + ready-to-run gates, corrupt file tolerance), cron parser (steps/ranges/lists/dom/dow/the restrictive day rule, leap day), `next_run`/`compute_next_run`/`parse_dt`, scheduler run/tick under a mocked engine (verified/failed, retries with backoff, per-attempt history, unknown persona, one-shot `at`, approval gates, per-run `require_approval` park/re-arm, run memory write + injection, per-run session naming + collision dedupe + `--session` stability, run content capture), task file template/linkage/missing-file failure, status/list/show rendering, `replio jobs` CLI (add/approve/list, `--file`, edit, status output, stop, auto-approval, bad cron, duplicates, run exit codes + content printing) |
-| `test_machine_tools.py` | `read_file` / `list_dir` behavior: numbering, offsets, headers, size probe (`limit=0`), `tool_max_result_chars` cap, error paths, `run_command` cwd validation and timeout clamp |
-| `test_mcp.py` | MCP plugin: JSON-RPC framing, stdio/HTTP transports, modern/legacy negotiation, tool import + prefixing, server dispatch (`initialize`/`discover`/`tools/*`/`resources/*`), `_meta` validation, policy integration |
 | `test_models.py` | `ModelRegistry` (global `models.json`): path under `GLOBAL_DIR`, put/find/dedupe/last_used, key kept on empty key, `0600` when keyed, reload, remove, grouped |
 | `test_modes.py` | Mode resolution and policy merging: built-ins (`build`/`plan`), custom modes, unknown fallback, instruction composition |
 | `test_ollama_provider.py` | Streaming provider: fragmented tool-call reassembly, thinking events (`reasoning_content` and `reasoning` keys), payload construction |
-| `test_plugins.py` | Plugin manager: manifest compat ranges, discovery precedence, registration hooks, install/update/uninstall |
+| `test_plugins.py` | Plugin manager: manifest compat ranges, discovery precedence, registration hooks, install/update/uninstall, `replio plugins test` (+ `load_plugin_test_suite`) |
 | `test_delegate.py` | `delegate` tool: persona allow default (no prompt) / `ask` confirm grant-decline / unknown-persona deny, `delegate_echo` on/off display + sub footer, `/tool delegate` single print, empty-content log-summary fallback, sub-agent session persistence + resolver actions |
 | `test_personas.py` | `PersonaRegistry`: bundled/global/local merge and precedence, bundles (bundled/global/local origin), tags roundtrip + merge, put/remove/reload, `/persona` command (list/show/new override/remove, `list <tag>` filter, bundled remove rejected) |
 | `test_providers.py` | Provider defaults, override behavior, `detect_provider`, endpoint normalization, POST-preserving redirects, `check_connection` probe (success/empty/model note/HTTP/network), `list_models` silent-on-error |
@@ -50,7 +48,11 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_tool_registry.py` | Tool registration metadata, schema, refine flags, note-result predicates, `_config` pass-through, activity params strings, fs tool glyphs (`* List` / `* Grep`), `permission_fn` storage + `resolver_for` |
 | `test_ui.py` | UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, `!` tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm), confirm `?` glyph at line start |
 
-`tests/helpers.py` provides `make_chat(config_data)` - a `ChatLoop` with a mocked provider - used by most tests to drive the engine without a model, and `make_bundled_tool_registry(workdir)` - a `ToolRegistry` populated with the bundled plugin tools (shared by the registry and machine-tool suites).
+`tests/helpers.py` provides `make_chat(config_data)` - a `ChatLoop` with a mocked provider - used by most tests to drive the engine without a model.
+
+## Plugin test suites
+
+Each bundled plugin ships its unit tests in its own directory (`plugins/<name>/tests/`), covering the plugin's tools and helpers without touching the core. They are discovered by the core suite through `tests/test_plugin_suites.py` (registered via `load_tests`), so `python -m unittest discover tests` runs everything. A single plugin's suite runs standalone with `python plugins/<name>/tests/<file>.py`, and headless via `replio plugins test <name>` (or `replio plugins test` for every plugin with a suite).
 
 ## Live testing
 

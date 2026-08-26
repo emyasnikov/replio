@@ -36,4 +36,4 @@ packages = [
 
 [tool.setuptools.package-data]
 "replio" = ["*.json"]
-"replio.plugins.bundled" = ["*/*.py", "*/*.json"]
+"replio.plugins.bundled" = ["*/*.json", "*/src/*.py", "*/tests/*.py"]
