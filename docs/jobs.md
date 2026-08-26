@@ -22,6 +22,7 @@ Jobs live in `.replio/jobs.json` next to the sessions, one register per worktree
       "timeout": 0,
       "max_context": 0,
       "require_approval": false,
+      "task_file": "jobs/nightly_report.md",
       "enabled": true,
       "status": "approved",
       "created_at": "2026-08-26T08:00:00+00:00",
@@ -58,6 +59,22 @@ A job has exactly one schedule:
 - **interval** - seconds between runs, minimum 60. The `next run` is `interval` seconds after the previous run finishes.
 - **at** - a one-shot ISO datetime (e.g. `2026-08-27T02:00:00Z`). After it runs, the job disables itself.
 
+## Job task file
+
+A job is defined by its task, not by a one-line prompt. Use `--file` to link a Markdown task file that describes what has to be done:
+
+```bash
+replio jobs add nightly --file jobs/nightly-report.md --cron "0 2 * * *"
+```
+
+- **`--prompt` becomes optional** - `--file` alone is enough (at least one of `--prompt` / `--file` is required). If both are given, `--prompt` is the short per-run trigger on top of the task file.
+- The default path when `--file` is omitted from the job's own default is `.replio/jobs/<name>.md`; if the file does not exist at `add` time it is **created from a template** (`# <name>` / `## Task` / `## Done when` / `## Notes`) for you to fill in.
+- The job stores the path and **stays linked**: the file is re-read at the start of every run, so editing the `.md` is how you change the job - no re-adding, no restart needed.
+- **`replio jobs edit <name>`** (also `/jobs edit <name>`) opens the job's task file in `$EDITOR` (creating the template first if needed). `replio jobs show <name>` prints the stored path.
+- Paths under the worktree are stored relative to it; absolute paths stay absolute. A missing task file at run time fails that run with a clear `task file not found` reason so a broken link is never silently ignored.
+
+At run time the system prompt is composed as: `persona.system_prompt` (if a persona is set), then the task file contents (`## Job task`), then `--system-prompt`; the engine's mode instruction is appended last. With none of persona / task file / custom prompt set, a generic recurring-job prompt is used.
+
 ## CLI reference
 
 ```bash
@@ -65,12 +82,13 @@ replio jobs list                                # table of jobs and next runs
 replio jobs status                              # runtime summary (fired count, last error, uptime)
 replio jobs show <name>                         # definition + full run history
 replio jobs add <name> --cron "0 2 * * *" --prompt "..." [options]
-replio jobs add <name> --interval 3600 --prompt "..." [options]
+replio jobs add <name> --interval 3600 --file jobs/<name>.md [options]
 replio jobs add <name> --at 2026-08-27T02:00:00Z --prompt "..." [options]
 replio jobs approve <name>                      # proposed -> approved (or arm the next run)
 replio jobs reject <name>                       # proposed, disabled
 replio jobs enable <name> / disable <name>      # toggle the enabled gate
 replio jobs stop <name>                         # same as disable - stop it now
+replio jobs edit <name>                         # open/ create the task file in $EDITOR
 replio jobs remove <name>                       # definition only; sessions stay
 replio jobs run <name> [--no-retry] [--verbose] # run now, apply retries, print result
 replio jobs daemon [--tick 15] [--quiet]        # scheduler loop, Ctrl-C to stop
@@ -82,7 +100,8 @@ replio jobs daemon [--tick 15] [--quiet]        # scheduler loop, Ctrl-C to stop
 
 | Flag | Meaning |
 |------|---------|
-| `--prompt` | The task prompt sent on every run (required) |
+| `--prompt` | Optional short per-run trigger; required only when `--file` is not given |
+| `--file` | Markdown task file describing the job (default `.replio/jobs/<name>.md`, template-created if missing). Linked - edits apply on the next run |
 | `--cron` / `--interval` / `--at` | Exactly one schedule (required) |
 | `--session` | Session name; default `job.<name>` |
 | `--mode` | Mode override (`plan`, `build`, or custom) |
@@ -123,7 +142,7 @@ Two consequences to know about:
 
 ## How a run executes
 
-Each attempt builds a fresh headless `Engine` from the job's overrides, loads the job's stable session (`job.<name>` by default), and calls `chat()` once. When no `--system-prompt` or `--persona` is set, a generic recurring-job prompt is injected that tells the model this is a recurring job with earlier runs in its history - so it stays consistent and does not redo completed work. Because the session is stable, `--max-context` aside, later runs carry the context of earlier ones, and a retry continues from the failed attempt's trail with a "Previous attempt failed. Retry this job" header. `replio jobs run --verbose` streams the live turn (tokens to stdout, tool activity to stderr) before the summary; `replio jobs run` prints the final answer headlessly.
+Each attempt builds a fresh headless `Engine` from the job's overrides, loads the job's stable session (`job.<name>` by default), and calls `chat()` once. The system prompt is composed from the persona (if set), the linked task file (`## Job task`), and `--system-prompt`; with none of them a generic recurring-job prompt is layered in, telling the model this is a recurring job with earlier runs in its history. Because the session is stable, `--max-context` aside, later runs carry the context of earlier ones, and a retry continues from the failed attempt's trail with a "Previous attempt failed. Retry this job" header. `replio jobs run --verbose` streams the live turn (tokens to stdout, tool activity to stderr) before the summary; `replio jobs run` prints the final answer headlessly.
 
 ## Scheduling semantics
 

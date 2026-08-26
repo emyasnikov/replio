@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -261,6 +262,11 @@ def cmd_jobs(args) -> int:
               f'{"enabled" if job.enabled else "disabled"}')
         return 0
     if action == 'add':
+        file_arg = getattr(args, 'file', None) or ''
+        prompt = getattr(args, 'prompt', '') or ''
+        if not prompt and not file_arg:
+            print('Error: a --prompt or --file is required', file=sys.stderr)
+            return 1
         schedule = {}
         if getattr(args, 'cron', None):
             schedule['cron'] = args.cron
@@ -289,13 +295,14 @@ def cmd_jobs(args) -> int:
         job = Job(
             name=args.name,
             schedule=schedule,
-            prompt=args.prompt,
+            prompt=prompt,
             session=getattr(args, 'session', '') or '',
             mode=getattr(args, 'mode', '') or '',
             provider=getattr(args, 'provider', '') or '',
             model=getattr(args, 'model', '') or '',
             persona=getattr(args, 'persona', '') or '',
             system_prompt=getattr(args, 'system_prompt', '') or '',
+            task_file=_store_task_file(config.local_path.parent.parent, file_arg),
             tool_permission=tool_permission,
             tools_deny=list(getattr(args, 'tools_deny', []) or []),
             retries=getattr(args, 'retries', 3),
@@ -309,8 +316,27 @@ def cmd_jobs(args) -> int:
         if require_approval:
             job.status = 'waiting_approval'
             job.approval_pending = False
+        if job.task_file:
+            from .jobs import ensure_task_file
+            ensure_task_file(config.local_path.parent.parent, job)
         publish(registry, job)
         return 0
+    if action == 'edit':
+        job = registry.find(args.name)
+        if job is None:
+            print(f'Job not found: {args.name}', file=sys.stderr)
+            return 1
+        from .jobs import ensure_task_file
+        path = ensure_task_file(config.local_path.parent.parent, job)
+        editor = os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vi'
+        import shlex
+        import subprocess
+        try:
+            code = subprocess.call(shlex.split(editor) + [str(path)])
+        except OSError as e:
+            print(f'Error opening editor "{editor}": {e}', file=sys.stderr)
+            return 1
+        return 0 if code == 0 else 1
     if action == 'run':
         return _jobs_run(config, registry, args)
     if action == 'daemon':
@@ -319,8 +345,20 @@ def cmd_jobs(args) -> int:
                                  verbose=not getattr(args, 'quiet', False))
         return scheduler.daemon(tick_seconds=getattr(args, 'tick', 15.0))
     print('Usage: replio jobs [list|status|show|add|approve|reject|enable|'
-          'disable|stop|remove|run|daemon]')
+          'disable|stop|edit|remove|run|daemon]')
     return 1
+
+
+def _store_task_file(worktree: Path, value: str) -> str:
+    if not value:
+        return ''
+    path = Path(value)
+    if not path.is_absolute():
+        path = (Path(worktree) / path).resolve()
+    try:
+        return str(path.relative_to(Path(worktree)))
+    except ValueError:
+        return str(path)
 
 
 def _jobs_run(config, registry, args) -> int:

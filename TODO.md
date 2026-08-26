@@ -102,6 +102,7 @@
 
 ## Done
 
+- [x] Job task definition as linked Markdown - `--file` templated task files, `replio jobs edit`
 - [x] Job memory - stable `job.<name>` session across runs, `--max-context` auto-compaction, 100-run history cap
 - [x] Job per-run approval - `--require-approval` parks each run in `waiting_approval` until a human approves it
 - [x] Jobs diagnostics - `replio jobs status` (fired count, last error, uptime) + last output in `show`

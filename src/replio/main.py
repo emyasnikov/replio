@@ -109,7 +109,11 @@ def _add_jobs_parser(sub):
     gs.add_argument('name')
     ga = g.add_parser('add', help='Add a job (starts as proposed, needs approval)')
     ga.add_argument('name')
-    ga.add_argument('--prompt', required=True, help='The prompt the job sends')
+    ga.add_argument('--prompt', default='',
+                    help='Optional short per-run prompt (required unless --file is given)')
+    ga.add_argument('--file', help='Markdown task file describing the job '
+                    '(default .replio/jobs/<name>.md, created as a template if missing). '
+                    'Linked - edits apply on the next run')
     sched = ga.add_mutually_exclusive_group(required=True)
     sched.add_argument('--cron', help='5-field cron expression (minute hour dom month dow)')
     sched.add_argument('--interval', type=int, help='Seconds between runs (min 60)')
@@ -144,6 +148,7 @@ def _add_jobs_parser(sub):
             ('enable', 'Enable a disabled job'),
             ('disable', 'Disable a job'),
             ('stop', 'Stop a job - same as disable, no scheduled runs'),
+            ('edit', 'Open the job task file in $EDITOR (creates the template first)'),
             ('remove', 'Remove a job definition')):
         cmd = g.add_parser(name, help=help_text)
         cmd.add_argument('name')

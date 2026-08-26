@@ -5,35 +5,32 @@ from datetime import datetime, timezone
 
 from .config import Config
 from .engine import Engine, TurnResult
-from .jobs import Job, JobRun, JobRegistry, compute_next_run, parse_dt
+from .jobs import (Job, JobRun, JobRegistry, compute_next_run, parse_dt,
+                   system_prompt_for)
 from .ui import HeadlessUI
-
-DEFAULT_JOB_SYSTEM_PROMPT = (
-    'You are a recurring autonomous job. Complete the task given in the latest '
-    'user message. Earlier runs of this job are part of this conversation '
-    'history - use them to stay consistent, avoid repeating already-completed '
-    'work, and report what you did.')
 
 
 def _build_engine(config: Config, job: Job, verbose: bool,
                   stream: bool = False) -> Engine:
     sub_config = Config(path=str(config.local_path.parent.parent))
+    persona = None
     if job.persona:
         from .personas import PersonaRegistry
         personas = PersonaRegistry(local_path=config.local_path.parent / 'personas.json')
         persona = personas.find(job.persona)
         if persona is None:
             raise ValueError(f'Unknown persona: {job.persona}')
-        sub_config.apply('system_prompt', persona.system_prompt)
         if persona.model:
             sub_config.apply('model', persona.model)
         permissions = dict(sub_config.get('tool_permission') or {})
         permissions.update(persona.tool_permission)
         sub_config.apply('tool_permission', permissions)
-    if job.system_prompt:
-        sub_config.apply('system_prompt', job.system_prompt)
-    elif not job.persona:
-        sub_config.apply('system_prompt', DEFAULT_JOB_SYSTEM_PROMPT)
+    try:
+        system_text = system_prompt_for(job, config.local_path.parent.parent,
+                                        persona)
+    except FileNotFoundError as e:
+        raise ValueError(str(e)) from e
+    sub_config.apply('system_prompt', system_text)
     if job.mode:
         sub_config.apply('mode', job.mode)
     if job.provider:

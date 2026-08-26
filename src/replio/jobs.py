@@ -8,6 +8,23 @@ MIN_INTERVAL = 60
 CRON_HORIZON_DAYS = 4 * 366 + 1
 HISTORY_MAX = 100
 
+DEFAULT_JOB_SYSTEM_PROMPT = (
+    'You are a recurring autonomous job. Complete the task given in the latest '
+    'user message. Earlier runs of this job are part of this conversation '
+    'history - use them to stay consistent, avoid repeating already-completed '
+    'work, and report what you did.')
+
+TASK_TEMPLATE = """# {name}
+
+## Task
+Describe what has to be done on every run. Replace this with the real job.
+
+## Done when
+How do we know this run succeeded?
+
+## Notes
+Constraints, context, links, files to touch."""
+
 
 def parse_cron_field(field: str, lo: int, hi: int) -> set[int]:
     out: set[int] = set()
@@ -155,6 +172,7 @@ class Job:
     model: str = ''
     persona: str = ''
     system_prompt: str = ''
+    task_file: str = ''
     tool_permission: dict = field(default_factory=dict)
     tools_deny: list = field(default_factory=list)
     retries: int = 3
@@ -191,6 +209,7 @@ class Job:
             'model': self.model,
             'persona': self.persona,
             'system_prompt': self.system_prompt,
+            'task_file': self.task_file,
             'tool_permission': dict(self.tool_permission),
             'tools_deny': list(self.tools_deny),
             'retries': self.retries,
@@ -219,6 +238,7 @@ class Job:
             model=d.get('model', ''),
             persona=d.get('persona', ''),
             system_prompt=d.get('system_prompt', ''),
+            task_file=d.get('task_file', ''),
             tool_permission=dict(d.get('tool_permission') or {}),
             tools_deny=list(d.get('tools_deny') or []),
             retries=d.get('retries', 3),
@@ -307,6 +327,49 @@ def validate_schedule(schedule: dict):
         raise ValueError('schedule needs one of: cron, interval, at')
 
 
+def task_file_path(worktree: Path, job: 'Job') -> Path:
+    if job.task_file:
+        path = Path(job.task_file)
+        if path.is_absolute():
+            return path
+        return (Path(worktree) / path).resolve()
+    return (Path(worktree) / '.replio' / 'jobs' / f'{job.name}.md').resolve()
+
+
+def ensure_task_file(worktree: Path, job: 'Job') -> Path:
+    path = task_file_path(worktree, job)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(TASK_TEMPLATE.format(name=job.name))
+    return path
+
+
+def read_task_file(worktree: Path, job: 'Job') -> str | None:
+    path = task_file_path(worktree, job)
+    if path.exists():
+        return path.read_text()
+    return None
+
+
+def system_prompt_for(job: 'Job', worktree: Path, persona=None) -> str:
+    parts = []
+    if persona is not None and getattr(persona, 'system_prompt', ''):
+        parts.append(persona.system_prompt)
+    if job.task_file:
+        content = read_task_file(worktree, job)
+        if content is None:
+            raise FileNotFoundError(
+                f'task file not found: {task_file_path(worktree, job)}')
+        body = content.strip()
+        if body:
+            parts.append(f'## Job task\n\n{body}')
+    if job.system_prompt:
+        parts.append(job.system_prompt)
+    if not parts:
+        parts.append(DEFAULT_JOB_SYSTEM_PROMPT)
+    return '\n\n'.join(parts).strip()
+
+
 def publish(registry: JobRegistry, job: Job, print=print):
     now = datetime.now(timezone.utc)
     if not job.created_at:
@@ -325,6 +388,8 @@ def publish(registry: JobRegistry, job: Job, print=print):
     print(f'Added job: {job.name} [{job.status}]')
     print(f'  schedule: {describe_schedule(job)}')
     print(f'  next run: {job.next_run_at or "-"}')
+    if job.task_file:
+        print(f'  task file: {job.task_file} (edit it with `replio jobs edit {job.name}`)')
     print(f'  status:   {gate}')
 
 
@@ -407,8 +472,12 @@ def render_show(registry: JobRegistry, name: str, print=print) -> bool:
         return False
     print(f'{job.name} [{job.status}] {"enabled" if job.enabled else "disabled"}')
     print(f'  schedule:   {describe_schedule(job)}')
-    print(f'  prompt:     {job.prompt}')
+    if job.prompt:
+        print(f'  prompt:     {job.prompt}')
     print(f'  session:    {job.session or f"job.{job.name}"}')
+    if job.task_file:
+        print(f'  task file:  {job.task_file} '
+              '(edit it - changes apply on the next run)')
     if job.mode:
         print(f'  mode:       {job.mode}')
     if job.persona:

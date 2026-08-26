@@ -10,9 +10,10 @@ from unittest.mock import patch
 
 from replio.config import Config
 from replio.engine import TurnResult
-from replio.jobs import (Job, JobRun, JobRegistry, compute_next_run, next_run,
-                         parse_cron_field, parse_dt, render_list, render_show,
-                         render_status, describe_schedule, validate_schedule)
+from replio.jobs import (Job, JobRun, JobRegistry, compute_next_run, ensure_task_file,
+                         next_run, parse_cron_field, parse_dt, render_list,
+                         render_show, render_status, describe_schedule,
+                         system_prompt_for, validate_schedule)
 from replio.scheduler import JobScheduler
 
 TZ = timezone.utc
@@ -200,6 +201,10 @@ class TestJobModel(unittest.TestCase):
         self.assertTrue(restored.approval_pending)
         self.assertEqual(restored.max_context, 80)
         self.assertEqual(restored.created_at, '2026-08-26T08:00:00+00:00')
+
+    def test_round_trip_carries_task_file(self):
+        job = Job('a', {'interval': 60}, task_file='tasks/a.md')
+        self.assertEqual(Job.from_dict(job.to_dict()).task_file, 'tasks/a.md')
 
     def test_round_trip_with_history(self):
         job = Job(
@@ -488,6 +493,41 @@ class TestScheduler(unittest.TestCase):
         run = self.scheduler.run_job(job)
         self.assertEqual(run.content, 'hello from the job')
 
+    def test_missing_task_file_fails_run(self):
+        job = Job('t', {'interval': 60}, prompt='p', status='approved',
+                  task_file='tasks/missing.md')
+        self.registry.put(job)
+        run = self.scheduler.run_job(job)
+        self.assertEqual(run.status, 'failed')
+        self.assertIn('task file not found', run.reason)
+        self.assertEqual(job.status, 'failed')
+
+    def test_system_prompt_composes_task_file(self):
+        worktree = Path(self.tmp.name)
+        job = Job('doc', {'interval': 60}, prompt='',
+                  task_file='.replio/jobs/doc.md')
+        ensure_task_file(worktree, job)
+        text = system_prompt_for(job, worktree)
+        self.assertIn('## Job task', text)
+        self.assertIn('# doc', text)
+
+    def test_system_prompt_links_file_edits(self):
+        worktree = Path(self.tmp.name)
+        path = worktree / '.replio' / 'jobs' / 'doc.md'
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('# First task')
+        job = Job('doc', {'interval': 60}, prompt='', task_file='.replio/jobs/doc.md')
+        self.assertIn('First task', system_prompt_for(job, worktree))
+        path.write_text('# Second task')
+        self.assertIn('Second task', system_prompt_for(job, worktree))
+        self.assertNotIn('First task', system_prompt_for(job, worktree))
+
+    def test_system_prompt_defaults_when_no_task(self):
+        worktree = Path(self.tmp.name)
+        job = Job('plain', {'interval': 60}, prompt='p', status='approved')
+        text = system_prompt_for(job, worktree)
+        self.assertIn('recurring autonomous job', text)
+
 
 class TestRender(unittest.TestCase):
     def test_list_and_show(self):
@@ -545,7 +585,7 @@ class TestJobsCli(unittest.TestCase):
                                     retries=3, backoff=60.0, timeout=0,
                                     max_context=0, require_approval=False,
                                     session='', mode='', provider='', model='',
-                                    persona='', system_prompt='',
+                                    persona='', system_prompt='', file='',
                                     no_retry=False, verbose=False,
                                     tick=15.0, quiet=False)
         for key, value in kw.items():
@@ -668,6 +708,48 @@ class TestJobsCli(unittest.TestCase):
                 code = cmd_jobs(self._args(action='run', name='c'))
         self.assertEqual(code, 0)
         self.assertIn('hello from the job', buf.getvalue())
+
+    def test_add_with_task_file_only(self):
+        from replio.cli import cmd_jobs
+        with patch('sys.stdout', new=io.StringIO()) as buf:
+            code = cmd_jobs(self._args(action='add', name='doc',
+                                       file='tasks/doc.md', cron='0 2 * * *'))
+            self.assertEqual(code, 0)
+            self.assertIn('doc', buf.getvalue())
+        fresh = JobRegistry(self.base / '.replio' / 'jobs.json')
+        job = fresh.find('doc')
+        self.assertEqual(job.prompt, '')
+        self.assertEqual(job.task_file, 'tasks/doc.md')
+        self.assertTrue((self.base / 'tasks' / 'doc.md').exists())
+
+    def test_add_requires_prompt_or_file(self):
+        from replio.cli import cmd_jobs
+        with patch('sys.stderr', new=io.StringIO()) as err:
+            code = cmd_jobs(self._args(action='add', name='bare', cron='* * * * *'))
+            self.assertEqual(code, 1)
+            self.assertIn('--prompt or --file', err.getvalue())
+        self.assertIsNone(JobRegistry(self.base / '.replio' / 'jobs.json').find('bare'))
+
+    def test_add_creates_template_when_file_missing(self):
+        from replio.cli import cmd_jobs
+        cmd_jobs(self._args(action='add', name='archiver', interval=3600,
+                            file='jobs/archiver.md'))
+        path = self.base / 'jobs' / 'archiver.md'
+        self.assertTrue(path.exists())
+        self.assertIn('# archiver', path.read_text())
+
+    def test_edit_creates_template_and_opens(self):
+        from replio.cli import cmd_jobs
+        cmd_jobs(self._args(action='add', name='writer', interval=3600,
+                            prompt='write'))
+        task_path = self.base / '.replio' / 'jobs' / 'writer.md'
+        self.assertFalse(task_path.exists())
+        with patch.dict('os.environ', {'EDITOR': 'true'}):
+            with patch('sys.stdout', new=io.StringIO()):
+                code = cmd_jobs(self._args(action='edit', name='writer'))
+        self.assertEqual(code, 0)
+        self.assertTrue(task_path.exists())
+        self.assertIn('# writer', task_path.read_text())
 
 
 if __name__ == '__main__':

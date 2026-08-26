@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 from pathlib import Path
@@ -685,6 +686,7 @@ def register_builtins(registry):
         ('enable', 'Enable a disabled job'),
         ('disable', 'Disable a job'),
         ('stop', 'Stop a job - same as disable'),
+        ('edit', 'Open the job task file in $EDITOR (creates the template first)'),
         ('remove', 'Remove a job definition'),
         ('run', 'Run a job now'),
     ])
@@ -756,7 +758,8 @@ def register_builtins(registry):
             return
         if action == 'add':
             if len(tokens) < 2:
-                print('Usage: /jobs add <name> --cron "0 2 * * *" --prompt "text" '
+                print('Usage: /jobs add <name> --cron "0 2 * * *" '
+                      '[--prompt "text"|--file path] '
                       '[--interval N|--at ISO] [--approval auto]')
                 return
             name = tokens[1]
@@ -764,8 +767,8 @@ def register_builtins(registry):
             i = 2
             while i < len(tokens):
                 tok = tokens[i]
-                if tok in ('--cron', '--interval', '--at', '--prompt', '--session',
-                           '--mode', '--provider', '--model', '--persona'):
+                if tok in ('--cron', '--interval', '--at', '--prompt', '--file',
+                           '--session', '--mode', '--provider', '--model', '--persona'):
                     opts[tok] = tokens[i + 1] if i + 1 < len(tokens) else ''
                     i += 2
                 elif tok == '--approval':
@@ -774,8 +777,11 @@ def register_builtins(registry):
                 else:
                     after.append(tok)
                     i += 1
-            if '--prompt' not in opts or not opts.get('--prompt'):
-                print('Usage: /jobs add <name> --prompt "text" (plus a schedule flag)')
+            prompt = opts.get('--prompt', '') or ''
+            file_arg = opts.get('--file', '') or ''
+            if not prompt and not file_arg:
+                print('Usage: /jobs add <name> --prompt "text" --file path '
+                      '(one of them required)')
                 return
             schedule: dict = {}
             if opts.get('--cron'):
@@ -800,24 +806,44 @@ def register_builtins(registry):
             if existing is not None:
                 print(f'Job already exists: {name}')
                 return
+            from ..cli import _store_task_file
+            from ..jobs import ensure_task_file
+            worktree = chat.config.local_path.parent.parent
+            task_file = _store_task_file(worktree, file_arg)
             auto = opts.get('--approval') == 'auto'
             job = Job(
                 name=name,
                 schedule=schedule,
-                prompt=opts['--prompt'],
+                prompt=prompt,
                 session=opts.get('--session', '') or '',
                 mode=opts.get('--mode', '') or '',
                 provider=opts.get('--provider', '') or '',
                 model=opts.get('--model', '') or '',
                 persona=opts.get('--persona', '') or '',
+                task_file=task_file,
                 enabled=auto,
                 status='approved' if auto else 'proposed',
             )
+            if job.task_file:
+                ensure_task_file(worktree, job)
             publish(registry, job)
+            return
+        if action == 'edit':
+            name = tokens[1] if len(tokens) > 1 else ''
+            job = registry.find(name) if name else None
+            if job is None:
+                print('Usage: /jobs edit <name>')
+                return
+            from ..jobs import ensure_task_file
+            path = ensure_task_file(chat.config.local_path.parent.parent, job)
+            editor = os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vi'
+            import shlex
+            import subprocess
+            subprocess.call(shlex.split(editor) + [str(path)])
             return
         print('Usage: /jobs [list|status|show <name>|add <name> ...|approve <name>|'
               'reject <name>|enable <name>|disable <name>|stop <name>|'
-              'remove <name>|run <name>]')
+              'edit <name>|remove <name>|run <name>]')
 
 
 def _render_plugins(pm):

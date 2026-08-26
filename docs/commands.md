@@ -122,10 +122,11 @@ Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, 
 | `list`        | Table of jobs: schedule, status, next and last run                       |
 | `status`      | Runtime summary per job: fired count, last error, uptime, approval state |
 | `show`        | `replio jobs show <name>` - definition plus full run history + last output|
-| `add`         | `replio jobs add <name> --prompt "..." --cron "0 2 * * *"` (or `--interval N` / `--at ISO`), plus `--mode`, `--provider`/`--model`, `--persona`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--max-context N`, `--require-approval`, `--approval auto` |
+| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`; `--prompt` optional when `--file` is given), plus `--mode`, `--provider`/`--model`, `--persona`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--max-context N`, `--require-approval`, `--approval auto` |
 | `approve`     | `approve <name>` - activate a job (or arm the next run for `--require-approval` jobs) |
 | `reject`      | `reject <name>` - send back to proposed and disable                       |
 | `enable` / `disable` / `stop` | Toggle the enabled gate (`stop` = `disable`)                     |
+| `edit`        | `edit <name>` - open the job's linked task file in `$EDITOR` (creates the template first) |
 | `remove`      | `remove <name>` - drop the definition (sessions are kept)                 |
 | `run`         | `run <name> [--no-retry] [--verbose]` - run now, apply retries, print the answer; `--verbose` streams the live turn; exit `0` verified / `1` failed |
 | `daemon`      | `daemon [--tick 15] [--quiet]` - scheduler loop, Ctrl-C to stop           |
