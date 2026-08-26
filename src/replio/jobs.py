@@ -6,6 +6,7 @@ from pathlib import Path
 
 MIN_INTERVAL = 60
 CRON_HORIZON_DAYS = 4 * 366 + 1
+HISTORY_MAX = 100
 
 
 def parse_cron_field(field: str, lo: int, hi: int) -> set[int]:
@@ -115,6 +116,7 @@ class JobRun:
     duration: float = 0.0
     session: str = ''
     attempt: int = 0
+    content: str = ''
 
     def to_dict(self) -> dict:
         return {
@@ -125,6 +127,7 @@ class JobRun:
             'duration': self.duration,
             'session': self.session,
             'attempt': self.attempt,
+            'content': self.content,
         }
 
     @classmethod
@@ -137,6 +140,7 @@ class JobRun:
             duration=d.get('duration', 0.0),
             session=d.get('session', ''),
             attempt=d.get('attempt', 0),
+            content=d.get('content', ''),
         )
 
 
@@ -156,14 +160,25 @@ class Job:
     retries: int = 3
     backoff: float = 60.0
     timeout: int = 0
+    max_context: int = 0
+    require_approval: bool = False
+    approval_pending: bool = False
     enabled: bool = True
     status: str = 'proposed'
+    created_at: str = ''
     next_run_at: str = ''
     last_run_at: str = ''
     history: list = field(default_factory=list)
 
     def runnable(self) -> bool:
         return bool(self.enabled) and self.status in ('approved', 'verified', 'failed')
+
+    def ready_to_run(self) -> bool:
+        if not self.runnable():
+            return False
+        if self.require_approval and not self.approval_pending:
+            return False
+        return True
 
     def to_dict(self) -> dict:
         return {
@@ -181,8 +196,12 @@ class Job:
             'retries': self.retries,
             'backoff': self.backoff,
             'timeout': self.timeout,
+            'max_context': self.max_context,
+            'require_approval': self.require_approval,
+            'approval_pending': self.approval_pending,
             'enabled': self.enabled,
             'status': self.status,
+            'created_at': self.created_at,
             'next_run_at': self.next_run_at,
             'last_run_at': self.last_run_at,
             'history': [r.to_dict() for r in self.history],
@@ -205,8 +224,12 @@ class Job:
             retries=d.get('retries', 3),
             backoff=d.get('backoff', 60.0),
             timeout=d.get('timeout', 0),
+            max_context=d.get('max_context', 0),
+            require_approval=d.get('require_approval', False),
+            approval_pending=d.get('approval_pending', False),
             enabled=d.get('enabled', True),
             status=d.get('status', 'proposed'),
+            created_at=d.get('created_at', ''),
             next_run_at=d.get('next_run_at', ''),
             last_run_at=d.get('last_run_at', ''),
             history=[JobRun.from_dict(r) for r in (d.get('history') or [])
@@ -236,6 +259,9 @@ class JobRegistry:
 
     def save(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        for job in self.all():
+            if len(job.history) > HISTORY_MAX:
+                job.history = job.history[-HISTORY_MAX:]
         tmp = self.path.with_suffix('.json.tmp')
         tmp.write_text(json.dumps({'jobs': [j.to_dict() for j in self.all()]},
                                   indent=2))
@@ -283,12 +309,19 @@ def validate_schedule(schedule: dict):
 
 def publish(registry: JobRegistry, job: Job, print=print):
     now = datetime.now(timezone.utc)
+    if not job.created_at:
+        job.created_at = now.isoformat(timespec='seconds')
     next_at = compute_next_run(job, now)
     job.next_run_at = next_at.isoformat(timespec='seconds') if next_at else ''
     registry.put(job)
-    gate = ('approved - runs on schedule' if job.status == 'approved'
-            else 'proposed - approve it to activate '
-                 '(`replio jobs approve <name>` or /jobs approve <name>)')
+    if job.status == 'waiting_approval':
+        gate = ('waiting_approval - each run needs its own approval '
+                '(`replio jobs approve <name>`)')
+    elif job.status == 'approved':
+        gate = 'approved - runs on schedule'
+    else:
+        gate = ('proposed - approve it to activate '
+                '(`replio jobs approve <name>` or /jobs approve <name>)')
     print(f'Added job: {job.name} [{job.status}]')
     print(f'  schedule: {describe_schedule(job)}')
     print(f'  next run: {job.next_run_at or "-"}')
@@ -297,6 +330,26 @@ def publish(registry: JobRegistry, job: Job, print=print):
 
 def _fmt_dt(value: str) -> str:
     return value or '-'
+
+
+def _uptime(created_at: str) -> str:
+    if not created_at:
+        return '-'
+    try:
+        start = parse_dt(created_at)
+    except ValueError:
+        return '-'
+    total = max(0, int((datetime.now(timezone.utc) - start).total_seconds()))
+    if total < 60:
+        return f'{total}s'
+    days, rem = divmod(total, 86400)
+    hours, rem = divmod(rem, 3600)
+    minutes = rem // 60
+    if days:
+        return f'{days}d {hours}h'
+    if hours:
+        return f'{hours}h {minutes}m'
+    return f'{minutes}m'
 
 
 def render_list(registry: JobRegistry, print=print):
@@ -310,10 +363,41 @@ def render_list(registry: JobRegistry, print=print):
         schedule = describe_schedule(job)
         next_at = _fmt_dt(job.next_run_at)
         last = _fmt_dt(job.last_run_at)
-        gate = 'runnable' if job.runnable() else (
-            'proposed' if job.status == 'proposed' else 'disabled')
+        gate = 'runnable' if job.ready_to_run() else (
+            'waiting approval' if job.status == 'waiting_approval' else (
+                'proposed' if job.status == 'proposed' else 'disabled'))
         print(f'  {job.name:<20} {schedule:<28} {job.status:<8} '
-              f'{gate:<9} next: {next_at:<27} last: {last}')
+              f'{gate:<17} next: {next_at:<27} last: {last}')
+    print('  (stop a job with: replio jobs stop <name> | '
+          'replio jobs status for a runtime summary)')
+
+
+def render_status(registry: JobRegistry, print=print):
+    jobs = registry.all()
+    if not jobs:
+        print('  (no jobs configured)')
+        return
+    for job in jobs:
+        total = len(job.history)
+        ok = sum(1 for r in job.history if r.status == 'verified')
+        failed = total - ok
+        runs = f'{total} run(s)' if total else 'never fired'
+        if total:
+            runs += f' ({ok} ok, {failed} failed)'
+        state = 'awaiting approval' if job.status == 'waiting_approval' else job.status
+        if not job.enabled:
+            state += ' (stopped)'
+        last_error = '-'
+        if job.history:
+            last = job.history[-1]
+            if last.status != 'verified' and last.reason:
+                last_error = last.reason[:70]
+        print(f'  {job.name:<20} {state:<20} {runs:<28} next: {_fmt_dt(job.next_run_at)}')
+        print(f'      uptime: {_uptime(job.created_at):<12} last error: {last_error}')
+        if job.require_approval:
+            pending = job.approval_pending
+            print('      approval: per-run - next run '
+                  f'{"approved - will fire" if pending else "WAITING for approve"}')
 
 
 def render_show(registry: JobRegistry, name: str, print=print) -> bool:
@@ -340,7 +424,14 @@ def render_show(registry: JobRegistry, name: str, print=print) -> bool:
     if job.system_prompt:
         print(f'  system_prompt: {job.system_prompt[:80]}')
     print(f'  durability: retries={job.retries} backoff={job.backoff}s '
-          f'timeout={job.timeout if job.timeout else "none"}s')
+          f'timeout={f"{job.timeout}s" if job.timeout else "none"}')
+    if job.max_context:
+        print(f'  context:    auto-compact above {job.max_context} messages')
+    if job.require_approval:
+        pending = 'yes (approved for next run)' if job.approval_pending \
+            else 'no (each run waits for approval)'
+        print(f'  approval:   per-run required - {pending}')
+    print(f'  created:    {_fmt_dt(job.created_at)}')
     print(f'  next run:   {_fmt_dt(job.next_run_at)}')
     print(f'  last run:   {_fmt_dt(job.last_run_at)}')
     print(f'  history:    {len(job.history)} run(s)')
@@ -352,4 +443,7 @@ def render_show(registry: JobRegistry, name: str, print=print) -> bool:
                   f'({run.duration}s){"  " + detail if detail else ""}')
             if run.session:
                 print(f'      session: {run.session}')
+    if job.history and job.history[-1].content:
+        preview = ' '.join(job.history[-1].content.split())[:140]
+        print(f'    last output: {preview}')
     return True

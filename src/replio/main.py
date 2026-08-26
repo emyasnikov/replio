@@ -104,6 +104,7 @@ def _add_jobs_parser(sub):
                    help='Project path (default: current directory)')
     g = p.add_subparsers(dest='action', required=True)
     g.add_parser('list', help='List configured jobs')
+    g.add_parser('status', help='Runtime summary per job (fired count, last error, uptime)')
     gs = g.add_parser('show', help='Show a job definition and its run history')
     gs.add_argument('name')
     ga = g.add_parser('add', help='Add a job (starts as proposed, needs approval)')
@@ -128,16 +129,30 @@ def _add_jobs_parser(sub):
                     help='Base backoff seconds, doubled per retry')
     ga.add_argument('--timeout', type=int, default=0,
                     help='Max seconds for a run (0 = no cap)')
+    ga.add_argument('--max-context', type=int, default=0,
+                    help='Auto-compact the session when it exceeds this many provider messages '
+                         '(0 = never)')
+    ga.add_argument('--require-approval', action='store_true',
+                    help='Arm only one run per approve - each run parks in waiting_approval '
+                         'until a human approves it')
     ga.add_argument('--approval', choices=['manual', 'auto'], default='manual',
                     help='manual starts proposed and waits for approve (default); '
                          'auto starts approved')
-    for name in ('approve', 'reject', 'enable', 'disable', 'remove'):
-        cmd = g.add_parser(name, help=f'{name.capitalize()} a job')
+    for name, help_text in (
+            ('approve', 'Approve a job so it runs on schedule'),
+            ('reject', 'Reject a proposed job'),
+            ('enable', 'Enable a disabled job'),
+            ('disable', 'Disable a job'),
+            ('stop', 'Stop a job - same as disable, no scheduled runs'),
+            ('remove', 'Remove a job definition')):
+        cmd = g.add_parser(name, help=help_text)
         cmd.add_argument('name')
     gr = g.add_parser('run', help='Run a job now (waits, applies retries)')
     gr.add_argument('name')
     gr.add_argument('--no-retry', action='store_true',
                     help='Single attempt, no retries or backoff')
+    gr.add_argument('--verbose', action='store_true',
+                    help='Stream the run live (tokens, tool activity) before the summary')
     gd = g.add_parser('daemon', help='Run the scheduler loop until interrupted')
     gd.add_argument('--tick', type=float, default=15.0,
                     help='Schedule check interval in seconds (default: 15)')

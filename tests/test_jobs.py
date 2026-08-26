@@ -12,7 +12,7 @@ from replio.config import Config
 from replio.engine import TurnResult
 from replio.jobs import (Job, JobRun, JobRegistry, compute_next_run, next_run,
                          parse_cron_field, parse_dt, render_list, render_show,
-                         describe_schedule, validate_schedule)
+                         render_status, describe_schedule, validate_schedule)
 from replio.scheduler import JobScheduler
 
 TZ = timezone.utc
@@ -181,6 +181,25 @@ class TestJobModel(unittest.TestCase):
         self.assertTrue(Job('a', {'interval': 60}, status='verified').runnable())
         self.assertTrue(Job('a', {'interval': 60}, status='failed').runnable())
         self.assertFalse(Job('a', {'interval': 60}, status='disabled').runnable())
+
+    def test_ready_to_run_respects_require_approval(self):
+        job = Job('a', {'interval': 60}, status='approved', require_approval=True)
+        self.assertFalse(job.ready_to_run())
+        job.approval_pending = True
+        self.assertTrue(job.ready_to_run())
+        job.status = 'waiting_approval'
+        self.assertFalse(job.ready_to_run())
+
+    def test_round_trip_carries_new_fields(self):
+        job = Job('a', {'interval': 60}, status='waiting_approval',
+                  require_approval=True, approval_pending=True, max_context=80,
+                  created_at='2026-08-26T08:00:00+00:00')
+        restored = Job.from_dict(job.to_dict())
+        self.assertEqual(restored.status, 'waiting_approval')
+        self.assertTrue(restored.require_approval)
+        self.assertTrue(restored.approval_pending)
+        self.assertEqual(restored.max_context, 80)
+        self.assertEqual(restored.created_at, '2026-08-26T08:00:00+00:00')
 
     def test_round_trip_with_history(self):
         job = Job(
@@ -409,6 +428,66 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(job.status, 'verified')
         self.assertTrue(job.runnable())  # a manual run acts as approval
 
+    def test_require_approval_parks_after_run(self):
+        self._patch_engine([
+            TurnResult(status='ok', content='done', duration=0.5, session='job.r'),
+        ])
+        job = Job('r', {'interval': 60}, prompt='work', status='approved',
+                  require_approval=True, approval_pending=True)
+        self.registry.put(job)
+        run = self.scheduler.run_job(job)
+        self.assertEqual(run.status, 'verified')
+        self.assertEqual(job.status, 'waiting_approval')
+        self.assertFalse(job.approval_pending)
+        self.assertFalse(job.ready_to_run())
+
+    def test_require_approval_parks_until_next_approve(self):
+        engine = ScriptedEngine([
+            TurnResult(status='ok', content='a', duration=0.1, session='job.a')])
+        with patch('replio.scheduler._build_engine', return_value=engine):
+            job = Job('a', {'interval': 60}, prompt='p', status='approved',
+                      require_approval=True, approval_pending=True)
+            job.next_run_at = _iso(BASE - timedelta(minutes=1))
+            self.registry.put(job)
+            self.scheduler.tick(BASE)
+            self.assertEqual(job.status, 'waiting_approval')
+            self.assertEqual(len(job.history), 1)
+            self.scheduler.tick(BASE + timedelta(minutes=5))
+            self.assertEqual(len(job.history), 1)
+            job.status = 'approved'
+            job.approval_pending = True
+            job.next_run_at = _iso(BASE + timedelta(minutes=5))
+            self.scheduler.tick(BASE + timedelta(minutes=6))
+            self.assertEqual(len(job.history), 2)
+            self.assertEqual(job.status, 'waiting_approval')
+
+    def test_max_context_triggers_compaction(self):
+        class BigEngine(ScriptedEngine):
+            def _provider_messages(self):
+                return list(range(100))
+
+            def compact_session(self):
+                self.compacted = True
+
+        engine = BigEngine([TurnResult(status='ok', content='ok', duration=0.1,
+                                       session='job.b')])
+        engine.compacted = False
+        with patch('replio.scheduler._build_engine', return_value=engine):
+            job = Job('b', {'interval': 60}, prompt='p', status='approved',
+                      max_context=50)
+            self.scheduler.run_job(job)
+        self.assertTrue(engine.compacted)
+
+    def test_run_content_captured(self):
+        self._patch_engine([
+            TurnResult(status='ok', content='hello from the job', duration=0.2,
+                       session='job.rc'),
+        ])
+        job = Job('rc', {'interval': 60}, prompt='p', status='approved')
+        self.registry.put(job)
+        run = self.scheduler.run_job(job)
+        self.assertEqual(run.content, 'hello from the job')
+
 
 class TestRender(unittest.TestCase):
     def test_list_and_show(self):
@@ -433,6 +512,23 @@ class TestRender(unittest.TestCase):
         self.assertEqual(describe_schedule(Job('a', {'at': '2026-08-27T02:00:00Z'})),
                          'at 2026-08-27T02:00:00Z')
 
+    def test_status_render(self):
+        registry = JobRegistry(Path('/nonexistent/jobs.json'))
+        job = Job('a', {'interval': 60}, prompt='p', status='verified',
+                  created_at='2026-08-26T08:00:00Z')
+        job.history = [
+            JobRun(status='verified', duration=1.0, content='ok'),
+            JobRun(status='failed', reason='boom'),
+        ]
+        registry._jobs['a'] = job
+        with patch('sys.stdout', new=io.StringIO()) as buf:
+            render_status(registry)
+            out = buf.getvalue()
+        self.assertIn('a', out)
+        self.assertIn('2 run(s) (1 ok, 1 failed)', out)
+        self.assertIn('boom', out)
+        self.assertIn('uptime', out)
+
 
 class TestJobsCli(unittest.TestCase):
     def setUp(self):
@@ -447,9 +543,11 @@ class TestJobsCli(unittest.TestCase):
         namespace = SimpleNamespace(path=str(self.base), tools_deny=[],
                                     tool_permission=[], approval='manual',
                                     retries=3, backoff=60.0, timeout=0,
+                                    max_context=0, require_approval=False,
                                     session='', mode='', provider='', model='',
                                     persona='', system_prompt='',
-                                    no_retry=False, tick=15.0, quiet=False)
+                                    no_retry=False, verbose=False,
+                                    tick=15.0, quiet=False)
         for key, value in kw.items():
             setattr(namespace, key, value)
         return namespace
@@ -465,6 +563,7 @@ class TestJobsCli(unittest.TestCase):
         job = registry.find('nightly')
         self.assertEqual(job.status, 'proposed')
         self.assertFalse(job.runnable())
+        self.assertTrue(job.created_at)
         with patch('sys.stdout', new=io.StringIO()):
             cmd_jobs(self._args(action='approve', name='nightly'))
         fresh = JobRegistry(self.base / '.replio' / 'jobs.json')
@@ -530,6 +629,45 @@ class TestJobsCli(unittest.TestCase):
                 code = cmd_jobs(self._args(action='run', name='bad', no_retry=True))
         self.assertEqual(code, 1)
         self.assertIn('failed', buf.getvalue())
+
+    def test_stop_disables_job(self):
+        from replio.cli import cmd_jobs
+        cmd_jobs(self._args(action='add', name='x', prompt='p', interval=3600,
+                            approval='auto'))
+        with patch('sys.stdout', new=io.StringIO()) as buf:
+            cmd_jobs(self._args(action='stop', name='x'))
+            self.assertIn('disabled', buf.getvalue())
+        fresh = JobRegistry(self.base / '.replio' / 'jobs.json')
+        self.assertFalse(fresh.find('x').enabled)
+
+    def test_add_require_approval_parks_until_approve(self):
+        from replio.cli import cmd_jobs
+        cmd_jobs(self._args(action='add', name='gated', prompt='p', interval=3600,
+                            approval='auto', require_approval=True))
+        fresh = JobRegistry(self.base / '.replio' / 'jobs.json')
+        job = fresh.find('gated')
+        self.assertEqual(job.status, 'waiting_approval')
+        self.assertFalse(job.ready_to_run())
+        cmd_jobs(self._args(action='approve', name='gated'))
+        job = JobRegistry(self.base / '.replio' / 'jobs.json').find('gated')
+        self.assertEqual(job.status, 'approved')
+        self.assertTrue(job.approval_pending)
+        self.assertTrue(job.ready_to_run())
+
+    def test_run_prints_content_headless(self):
+        from replio.cli import cmd_jobs
+        config_dir = Path(self.base) / '.replio'
+        config_dir.mkdir(exist_ok=True)
+        registry = JobRegistry(config_dir / 'jobs.json')
+        registry.put(Job('c', {'interval': 60}, prompt='p', status='approved',
+                         retries=0, backoff=0))
+        with patch('replio.scheduler._build_engine', return_value=ScriptedEngine([
+            TurnResult(status='ok', content='hello from the job', duration=0.2,
+                       session='job.c')])):
+            with patch('sys.stdout', new=io.StringIO()) as buf:
+                code = cmd_jobs(self._args(action='run', name='c'))
+        self.assertEqual(code, 0)
+        self.assertIn('hello from the job', buf.getvalue())
 
 
 if __name__ == '__main__':

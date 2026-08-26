@@ -55,7 +55,7 @@ Replio/
 │   ├── engine.py            # Headless agent core - Engine + TurnResult + run_subagent
 │   ├── chat.py              # ChatLoop(Engine) - REPL shell with readline
 │   ├── jobs.py              # Scheduled jobs - Job/JobRun model, registry, cron parser
-│   ├── scheduler.py         # JobScheduler - durable job daemon (retries, approvals)
+│   ├── scheduler.py         # JobScheduler - durable job daemon (retries, approvals, auto-compact)
 │   ├── ui.py                # UISink - ReplUI / HeadlessUI / NullUI renderers
 │   ├── server.py            # stdlib HTTP JSON API (POST /chat, GET /sessions, GET /health, GET /version)
 │   ├── providers/

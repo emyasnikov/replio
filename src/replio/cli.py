@@ -221,13 +221,16 @@ def cmd_plugins(args) -> int:
 
 def cmd_jobs(args) -> int:
     from .jobs import (Job, JobRegistry, publish, render_list, render_show,
-                       validate_schedule)
+                       render_status, validate_schedule)
     config = Config(path=getattr(args, 'path', None))
     registry = JobRegistry(config.local_path.parent / 'jobs.json')
     action = getattr(args, 'action', None)
 
     if action == 'list':
         render_list(registry)
+        return 0
+    if action == 'status':
+        render_status(registry)
         return 0
     if action == 'show':
         return 0 if render_show(registry, args.name) else 1
@@ -237,7 +240,7 @@ def cmd_jobs(args) -> int:
             return 0
         print(f'Job not found: {args.name}', file=sys.stderr)
         return 1
-    if action in ('approve', 'reject', 'enable', 'disable'):
+    if action in ('approve', 'reject', 'enable', 'disable', 'stop'):
         job = registry.find(args.name)
         if job is None:
             print(f'Job not found: {args.name}', file=sys.stderr)
@@ -245,11 +248,12 @@ def cmd_jobs(args) -> int:
         if action == 'approve':
             job.status = 'approved'
             job.enabled = True
+            if job.require_approval:
+                job.approval_pending = True
         elif action == 'reject':
             job.status = 'proposed'
             job.enabled = False
-        elif action == 'enable':
-            job.enabled = True
+            job.approval_pending = False
         else:
             job.enabled = False
         registry.save()
@@ -281,6 +285,7 @@ def cmd_jobs(args) -> int:
             print(f'Job already exists: {args.name} '
                   '(use `replio jobs show` first)', file=sys.stderr)
             return 1
+        require_approval = bool(getattr(args, 'require_approval', False))
         job = Job(
             name=args.name,
             schedule=schedule,
@@ -296,9 +301,14 @@ def cmd_jobs(args) -> int:
             retries=getattr(args, 'retries', 3),
             backoff=getattr(args, 'backoff', 60.0),
             timeout=getattr(args, 'timeout', 0),
+            max_context=getattr(args, 'max_context', 0),
+            require_approval=require_approval,
             enabled=args.approval == 'auto',
             status='approved' if args.approval == 'auto' else 'proposed',
         )
+        if require_approval:
+            job.status = 'waiting_approval'
+            job.approval_pending = False
         publish(registry, job)
         return 0
     if action == 'run':
@@ -308,8 +318,8 @@ def cmd_jobs(args) -> int:
         scheduler = JobScheduler(config,
                                  verbose=not getattr(args, 'quiet', False))
         return scheduler.daemon(tick_seconds=getattr(args, 'tick', 15.0))
-    print('Usage: replio jobs [list|show|add|approve|reject|enable|disable|'
-          'remove|run|daemon]')
+    print('Usage: replio jobs [list|status|show|add|approve|reject|enable|'
+          'disable|stop|remove|run|daemon]')
     return 1
 
 
@@ -319,7 +329,8 @@ def _jobs_run(config, registry, args) -> int:
     if job is None:
         print(f'Job not found: {args.name}', file=sys.stderr)
         return 1
-    scheduler = JobScheduler(config, verbose=False)
+    verbose = bool(getattr(args, 'verbose', False))
+    scheduler = JobScheduler(config, verbose=verbose, stream=verbose)
     original_retries, original_backoff = job.retries, job.backoff
     try:
         if getattr(args, 'no_retry', False):
@@ -329,6 +340,8 @@ def _jobs_run(config, registry, args) -> int:
         job.retries, job.backoff = original_retries, original_backoff
         registry.save()
     print(f'Run {job.name}: {run.status} ({run.duration}s)')
+    if not verbose and run.content:
+        print(run.content)
     if run.reason:
         print(f'  reason: {run.reason}')
     if run.session:

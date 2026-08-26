@@ -677,24 +677,26 @@ def register_builtins(registry):
 
     @registry.register('jobs', description='Manage scheduled and durable jobs', subcommands=[
         ('list', 'List configured jobs'),
+        ('status', 'Runtime summary per job (fired count, last error, uptime)'),
         ('show', 'Show a job and its run history'),
         ('add', 'Add a job (starts proposed, approve to activate)'),
-        ('approve', 'Approve a proposed job so it runs on schedule'),
+        ('approve', 'Approve a job so it runs on schedule'),
         ('reject', 'Reject a proposed job'),
         ('enable', 'Enable a disabled job'),
         ('disable', 'Disable a job'),
+        ('stop', 'Stop a job - same as disable'),
         ('remove', 'Remove a job definition'),
         ('run', 'Run a job now'),
     ])
     def jobs_cmd(arg=''):
         from ..jobs import (Job, JobRegistry, publish, render_list, render_show,
-                            validate_schedule)
+                            render_status, validate_schedule)
         import shlex
         registry = JobRegistry(chat.config.local_path.parent / 'jobs.json')
         tokens = shlex.split(arg)
         action = tokens[0] if tokens else 'list'
-        if action == 'list':
-            render_list(registry)
+        if action in ('list', 'status'):
+            (render_status if action == 'status' else render_list)(registry)
             return
         if action == 'show':
             name = tokens[1] if len(tokens) > 1 else ''
@@ -713,7 +715,7 @@ def register_builtins(registry):
             else:
                 print(f'Job not found: {name}')
             return
-        if action in ('approve', 'reject', 'enable', 'disable'):
+        if action in ('approve', 'reject', 'enable', 'disable', 'stop'):
             name = tokens[1] if len(tokens) > 1 else ''
             job = registry.find(name) if name else None
             if job is None:
@@ -722,9 +724,12 @@ def register_builtins(registry):
             if action == 'approve':
                 job.status = 'approved'
                 job.enabled = True
+                if job.require_approval:
+                    job.approval_pending = True
             elif action == 'reject':
                 job.status = 'proposed'
                 job.enabled = False
+                job.approval_pending = False
             elif action == 'enable':
                 job.enabled = True
             else:
@@ -742,6 +747,8 @@ def register_builtins(registry):
                 return
             run = JobScheduler(chat.config, verbose=False).run_job(job)
             print(f'Run {job.name}: {run.status} ({run.duration}s)')
+            if run.content:
+                print(run.content)
             if run.reason:
                 print(f'  reason: {run.reason}')
             if run.session:
@@ -808,8 +815,9 @@ def register_builtins(registry):
             )
             publish(registry, job)
             return
-        print('Usage: /jobs [list|show <name>|add <name> ...|approve <name>|'
-              'reject <name>|enable <name>|disable <name>|remove <name>|run <name>]')
+        print('Usage: /jobs [list|status|show <name>|add <name> ...|approve <name>|'
+              'reject <name>|enable <name>|disable <name>|stop <name>|'
+              'remove <name>|run <name>]')
 
 
 def _render_plugins(pm):

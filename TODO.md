@@ -1,5 +1,7 @@
 # TODO
 
+- Human-in-the-loop channels - job events outbound (`proposed`, `will_run`, `failed`, `waiting_approval`) plus inbound actions (`approve`/`reject`/`run`/`disable`) over configurable connectors (webhook first, then email, then Telegram), so a job can reach an operator who is not on the box
+- Global jobs overview across agents - `replio jobs list --root <dir>` fleet scan, a `GET /jobs` + `POST /jobs/<name>/approve|reject|run|disable` operator API on `replio serve`, then a web Control UI, so one view shows which agents run next and with which task
 - Edge / offline store-and-forward buffering - offline-capable agents with local buffering for unreliable connectivity (enterprise use case)
 - Immutable agent config - `replio serve` agents must never be able to change their own configuration, permissions, or tool list (control-plane rule from the use-case reference architecture)
 - Hash-chained / tamper-evident audit log - additive on session logs (enterprise.md recommendation), hash-chained append or WORM storage
@@ -25,6 +27,11 @@
 
 ## Open
 
+- [ ] Mid-run blocking job approval - an `ask` tool inside a running job pauses the run in place (per-tool-call `waiting_approval`), notifies via a connector, and resumes the same session when the operator replies; needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run `--require-approval` gate)
+- [ ] Job event hooks - the scheduler emits typed transitions (`proposed`, `approved`, `will_run`, `executing`, `verified`, `failed`, `timeout`, `waiting_approval`) to registered `services`; channel-agnostic core, first consumers are the connectors and the operator API
+- [ ] Job connectors - bundled `replio-core-webhook` (stdlib JSON POST, zero deps, works with n8n/IFTTT/any URL) first; external email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API so operators can react in time
+- [ ] Jobs operator API - `GET /jobs` and `POST /jobs/<name>/approve|reject|run|disable` on `replio serve`, so clients (web Control UI, connectors, fleet supervisor) can see and act per agent
+- [ ] Fleet jobs overview - `replio jobs list --root <dir>` scanning agent worktrees (agent, job, status, next run, task table), then the web Control UI on top
 - [ ] Interactive delegation focus - REPL jumps in/out of the active sub-agent (request or automatic on delegate), arrows switch between concurrent `delegate_*` session logs rendered from their own saved logs (opencode-style sub-agent views)
 - [ ] Jobs registry - named team configurations ("writing" = researcher > writer > referencer > editor, "programming" = planner > programmer > tester > code-reviewer) referencing bundled personas with ordering and handoff, selectable for delegation and auto team selection
 - [ ] Persona directory scan for export/import - read `.replio/personas/*.md` (front-matter personas) to import and export personas to Markdown, paralleling the sessions Markdown export/import
@@ -95,6 +102,11 @@
 
 ## Done
 
+- [x] Job memory - stable `job.<name>` session across runs, `--max-context` auto-compaction, 100-run history cap
+- [x] Job per-run approval - `--require-approval` parks each run in `waiting_approval` until a human approves it
+- [x] Jobs diagnostics - `replio jobs status` (fired count, last error, uptime) + last output in `show`
+- [x] Watchable job runs - `replio jobs run --verbose` streams the live turn; headless `run` prints the answer
+- [x] Richer job runs - `--persona`/`--system-prompt`, default recurring-job system prompt, tool carve
 - [x] Scheduled / durable jobs - `replio jobs`: registry, daemon, cron, retries, approval gate
 - [x] Per-agent permission profiles - persona tool_permission drives sub-agent policy
 - [x] In-process sub-engine - Engine.run_subagent: persona overrides, NullUI, delegate_ session

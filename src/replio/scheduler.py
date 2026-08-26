@@ -8,8 +8,15 @@ from .engine import Engine, TurnResult
 from .jobs import Job, JobRun, JobRegistry, compute_next_run, parse_dt
 from .ui import HeadlessUI
 
+DEFAULT_JOB_SYSTEM_PROMPT = (
+    'You are a recurring autonomous job. Complete the task given in the latest '
+    'user message. Earlier runs of this job are part of this conversation '
+    'history - use them to stay consistent, avoid repeating already-completed '
+    'work, and report what you did.')
 
-def _build_engine(config: Config, job: Job, verbose: bool) -> Engine:
+
+def _build_engine(config: Config, job: Job, verbose: bool,
+                  stream: bool = False) -> Engine:
     sub_config = Config(path=str(config.local_path.parent.parent))
     if job.persona:
         from .personas import PersonaRegistry
@@ -25,6 +32,8 @@ def _build_engine(config: Config, job: Job, verbose: bool) -> Engine:
         sub_config.apply('tool_permission', permissions)
     if job.system_prompt:
         sub_config.apply('system_prompt', job.system_prompt)
+    elif not job.persona:
+        sub_config.apply('system_prompt', DEFAULT_JOB_SYSTEM_PROMPT)
     if job.mode:
         sub_config.apply('mode', job.mode)
     if job.provider:
@@ -37,7 +46,7 @@ def _build_engine(config: Config, job: Job, verbose: bool) -> Engine:
         sub_config.apply('tool_permission', permissions)
     if job.tools_deny:
         sub_config.apply('tools.deny', job.tools_deny)
-    ui = HeadlessUI(auto='deny', verbose=verbose, stream=False,
+    ui = HeadlessUI(auto='deny', verbose=verbose, stream=stream,
                     show_thinking=sub_config.get('show_thinking', True),
                     footer_tokens=sub_config.get('footer_tokens', ['context']))
     engine = Engine(sub_config, ui=ui)
@@ -80,16 +89,30 @@ def _attempt(engine: Engine, prompt: str, timeout: int) -> TurnResult:
 
 
 class JobScheduler:
-    def __init__(self, config: Config, verbose: bool = True):
+    def __init__(self, config: Config, verbose: bool = True,
+                 stream: bool = False):
         self.config = config
         self.registry = JobRegistry(config.local_path.parent / 'jobs.json')
         self.verbose = verbose
+        self.stream = stream
 
     def _out(self, msg: str, error: bool = False):
         stream = sys.stderr if error else sys.stdout
         if self.verbose:
             stream.write(f'[job] {msg}\n')
             stream.flush()
+
+    def _maybe_compact(self, engine, job: Job):
+        limit = max(0, int(job.max_context or 0))
+        if limit <= 0:
+            return
+        try:
+            size = len(engine._provider_messages())
+        except AttributeError:
+            return
+        if size >= limit:
+            engine.compact_session()
+            self._out(f'{job.name}: auto-compacted context ({size} messages)')
 
     def run_job(self, job: Job) -> JobRun:
         job.status = 'executing'
@@ -99,11 +122,13 @@ class JobScheduler:
         backoff = max(0.0, float(job.backoff or 0))
         attempt = 0
         last_run: JobRun | None = None
+        finished = datetime.now(timezone.utc)
         while True:
             attempt += 1
             started = datetime.now(timezone.utc)
             try:
-                engine = _build_engine(self.config, job, self.verbose)
+                engine = _build_engine(self.config, job, self.verbose,
+                                       self.stream)
             except ValueError as e:
                 run = JobRun(started_at=started.isoformat(timespec='seconds'),
                              finished_at=started.isoformat(timespec='seconds'),
@@ -112,6 +137,8 @@ class JobScheduler:
                 job.history.append(run)
                 self.registry.save()
                 return self._finish(job, run, started)
+            if attempt == 1:
+                self._maybe_compact(engine, job)
             if attempt > 1:
                 prompt = (f'[Previous attempt {attempt - 1} failed. Retry this '
                           f'job and finish it.]\n\n{job.prompt}')
@@ -133,7 +160,8 @@ class JobScheduler:
                 finished_at=finished.isoformat(timespec='seconds'),
                 status='verified' if ok else 'failed',
                 reason=reason, duration=round(result.duration, 1),
-                session=result.session or '', attempt=attempt)
+                session=result.session or '', attempt=attempt,
+                content=(result.content or '')[:1000])
             job.history.append(run)
             self.registry.save()
             if ok or attempt > retries:
@@ -148,6 +176,9 @@ class JobScheduler:
     def _finish(self, job: Job, run: JobRun, finished: datetime) -> JobRun:
         job.last_run_at = run.started_at
         job.status = 'verified' if run.status == 'verified' else 'failed'
+        if job.require_approval:
+            job.status = 'waiting_approval'
+            job.approval_pending = False
         if job.schedule.get('at'):
             job.enabled = False
             job.next_run_at = ''
@@ -156,6 +187,8 @@ class JobScheduler:
             job.next_run_at = next_at.isoformat(timespec='seconds') if next_at else ''
         self.registry.save()
         verb = 'verified' if run.status == 'verified' else 'failed'
+        if job.require_approval:
+            verb += ' (next run waits for approval)'
         self._out(f'{job.name}: {verb} ({run.duration}s, '
                   f'{len(job.history)} run(s) recorded)')
         return run
@@ -164,7 +197,7 @@ class JobScheduler:
         now = now or datetime.now(timezone.utc)
         due = []
         for job in self.registry.all():
-            if not job.runnable():
+            if not job.ready_to_run():
                 continue
             try:
                 next_at = parse_dt(job.next_run_at) if job.next_run_at else now

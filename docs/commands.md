@@ -19,7 +19,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
 | `/persona`              |                | Manage personas: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [personas.md](personas.md) |
 | `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
-| `/jobs`                 |                | Manage scheduled and durable jobs: `list`, `show`, `add`, `approve`, `reject`, `enable`, `disable`, `remove`, `run`. See [jobs.md](jobs.md) |
+| `/jobs`                 |                | Manage scheduled and durable jobs: `list`, `status`, `show`, `add`, `approve`, `reject`, `enable`, `disable`, `stop`, `remove`, `run`. See [jobs.md](jobs.md) |
 | `/plugins`              | `/plugin`      | Manage plugins: `list`, `enable`, `disable`, `install`, `update`, `uninstall` |
 
 `/help` renders commands with their subcommands indented below, and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.
@@ -120,13 +120,14 @@ Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, 
 | Subcommand    | Description                                                              |
 |---------------|--------------------------------------------------------------------------|
 | `list`        | Table of jobs: schedule, status, next and last run                       |
-| `show`        | `replio jobs show <name>` - definition plus full run history              |
-| `add`         | `replio jobs add <name> --prompt "..." --cron "0 2 * * *"` (or `--interval N` / `--at ISO`), plus `--mode`, `--provider`/`--model`, `--persona`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--approval auto` |
-| `approve`     | `approve <name>` - activate a job so it runs on schedule                |
+| `status`      | Runtime summary per job: fired count, last error, uptime, approval state |
+| `show`        | `replio jobs show <name>` - definition plus full run history + last output|
+| `add`         | `replio jobs add <name> --prompt "..." --cron "0 2 * * *"` (or `--interval N` / `--at ISO`), plus `--mode`, `--provider`/`--model`, `--persona`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--max-context N`, `--require-approval`, `--approval auto` |
+| `approve`     | `approve <name>` - activate a job (or arm the next run for `--require-approval` jobs) |
 | `reject`      | `reject <name>` - send back to proposed and disable                       |
-| `enable` / `disable` | Toggle the enabled gate                                          |
+| `enable` / `disable` / `stop` | Toggle the enabled gate (`stop` = `disable`)                     |
 | `remove`      | `remove <name>` - drop the definition (sessions are kept)                 |
-| `run`         | `run <name> [--no-retry]` - run now, apply retries, exit `0` verified / `1` failed |
+| `run`         | `run <name> [--no-retry] [--verbose]` - run now, apply retries, print the answer; `--verbose` streams the live turn; exit `0` verified / `1` failed |
 | `daemon`      | `daemon [--tick 15] [--quiet]` - scheduler loop, Ctrl-C to stop           |
 
 ### `replio plugins`
