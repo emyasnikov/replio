@@ -6,7 +6,7 @@ For home-lab operators, the appeal is the same as everywhere else but sharper: a
 
 - **Fits the hardware you have** - a couple of MB per process, no JVM, no node_modules. It idles happily on a Pi next to your DNS server and uses a fraction of the RAM of a browser tab.
 - **Self-hosted and sovereign** - sessions and config are files on your disk. Point it at Ollama on the same box and the whole stack is yours, offline-capable, with no vendor in the loop.
-- **Scriptable and composable** - `replio run` in cron, `replio serve` behind your reverse proxy, agents talking to each other over `POST /chat`. It slots into an existing automation stack instead of demanding its own platform.
+- **Scriptable and composable** - `replio run` in cron, `replio jobs daemon` for durable scheduled work with retries and approvals, `replio serve` behind your reverse proxy, agents talking to each other over `POST /chat`. It slots into an existing automation stack instead of demanding its own platform.
 - **Permission-gated by design** - home automation touches real systems, so the `ask` gate on `run_command` and worktree scoping keep the agent proposing before it acts.
 
 ## Fit by use case
@@ -26,4 +26,4 @@ Home-lab power-user features are planned: bookmarks, notebook mode, RAG/vector s
 1. `pip install replio` on the Pi or NUC, and run `replio` in a terminal (or `replio serve --path /srv/notes --port 8787` behind your proxy).
 2. `/connect` to Ollama on the same machine for a fully local setup, or any OpenAI-compatible endpoint.
 3. Lock it down: `tool_permission.bash: ask`, and use `tools.deny` to strip capabilities you do not want on a given agent.
-4. Schedule `replio run -p "summarize today's logs" --output json` in cron, and let sessions accumulate as your searchable operations log.
+4. Schedule `replio run -p "summarize today's logs" --output json` in cron, or register it as a durable job (`replio jobs add` + `replio jobs daemon`) for retries, approval-gating, and a recorded run history. Sessions accumulate as your searchable operations log either way.

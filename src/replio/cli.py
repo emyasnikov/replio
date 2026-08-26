@@ -217,3 +217,120 @@ def cmd_plugins(args) -> int:
         print(f'Error: {e}', file=sys.stderr)
         return 1
     return 0
+
+
+def cmd_jobs(args) -> int:
+    from .jobs import (Job, JobRegistry, publish, render_list, render_show,
+                       validate_schedule)
+    config = Config(path=getattr(args, 'path', None))
+    registry = JobRegistry(config.local_path.parent / 'jobs.json')
+    action = getattr(args, 'action', None)
+
+    if action == 'list':
+        render_list(registry)
+        return 0
+    if action == 'show':
+        return 0 if render_show(registry, args.name) else 1
+    if action == 'remove':
+        if registry.remove(args.name):
+            print(f'Removed job: {args.name}')
+            return 0
+        print(f'Job not found: {args.name}', file=sys.stderr)
+        return 1
+    if action in ('approve', 'reject', 'enable', 'disable'):
+        job = registry.find(args.name)
+        if job is None:
+            print(f'Job not found: {args.name}', file=sys.stderr)
+            return 1
+        if action == 'approve':
+            job.status = 'approved'
+            job.enabled = True
+        elif action == 'reject':
+            job.status = 'proposed'
+            job.enabled = False
+        elif action == 'enable':
+            job.enabled = True
+        else:
+            job.enabled = False
+        registry.save()
+        print(f'Job {args.name}: status={job.status}, '
+              f'{"enabled" if job.enabled else "disabled"}')
+        return 0
+    if action == 'add':
+        schedule = {}
+        if getattr(args, 'cron', None):
+            schedule['cron'] = args.cron
+        elif getattr(args, 'interval', None):
+            schedule['interval'] = args.interval
+        elif getattr(args, 'at', None):
+            schedule['at'] = args.at
+        tool_permission: dict = {}
+        for pair in getattr(args, 'tool_permission', []) or []:
+            if '=' not in pair:
+                print(f'Invalid --tool-permission "{pair}" '
+                      '(want category=action)', file=sys.stderr)
+                return 1
+            category, _, action_name = pair.partition('=')
+            tool_permission[category.strip()] = action_name.strip()
+        try:
+            validate_schedule(schedule)
+        except ValueError as e:
+            print(f'Error: {e}', file=sys.stderr)
+            return 1
+        if registry.find(args.name) is not None:
+            print(f'Job already exists: {args.name} '
+                  '(use `replio jobs show` first)', file=sys.stderr)
+            return 1
+        job = Job(
+            name=args.name,
+            schedule=schedule,
+            prompt=args.prompt,
+            session=getattr(args, 'session', '') or '',
+            mode=getattr(args, 'mode', '') or '',
+            provider=getattr(args, 'provider', '') or '',
+            model=getattr(args, 'model', '') or '',
+            persona=getattr(args, 'persona', '') or '',
+            system_prompt=getattr(args, 'system_prompt', '') or '',
+            tool_permission=tool_permission,
+            tools_deny=list(getattr(args, 'tools_deny', []) or []),
+            retries=getattr(args, 'retries', 3),
+            backoff=getattr(args, 'backoff', 60.0),
+            timeout=getattr(args, 'timeout', 0),
+            enabled=args.approval == 'auto',
+            status='approved' if args.approval == 'auto' else 'proposed',
+        )
+        publish(registry, job)
+        return 0
+    if action == 'run':
+        return _jobs_run(config, registry, args)
+    if action == 'daemon':
+        from .scheduler import JobScheduler
+        scheduler = JobScheduler(config,
+                                 verbose=not getattr(args, 'quiet', False))
+        return scheduler.daemon(tick_seconds=getattr(args, 'tick', 15.0))
+    print('Usage: replio jobs [list|show|add|approve|reject|enable|disable|'
+          'remove|run|daemon]')
+    return 1
+
+
+def _jobs_run(config, registry, args) -> int:
+    from .scheduler import JobScheduler
+    job = registry.find(args.name)
+    if job is None:
+        print(f'Job not found: {args.name}', file=sys.stderr)
+        return 1
+    scheduler = JobScheduler(config, verbose=False)
+    original_retries, original_backoff = job.retries, job.backoff
+    try:
+        if getattr(args, 'no_retry', False):
+            job.retries, job.backoff = 0, 0
+        run = scheduler.run_job(job)
+    finally:
+        job.retries, job.backoff = original_retries, original_backoff
+        registry.save()
+    print(f'Run {job.name}: {run.status} ({run.duration}s)')
+    if run.reason:
+        print(f'  reason: {run.reason}')
+    if run.session:
+        print(f'  session: {run.session}')
+    return 0 if run.status == 'verified' else 1

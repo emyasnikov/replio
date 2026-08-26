@@ -4,13 +4,14 @@ Detailed reference for Replio. For an overview, features, and quick start, see t
 
 - [Agent fleets](fleet.md) - single-purpose agent fleets, one scoped process per agent, deployment
 - [Agent swarms](swarm.md) - swarm orchestration, delegation, personas, auditor and team patterns
-- [Personas](personas.md) - persona catalog, storage, delegation and permission rule
 - [API endpoints](api.md) - HTTP JSON API for the `replio serve` command
 - [Architecture](architecture.md) - agent core: the loop, engine, UI sinks, front-ends, extension points
 - [Commands & CLI](commands.md) - slash commands and headless CLI flags
 - [Configuration](config.md) - config schema and keys
 - [Deployment](deploy.md) - Docker deployment (image + Compose fleet)
-- [MCP](mcp.md) - Model Context Protocol client and server
+- [Jobs](jobs.md) - scheduled and durable jobs (`replio jobs`), cron scheduling, approvals
+- [Model Context Protocol](mcp.md) - MCP client and server
+- [Personas](personas.md) - persona catalog, storage, delegation and permission rule
 - [Plugins](plugins.md) - plugins: bundled, layout, manifest, management
 - [Providers](providers.md) - providers, auto-detection, the chat event contract, adding a provider
 - [Security](security.md) - permission model, threat model, data posture, prompt injection

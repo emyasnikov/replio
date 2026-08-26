@@ -675,6 +675,142 @@ def register_builtins(registry):
             print(f'Unknown /plugins action or plugin: {action}')
             print('Usage: /plugins [list|enable|disable|install|update|uninstall|<name>]')
 
+    @registry.register('jobs', description='Manage scheduled and durable jobs', subcommands=[
+        ('list', 'List configured jobs'),
+        ('show', 'Show a job and its run history'),
+        ('add', 'Add a job (starts proposed, approve to activate)'),
+        ('approve', 'Approve a proposed job so it runs on schedule'),
+        ('reject', 'Reject a proposed job'),
+        ('enable', 'Enable a disabled job'),
+        ('disable', 'Disable a job'),
+        ('remove', 'Remove a job definition'),
+        ('run', 'Run a job now'),
+    ])
+    def jobs_cmd(arg=''):
+        from ..jobs import (Job, JobRegistry, publish, render_list, render_show,
+                            validate_schedule)
+        import shlex
+        registry = JobRegistry(chat.config.local_path.parent / 'jobs.json')
+        tokens = shlex.split(arg)
+        action = tokens[0] if tokens else 'list'
+        if action == 'list':
+            render_list(registry)
+            return
+        if action == 'show':
+            name = tokens[1] if len(tokens) > 1 else ''
+            if not name:
+                print('Usage: /jobs show <name>')
+                return
+            render_show(registry, name)
+            return
+        if action == 'remove':
+            name = tokens[1] if len(tokens) > 1 else ''
+            if not name:
+                print('Usage: /jobs remove <name>')
+                return
+            if registry.remove(name):
+                print(f'Removed job: {name}')
+            else:
+                print(f'Job not found: {name}')
+            return
+        if action in ('approve', 'reject', 'enable', 'disable'):
+            name = tokens[1] if len(tokens) > 1 else ''
+            job = registry.find(name) if name else None
+            if job is None:
+                print(f'Usage: /jobs {action} <name>')
+                return
+            if action == 'approve':
+                job.status = 'approved'
+                job.enabled = True
+            elif action == 'reject':
+                job.status = 'proposed'
+                job.enabled = False
+            elif action == 'enable':
+                job.enabled = True
+            else:
+                job.enabled = False
+            registry.save()
+            print(f'Job {name}: status={job.status}, '
+                  f'{"enabled" if job.enabled else "disabled"}')
+            return
+        if action == 'run':
+            from ..scheduler import JobScheduler
+            name = tokens[1] if len(tokens) > 1 else ''
+            job = registry.find(name) if name else None
+            if job is None:
+                print('Usage: /jobs run <name>')
+                return
+            run = JobScheduler(chat.config, verbose=False).run_job(job)
+            print(f'Run {job.name}: {run.status} ({run.duration}s)')
+            if run.reason:
+                print(f'  reason: {run.reason}')
+            if run.session:
+                print(f'  session: {run.session}')
+            return
+        if action == 'add':
+            if len(tokens) < 2:
+                print('Usage: /jobs add <name> --cron "0 2 * * *" --prompt "text" '
+                      '[--interval N|--at ISO] [--approval auto]')
+                return
+            name = tokens[1]
+            opts, after = {}, []
+            i = 2
+            while i < len(tokens):
+                tok = tokens[i]
+                if tok in ('--cron', '--interval', '--at', '--prompt', '--session',
+                           '--mode', '--provider', '--model', '--persona'):
+                    opts[tok] = tokens[i + 1] if i + 1 < len(tokens) else ''
+                    i += 2
+                elif tok == '--approval':
+                    opts[tok] = tokens[i + 1].lower() if i + 1 < len(tokens) else 'manual'
+                    i += 2
+                else:
+                    after.append(tok)
+                    i += 1
+            if '--prompt' not in opts or not opts.get('--prompt'):
+                print('Usage: /jobs add <name> --prompt "text" (plus a schedule flag)')
+                return
+            schedule: dict = {}
+            if opts.get('--cron'):
+                schedule['cron'] = opts['--cron']
+            elif opts.get('--interval'):
+                try:
+                    schedule['interval'] = int(opts['--interval'])
+                except ValueError:
+                    print('Invalid --interval value')
+                    return
+            elif opts.get('--at'):
+                schedule['at'] = opts['--at']
+            else:
+                print('One of --cron, --interval, or --at is required')
+                return
+            try:
+                validate_schedule(schedule)
+            except ValueError as e:
+                print(f'Error: {e}')
+                return
+            existing = registry.find(name)
+            if existing is not None:
+                print(f'Job already exists: {name}')
+                return
+            auto = opts.get('--approval') == 'auto'
+            job = Job(
+                name=name,
+                schedule=schedule,
+                prompt=opts['--prompt'],
+                session=opts.get('--session', '') or '',
+                mode=opts.get('--mode', '') or '',
+                provider=opts.get('--provider', '') or '',
+                model=opts.get('--model', '') or '',
+                persona=opts.get('--persona', '') or '',
+                enabled=auto,
+                status='approved' if auto else 'proposed',
+            )
+            publish(registry, job)
+            return
+        print('Usage: /jobs [list|show <name>|add <name> ...|approve <name>|'
+              'reject <name>|enable <name>|disable <name>|remove <name>|run <name>]')
+
 
 def _render_plugins(pm):
     infos = sorted(pm.status(), key=lambda i: i.name)

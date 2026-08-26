@@ -97,6 +97,53 @@ def _add_plugins_parser(sub):
     pun.add_argument('name', help='Plugin name')
 
 
+def _add_jobs_parser(sub):
+    p = sub.add_parser('jobs',
+                       help='Scheduled and durable jobs (cron-style, retries, approvals)')
+    p.add_argument('--path', default=argparse.SUPPRESS,
+                   help='Project path (default: current directory)')
+    g = p.add_subparsers(dest='action', required=True)
+    g.add_parser('list', help='List configured jobs')
+    gs = g.add_parser('show', help='Show a job definition and its run history')
+    gs.add_argument('name')
+    ga = g.add_parser('add', help='Add a job (starts as proposed, needs approval)')
+    ga.add_argument('name')
+    ga.add_argument('--prompt', required=True, help='The prompt the job sends')
+    sched = ga.add_mutually_exclusive_group(required=True)
+    sched.add_argument('--cron', help='5-field cron expression (minute hour dom month dow)')
+    sched.add_argument('--interval', type=int, help='Seconds between runs (min 60)')
+    sched.add_argument('--at', help='One-shot run at an ISO datetime (e.g. 2026-08-27T02:00:00Z)')
+    ga.add_argument('--session', help='Session name (default: job.<name>)')
+    ga.add_argument('--mode', help='Agent mode override (plan, build, or custom)')
+    ga.add_argument('--provider', help='Provider override')
+    ga.add_argument('--model', help='Model override')
+    ga.add_argument('--persona', help='Persona whose prompt, model, and permissions apply')
+    ga.add_argument('--system-prompt', help='System prompt override')
+    ga.add_argument('--tools-deny', action='append', default=[],
+                    help='Tool name to deny (repeatable)')
+    ga.add_argument('--tool-permission', action='append', default=[],
+                    help='category=action override (repeatable), e.g. bash=allow')
+    ga.add_argument('--retries', type=int, default=3, help='Retries after a failed run')
+    ga.add_argument('--backoff', type=float, default=60.0,
+                    help='Base backoff seconds, doubled per retry')
+    ga.add_argument('--timeout', type=int, default=0,
+                    help='Max seconds for a run (0 = no cap)')
+    ga.add_argument('--approval', choices=['manual', 'auto'], default='manual',
+                    help='manual starts proposed and waits for approve (default); '
+                         'auto starts approved')
+    for name in ('approve', 'reject', 'enable', 'disable', 'remove'):
+        cmd = g.add_parser(name, help=f'{name.capitalize()} a job')
+        cmd.add_argument('name')
+    gr = g.add_parser('run', help='Run a job now (waits, applies retries)')
+    gr.add_argument('name')
+    gr.add_argument('--no-retry', action='store_true',
+                    help='Single attempt, no retries or backoff')
+    gd = g.add_parser('daemon', help='Run the scheduler loop until interrupted')
+    gd.add_argument('--tick', type=float, default=15.0,
+                    help='Schedule check interval in seconds (default: 15)')
+    gd.add_argument('--quiet', action='store_true', help='Suppress scheduler output')
+
+
 def _version():
     return get_version()
 
@@ -116,6 +163,7 @@ def main(argv=None):
     _add_mcp_parser(sub)
     _add_config_parser(sub)
     _add_plugins_parser(sub)
+    _add_jobs_parser(sub)
     args = parser.parse_args(argv)
 
     if args.command == 'run':
@@ -136,6 +184,9 @@ def main(argv=None):
     if args.command == 'config':
         from .cli import cmd_config
         return cmd_config(args)
+    if args.command == 'jobs':
+        from .cli import cmd_jobs
+        return cmd_jobs(args)
 
     config = Config(path=args.path)
     chat = ChatLoop(config)

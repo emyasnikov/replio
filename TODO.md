@@ -1,7 +1,6 @@
 # TODO
 
 - Edge / offline store-and-forward buffering - offline-capable agents with local buffering for unreliable connectivity (enterprise use case)
-- Scheduled / durable jobs - cron-style `replio run`, retries with backoff, resumability, human-in-the-loop status model (`proposed` > `approved` > `executing` > `verified` > `failed`). A chat loop alone is not a workflow engine
 - Immutable agent config - `replio serve` agents must never be able to change their own configuration, permissions, or tool list (control-plane rule from the use-case reference architecture)
 - Hash-chained / tamper-evident audit log - additive on session logs (enterprise.md recommendation), hash-chained append or WORM storage
 - Single-purpose agent fleet with "one agent per process, scoped to a folder" as the headline pattern. README + `docs/fleet.md` set the niche
@@ -96,6 +95,7 @@
 
 ## Done
 
+- [x] Scheduled / durable jobs - `replio jobs`: registry, daemon, cron, retries, approval gate
 - [x] Per-agent permission profiles - persona tool_permission drives sub-agent policy
 - [x] In-process sub-engine - Engine.run_subagent: persona overrides, NullUI, delegate_ session
 - [x] `delegate` tool - core, per-persona permission resolver, delegate_echo result display

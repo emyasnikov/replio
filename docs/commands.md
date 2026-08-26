@@ -19,6 +19,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
 | `/persona`              |                | Manage personas: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [personas.md](personas.md) |
 | `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
+| `/jobs`                 |                | Manage scheduled and durable jobs: `list`, `show`, `add`, `approve`, `reject`, `enable`, `disable`, `remove`, `run`. See [jobs.md](jobs.md) |
 | `/plugins`              | `/plugin`      | Manage plugins: `list`, `enable`, `disable`, `install`, `update`, `uninstall` |
 
 `/help` renders commands with their subcommands indented below, and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.
@@ -30,7 +31,7 @@ Delegation is a normal tool: the lead agent proposes it, or you run it directly 
 ## CLI
 
 ```
-usage: replio [-h] [--path PATH] [-v] {run,export,models,serve,mcp,config,plugins} ...
+usage: replio [-h] [--path PATH] [-v] {run,export,models,serve,mcp,config,plugins,jobs} ...
 ```
 
 Global:
@@ -111,6 +112,22 @@ Run replio as an MCP server over stdio (newline-delimited JSON-RPC). See [mcp.md
 | Flag          | Default      | Description                  |
 |---------------|--------------|------------------------------|
 | `--path`      |              | Project path                 |
+
+### `replio jobs`
+
+Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, a human-in-the-loop approval gate, and a recorded run history. See [jobs.md](jobs.md).
+
+| Subcommand    | Description                                                              |
+|---------------|--------------------------------------------------------------------------|
+| `list`        | Table of jobs: schedule, status, next and last run                       |
+| `show`        | `replio jobs show <name>` - definition plus full run history              |
+| `add`         | `replio jobs add <name> --prompt "..." --cron "0 2 * * *"` (or `--interval N` / `--at ISO`), plus `--mode`, `--provider`/`--model`, `--persona`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--approval auto` |
+| `approve`     | `approve <name>` - activate a job so it runs on schedule                |
+| `reject`      | `reject <name>` - send back to proposed and disable                       |
+| `enable` / `disable` | Toggle the enabled gate                                          |
+| `remove`      | `remove <name>` - drop the definition (sessions are kept)                 |
+| `run`         | `run <name> [--no-retry]` - run now, apply retries, exit `0` verified / `1` failed |
+| `daemon`      | `daemon [--tick 15] [--quiet]` - scheduler loop, Ctrl-C to stop           |
 
 ### `replio plugins`
 
