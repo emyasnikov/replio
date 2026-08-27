@@ -55,7 +55,53 @@ replio serve --path agents/docs --port 8781 &
 curl localhost:8781/chat -X POST -d '{"prompt": "What does spec-42.pdf say?", "session_id": "docs-pool"}'
 ```
 
-## Deployment
+## Supervisor
+
+`replio fleet` supervises the agents from the terminal: port allocation, health checks, a restart policy, and per-agent config generation. It is the systemd/Compose-shaped layer for a single host, so you do not need Docker to keep agents alive.
+
+A fleet root is a directory holding the agents, typically one folder each. Two files live in the root's `.replio/`:
+
+- `.replio/fleet.json` - the declarative roster. One `AgentDef` per agent: `name`, `dir`, `enabled`, `prefer_port`, `max_restarts` (0 = unlimited), and an optional `command` override (the test seam; real agents use the default `replio serve` command)
+- `.replio/fleet.state.json` - runtime state only (pids, ports, status, restart counts, last error). A snapshot the supervisor writes; never edited by hand
+
+Build and run a fleet:
+
+```bash
+replio fleet init                    # scan subdirectories holding .replio/config.json
+replio fleet config docs-agent --persona research-agent    # generate a config
+replio fleet add code-agent --dir ../repo --port 8782
+replio fleet up                      # foreground, Ctrl-C = graceful down
+replio fleet up --detach             # background daemon (replio fleet down stops it)
+replio fleet status                  # agent/enabled/port/pid/state/restarts/error table
+replio fleet restart code-agent      # stop, reset backoff, relaunch on next sweep
+replio fleet logs docs-agent -f      # tail an agent's .replio/logs/<name>.log
+```
+
+While `up` is running the supervisor does, every sweep (default 2s):
+
+- **Port allocation** - agents get a free port by bind probe, preferring `prefer_port`, scanning 8780-8890. Edited while running, `add`/`init` take effect on the next sweep
+- **Health checks** - a `GET /health` probe (2s timeout). A running agent that fails `unhealthy_threshold` checks (default 2) or whose process exits is treated as a failure
+- **Restart policy** - a failed agent is respawned after a backoff that starts at 5s and doubles to a 60s cap. Past `max_restarts` (default 10) the agent goes `crashed` and the supervisor stops touching it until `replio fleet restart <name>` (or `enable`, it resets the counter and re-arms it). Setting `enabled: false` in the manifest stops supervision and the agent
+- **Graceful down** - Ctrl-C, `replio fleet down`, or a `SIGTERM` to the detached daemon sends `SIGINT` to each child (the server's own graceful shutdown), then escalates to `SIGKILL` after a grace period
+
+### Per-agent config generation
+
+`replio fleet config <name>` writes only the keys you pass into `<dir>/.replio/config.json`, leaving existing keys intact, so an agent is fired up with its personality before its first launch:
+
+```bash
+replio fleet config code-agent \
+  --provider ollama --model llama3.2 --mode build \
+  --system-prompt "You implement code." \
+  --tools-deny web_search \
+  --tool-permission "bash=allow" \
+  --persona programmer
+```
+
+`--persona` resolves the persona (bundled + global + local registry) and inlines its `system_prompt`, `model`, and `tool_permission` into the generated keys, so the running agent needs no personas registry of its own. An unknown persona aborts the write.
+
+Agent config is operator-managed: `replio fleet config` is the only intended writer, and a `serve` process has no config-write CLI path today. An engine-level guard making served agents immutable is an open TODO (see TODO).
+
+### Deployment
 
 For a fleet you supervise each `replio serve` process with Docker Compose, scaling one service per agent from the repo's `docker-compose.yml.example`. Each service mounts the agent folder, publishes a host-local port, and carries `restart: unless-stopped`, so Compose restarts the agent on failure and every agent exposes `GET /health` for monitoring.
 

@@ -31,7 +31,7 @@ Delegation is a normal tool: the lead agent proposes it, or you run it directly 
 ## CLI
 
 ```
-usage: replio [-h] [--path PATH] [-v] {run,export,models,serve,mcp,config,plugins,jobs} ...
+usage: replio [-h] [--path PATH] [-v] {run,export,models,serve,mcp,config,plugins,jobs,fleet} ...
 ```
 
 Global:
@@ -130,6 +130,24 @@ Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, 
 | `remove`      | `remove <name>` - drop the definition (sessions are kept)                 |
 | `run`         | `run <name> [--no-retry] [--verbose]` - run now, apply retries, print the answer. `--verbose` streams the live turn. Exit `0` verified / `1` failed |
 | `daemon`      | `daemon [--tick 15] [--quiet]` - scheduler loop, Ctrl-C to stop           |
+
+### `replio fleet`
+
+Supervise a fleet of scoped `replio serve` agents: ports, health checks, restart policy, config generation. See [fleet.md](fleet.md).
+
+| Subcommand    | Description                                                                     |
+|---------------|---------------------------------------------------------------------------------|
+| `init`        | Scan immediate subdirectories holding `.replio/config.json` into the manifest    |
+| `add`         | `add <name> [--dir] [--port N] [--max-restarts N]` - add an agent                |
+| `remove`      | `remove <name>` - remove an agent (stops it if running)                          |
+| `up`          | `up [--detach]` - start agents; Ctrl-C = graceful down, `--detach` = background daemon |
+| `down`        | Stop the supervised agents and the daemon if running                             |
+| `status`      | Live table: agent, enabled, port, pid, state, restarts, last error               |
+| `restart`     | `restart [name|all]` - stop, reset restart backoff, relaunch (default: all)     |
+| `logs`        | `logs <name> [n] [--follow]` - tail an agent's `.replio/logs/<name>.log`         |
+| `config`      | `config <name> --provider/--model/--persona/--system-prompt/--mode/--tools-deny/--tool-permission` - write only those keys into `<dir>/.replio/config.json` |
+
+`--path` may be given either before the subcommand (`replio --path X fleet status`) or after it (`replio fleet --path X status`).
 
 ### `replio plugins`
 

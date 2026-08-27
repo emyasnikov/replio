@@ -404,3 +404,246 @@ def _jobs_run(config, registry, args) -> int:
     if run.session:
         print(f'  session: {run.session}')
     return 0 if run.status == 'verified' else 1
+
+
+def _fleet_root(args) -> Path:
+    path = getattr(args, 'path', None)
+    return (Path(path) if path else Path.cwd()).resolve()
+
+
+def _fleet_controller(args) -> FleetController:
+    from .fleet import FleetController
+    return FleetController(_fleet_root(args))
+
+
+def cmd_fleet(args) -> int:
+    from .fleet import AgentDef, _now
+    controller = _fleet_controller(args)
+    action = getattr(args, 'action', None)
+
+    if action == 'init':
+        added = []
+        for entry in sorted(controller.root.iterdir()):
+            if not entry.is_dir():
+                continue
+            if (entry / '.replio' / 'config.json').exists():
+                if controller.manifest.find(entry.name) is None:
+                    controller.manifest.add(AgentDef(
+                        name=entry.name, dir=str(entry.resolve()), added_at=_now()))
+                    added.append(entry.name)
+        if added:
+            print(f'Discovered {len(added)} agent(s): {", ".join(added)}')
+        else:
+            print('No new agents found (subdirectories holding .replio/config.json)')
+        return 0
+
+    if action == 'add':
+        if controller.manifest.find(args.name) is not None:
+            print(f'Agent already exists: {args.name}', file=sys.stderr)
+            return 1
+        agent_dir = (Path(args.dir).resolve() if getattr(args, 'dir', '')
+                     else (controller.root / args.name).resolve())
+        controller.manifest.add(AgentDef(
+            name=args.name, dir=str(agent_dir),
+            prefer_port=int(getattr(args, 'port', 0) or 0),
+            max_restarts=int(getattr(args, 'max_restarts', 10) or 0),
+            added_at=_now()))
+        print(f'Added agent: {args.name} -> {agent_dir}')
+        print('  Run `replio fleet config <name>` to generate its config, '
+              'then `replio fleet up` to start it')
+        return 0
+
+    if action == 'remove':
+        if controller.manifest.find(args.name) is None:
+            print(f'Agent not found: {args.name}', file=sys.stderr)
+            return 1
+        controller.stop_agent(args.name)
+        controller.manifest.remove(args.name)
+        print(f'Removed agent: {args.name}')
+        return 0
+
+    if action == 'up':
+        if getattr(args, 'daemon_', False):
+            return controller.daemon()
+        if getattr(args, 'detach', False):
+            return _fleet_detach(controller)
+        return controller.run()
+
+    if action == 'down':
+        controller.down()
+        print(f'Fleet stopped ({controller.root})')
+        return 0
+
+    if action == 'status':
+        return _fleet_status(controller)
+
+    if action == 'restart':
+        names = [args.name] if getattr(args, 'name', None) else None
+        if names and controller.manifest.find(names[0]) is None:
+            print(f'Agent not found: {names[0]}', file=sys.stderr)
+            return 1
+        restarted = controller.restart(names)
+        label = ', '.join(restarted) if restarted else '(none running)'
+        print(f'Stopped for restart: {label}')
+        if restarted:
+            print('  Agents relaunch on the next supervisor sweep '
+                  '(or run `replio fleet up`)')
+        return 0
+
+    if action == 'logs':
+        return _fleet_logs(controller, args)
+
+    if action == 'config':
+        return _fleet_config(controller, args)
+
+    print('Usage: replio fleet '
+          '[init|add|remove|up|down|status|restart|logs|config]')
+    return 1
+
+
+def _fleet_detach(controller) -> int:
+    import subprocess
+    log_dir = controller.root / '.replio' / 'logs'
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / 'fleet.log'
+    handle = open(log_path, 'ab')
+    cmd = [sys.executable, '-m', 'replio', 'fleet', '--path', str(controller.root),
+           'up', '--daemon']
+    try:
+        proc = subprocess.Popen(cmd, stdout=handle, stderr=subprocess.STDOUT,
+                                cwd=str(controller.root), start_new_session=True)
+    finally:
+        handle.close()
+    print(f'Fleet supervisor detached (pid {proc.pid}, log {log_path})')
+    return 0
+
+
+def _fleet_status(controller) -> int:
+    rows = controller.status_rows()
+    if not rows:
+        print(f'No agents in the manifest ({controller.root}) - '
+              'run `replio fleet init` or `replio fleet add`')
+        return 0
+    headers = ('AGENT', 'ENABLED', 'PORT', 'PID', 'STATE', 'RESTARTS', 'LAST ERROR')
+    cells = []
+    for r in rows:
+        budget = f"{r['max_restarts']}" if r['max_restarts'] else 'unlim'
+        cells.append([
+            r['name'],
+            'yes' if r['enabled'] else 'no',
+            str(r['port'] or '-'),
+            str(r['pid'] or '-'),
+            r['state'],
+            f"{r['restarts']}/{budget}",
+            r['last_error'] or '',
+        ])
+    widths = [len(h) for h in headers]
+    for c in cells:
+        for i, value in enumerate(c):
+            widths[i] = max(widths[i], len(value))
+    fmt = '  '.join('{:<%d}' % w for w in widths)
+    print(fmt.format(*headers))
+    for c in cells:
+        print(fmt.format(*c))
+    return 0
+
+
+def _fleet_logs(controller, args) -> int:
+    import time
+    agent = controller.manifest.find(args.name)
+    if agent is None:
+        print(f'Agent not found: {args.name}', file=sys.stderr)
+        return 1
+    log_path = controller.log_path(agent)
+    if not log_path.exists():
+        print(f'No log yet: {log_path}', file=sys.stderr)
+        return 1
+    n = max(1, int(getattr(args, 'n', 50) or 50))
+    if getattr(args, 'follow', False):
+        size = log_path.stat().st_size
+        with open(log_path) as f:
+            f.seek(size)
+            try:
+                while True:
+                    line = f.readline()
+                    if line:
+                        print(line, end='')
+                    else:
+                        time.sleep(0.25)
+            except KeyboardInterrupt:
+                pass
+        return 0
+    lines = log_path.read_text().splitlines()
+    if not lines:
+        print(f'(empty log) {log_path}')
+        return 0
+    for line in lines[-n:]:
+        print(line)
+    return 0
+
+
+def _fleet_config(controller, args) -> int:
+    import json
+    from .personas import PersonaRegistry
+    agent = controller.manifest.find(args.name)
+    if agent is None:
+        print(f'Agent not found: {args.name}', file=sys.stderr)
+        return 1
+    agent_dir = controller.agent_dir(agent)
+    patch: dict = {}
+    if getattr(args, 'provider', ''):
+        patch['provider'] = args.provider
+    if getattr(args, 'model', ''):
+        patch['model'] = args.model
+    if getattr(args, 'system_prompt', ''):
+        patch['system_prompt'] = args.system_prompt
+    if getattr(args, 'mode', ''):
+        patch['mode'] = args.mode
+    deny = list(getattr(args, 'tools_deny', []) or [])
+    if deny:
+        patch['tools.deny'] = deny
+    perms: dict = {}
+    for pair in (getattr(args, 'tool_permission', []) or []):
+        if '=' not in pair:
+            print(f'Invalid --tool-permission "{pair}" (want category=action)',
+                  file=sys.stderr)
+            return 1
+        category, _, action = pair.partition('=')
+        perms[category.strip()] = action.strip()
+    persona_name = getattr(args, 'persona', '') or ''
+    if persona_name:
+        registry = PersonaRegistry(local_path=agent_dir / '.replio' / 'personas.json')
+        persona = registry.find(persona_name)
+        if persona is None:
+            print(f'Unknown persona: {persona_name}', file=sys.stderr)
+            return 1
+        if persona.system_prompt and 'system_prompt' not in patch:
+            patch['system_prompt'] = persona.system_prompt
+        if persona.model and 'model' not in patch:
+            patch['model'] = persona.model
+        for key, value in persona.tool_permission.items():
+            perms.setdefault(key, value)
+    if perms:
+        patch['tool_permission'] = perms
+    if not patch:
+        print('Nothing to set - give at least one of --provider/--model/'
+              '--persona/--system-prompt/--mode/--tools-deny/--tool-permission',
+              file=sys.stderr)
+        return 1
+    target = agent_dir / '.replio' / 'config.json'
+    existing: dict = {}
+    if target.exists():
+        try:
+            existing = json.loads(target.read_text())
+        except (OSError, ValueError):
+            existing = {}
+    existing.update(patch)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(existing, indent=2))
+    print(f'Updated {target}')
+    for key, value in patch.items():
+        shown = value
+        if key == 'system_prompt' and len(str(value)) > 60:
+            shown = str(value)[:60] + '...'
+        print(f'  {key} = {shown}')
+    return 0

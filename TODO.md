@@ -66,7 +66,6 @@
 - [ ] Tool dry-run mode - propose tool args/effects without executing (enterprise tool-gateway requirement)
 - [ ] Context-aware cross-plugin tool router - virtual tool names (`open`, `search`, ...) dispatch per-argument to the matching plugin handler via `register_handler(name, match=...)` (e.g. `open https://...` > replio-core-websearch, `open ../...` > replio-core-fs), with merged schemas and args-aware policy accessors
 - [ ] Swarm orchestration - agent cooperation layer (`docs/swarm.md`): `/agent` personas, auditor agents, generate > check > correct, and team patterns as sub-tasks below
-- [ ] Fleet orchestration - supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), the fleet orchestration layer in `docs/fleet.md`
 - [ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
 - [ ] Agent folder watcher - internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps
 - [ ] Minimal web Control UI - stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue). Richer frameworks stay plugin-first
@@ -102,6 +101,7 @@
 
 ## Done
 
+- [x] Fleet orchestration - `replio fleet` supervisor CLI: ports, health, restart backoff, config gen
 - [x] Per-run job sessions - `job_<ts>_<name>` files, unified `ses_`/`sub_`/`job_` naming
 - [x] Job run memory - rolling `.memory.md` run summary injected into each run, seeded with prior memory
 - [x] Job task definition as linked Markdown - `--file` templated task files, `replio jobs edit`

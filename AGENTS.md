@@ -56,6 +56,7 @@ Replio/
 │   ├── chat.py              # ChatLoop(Engine) - REPL shell with readline
 │   ├── jobs.py              # Scheduled jobs - Job/JobRun model, registry, cron parser
 │   ├── scheduler.py         # JobScheduler - durable job daemon (retries, approvals, auto-compact)
+│   ├── fleet.py             # Fleet supervisor - AgentDef manifest, FleetController (ports, health, restart)
 │   ├── ui.py                # UISink - ReplUI / HeadlessUI / NullUI renderers
 │   ├── server.py            # stdlib HTTP JSON API (POST /chat, GET /sessions, GET /health, GET /version)
 │   ├── providers/
