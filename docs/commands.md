@@ -9,11 +9,11 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/help`                 | `/h`           | Show available commands and tools (`/help <cmd|tool>` for detail) |
 | `/exit`                 | `/quit`, `/q`  | Save and exit                                                  |
 | `/version`              | `/v`           | Show the Replio version                                       |
-| `/model`                 |                | Show or switch the active model; `model list` shows configured (global) models, `model list --online [provider]` probes a provider's available models |
+| `/model`                 |                | Show or switch the active model. `model list` shows configured (global) models, `model list --online [provider]` probes a provider's available models |
 | `/models`                | `/model-list` | List models available from the connected provider              |
 | `/provider`              |                | Show or switch the active provider                             |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
-| `/connect`              |                | Interactive provider connection setup (tests the connection before saving). Appends the model to the global `models.json` registry (storing the API key there, not in config); on a fresh project with known models it offers a numbered picker (`#N`) to reuse one |
+| `/connect`              |                | Interactive provider connection setup (tests the connection before saving). Appends the model to the global `models.json` registry (storing the API key there, not in config). On a fresh project with known models it offers a numbered picker (`#N`) to reuse one |
 | `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)` |
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
@@ -26,7 +26,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 
 `/session export <name> [out]` renders a saved session as Markdown (see [session.md](session.md)).
 
-Delegation is a normal tool: the lead agent proposes it, or you run it directly - `/tool delegate {"persona": "researcher", "task": "..."}` routes through the same tool policy. A configured persona delegates without prompting (`delegate` category defaults to `allow`; set a persona's `delegate` to `ask` to confirm), and a persona outside the registry is denied. See [personas.md](personas.md) and [swarm.md](swarm.md).
+Delegation is a normal tool: the lead agent proposes it, or you run it directly - `/tool delegate {"persona": "researcher", "task": "..."}` routes through the same tool policy. A configured persona delegates without prompting (`delegate` category defaults to `allow`, set a persona's `delegate` to `ask` to confirm), and a persona outside the registry is denied. See [personas.md](personas.md) and [swarm.md](swarm.md).
 
 ## CLI
 
@@ -122,13 +122,13 @@ Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, 
 | `list`        | Table of jobs: schedule, status, next and last run                       |
 | `status`      | Runtime summary per job: fired count, last error, uptime, approval state |
 | `show`        | `replio jobs show <name>` - definition plus full run history + last output|
-| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`; `--prompt` optional when `--file` is given), plus `--mode`, `--provider`/`--model`, `--persona`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approval auto` |
+| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`, `--prompt` optional when `--file` is given), plus `--mode`, `--provider`/`--model`, `--persona`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approval auto` |
 | `approve`     | `approve <name>` - activate a job (or arm the next run for `--require-approval` jobs) |
 | `reject`      | `reject <name>` - send back to proposed and disable                       |
 | `enable` / `disable` / `stop` | Toggle the enabled gate (`stop` = `disable`)                     |
 | `edit`        | `edit <name>` - open the job's linked task file in `$EDITOR` (creates the template first) |
 | `remove`      | `remove <name>` - drop the definition (sessions are kept)                 |
-| `run`         | `run <name> [--no-retry] [--verbose]` - run now, apply retries, print the answer; `--verbose` streams the live turn; exit `0` verified / `1` failed |
+| `run`         | `run <name> [--no-retry] [--verbose]` - run now, apply retries, print the answer. `--verbose` streams the live turn. Exit `0` verified / `1` failed |
 | `daemon`      | `daemon [--tick 15] [--quiet]` - scheduler loop, Ctrl-C to stop           |
 
 ### `replio plugins`

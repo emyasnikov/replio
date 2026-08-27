@@ -27,16 +27,16 @@
 
 ## Open
 
-- [ ] Mid-run blocking job approval - an `ask` tool inside a running job pauses the run in place (per-tool-call `waiting_approval`), notifies via a connector, and resumes the same session when the operator replies; needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run `--require-approval` gate)
-- [ ] Job event hooks - the scheduler emits typed transitions (`proposed`, `approved`, `will_run`, `executing`, `verified`, `failed`, `timeout`, `waiting_approval`) to registered `services`; channel-agnostic core, first consumers are the connectors and the operator API
-- [ ] Job connectors - bundled `replio-core-webhook` (stdlib JSON POST, zero deps, works with n8n/IFTTT/any URL) first; external email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API so operators can react in time
+- [ ] Mid-run blocking job approval - an `ask` tool inside a running job pauses the run in place (per-tool-call `waiting_approval`), notifies via a connector, and resumes the same session when the operator replies. Needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run `--require-approval` gate)
+- [ ] Job event hooks - the scheduler emits typed transitions (`proposed`, `approved`, `will_run`, `executing`, `verified`, `failed`, `timeout`, `waiting_approval`) to registered `services`. Channel-agnostic core, first consumers are the connectors and the operator API
+- [ ] Job connectors - bundled `replio-core-webhook` (stdlib JSON POST, zero deps, works with n8n/IFTTT/any URL) first. External email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API so operators can react in time
 - [ ] Jobs operator API - `GET /jobs` and `POST /jobs/<name>/approve|reject|run|disable` on `replio serve`, so clients (web Control UI, connectors, fleet supervisor) can see and act per agent
 - [ ] Fleet jobs overview - `replio jobs list --root <dir>` scanning agent worktrees (agent, job, status, next run, task table), then the web Control UI on top
 - [ ] Interactive delegation focus - REPL jumps in/out of the active sub-agent (request or automatic on delegate), arrows switch between concurrent `delegate_*` session logs rendered from their own saved logs (opencode-style sub-agent views)
 - [ ] Jobs registry - named team configurations ("writing" = researcher > writer > referencer > editor, "programming" = planner > programmer > tester > code-reviewer) referencing bundled personas with ordering and handoff, selectable for delegation and auto team selection
 - [ ] Persona directory scan for export/import - read `.replio/personas/*.md` (front-matter personas) to import and export personas to Markdown, paralleling the sessions Markdown export/import
-- [ ] Delegation progress in the REPL - live status of which sub-agent is working and its progress mid-run. `delegate` already surfaces the task and the final result (plus a sub footer via `delegate_echo`); the next step is a progress channel read out of the sub-engine loop, which the single blocking `Engine.chat()` does not expose today
-- [ ] Auto team selection - the lead agent picks personas from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern; e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor)
+- [ ] Delegation progress in the REPL - live status of which sub-agent is working and its progress mid-run. `delegate` already surfaces the task and the final result (plus a sub footer via `delegate_echo`). The next step is a progress channel read out of the sub-engine loop, which the single blocking `Engine.chat()` does not expose today
+- [ ] Auto team selection - the lead agent picks personas from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor)
 - [ ] Skills registry - `.replio/skills/` or `.replio/skills.json`, persona-attachable capability sets distinct from tools/plugins, checked/installed per agent
 - [ ] Session log full-restructuring (deferred) - restructure `messages` from flat role-attribute dicts into a typed `parts` model, borrowing OpenCode's session file structure (`.opencode/sessions/ses_*.json`). Deferred: the current flat format already reconstructs every conversation element, so this is architectural polish / ecosystem alignment, not a correctness fix. See the detailed spec below. Do NOT migrate existing `.replio/sessions/*.json` - they are historical and remain readable as-is
   - Reference - OpenCode stores each turn as `{role, messageId, timestamp, parts[]}` where `parts` are typed objects:
@@ -50,7 +50,7 @@
     - Part types: `text`, `thinking`, and `tool` (co-locating `id`/`tool`/`input`/`output`/`is_error`/`analysis`) so a single assistant message holds thinking + answer + each tool step, dropping the separate `tool`-role messages
     - `_provider_messages()` reconstructs the OpenAI payload (`assistant.tool_calls` + `tool`-role results) from the parts (engine.py `_provider_messages`/`_clean_messages`)
   - Optional, larger alternative - full turn-level parts + `[step-start]`/`[step-finish]` markers aggregating the multi-round tool loop into one assistant message per user turn (larger agent-loop change)
-  - Touch points: `sessions/manager.py` (part-building helpers, `to_dict`/`from_dict`), `engine.py` (`_agent_loop` persistence, `_execute_tool_calls`, `_provider_messages`, `_clean_messages`, `compact_session`, `preview_session`, `_auto_name_session`), `sessions/render.py`, `docs/session.md`; server `/sessions` + `/chat` are unaffected (names + `TurnResult` only)
+  - Touch points: `sessions/manager.py` (part-building helpers, `to_dict`/`from_dict`), `engine.py` (`_agent_loop` persistence, `_execute_tool_calls`, `_provider_messages`, `_clean_messages`, `compact_session`, `preview_session`, `_auto_name_session`), `sessions/render.py`, `docs/session.md`. Server `/sessions` + `/chat` are unaffected (names + `TurnResult` only)
 - [ ] `run_command` command allowlist - allow only safe shell commands (e.g. `pytest`, `ruff`, `git diff`, `python -m unittest`) via a `tool_permission.bash_allow` key rather than all-or-none `bash`. Match by startswith on each chained segment over `&&`/`||`/`;`/`|`/`&`, reject shell-script forms (heredocs, multi-line) (programming-fleet requirement from `docs/usage/programming.md`)
 - [ ] Thinking visibility - `/thinking on` + `reasoning` config documented, per-provider `reasoning_content` check so reasoning shows in the REPL
 - [ ] `/spawn` command - launch a scoped `replio serve` agent from the REPL (home -> project path), supervise (health/list/stop) and delegate to it (`docs/fleet.md`)
@@ -60,7 +60,7 @@
   - [ ] WhatsApp adapter - business-API HTTP channel
   - [ ] More adapters (Discord, Signal, email)
   - [ ] Remote auth + session scoping + headless deny
-- [ ] Plugin test harness - `replio plugins test <name>` ships; bundled plugin suites live next to the plugins (`plugins/<name>/tests/`, discovered by the core suite). Remaining: external plugins are expected to ship a test suite and `replio plugins test` is the runner for them
+- [ ] Plugin test harness - `replio plugins test <name>` ships. Bundled plugin suites live next to the plugins (`plugins/<name>/tests/`, discovered by the core suite). Remaining: external plugins are expected to ship a test suite, and `replio plugins test` is the runner for them
 - [ ] Project instructions file - per-worktree `AGENTS.md`-style context auto-loaded into the system prompt (claude-code `CLAUDE.md` parity)
 - [ ] Session recall - full-text search across past sessions (grep/index over `.replio/sessions/`) so an agent can answer from its own history
 - [ ] Tool dry-run mode - propose tool args/effects without executing (enterprise tool-gateway requirement)
@@ -84,8 +84,8 @@
 - [ ] `docs_search` - local grep + DuckDuckGo for documentation lookups
 - [ ] Workspace sessions - tools write into a scoped `--workspace` dir, optional `--git` sync
 - [ ] Sandboxed exec - namespace/container isolation for `run_command` (documented, planned for a later version)
-- [ ] `/agent` personas - interactive persona selection/run UX (persona registry, sub-engine, and `delegate` landed; the `/agent` command itself remains)
-- [ ] PM/dev/tester team orchestration as a user-facing pattern (the personas + `delegate` primitives landed; needs the jobs/team-config layer to be a pattern)
+- [ ] `/agent` personas - interactive persona selection/run UX (persona registry, sub-engine, and `delegate` landed. The `/agent` command itself remains)
+- [ ] PM/dev/tester team orchestration as a user-facing pattern (the personas + `delegate` primitives landed, and it needs the jobs/team-config layer to be a pattern)
 - [ ] Headless web API plugin-first - stdlib `http.server` fallback, richer framework (FastAPI) via the dependency plugin
 - [ ] Enterprise plugins (stdlib-first, third-party deps optional):
   - [ ] Data ingestion - `read_stream` / `write_stream` (MQTT, OPC-UA, Modbus)
@@ -108,7 +108,7 @@
 - [x] Job context management - per-run `job_*` session files, `ses_`/`sub_` naming, 100-run history cap
 - [x] Job per-run approval - `--require-approval` parks each run in `waiting_approval` until a human approves it
 - [x] Jobs diagnostics - `replio jobs status` (fired count, last error, uptime) + last output in `show`
-- [x] Watchable job runs - `replio jobs run --verbose` streams the live turn; headless `run` prints the answer
+- [x] Watchable job runs - `replio jobs run --verbose` streams the live turn. Headless `run` prints the answer
 - [x] Richer job runs - `--persona`/`--system-prompt`, default recurring-job system prompt, tool carve
 - [x] Scheduled / durable jobs - `replio jobs`: registry, daemon, cron, retries, approval gate
 - [x] Per-agent permission profiles - persona tool_permission drives sub-agent policy
@@ -120,7 +120,7 @@
 - [x] Stable message ids - `msg_<hex>` auto-assigned to every session message
 - [x] Global model registry - /connect appends models + keys, /model list/--online, picker reuse
 - [x] REPL `/config --global/--local` scope flags + apply() in-memory overrides (one-shot CLI, engine normalization never write files)
-- [x] Scoped config writes - local saves overrides only, replio config CLI; API keys live in the model registry
+- [x] Scoped config writes - local saves overrides only, replio config CLI. API keys live in the model registry
 - [x] Turn recovery - auto-continue on truncation, empty-done retried, reasoning-only not flagged empty
 - [x] Thinking captured from `reasoning` deltas (ollama.com) too, documented in config/providers docs
 - [x] Confirm prompt `?` glyph starts at the beginning of the line, aligned with activity glyphs

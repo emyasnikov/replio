@@ -80,10 +80,10 @@ Replio/
 │   └── utils/
 │       ├── __init__.py
 │       └── http.py          # urllib-based SSE streaming
-└── plugins/                 # bundled plugins (shipped as replio.plugins.bundled); each is {src/, tests/}
-    └── replio-core-exec/        # run_command
+└── plugins/                 # bundled plugins (shipped as replio.plugins.bundled), each is {src/, tests/}
+    ├── replio-core-exec/        # run_command
     ├── replio-core-fs/          # read_file, list_dir, write_file, glob, grep
-    ├── replio-core-websearch/   # web_search, fetch_page + search service
+    └── replio-core-websearch/   # web_search, fetch_page + search service
 ```
 
 ## Conventions
@@ -131,7 +131,7 @@ Replio/
 - Precedence: name-level `deny` / allow-whitelist > category action from `tool_permission` > per-invocation resolver (`permission_fn`, refined from the tool's current arguments - e.g. `delegate` resolves per persona) > worktree escalation (read/write/list outside the worktree becomes `ask`)
 - The worktree is the directory holding the local `.replio/` - i.e. the launch directory, or `--path`. Launching from `~` makes the whole home directory the worktree, so subdirectories (including other projects) do **not** escalate. Launch inside the project or pass `--path` for project-scoped prompting
 - `bash: ask` by default - every `run_command` confirms. Set `tool_permission.bash = "allow"` to disable prompting. `delegate` defaults to `allow` (runs without a prompt), refined per persona: a configured persona uses its own `tool_permission` (set `delegate: "ask"` on a persona to confirm), a persona outside the registry is denied
-- Delegation (`run_subagent`) builds an in-process sub-`Engine` with the persona's prompt, model override, and merged `tool_permission`, forces mode `build`, shares the caller's provider/plugin manager/worktree, and runs with `NullUI` - ask-gated tools auto-deny, so a sub-agent's effective permissions are exactly its carve. Sub-agent results echo via `delegate_echo` (default on); each sub-agent persists its own `sub_<ts>_<parent-session>` session
+- Delegation (`run_subagent`) builds an in-process sub-`Engine` with the persona's prompt, model override, and merged `tool_permission`, forces mode `build`, shares the caller's provider/plugin manager/worktree, and runs with `NullUI` - ask-gated tools auto-deny, so a sub-agent's effective permissions are exactly its carve. Sub-agent results echo via `delegate_echo` (default on). Each sub-agent persists its own `sub_<ts>_<parent-session>` session
 - Confirm prompts and tool status are ephemeral REPL UI - never persisted to session files. The permission decision itself (granted / declined / denied) is recorded in the session `permissions` audit array
 - Full policy flow and registration metadata in `docs/tools.md`. Threat model in `docs/security.md`
 - Sandboxed exec (namespace/container isolation) is planned future work (see TODO). Per-agent permission profiles landed with personas (`tool_permission` on each persona)

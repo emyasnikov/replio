@@ -211,7 +211,7 @@ services:
     restart: unless-stopped
 ```
 
-Add one service per agent - `tester` on port 8783, `reviewer` on port 8784, and each `feature-*` worktree on a distinct port - mounting that agent's folder (its `.replio/config.json` from Step 4 plus its sessions) or the git worktree. Implementers mount their worktree, `tester` and `reviewer` mount their own agent folders. Ports publish on `127.0.0.1` so the JSON API stays host-local behind your reverse proxy. The model comes from the mounted `.replio/config.json`; the API key is resolved from the global model registry (`~/.config/replio/models.json`), so mount that file into each container (or register the connection with `/connect` inside it) for keyed providers - the key is never read from config.
+Add one service per agent - `tester` on port 8783, `reviewer` on port 8784, and each `feature-*` worktree on a distinct port - mounting that agent's folder (its `.replio/config.json` from Step 4 plus its sessions) or the git worktree. Implementers mount their worktree, `tester` and `reviewer` mount their own agent folders. Ports publish on `127.0.0.1` so the JSON API stays host-local behind your reverse proxy. The model comes from the mounted `.replio/config.json`. The API key is resolved from the global model registry (`~/.config/replio/models.json`), so mount that file into each container (or register the connection with `/connect` inside it) for keyed providers - the key is never read from config.
 
 Bring the fleet up:
 
@@ -276,7 +276,7 @@ The bundled `programming` team (`planner`, `programmer`, `tester`, `code-reviewe
 Then either `/tool` runs a sub-agent, or the lead model proposes it as any other tool:
 
 ```text
-/tool delegate {"persona": "programmer", "task": "Implement the task against the plan; run the tests and report changed files."}
+/tool delegate {"persona": "programmer", "task": "Implement the task against the plan, run the tests and report changed files."}
 ```
 
 The result is the sub-agent's final answer, printed in the REPL (`delegate_echo`, default on) and fed back to the lead model. Every delegation writes its own complete `sub_<ts>_<parent-session>` session log under the lead's `.replio/sessions/` (the suffix is the parent session id), linked to the lead session via `sub_sessions`/`parent_id`, so the audit trail is per sub-agent. If the sub-agent finishes without prose, the delegate result summarizes its activity (files written, test runs) from that log instead of reporting empty.
@@ -284,7 +284,7 @@ The result is the sub-agent's final answer, printed in the REPL (`delegate_echo`
 The trust trade-off is the deciding factor between the two paths:
 
 - **Fleet** - roles are isolated by process, worktree, and container. A misbehaving agent cannot touch another folder or run commands its config forbids, and headless `ask`-gated tools auto-deny. Use this when roles must not share a scope or when agents run untrusted prompts.
-- **In-process delegation** - the sub-agent shares the lead's worktree and tool policy; ask-gated tools auto-deny (no interactive confirm), so its effective permissions are exactly its persona carve. Fast and single-session, but the sub-agent is not independent - it shares the lead's process and scope. Use it when the lead is trusted to delegate appropriately and workload does not need process isolation.
+- **In-process delegation** - the sub-agent shares the lead's worktree and tool policy. Ask-gated tools auto-deny (no interactive confirm), so its effective permissions are exactly its persona carve. Fast and single-session, but the sub-agent is not independent - it shares the lead's process and scope. Use it when the lead is trusted to delegate appropriately and workload does not need process isolation.
 
 A hybrid also works: run the fleet for the wide, multi-worktree pipeline, and use delegation inside a role (e.g. the lead delegating research to `researcher`, or the implementer delegating review to `code-reviewer`).
 
@@ -317,5 +317,5 @@ Everything above uses only features shipped in the current release. The followin
 |--------------------|-----------------------------------|
 | `git` tool (status/diff/commit as gated tools) | git through `run_command` behind `bash: ask`, merge by hand |
 | `run_command` command allowlist (e.g. only `pytest`, `ruff`) | Role separation, per-role containers, and `tools.allow` instead |
-| `/agent` personas command + auditor agents | `delegate` tool + bundled personas (in-process sub-agents), see the in-process section below; auditors still need a review role |
+| `/agent` personas command + auditor agents | `delegate` tool + bundled personas (in-process sub-agents), see the in-process section below. Auditors still need a review role |
 | `code_lint` / `code_format` / `code_test` wrappers | Plain `run_command` calls from the tester config |

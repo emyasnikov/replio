@@ -58,7 +58,7 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 | `show_errors`               | `true`                 | Show a dimmed `! Error: ...` line (first line of the result) when a tool call fails. Off hides the line |
 | `show_notes`                | `true`                 | Show a dimmed info line for soft tool results (e.g. `(empty file)`, `(no matches for "x")`). Off hides the line |
 | `tool_analysis`             | `false`                | Model-generated one-line analysis of each tool result (log-only)      |
-| `delegate_echo`             | `true`                 | When the `delegate` tool runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result; the sub footer is emitted alongside the sub-agent's own rendered output only when on |
+| `delegate_echo`             | `true`                 | When the `delegate` tool runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result. The sub footer is emitted alongside the sub-agent's own rendered output only when on |
 | `session_tool_max_chars`    | `0`                    | `0` = unlimited. Caps persisted tool-result content                    |
 | `tool_max_result_chars`     | `0`                    | `0` = unlimited. Caps tool-result content returned to the model (`... (truncated)` appended). With the default, the model sizes files via the `read_file` header and pages with `offset`/`limit` |
 | `query_refine`              | `false`                | Auto-refine short web-search queries via a lightweight model call      |
@@ -117,7 +117,7 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 }
 ```
 
-Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the project worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool; on top of the category action, delegation resolves its permission from the target persona - a configured persona uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while a persona not in the registry defaults to `deny` (see [personas.md](personas.md)).
+Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the project worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target persona - a configured persona uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while a persona not in the registry defaults to `deny` (see [personas.md](personas.md)).
 
 ## Model registry (not config)
 
@@ -127,4 +127,4 @@ A global catalogue of configured models lives separately from config in `~/.conf
 - `/model list` shows the configured models grouped by provider with the active one marked `>`, and `(key)` for entries that have a stored key.
 - `/model list --online [provider]` probes a provider's advertised models live (default: current provider).
 
-The engine resolves the API key for the active `provider`/`base_url`/`model` from the registry (matching entry or `""`); there is no `api_key` config key anymore, and `replio config set api_key` would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.
+The engine resolves the API key for the active `provider`/`base_url`/`model` from the registry (matching entry or `""`). There is no `api_key` config key anymore, and `replio config set api_key` would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.

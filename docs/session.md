@@ -66,10 +66,10 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 | `messages` | array | The conversation log, append-only |
 | `errors` | array | Turn-level errors (provider, network, agent loop) |
 | `permissions` | array | Audit log of tool permission decisions (see below) |
-| `parent_id` | string | Name of the session this one was spawned from (sub-agent sessions set it; empty otherwise) |
-| `sub_sessions` | array | Names of sessions spawned from this one (delegations; the delegate sets a sub-agent's `parent_id` here) |
+| `parent_id` | string | Name of the session this one was spawned from (sub-agent sessions set it, empty otherwise) |
+| `sub_sessions` | array | Names of sessions spawned from this one (delegations. The delegate sets a sub-agent's `parent_id` here) |
 
-`/session preview` prints the `parent` and `sub-sessions` links; `/session list` annotates `sub_*` children with their parent.
+`/session preview` prints the `parent` and `sub-sessions` links. `/session list` annotates `sub_*` children with their parent.
 
 ## Message schema
 

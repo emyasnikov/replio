@@ -27,7 +27,7 @@ In headless mode (`replio serve` / `replio run`), `ask`-gated tools are denied o
 
 ## Delegation
 
-The `delegate` tool runs a task under a persona as an in-process sub-agent. A sub-agent shares the caller's worktree and tool policy, narrowed by the persona's `tool_permission` carve, so it can reach exactly what the caller can minus what the carve denies. Ask-gated tools are auto-denied inside a sub-agent (no interactive confirm), so its effective permissions are the categories its carve allows. The permission resolves per invocation from the target persona: a configured persona uses its own `tool_permission` (category `delegate` defaults to `allow`; set `ask` on a persona to confirm each delegation), and a persona outside the registry is denied outright. Delegation is recorded in the session `permissions` audit array like any tool call, and each sub-agent's work persists as its own `sub_<ts>_<parent-session>` session log (suffix = the calling session id). For delegation across trust boundaries, run separate `replio serve` processes scoped to their own folders and delegate over the API instead - see [fleet.md](fleet.md).
+The `delegate` tool runs a task under a persona as an in-process sub-agent. A sub-agent shares the caller's worktree and tool policy, narrowed by the persona's `tool_permission` carve, so it can reach exactly what the caller can minus what the carve denies. Ask-gated tools are auto-denied inside a sub-agent (no interactive confirm), so its effective permissions are the categories its carve allows. The permission resolves per invocation from the target persona: a configured persona uses its own `tool_permission` (category `delegate` defaults to `allow`, set `ask` on a persona to confirm each delegation), and a persona outside the registry is denied outright. Delegation is recorded in the session `permissions` audit array like any tool call, and each sub-agent's work persists as its own `sub_<ts>_<parent-session>` session log (suffix = the calling session id). For delegation across trust boundaries, run separate `replio serve` processes scoped to their own folders and delegate over the API instead - see [fleet.md](fleet.md).
 
 ## Modes
 
@@ -35,7 +35,7 @@ Modes ([config.md](config.md)) are named postures that combine an instruction bl
 
 ## Config-driven surface
 
-The model only sees tools whose schema passes policy filtering (`tools.allow` / `tools.deny` / `tool_permission`), and plugin activation is an explicit `plugins` list. The surface area - providers, tools, plugins, permissions - is configuration, not convention. Tool status lines are ephemeral UI and are never persisted to session files; permission decisions (each `allow` / `ask` / `deny` resolution and its outcome) are recorded in the session `permissions` array as an audit trail. Gaps against a full audit trail: session files are not hash-chained or tamper-evident (append-only by convention, not by construction), tool-result content can be redacted by `noise_tools` / `session_tool_max_chars`, and tool `analysis` is off by default (`tool_analysis`).
+The model only sees tools whose schema passes policy filtering (`tools.allow` / `tools.deny` / `tool_permission`), and plugin activation is an explicit `plugins` list. The surface area - providers, tools, plugins, permissions - is configuration, not convention. Tool status lines are ephemeral UI and are never persisted to session files. Permission decisions (each `allow` / `ask` / `deny` resolution and its outcome) are recorded in the session `permissions` array as an audit trail. Gaps against a full audit trail: session files are not hash-chained or tamper-evident (append-only by convention, not by construction), tool-result content can be redacted by `noise_tools` / `session_tool_max_chars`, and tool `analysis` is off by default (`tool_analysis`).
 
 ## Audit trail
 
@@ -61,7 +61,7 @@ Tool results and fetched content are untrusted input returned to the model. Defe
 |-------|---------|
 | Filesystem | Worktree-scoped `allow`/`ask`/`deny`, escalation outside the worktree |
 | Shell | `run_command` gated by `bash: ask` by default, headless auto-deny |
-| Delegation | Per-persona per-invocation resolution (`delegate: allow` default, set `ask` per persona; non-registry personas denied), sub-agents auto-deny `ask` and share only the caller's carve, own `sub_*` session logs |
+| Delegation | Per-persona per-invocation resolution (`delegate: allow` default, set `ask` per persona, non-registry personas denied), sub-agents auto-deny `ask` and share only the caller's carve, own `sub_*` session logs |
 | Network | Explicit tools (`web_search`, `fetch_page`), `web` permission |
 | Provider context | Policy-filtered tool schema, argument cleaning, bounded tool results |
 | Session data | Append-only local logs, local file ownership |

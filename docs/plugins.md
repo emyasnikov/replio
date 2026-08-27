@@ -135,7 +135,7 @@ replio plugins test [name]
 
 - `install` clones a git URL or copies a local directory into `.replio/plugins/` (or `~/.config/replio/plugins/` with `--global`), records `source`, and with `--deps` runs `pip install` on the declared `requires`.
 - `update` runs `git pull` for remote sources or re-copies a local path.
-- `test` runs a plugin's `tests/` unit suite (`--verbose` for per-test output); without a name it runs every plugin that has one. The core test suite also runs these through `tests/test_plugin_suites.py`.
+- `test` runs a plugin's `tests/` unit suite (`--verbose` for per-test output). Without a name it runs every plugin that has one. The core test suite also runs these through `tests/test_plugin_suites.py`.
 - Bundled plugins report an error for `update` and `uninstall`. Disable them instead.
 
 ## Status
