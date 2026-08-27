@@ -25,6 +25,16 @@ Supervisor running many scoped `replio serve` instances: port allocation, health
 | `tests/test_fleet.py` - alloc, health (loopback server), state round-trip, spawn/health/restart/down via a `sys.executable -c` mock server | M | no network, mock-only |
 | Docs - `docs/fleet.md` supervisor section, `docs/commands.md`, `CHANGELOG.md`, `TODO.md` `[x]` | S | restartable handoff |
 
+### How a task flows through the layers
+
+The supervisor alone only keeps agent processes alive; distributing the work is the swarm and jobs layers above it. One round hands off in three steps:
+
+1. **Start** - the operator starts a task: `replio jobs add`/`run` for scheduled work, or a REPL `/chat` prompt for ad-hoc work (today). The jobs operator API adds a remote start (`POST /jobs/<name>/approve`) later
+2. **Distribute + review** - the lead agent splits the task into subtasks and delegates them: in-process by persona today (`delegate` tool), routed to fleet agents over `POST /chat` once team/job configs land, with auditor agents reviewing the output (generate > check > correct)
+3. **Return** - results come back to the operator: the delegate result or job summary today, the jobs operator API + webhook/email/Telegram connectors when the jobs layer lands. The supervisor restarts crashed processes underneath; the jobs layer restarts failed work - two kinds of restart, both compose
+
+Fleet is the substrate that stays up, not the conductor of the work.
+
 ## Jobs operations layer
 
 React to and see jobs from outside the box.
