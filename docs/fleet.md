@@ -61,8 +61,8 @@ curl localhost:8781/chat -X POST -d '{"prompt": "What does spec-42.pdf say?", "s
 
 A fleet root is a directory holding the agents, typically one folder each. Two files live in the root's `.replio/`:
 
-- `.replio/fleet.json` - the declarative roster. One `AgentDef` per agent: `name`, `dir`, `enabled`, `prefer_port`, `max_restarts` (0 = unlimited), and an optional `command` override (the test seam; real agents use the default `replio serve` command)
-- `.replio/fleet.state.json` - runtime state only (pids, ports, status, restart counts, last error). A snapshot the supervisor writes; never edited by hand
+- `.replio/fleet.json` - the declarative roster. One `AgentDef` per agent: `name`, `dir`, `enabled`, `prefer_port`, `max_restarts` (0 = unlimited), and an optional `command` override (the test seam, real agents use the default `replio serve` command)
+- `.replio/fleet.state.json` - runtime state only (pids, ports, status, restart counts, last error). A snapshot the supervisor writes, never edited by hand
 
 Build and run a fleet:
 

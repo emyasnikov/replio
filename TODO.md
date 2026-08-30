@@ -27,6 +27,12 @@
 
 ## Open
 
+- [ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc personas/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)
+- [ ] Template-based team composition - match persona/skill templates from the kit library against the request + project description, generate only the deltas, reuse proven artifacts across projects
+- [ ] Team kit library - tag/store proven teams, personas, and skills per stack and customer, importable into new projects without publishing internal know-how
+- [ ] Sequential team runs - stage-by-stage delegation via `run_subagent` with briefs generated per run (task + prior results + team memory + stage handoff), shared team memory file (`.replio/teams/<name>/memory.md`), persistent member sessions for recurring teams, fresh `sub_` sessions for one-off runs (context economics in VISION.md)
+- [ ] Skills registry - `.replio/skills/` or `.replio/skills.json`, persona-attachable capability sets distinct from tools/plugins, checked/installed per agent. Resolved from each persona's `skills` list and injected into the sub-agent system prompt (the field is currently inert)
+- [ ] Plugin contribution hooks - `register_personas` / `register_teams` / `register_skills` plugin entry hooks + `PersonaRegistry.reload()`, so the kit ships templates without forking the core
 - [ ] Mid-run blocking job approval - an `ask` tool inside a running job pauses the run in place (per-tool-call `waiting_approval`), notifies via a connector, and resumes the same session when the operator replies. Needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run `--require-approval` gate)
 - [ ] Job event hooks - the scheduler emits typed transitions (`proposed`, `approved`, `will_run`, `executing`, `verified`, `failed`, `timeout`, `waiting_approval`) to registered `services`. Channel-agnostic core, first consumers are the connectors and the operator API
 - [ ] Job connectors - bundled `replio-core-webhook` (stdlib JSON POST, zero deps, works with n8n/IFTTT/any URL) first. External email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API so operators can react in time
@@ -36,8 +42,7 @@
 - [ ] Jobs registry - named team configurations ("writing" = researcher > writer > referencer > editor, "programming" = planner > programmer > tester > code-reviewer) referencing bundled personas with ordering and handoff, selectable for delegation and auto team selection
 - [ ] Persona directory scan for export/import - read `.replio/personas/*.md` (front-matter personas) to import and export personas to Markdown, paralleling the sessions Markdown export/import
 - [ ] Delegation progress in the REPL - live status of which sub-agent is working and its progress mid-run. `delegate` already surfaces the task and the final result (plus a sub footer via `delegate_echo`). The next step is a progress channel read out of the sub-engine loop, which the single blocking `Engine.chat()` does not expose today
-- [ ] Auto team selection - the lead agent picks personas from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor)
-- [ ] Skills registry - `.replio/skills/` or `.replio/skills.json`, persona-attachable capability sets distinct from tools/plugins, checked/installed per agent
+- [ ] Auto team selection - the lead agent picks personas from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor, landing with the team kit composition flow)
 - [ ] Session log full-restructuring (deferred) - restructure `messages` from flat role-attribute dicts into a typed `parts` model, borrowing OpenCode's session file structure (`.opencode/sessions/ses_*.json`). Deferred: the current flat format already reconstructs every conversation element, so this is architectural polish / ecosystem alignment, not a correctness fix. See the detailed spec below. Do NOT migrate existing `.replio/sessions/*.json` - they are historical and remain readable as-is
   - Reference - OpenCode stores each turn as `{role, messageId, timestamp, parts[]}` where `parts` are typed objects:
     - `{"type": "text", "text": ...}` - assistant/user content

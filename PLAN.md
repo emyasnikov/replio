@@ -1,6 +1,8 @@
-# Replio - Execution Plan
+# Execution Plan
 
-Groups the next tasks into work packages, each providing a distinct next-level capability. Packages are ordered top-to-bottom by urgency and importance, low-effort core hardening first, through capability growth, to the larger platform and enterprise goals. Re-rank the packages against the backlog before starting each next step (docs-first for the roadmap phases).
+Groups the next tasks from `TODO.md` (`## Open`) into work packages, each providing a distinct next-level capability. Packages are ordered top-to-bottom by urgency and importance, low-effort core hardening first, through capability growth, to the larger platform and enterprise goals. Re-rank the packages against the backlog before starting each next step (docs-first for the roadmap phases).
+
+Finished tasks are removed from this file - they live as one-liners in `TODO.md` `## Done` and in detail under the matching version in `CHANGELOG.md`. `VISION.md` holds the why (vision, decisions, architecture). This file holds the what. The roles and sync rules of all four planning files are in `AGENTS.md`.
 
 Sourced from the use-case gap (`docs/use-cases/`), competitor parity (`docs/vs/`), or TODO items.
 
@@ -8,44 +10,109 @@ Sourced from the use-case gap (`docs/use-cases/`), competitor parity (`docs/vs/`
 
 - Effort: S < M < L
 - Provides: the capability the task delivers
+- Milestones: the swarm/team track (M1-M3) groups its tasks into verifiable phases
 
-## Fleet orchestration supervisor
+## Milestones - swarm and team track
 
-Supervisor running many scoped `replio serve` instances: port allocation, health checks, restart policy, per-agent config generation. One agent = one process = one folder (`docs/fleet.md` is the pattern, this adds the supervisor CLI on top).
+The current priority: one terminal, whole teams (`VISION.md`). Stages run sequentially via `run_subagent`. The composition machinery (templates, recipes, generator, library) lives in a movable private plugin, never in the core.
 
-| Task | Effort | Provides |
-|------|--------|----------|
-| `src/replio/fleet.py` - `AgentDef` + manifest `.replio/fleet.json` and runtime state `.replio/fleet.state.json`, `FleetController` | M | declarative agents + supervisor logic |
-| Port allocation - `find_free_port(preferred, lo=8780, hi=8890)` bind probe + fallback scan | S | collision-free ports |
-| Health probe - urllib `GET /health` (2s timeout) | S | liveness signal per agent |
-| Spawn - `[sys.executable, '-m', 'replio', 'serve', '--host', '127.0.0.1', '--port', <n>, '--path', <dir>]`, per-agent stdout/stderr to `<agent>/.replio/logs/<name>.log`, test seam `AgentDef.command` override | M | real `replio serve` children |
-| Supervisor loop - `replio fleet up` foreground (Ctrl-C = graceful down) + `--detach`, restart policy (backoff 5s doubling to 60s, `max_restarts`), `enabled` gate | M | supervised 24/7 agents |
-| `replio fleet` CLI - `init` (scan dirs holding `.replio/config.json`), `add`, `remove`, `up`, `down`, `status`, `restart [name|all]`, `logs <name>` | M | operator surface |
-| Per-agent config generation - `replio fleet config <name> --provider/--model/--persona/--system-prompt/--mode/--tools-deny/--tool-permission` into `<path>/.replio/config.json` (selected keys only) | M | fresh agent setup |
-| `tests/test_fleet.py` - alloc, health (loopback server), state round-trip, spawn/health/restart/down via a `sys.executable -c` mock server | M | no network, mock-only |
-| Docs - `docs/fleet.md` supervisor section, `docs/commands.md`, `CHANGELOG.md`, `TODO.md` `[x]` | S | restartable handoff |
+### Skeleton and core hooks
 
-### How a task flows through the layers
+- [ ] Plugin contribution hooks - `register_personas` / `register_teams` / `register_skills` in `PluginManager`, `PersonaRegistry.reload()`
+- [ ] Skills registry - `SkillRegistry` (`.replio/skills/` + plugin contributions), persona `skills` injected into the sub-agent system prompt
+- [ ] Teams registry - `Team` + `TeamRegistry` (`.replio/teams.json` + plugin contributions), shape-only (persona, mode, task-hint, handoff-note)
+- [ ] `Engine.run_team` - sequential stage loop: brief builder, `run_subagent`, handoff, team memory write
+- [ ] Kit skeleton - `plugins/replio-teamkit/`: manifest, entry module, one template, one recipe, tests
+- [ ] `docs/teamkit.md` draft - authoring + move-out guide
 
-The supervisor alone only keeps agent processes alive; distributing the work is the swarm and jobs layers above it. One round hands off in three steps:
+Verified: `/team run` end-to-end + unit tests (mock provider, no network).
 
-1. **Start** - the operator starts a task: `replio jobs add`/`run` for scheduled work, or a REPL `/chat` prompt for ad-hoc work (today). The jobs operator API adds a remote start (`POST /jobs/<name>/approve`) later
-2. **Distribute + review** - the lead agent splits the task into subtasks and delegates them: in-process by persona today (`delegate` tool), routed to fleet agents over `POST /chat` once team/job configs land, with auditor agents reviewing the output (generate > check > correct)
-3. **Return** - results come back to the operator: the delegate result or job summary today, the jobs operator API + webhook/email/Telegram connectors when the jobs layer lands. The supervisor restarts crashed processes underneath; the jobs layer restarts failed work - two kinds of restart, both compose
+### Authoring and template matching
+
+- [ ] Template-based composition - stack signature from request + project description -> tags -> matching templates -> AI-generated deltas only
+- [ ] Team kit library - flat tagged store (stack, customer, project-type), importable into new projects
+- [ ] `/teamkit` authoring commands - init, list, new, match, export, import, per-customer split
+- [ ] Auto team selection - lead agent composes the team for a task and delegates in sequence
+- [ ] `/agent` personas - interactive persona selection/run UX
+- [ ] Docs completed (`docs/teamkit.md` full)
+
+Verified: one command composes a new project's team. A second project reuses stored artifacts.
+
+### Reuse, scheduling, move-out
+
+- [ ] Persistent member sessions for recurring teams (`job`-style warm sessions, one-off runs stay fresh)
+- [ ] `jobs add --team` - scheduled team runs via the jobs daemon
+- [ ] Reuse verified across two projects
+- [ ] Kit moved out per the `docs/teamkit.md` checklist - own/per-customer repo, `plugins install --global`, bundled copy removed from the default plugin set
+
+Verified: full workflow with the kit installed externally.
+
+## How the layers compose
+
+One round hands off in three steps:
+
+1. **Start** - the operator starts a task: `replio jobs add`/`run` for scheduled work, or a REPL prompt for ad-hoc work. The jobs operator API adds a remote start (`POST /jobs/<name>/approve`) later
+2. **Distribute + review** - the lead agent splits the task into subtasks and delegates them: sequentially by persona today (`delegate` tool, team stages next), routed to fleet agents over `POST /chat` once team/job configs land, with auditor agents reviewing the output (generate > check > correct)
+3. **Return** - results come back to the operator: the delegate result or job summary today, the jobs operator API + webhook/email/Telegram connectors when the jobs layer lands. The fleet supervisor restarts crashed processes underneath. The jobs layer restarts failed work - two kinds of restart, both compose
 
 Fleet is the substrate that stays up, not the conductor of the work.
 
-## Jobs operations layer
+## Team orchestration (swarm core)
 
-React to and see jobs from outside the box.
+Agents cooperate through personas, delegation, and team stages. Sub-agents use the caller's provider, plugin manager, and worktree (see `docs/swarm.md`).
 
 | Task | Effort | Provides |
 |------|--------|----------|
+| Plugin contribution hooks (M1) | S | plugin-owned personas/teams/skills without forking the core |
+| Skills registry (M1) | S-M | persona `skills` resolved and injected into sub-agent system prompts |
+| Teams registry (M1) | S-M | named team configurations ("writing" = researcher > writer > referencer > editor, "programming" = planner > programmer > tester > code-reviewer) with ordering + handoff - subsumes the TODO "Jobs registry - named team configurations" item |
+| Sequential team runs (M1) - `Engine.run_team` | M | stage-by-stage delegation with generated briefs, shared team memory (`.replio/teams/<name>/memory.md`), handoff |
+| Auto team selection (M2) | M | the lead agent composes the team (personas + order + briefs) for a task |
+| `/agent` personas (M2) | M | interactive persona selection/run UX (registry + sub-engine + delegate landed) |
+| Custom system prompts per session | S-M | per-site instructions |
+| Auditor agents + generate > check > correct orchestration | M-L | review-and-fix loops (later milestone, listed in VISION.md out-of-scope) |
+| PM/dev/tester team orchestration as a user-facing pattern | M | team pattern on top of the teams registry (lands with M1/M2) |
+| Delegation progress in the REPL + interactive delegation focus | M | live status of the running member, jump into its log, arrows switch views |
+| Swarm orchestration umbrella (TODO item) | - | decomposed by this package: `/agent` personas, auditor agents, generate > check > correct, team patterns |
+
+## Team kit plugin (private, movable)
+
+Templates, recipes, library, and generator - the composition machinery, kept out of the core so internal know-how leaves the repo as one documented unit. Bundled during development as `plugins/replio-teamkit/`, moved out via the `docs/teamkit.md` checklist (M3).
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Kit skeleton (M1) - `src/plugin.py`, `templates/`, `recipes/`, `library/`, `tests/` | M | installable private kit |
+| Template-based composition (M2) - stack signature -> tags -> matching templates -> AI-generated deltas only (`chat_nonstreaming`), persisted locally (personas.json + skills + teams.json, with reload) | M | fresh team per project, reusing proven artifacts |
+| Team kit library (M2) - flat tagged store per stack and customer | M | reuse across projects without publishing know-how |
+| `/teamkit` authoring commands (M2) - init, list, new, match, export, import, per-customer split | M | quick team definition per customer |
+| Move-out (M3) - external repo (optionally per-customer), `plugins install --global`, bundled copy removed from the default set | S-M | the kit fully outside the project |
+| Plugin download service for battle-tested kits | L | later milestone, listed in VISION.md out-of-scope |
+
+## Jobs operations layer
+
+React to and see jobs from outside the box. Run teams on schedule.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| `jobs add --team` (M3) - scheduled team runs, per-run team summary session, member sessions as team stages | M | recurring team pipelines |
 | Jobs operator API - `GET /jobs` and `POST /jobs/<name>/approve` (also `reject`/`run`/`disable`) on `replio serve` | M | any client can see/act per agent |
 | Job event hooks - the scheduler emits typed transitions (`proposed`, `approved`, `will_run`, `executing`, `verified`, `failed`, `timeout`, `waiting_approval`) to registered `services`, channel-agnostic core | M | notification source |
 | Job connectors - bundled `replio-core-webhook` (stdlib JSON POST, zero deps) first, email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API | M-L | operators react in time |
 | Fleet jobs overview - `replio jobs list --root <dir>` combined agent/job table (agent, job, status, next run, task), then a web Control UI on top | M | one view of what runs next |
-| Mid-run blocking approval - an `ask` tool inside a running job pauses the run in place (per-tool-call `waiting_approval`), notifies via a connector, and resumes the same session when the operator replies, needs resumable mid-run state, a wait loop inside the run, and the connectors/transport above | L | "decide during the task" |
+| Mid-run blocking job approval - an `ask` tool inside a running job pauses the run in place (per-tool-call `waiting_approval`), notifies via a connector, and resumes the same session when the operator replies, needs resumable mid-run state, a wait loop inside the run, and the connectors/transport above | L | "decide during the task" |
+
+## Fleet & control plane
+
+Run many scoped agents under a supervisor with a control surface. The supervisor itself (`replio fleet` - ports, health, restart backoff, config gen) is shipped. The rows below are the open work on top.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| `/spawn` command | S-M | launch a scoped `replio serve` agent from the REPL (home -> project path), supervise and delegate to it |
+| Immutable agent config | S-M | served agents cannot change their own config |
+| Minimal web Control UI | M | dashboard over the JSON API |
+| Multiuser API + queue / rate limits | M | concurrent feeds without blocking the loop |
+| Headless web API plugin-first | S-M | FastAPI via the dependency plugin |
+| Observability + telemetry decision | M | latency/cost/error metrics, Pi-style contracts |
 
 ## Developer workflow
 
@@ -98,41 +165,16 @@ Capabilities install as discoverable, isolated packages.
 
 | Task | Effort | Provides |
 |------|--------|----------|
+| Plugin contribution hooks (M1) | S | personas/teams/skills from plugins |
 | PyPI plugin source | M | install from `importlib.metadata` entry points |
 | Plugin registry / marketplace | M-L | discoverable plugin sharing |
+| Shared plugin virtualenv | M | one venv for all plugin dependencies |
 | Per-plugin virtualenv isolation | M | strongest dependency separation |
 | Externalize bundled plugins | M | versioned repos, bundled copies stay the default |
 | Plugin test harness | S-M | plugins ship a test suite, `replio plugins test <name>` runs it |
 | Cross-plugin tool router | M | virtual `open`/`search` dispatch by argument |
 | Web scraper + PDF-to-text plugins | S-M | non-text content types |
 | Agent folder watcher | S-M | process new files on arrival |
-
-## Multi-agent swarm
-
-Agents cooperate through personas, delegation, and review loops.
-
-| Task | Effort | Provides |
-|------|--------|----------|
-| `/agent` personas | M | per-agent prompt, session, model |
-| Custom system prompts per session | S-M | per-site instructions, groundwork for personas |
-| Per-agent permission profiles | M | per-agent `tool_permission` |
-| `delegate` tool | M | sub-agent loop returning a result |
-| Auditor agents + generate/check/correct | M | review-and-fix loops |
-| PM/dev/tester team orchestration | M | user-facing team pattern |
-
-## Fleet & control plane
-
-Run many scoped agents under a supervisor with a control surface.
-
-| Task | Effort | Provides |
-|------|--------|----------|
-| `/spawn` command | S-M | launch a scoped `replio serve` agent from the REPL (home -> project path), supervise and delegate to it |
-| Fleet orchestration | L | supervisor: ports, health, restart, config gen - next package (see [Fleet orchestration supervisor](#fleet-orchestration-supervisor)) |
-| Immutable agent config | S-M | served agents cannot change their own config |
-| Minimal web Control UI | M | dashboard over the JSON API |
-| Multiuser API + queue / rate limits | M | concurrent feeds without blocking the loop |
-| Headless web API plugin-first | S-M | FastAPI via the dependency plugin |
-| Observability + telemetry decision | M | latency/cost/error metrics, Pi-style contracts |
 
 ## Remote channels
 

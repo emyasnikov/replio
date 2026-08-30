@@ -140,7 +140,7 @@ Supervise a fleet of scoped `replio serve` agents: ports, health checks, restart
 | `init`        | Scan immediate subdirectories holding `.replio/config.json` into the manifest    |
 | `add`         | `add <name> [--dir] [--port N] [--max-restarts N]` - add an agent                |
 | `remove`      | `remove <name>` - remove an agent (stops it if running)                          |
-| `up`          | `up [--detach]` - start agents; Ctrl-C = graceful down, `--detach` = background daemon |
+| `up`          | `up [--detach]` - start agents. Ctrl-C = graceful down, `--detach` = background daemon |
 | `down`        | Stop the supervised agents and the daemon if running                             |
 | `status`      | Live table: agent, enabled, port, pid, state, restarts, last error               |
 | `restart`     | `restart [name|all]` - stop, reset restart backoff, relaunch (default: all)     |
