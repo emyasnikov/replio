@@ -169,6 +169,37 @@ class PluginTestBase(unittest.TestCase):
 
 class TestDiscovery(PluginTestBase):
 
+    def test_bundled_dir_resolves(self):
+        from replio.plugins.manager import PluginManager
+        d = PluginManager._bundled_dir()
+        self.assertTrue(d.is_dir())
+        self.assertTrue((d / 'replio-core-fs').is_dir())
+
+    def test_bundled_dir_import_failure_falls_back(self):
+        import sys as _sys
+        from replio import plugins as pkg
+        from replio.plugins.manager import PluginManager
+        key = 'replio.plugins.bundled'
+        saved_module = _sys.modules.get(key)
+        saved_attr = getattr(pkg, 'bundled', None)
+        saved_path = list(pkg.__path__)
+        _sys.modules.pop(key, None)
+        try:
+            delattr(pkg, 'bundled')
+        except AttributeError:
+            pass
+        try:
+            pkg.__path__[:] = []
+            d = PluginManager._bundled_dir()
+            self.assertTrue(d.is_dir())
+            self.assertTrue((d / 'replio-core-fs').is_dir())
+        finally:
+            pkg.__path__[:] = saved_path
+            if saved_attr is not None:
+                pkg.bundled = saved_attr
+            if saved_module is not None:
+                _sys.modules[key] = saved_module
+
     def test_bare_py_plugin(self):
         write_bare_py(self.plugins_dir, 'hello', SIMPLE_TOOL_PLUGIN)
         self.pm.load()

@@ -140,7 +140,11 @@ class PluginManager:
             from . import bundled
             return Path(bundled.__path__[0])
         except Exception:
-            return Path(__file__).resolve().parent / 'bundled'
+            pass
+        candidate = Path(__file__).resolve().parents[3] / 'plugins'
+        if candidate.is_dir():
+            return candidate
+        return Path(__file__).resolve().parent / 'bundled'
 
     def load(self):
         self._plugins = {}

@@ -10,6 +10,8 @@ Run all tests:
 python -m unittest discover tests
 ```
 
+The canonical setup installs the package (`pip install -e .`), which is also what CI does. On a source checkout without installing, use `PYTHONPATH=$PWD/src` (absolute - the detached-fleet daemon changes directory, so a relative `src` would not resolve): `PluginManager` then falls back to the repo-root `plugins/` directory for the bundled plugins.
+
 Run a single file:
 
 ```bash
