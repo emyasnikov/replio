@@ -91,7 +91,10 @@ def register_personas(registry):
 
 TEAM_PLUGIN = '''
 def register_teams(teams):
-    teams['writing'] = ['researcher', 'writer']
+    teams.add_plugin({'name': 'sme',
+                      'description': 'Small team from a plugin',
+                      'stages': [{'persona': 'researcher', 'task_hint': 'gather'},
+                                 {'persona': 'writer'}]})
 '''
 
 SKILL_PLUGIN = '''
@@ -366,9 +369,17 @@ class TestRegistration(PluginTestBase):
     def test_register_teams_hook(self):
         write_plugin(self.plugins_dir, 'team', TEAM_PLUGIN, {'name': 'team'})
         self.pm.load()
-        teams = {}
-        self.pm.register_teams(teams)
-        self.assertEqual(teams['writing'], ['researcher', 'writer'])
+        from replio.teams import TeamRegistry
+        reg = TeamRegistry(global_dir=self.root,
+                           local_path=self.root / '.replio' / 'teams.json',
+                           bundled_path=self.root / 'nobundled' / 'teams.json')
+        self.pm.register_teams(reg)
+        t = reg.find('sme')
+        self.assertIsNotNone(t)
+        self.assertEqual([s.persona for s in t.stages],
+                         ['researcher', 'writer'])
+        self.assertEqual(t.stages[0].task_hint, 'gather')
+        self.assertEqual(reg.origin('sme'), 'plugin')
 
     def test_register_skills_hook(self):
         write_plugin(self.plugins_dir, 'skill', SKILL_PLUGIN, {'name': 'skill'})
@@ -498,6 +509,16 @@ class TestEngineIntegration(PluginTestBase):
         self.assertIsNotNone(p)
         self.assertEqual(p.system_prompt, 'Helper persona from a plugin')
         self.assertEqual(engine.personas.origin('helper'), 'plugin')
+
+    def test_engine_teams_include_plugin_contributions(self):
+        write_plugin(self.plugins_dir, 'team', TEAM_PLUGIN, {'name': 'team'})
+        from replio.engine import Engine
+        engine = Engine(self.config, ui=NullUI())
+        t = engine.teams.find('sme')
+        self.assertIsNotNone(t)
+        self.assertEqual([s.persona for s in t.stages],
+                         ['researcher', 'writer'])
+        self.assertEqual(engine.teams.origin('sme'), 'plugin')
 
 
 class TestPluginsTestCommand(PluginTestBase):

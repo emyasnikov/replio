@@ -331,6 +331,105 @@ def register_builtins(registry):
             return
         print('Usage: /persona [list|show <name>|new <name> [prompt]|remove <name>]')
 
+    @registry.register('team', description='Manage teams', subcommands=[
+        ('list', 'List teams (list <tag> filters by tag)'),
+        ('show', 'Show a team definition'),
+        ('new', 'Create or override a team (local)'),
+        ('remove', 'Remove a team'),
+    ])
+    def team_cmd(arg=''):
+        from ..teams import Team
+        tr = chat.teams
+        parts = arg.strip().split(maxsplit=1)
+        action = parts[0] if parts else ''
+        if not action or action == 'list':
+            tag = ''
+            if action == 'list' and len(parts) > 1:
+                tag = parts[1].strip()
+            teams = tr.all()
+            if tag:
+                teams = [t for t in teams if tag in t.tags]
+            if not teams:
+                if tag:
+                    print(f'  (no teams tagged "{tag}")')
+                    known = ', '.join(sorted({t for t in tr.all()
+                                              for t in t.tags}))
+                    if known:
+                        print(f'  known tags: {known}')
+                else:
+                    print('  (no teams configured)')
+                    print('  Create one with /team new <name>, or edit '
+                          f'{tr.local_path}')
+                return
+            label = f' tagged "{tag}"' if tag else ''
+            print(f'{len(teams)} teams{label}:')
+            for t in teams:
+                stages = ' > '.join(s.persona for s in t.stages)
+                tags = f' tags={",".join(t.tags)}' if t.tags else ''
+                origin = f' ({tr.origin(t.name)})'
+                print(f'  - {t.name}{tags}{origin}')
+                if stages:
+                    print(f'      {stages}')
+            return
+        if action == 'show':
+            name = parts[1].strip() if len(parts) > 1 else ''
+            if not name:
+                print('Usage: /team show <name>')
+                return
+            t = tr.find(name)
+            if t is None:
+                print(f'Team not found: {name}')
+                return
+            print(f'{t.name} ({tr.origin(t.name)})')
+            if t.description:
+                print(f'  description: {t.description}')
+            if t.tags:
+                print(f'  tags: {", ".join(t.tags)}')
+            if not t.stages:
+                print('  stages: (none)')
+                return
+            print('  stages:')
+            for i, s in enumerate(t.stages, 1):
+                print(f'    {i}. {s.persona}'
+                      + (f' [mode={s.mode}]' if s.mode else ''))
+                if s.task_hint:
+                    print(f'       task_hint: {s.task_hint}')
+                if s.handoff_note:
+                    print(f'       handoff_note: {s.handoff_note}')
+            return
+        if action == 'new':
+            rest = parts[1].strip() if len(parts) > 1 else ''
+            if not rest:
+                print('Usage: /team new <name> [description]')
+                return
+            name = rest.split(maxsplit=1)[0]
+            description = rest[len(name):].strip()
+            existing = tr.find(name)
+            prev_origin = tr.origin(name)
+            tr.put(Team(name=name, description=description), scope='local')
+            if existing is not None:
+                print(f'Overrode team: {name} (was {prev_origin}) - '
+                      f'edit {tr.local_path} for stages')
+            else:
+                print(f'Created team: {name} (local) - edit {tr.local_path} '
+                      'to add stages')
+            return
+        if action == 'remove':
+            name = parts[1].strip() if len(parts) > 1 else ''
+            if not name:
+                print('Usage: /team remove <name>')
+                return
+            if tr.remove(name):
+                print(f'Removed team: {name} (local)')
+            elif tr.is_bundled(name):
+                print(f'{name} is bundled with replio - override it with '
+                      '/team new <name>, or edit the local teams file, '
+                      'instead of removing')
+            else:
+                print(f'No local team to remove: {name}')
+            return
+        print('Usage: /team [list|show <name>|new <name> [description]|remove <name>]')
+
     @registry.register('connect', description='Set up provider connection interactively')
     def connect_cmd(_=None):
         from ..providers import PROVIDERS, detect_provider
@@ -898,10 +997,11 @@ def _toggle_plugin(chat, pm, name, action):
     chat.config.set('plugins', plugins)
 
 
-def _refresh_personas(chat, pm):
-    personas = getattr(chat, 'personas', None)
-    if personas is not None:
-        personas.reload(pm)
+def _refresh_registries(chat, pm):
+    for name in ('personas', 'teams'):
+        registry = getattr(chat, name, None)
+        if registry is not None:
+            registry.reload(pm)
 
 
 def _install_plugin(chat, pm, rest):
@@ -921,7 +1021,7 @@ def _install_plugin(chat, pm, rest):
     if info.name not in plugins:
         plugins.append(info.name)
         chat.config.set('plugins', plugins)
-    _refresh_personas(chat, pm)
+    _refresh_registries(chat, pm)
     print(f'Installed {info.name} v{info.version} - restart to activate')
     if info.status in ('incompatible', 'error', 'disabled'):
         print(f'  {info.status}: {info.error or "not loaded"}')
@@ -937,7 +1037,7 @@ def _update_plugin(chat, pm, name):
     except PluginError as e:
         print(f'Error updating plugin: {e}')
         return
-    _refresh_personas(chat, pm)
+    _refresh_registries(chat, pm)
     print(f'Updated {info.name} to v{info.version} - restart to apply')
 
 
@@ -950,5 +1050,5 @@ def _uninstall_plugin(chat, pm, name):
         return
     plugins = [n for n in (chat.config.get('plugins') or []) if n != name]
     chat.config.set('plugins', plugins)
-    _refresh_personas(chat, pm)
+    _refresh_registries(chat, pm)
     print(f'Uninstalled plugin: {name}')

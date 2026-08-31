@@ -39,7 +39,6 @@
 - [ ] Jobs operator API - `GET /jobs` and `POST /jobs/<name>/approve|reject|run|disable` on `replio serve`, so clients (web Control UI, connectors, fleet supervisor) can see and act per agent
 - [ ] Fleet jobs overview - `replio jobs list --root <dir>` scanning agent worktrees (agent, job, status, next run, task table), then the web Control UI on top
 - [ ] Interactive delegation focus - REPL jumps in/out of the active sub-agent (request or automatic on delegate), arrows switch between concurrent `delegate_*` session logs rendered from their own saved logs (opencode-style sub-agent views)
-- [ ] Jobs registry - named team configurations ("writing" = researcher > writer > referencer > editor, "programming" = planner > programmer > tester > code-reviewer) referencing bundled personas with ordering and handoff, selectable for delegation and auto team selection
 - [ ] Persona directory scan for export/import - read `.replio/personas/*.md` (front-matter personas) to import and export personas to Markdown, paralleling the sessions Markdown export/import
 - [ ] Delegation progress in the REPL - live status of which sub-agent is working and its progress mid-run. `delegate` already surfaces the task and the final result (plus a sub footer via `delegate_echo`). The next step is a progress channel read out of the sub-engine loop, which the single blocking `Engine.chat()` does not expose today
 - [ ] Auto team selection - the lead agent picks personas from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor, landing with the team kit composition flow)
@@ -106,6 +105,7 @@
 
 ## Done
 
+- [x] Teams registry - `Team`/`TeamRegistry`, 4-layer `teams.json` merge, `/team` read/edit
 - [x] Plugin contribution hooks - register_personas/teams/skills hooks, `PersonaRegistry.reload()`
 - [x] Fleet orchestration - `replio fleet` supervisor CLI: ports, health, restart backoff, config gen
 - [x] Per-run job sessions - `job_<ts>_<name>` files, unified `ses_`/`sub_`/`job_` naming

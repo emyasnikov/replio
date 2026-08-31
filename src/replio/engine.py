@@ -108,6 +108,15 @@ class Engine:
             self._plugin_manager.register_personas(self._personas)
         return self._personas
 
+    @property
+    def teams(self):
+        if getattr(self, '_teams', None) is None:
+            from .teams import TeamRegistry
+            self._teams = TeamRegistry(
+                local_path=self.config.local_path.parent / 'teams.json')
+            self._plugin_manager.register_teams(self._teams)
+        return self._teams
+
     def _resolve_provider_factory(self, provider: str, base_url: str):
         from .providers import PROVIDERS, detect_provider
         merged = dict(PROVIDERS)
