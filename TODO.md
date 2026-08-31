@@ -106,6 +106,7 @@
 
 ## Done
 
+- [x] Plugin contribution hooks - register_personas/teams/skills hooks, `PersonaRegistry.reload()`
 - [x] Fleet orchestration - `replio fleet` supervisor CLI: ports, health, restart backoff, config gen
 - [x] Per-run job sessions - `job_<ts>_<name>` files, unified `ses_`/`sub_`/`job_` naming
 - [x] Job run memory - rolling `.memory.md` run summary injected into each run, seeded with prior memory

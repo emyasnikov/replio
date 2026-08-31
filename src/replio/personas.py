@@ -70,12 +70,26 @@ class PersonaRegistry:
         self._bundled: dict[str, dict[str, Any]] = {}
         self._global: dict[str, dict[str, Any]] = {}
         self._local: dict[str, dict[str, Any]] = {}
+        self._plugins: dict[str, dict[str, Any]] = {}
         self._load()
 
     def _load(self):
         self._bundled = _load_scope(self.bundled_path)
         self._global = _load_scope(self.global_path)
         self._local = _load_scope(self.local_path)
+
+    def add_plugin(self, entry: dict) -> None:
+        if not isinstance(entry, dict) or not entry.get('name'):
+            return
+        self._plugins[str(entry['name'])] = dict(entry)
+
+    def reload(self, plugin_manager=None) -> None:
+        self._load()
+        self._plugins = {}
+        if plugin_manager is not None:
+            register = getattr(plugin_manager, 'register_personas', None)
+            if register:
+                register(self)
 
     def _save_scope(self, scope: str):
         path = self.global_path if scope == 'global' else self.local_path
@@ -86,11 +100,13 @@ class PersonaRegistry:
         os.replace(tmp, path)
 
     def _merged_entries(self) -> dict[str, dict[str, Any]]:
-        names = set(self._bundled) | set(self._global) | set(self._local)
+        names = (set(self._bundled) | set(self._plugins)
+                 | set(self._global) | set(self._local))
         merged: dict[str, dict[str, Any]] = {}
         for name in names:
             entry: dict[str, Any] = {}
             entry.update(self._bundled.get(name, {}))
+            entry.update(self._plugins.get(name, {}))
             entry.update(self._global.get(name, {}))
             entry.update(self._local.get(name, {}))
             entry['name'] = name
@@ -113,15 +129,19 @@ class PersonaRegistry:
         has_local = name in self._local
         has_global = name in self._global
         has_bundled = name in self._bundled
-        if has_local and has_global:
-            return 'merged'
-        if has_local:
-            return 'merged' if has_bundled else 'local'
-        if has_global:
-            return 'merged' if has_bundled else 'global'
-        if has_bundled:
+        has_plugin = name in self._plugins
+        if not any((has_local, has_global, has_bundled, has_plugin)):
+            return ''
+        layers = sum((has_local, has_global, has_bundled, has_plugin))
+        if layers == 1:
+            if has_local:
+                return 'local'
+            if has_global:
+                return 'global'
+            if has_plugin:
+                return 'plugin'
             return 'bundled'
-        return ''
+        return 'merged'
 
     def is_bundled(self, name: str) -> bool:
         return name in self._bundled

@@ -58,13 +58,16 @@ The entry module may sit anywhere under the plugin directory - `manifest.json` `
 
 ## Entry contract
 
-The entry module may define any of four hooks (all optional):
+The entry module may define any of seven hooks (all optional):
 
 ```python
 def register_tools(registry) -> None: ...        # @registry.register(...) - same as core tools
 def register_providers(providers) -> None: ...   # providers["name"] = ProviderClass
 def register_commands(commands) -> None: ...     # @commands.register(...) - same as core commands
 def register_services(services) -> None: ...     # services["name"] = service object for core features
+def register_personas(registry) -> None: ...     # registry.add_plugin({...}) - plugin-owned personas
+def register_teams(teams) -> None: ...           # register into the TeamRegistry (see swarm.md)
+def register_skills(skills) -> None: ...         # register into the SkillRegistry (see swarm.md)
 ```
 
 Plugin tools automatically inherit the tool permission policy, `/tool`, `/help`, query refinement, `noise_tools`, and session logging. The loop never special-cases plugin names.
@@ -74,6 +77,10 @@ A tool handler may declare a `_config` keyword argument to receive the engine's 
 ### Services
 
 `register_services` lets a plugin power a core feature that is not tool-calling. Today the only service is the web search-then-answer mode (`web_search: true`). The bundled `replio-core-websearch` registers `services['search']` with `search(query, num)`, `display(query, results)`, and `context(query, results)` methods. If no plugin registers the service, that mode reports that it is unavailable instead of erroring.
+
+### Personas, teams, and skills
+
+`register_personas(registry)` contributes personas to the `PersonaRegistry` via `registry.add_plugin(entry)` (same entry shape as `personas.json`). Plugin personas form an in-memory layer between bundled and global, so precedence is `bundled < plugin < global < local`, and a `personas.json` entry can always override or replace a plugin-provided persona. `register_teams(teams)` and `register_skills(skills)` register into the team and skills registries the same way (see [swarm.md](swarm.md)). The `/persona` list marks plugin personas `(plugin)`, and after `/plugins install`/`update`/`uninstall` the running REPL re-applies all three hooks immediately; tools and commands still activate on the next start.
 
 ### Lazy dependencies
 

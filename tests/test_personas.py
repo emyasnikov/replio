@@ -14,6 +14,15 @@ BUNDLED = Path(personas_mod.__file__).with_name(
     PersonaRegistry.BUNDLED_FILENAME)
 
 
+class StubPluginManager:
+    def __init__(self, entries):
+        self.entries = entries
+
+    def register_personas(self, registry):
+        for entry in self.entries:
+            registry.add_plugin(entry)
+
+
 class TestPersonaRegistry(unittest.TestCase):
 
     def setUp(self):
@@ -176,6 +185,90 @@ class TestPersonaRegistry(unittest.TestCase):
         p = reg.find('researcher')
         self.assertEqual(p.system_prompt, bundled_prompt)
         self.assertEqual(reg.origin('researcher'), 'bundled')
+
+    def test_add_plugin_persona(self):
+        reg = self.reg()
+        reg.add_plugin({'name': 'helper', 'system_prompt': 'from a plugin',
+                        'tags': ['plugin']})
+        p = reg.find('helper')
+        self.assertIsNotNone(p)
+        self.assertEqual(p.system_prompt, 'from a plugin')
+        self.assertEqual(p.tags, ['plugin'])
+        self.assertEqual(reg.origin('helper'), 'plugin')
+        self.assertIn('helper', reg.names())
+
+    def test_add_plugin_invalid_entry_ignored(self):
+        reg = self.reg()
+        reg.add_plugin({'system_prompt': 'no name'})
+        reg.add_plugin('nope')
+        self.assertEqual(reg.all(), [])
+
+    def test_add_plugin_writes_nothing_to_disk(self):
+        reg = self.reg()
+        reg.add_plugin({'name': 'helper', 'system_prompt': 'x'})
+        self.assertFalse(self.local.exists())
+        reg.put(Persona(name='mine', system_prompt='p'), scope='local')
+        import json as _json
+        saved = _json.loads(self.local.read_text())
+        self.assertEqual(list(saved), ['mine'])
+
+    def test_plugin_overrides_bundled(self):
+        reg = self.bundled()
+        reg.add_plugin({'name': 'researcher', 'system_prompt': 'plugin variant'})
+        p = reg.find('researcher')
+        self.assertEqual(p.system_prompt, 'plugin variant')
+        self.assertEqual(p.tool_permission['edit'], 'deny')
+        self.assertEqual(reg.origin('researcher'), 'merged')
+
+    def test_global_overrides_plugin(self):
+        reg = self.reg()
+        reg.add_plugin({'name': 'x', 'system_prompt': 'plugin prompt'})
+        reg.put(Persona(name='x', system_prompt='global prompt'), scope='global')
+        self.assertEqual(reg.find('x').system_prompt, 'global prompt')
+        self.assertEqual(reg.origin('x'), 'merged')
+        reg.remove('x', scope='global')
+        self.assertEqual(reg.find('x').system_prompt, 'plugin prompt')
+
+    def test_local_overrides_plugin(self):
+        reg = self.reg()
+        reg.add_plugin({'name': 'x', 'system_prompt': 'plugin prompt'})
+        reg.put(Persona(name='x', system_prompt='local prompt'), scope='local')
+        self.assertEqual(reg.find('x').system_prompt, 'local prompt')
+        self.assertEqual(reg.origin('x'), 'merged')
+
+    def test_reload_rereads_disk(self):
+        reg = self.reg()
+        self.local.parent.mkdir(parents=True, exist_ok=True)
+        import json as _json
+        self.local.write_text(_json.dumps(
+            {'x': {'name': 'x', 'system_prompt': 'on disk'}}))
+        reg.reload()
+        self.assertEqual(reg.find('x').system_prompt, 'on disk')
+
+    def test_reload_rereads_global_and_bundled(self):
+        reg = self.bundled()
+        self.assertIsNone(reg.find('x'))
+        reg.global_path.parent.mkdir(parents=True, exist_ok=True)
+        import json as _json
+        reg.global_path.write_text(_json.dumps(
+            {'x': {'name': 'x', 'system_prompt': 'global'}}))
+        reg.reload()
+        self.assertEqual(reg.find('x').system_prompt, 'global')
+        self.assertIsNotNone(reg.find('researcher'))
+
+    def test_reload_reapplies_plugin_contributions(self):
+        reg = self.reg()
+        reg.reload(StubPluginManager([{'name': 'old', 'system_prompt': 'o'}]))
+        self.assertIsNotNone(reg.find('old'))
+        reg.reload(StubPluginManager([{'name': 'new', 'system_prompt': 'n'}]))
+        self.assertIsNone(reg.find('old'))
+        self.assertIsNotNone(reg.find('new'))
+
+    def test_reload_without_plugin_manager_clears_plugin_scope(self):
+        reg = self.reg()
+        reg.add_plugin({'name': 'helper', 'system_prompt': 'x'})
+        reg.reload()
+        self.assertIsNone(reg.find('helper'))
 
 
 class TestPersonaCommand(unittest.TestCase):

@@ -18,7 +18,6 @@ The current priority: one terminal, whole teams (`VISION.md`). Stages run sequen
 
 ### Skeleton and core hooks
 
-- [ ] Plugin contribution hooks - `register_personas` / `register_teams` / `register_skills` in `PluginManager`, `PersonaRegistry.reload()`
 - [ ] Skills registry - `SkillRegistry` (`.replio/skills/` + plugin contributions), persona `skills` injected into the sub-agent system prompt
 - [ ] Teams registry - `Team` + `TeamRegistry` (`.replio/teams.json` + plugin contributions), shape-only (persona, mode, task-hint, handoff-note)
 - [ ] `Engine.run_team` - sequential stage loop: brief builder, `run_subagent`, handoff, team memory write

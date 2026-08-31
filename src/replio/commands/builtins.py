@@ -659,7 +659,7 @@ def register_builtins(registry):
             if len(parts) < 2:
                 print('Usage: /plugins update <name>')
                 return
-            _update_plugin(pm, parts[1])
+            _update_plugin(chat, pm, parts[1])
         elif action == 'uninstall':
             if len(parts) < 2:
                 print('Usage: /plugins uninstall <name>')
@@ -898,6 +898,12 @@ def _toggle_plugin(chat, pm, name, action):
     chat.config.set('plugins', plugins)
 
 
+def _refresh_personas(chat, pm):
+    personas = getattr(chat, 'personas', None)
+    if personas is not None:
+        personas.reload(pm)
+
+
 def _install_plugin(chat, pm, rest):
     if not rest:
         print('Usage: /plugins install <git-url|path> [--global] [--deps]')
@@ -915,6 +921,7 @@ def _install_plugin(chat, pm, rest):
     if info.name not in plugins:
         plugins.append(info.name)
         chat.config.set('plugins', plugins)
+    _refresh_personas(chat, pm)
     print(f'Installed {info.name} v{info.version} - restart to activate')
     if info.status in ('incompatible', 'error', 'disabled'):
         print(f'  {info.status}: {info.error or "not loaded"}')
@@ -923,13 +930,14 @@ def _install_plugin(chat, pm, rest):
             print(f'  dependency installed: {pkg}')
 
 
-def _update_plugin(pm, name):
+def _update_plugin(chat, pm, name):
     from ..plugins.manager import PluginError
     try:
         info = pm.update(name)
     except PluginError as e:
         print(f'Error updating plugin: {e}')
         return
+    _refresh_personas(chat, pm)
     print(f'Updated {info.name} to v{info.version} - restart to apply')
 
 
@@ -942,4 +950,5 @@ def _uninstall_plugin(chat, pm, name):
         return
     plugins = [n for n in (chat.config.get('plugins') or []) if n != name]
     chat.config.set('plugins', plugins)
+    _refresh_personas(chat, pm)
     print(f'Uninstalled plugin: {name}')

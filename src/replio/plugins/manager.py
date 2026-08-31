@@ -294,33 +294,34 @@ class PluginManager:
                 info.status = 'error'
                 info.error = f'register_services failed: {e}'
 
-    def register_tools(self, registry):
+    def _run_hook(self, hook_name: str, target) -> None:
         for name, module in self._modules.items():
             if self._plugins[name].status != 'loaded':
                 continue
-            hook = getattr(module, 'register_tools', None)
+            hook = getattr(module, hook_name, None)
             if not hook:
                 continue
             try:
-                hook(registry)
+                hook(target)
             except Exception as e:
                 info = self._plugins[name]
                 info.status = 'error'
-                info.error = f'register_tools failed: {e}'
+                info.error = f'{hook_name} failed: {e}'
+
+    def register_tools(self, registry):
+        self._run_hook('register_tools', registry)
 
     def register_commands(self, registry):
-        for name, module in self._modules.items():
-            if self._plugins[name].status != 'loaded':
-                continue
-            hook = getattr(module, 'register_commands', None)
-            if not hook:
-                continue
-            try:
-                hook(registry)
-            except Exception as e:
-                info = self._plugins[name]
-                info.status = 'error'
-                info.error = f'register_commands failed: {e}'
+        self._run_hook('register_commands', registry)
+
+    def register_personas(self, registry):
+        self._run_hook('register_personas', registry)
+
+    def register_teams(self, registry):
+        self._run_hook('register_teams', registry)
+
+    def register_skills(self, registry):
+        self._run_hook('register_skills', registry)
 
     def provider_classes(self) -> dict[str, type]:
         return dict(self._provider_classes)

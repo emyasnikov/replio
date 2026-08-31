@@ -77,6 +77,28 @@ def register_services(services):
     services['greet'] = lambda: 'hello from service'
 '''
 
+PERSONA_PLUGIN = '''
+def register_personas(registry):
+    registry.add_plugin({'name': 'helper',
+                         'system_prompt': 'Helper persona from a plugin',
+                         'tags': ['plugin']})
+'''
+
+PERSONA_FAIL_PLUGIN = '''
+def register_personas(registry):
+    raise RuntimeError('persona hook exploded')
+'''
+
+TEAM_PLUGIN = '''
+def register_teams(teams):
+    teams['writing'] = ['researcher', 'writer']
+'''
+
+SKILL_PLUGIN = '''
+def register_skills(skills):
+    skills['writers'] = {'description': 'Team writing skills'}
+'''
+
 
 SIMPLE_MANIFEST = {
     'name': 'hello',
@@ -315,6 +337,59 @@ class TestRegistration(PluginTestBase):
         self.pm.register_commands(reg)
         self.assertIn('frobnicate', reg.commands)
 
+    def _persona_registry(self):
+        from replio.personas import PersonaRegistry
+        return PersonaRegistry(
+            global_dir=self.root,
+            local_path=self.root / '.replio' / 'personas.json',
+            bundled_path=self.root / 'nobundled' / 'personas.json')
+
+    def test_register_personas_hook(self):
+        write_plugin(self.plugins_dir, 'pers', PERSONA_PLUGIN, {'name': 'pers'})
+        self.pm.load()
+        reg = self._persona_registry()
+        self.pm.register_personas(reg)
+        p = reg.find('helper')
+        self.assertIsNotNone(p)
+        self.assertEqual(p.system_prompt, 'Helper persona from a plugin')
+        self.assertEqual(reg.origin('helper'), 'plugin')
+
+    def test_register_personas_hook_failure_marks_error(self):
+        write_plugin(self.plugins_dir, 'boom', PERSONA_FAIL_PLUGIN, {'name': 'boom'})
+        self.pm.load()
+        reg = self._persona_registry()
+        self.pm.register_personas(reg)
+        info = self.pm.get('boom')
+        self.assertEqual(info.status, 'error')
+        self.assertIn('register_personas failed', info.error)
+
+    def test_register_teams_hook(self):
+        write_plugin(self.plugins_dir, 'team', TEAM_PLUGIN, {'name': 'team'})
+        self.pm.load()
+        teams = {}
+        self.pm.register_teams(teams)
+        self.assertEqual(teams['writing'], ['researcher', 'writer'])
+
+    def test_register_skills_hook(self):
+        write_plugin(self.plugins_dir, 'skill', SKILL_PLUGIN, {'name': 'skill'})
+        self.pm.load()
+        skills = {}
+        self.pm.register_skills(skills)
+        self.assertEqual(skills['writers']['description'], 'Team writing skills')
+
+    def test_teams_and_skills_hook_failure_marks_error(self):
+        write_plugin(self.plugins_dir, 'boom',
+                     'def register_teams(teams):\n    raise RuntimeError("t")\n'
+                     'def register_skills(skills):\n    raise RuntimeError("s")\n',
+                     {'name': 'boom'})
+        self.pm.load()
+        self.pm.register_teams({})
+        self.assertEqual(self.pm.get('boom').status, 'error')
+        self.assertIn('register_teams failed', self.pm.get('boom').error)
+        self.pm.load()
+        self.pm.register_skills({})
+        self.assertIn('register_skills failed', self.pm.get('boom').error)
+
     def test_lazy_dep_error_surfaces_pip_guidance(self):
         write_plugin(self.plugins_dir, 'lazy', LAZY_DEP_PLUGIN, {'name': 'lazy'})
         self.pm.load()
@@ -414,6 +489,15 @@ class TestEngineIntegration(PluginTestBase):
         with redirect_stdout(buf):
             engine.registry.dispatch('/plugins')
         self.assertIn('hello', buf.getvalue())
+
+    def test_engine_personas_include_plugin_contributions(self):
+        write_plugin(self.plugins_dir, 'pers', PERSONA_PLUGIN, {'name': 'pers'})
+        from replio.engine import Engine
+        engine = Engine(self.config, ui=NullUI())
+        p = engine.personas.find('helper')
+        self.assertIsNotNone(p)
+        self.assertEqual(p.system_prompt, 'Helper persona from a plugin')
+        self.assertEqual(engine.personas.origin('helper'), 'plugin')
 
 
 class TestPluginsTestCommand(PluginTestBase):

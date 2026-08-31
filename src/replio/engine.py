@@ -105,6 +105,7 @@ class Engine:
             from .personas import PersonaRegistry
             self._personas = PersonaRegistry(
                 local_path=self.config.local_path.parent / 'personas.json')
+            self._plugin_manager.register_personas(self._personas)
         return self._personas
 
     def _resolve_provider_factory(self, provider: str, base_url: str):

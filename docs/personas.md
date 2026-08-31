@@ -4,9 +4,10 @@ A persona is a named agent definition: a system prompt, an optional model overri
 
 ## Storage
 
-Personas come from three layers, merged exactly like config: bundled first, then global, then local, with local winning per field. Precedence mirrors bundled plugins (`bundled < global < local`):
+Personas come from four layers, merged exactly like config: bundled first, then plugin contributions, then global, then local, with local winning per field. Precedence mirrors bundled plugins (`bundled < plugin < global < local`):
 
 - **Bundled** - the read-only default catalog shipped in the package (`src/replio/bundled_personas.json`). Always present, never writable, overridable by any other layer.
+- **Plugin** - personas contributed by plugins via the `register_personas` entry hook (`registry.add_plugin(...)`, see [plugins.md](plugins.md)). An in-memory layer: never written to any `personas.json`, refreshed on `/plugins install`/`update`/`uninstall`.
 - **Global** - `~/.config/replio/personas.json`.
 - **Local** - `.replio/personas.json`.
 
@@ -55,7 +56,7 @@ The bundled catalog ships two pre-carved teams, useful as delegation targets and
 
 `/persona` manages the registry:
 
-- `/persona` - list personas, marking each one's origin (`bundled` / `local` / `global` / `merged`) and tags.
+- `/persona` - list personas, marking each one's origin (`bundled` / `plugin` / `local` / `global` / `merged`) and tags.
 - `/persona list <tag>` - list only personas carrying the tag (e.g. `/persona list programming`). Unknown tags print the known tags.
 - `/persona show <name>` - show a persona's full definition.
 - `/persona new <name> [system prompt]` - create a persona in the local catalog (edit the JSON for full fields, including tags). Using an existing name overrides that persona.
