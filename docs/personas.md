@@ -31,7 +31,7 @@ Fields:
 - `name` - unique key of the persona.
 - `system_prompt` - the persona's system prompt, injected when it runs.
 - `model` - optional. Overrides the caller's model when the persona runs. Falls back to the caller's model when empty.
-- `skills` - optional list of skill names, reserved for the skills registry (see TODO).
+- `skills` - optional list of skill names from the [skills registry](skills.md), resolved and injected into the persona's sub-agent system prompt (and jobs with `--persona`).
 - `tags` - optional list of job tags for grouping and filtering (`/persona list <tag>`). The bundled set uses a controlled vocabulary: `research`, `writing`, `programming`, `review`.
 - `tool_permission` - optional per-agent overrides of `tool_permission` categories. This is the per-agent permission profile.
 

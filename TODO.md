@@ -31,7 +31,6 @@
 - [ ] Template-based team composition - match persona/skill templates from the kit library against the request + project description, generate only the deltas, reuse proven artifacts across projects
 - [ ] Team kit library - tag/store proven teams, personas, and skills per stack and customer, importable into new projects without publishing internal know-how
 - [ ] Sequential team runs - stage-by-stage delegation via `run_subagent` with briefs generated per run (task + prior results + team memory + stage handoff), shared team memory file (`.replio/teams/<name>/memory.md`), persistent member sessions for recurring teams, fresh `sub_` sessions for one-off runs (context economics in VISION.md)
-- [ ] Skills registry - `.replio/skills/` or `.replio/skills.json`, persona-attachable capability sets distinct from tools/plugins, checked/installed per agent. Resolved from each persona's `skills` list and injected into the sub-agent system prompt (the field is currently inert)
 - [ ] Plugin contribution hooks - `register_personas` / `register_teams` / `register_skills` plugin entry hooks + `PersonaRegistry.reload()`, so the kit ships templates without forking the core
 - [ ] Mid-run blocking job approval - an `ask` tool inside a running job pauses the run in place (per-tool-call `waiting_approval`), notifies via a connector, and resumes the same session when the operator replies. Needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run `--require-approval` gate)
 - [ ] Job event hooks - the scheduler emits typed transitions (`proposed`, `approved`, `will_run`, `executing`, `verified`, `failed`, `timeout`, `waiting_approval`) to registered `services`. Channel-agnostic core, first consumers are the connectors and the operator API
@@ -105,6 +104,7 @@
 
 ## Done
 
+- [x] Skills registry - `SkillRegistry`, local/global dirs + plugins, persona `skills` in prompts
 - [x] Teams registry - `Team`/`TeamRegistry`, 4-layer `teams.json` merge, `/team` read/edit
 - [x] Plugin contribution hooks - register_personas/teams/skills hooks, `PersonaRegistry.reload()`
 - [x] Fleet orchestration - `replio fleet` supervisor CLI: ports, health, restart backoff, config gen

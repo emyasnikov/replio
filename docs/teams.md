@@ -47,7 +47,7 @@ Team fields:
 Stage fields:
 
 - `persona` - required, the persona name (must exist in the [personas registry](personas.md) at run time, resolved against the same four-layer merge).
-- `mode` - optional agent mode override for the stage. Empty inherits the caller; sub-agents today run in `build` mode, so stage modes become meaningful with the sequential stage loop.
+- `mode` - optional agent mode override for the stage. Empty inherits the caller. Sub-agents today run in `build` mode, so stage modes become meaningful with the sequential stage loop.
 - `task_hint` - optional guidance folded into the delegated brief for this stage.
 - `handoff_note` - optional note passed along with the previous stage's result into the next stage's brief.
 

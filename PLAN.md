@@ -18,7 +18,6 @@ The current priority: one terminal, whole teams (`VISION.md`). Stages run sequen
 
 ### Skeleton and core hooks
 
-- [ ] Skills registry - `SkillRegistry` (`.replio/skills/` + plugin contributions), persona `skills` injected into the sub-agent system prompt
 - [ ] `Engine.run_team` - sequential stage loop: brief builder, `run_subagent`, handoff, team memory write
 - [ ] Kit skeleton - `plugins/replio-teamkit/`: manifest, entry module, one template, one recipe, tests
 - [ ] `docs/teamkit.md` draft - authoring + move-out guide

@@ -25,6 +25,7 @@ def _build_engine(config: Config, job: Job, verbose: bool,
                   stream: bool = False, session_name: str | None = None) -> Engine:
     sub_config = Config(path=str(config.local_path.parent.parent))
     persona = None
+    skill_names = []
     if job.persona:
         from .personas import PersonaRegistry
         personas = PersonaRegistry(local_path=config.local_path.parent / 'personas.json')
@@ -36,11 +37,19 @@ def _build_engine(config: Config, job: Job, verbose: bool,
         permissions = dict(sub_config.get('tool_permission') or {})
         permissions.update(persona.tool_permission)
         sub_config.apply('tool_permission', permissions)
+        skill_names = list(persona.skills or [])
     try:
         system_text = system_prompt_for(job, config.local_path.parent.parent,
                                         persona)
     except FileNotFoundError as e:
         raise ValueError(str(e)) from e
+    if skill_names:
+        from .skills import SkillRegistry, skills_section
+        skills = SkillRegistry(
+            local_dir=config.local_path.parent / 'skills')
+        section = skills_section(skills, skill_names)
+        if section:
+            system_text = system_text.rstrip() + '\n\n' + section
     sub_config.apply('system_prompt', system_text)
     if job.mode:
         sub_config.apply('mode', job.mode)

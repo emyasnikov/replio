@@ -117,6 +117,15 @@ class Engine:
             self._plugin_manager.register_teams(self._teams)
         return self._teams
 
+    @property
+    def skills(self):
+        if getattr(self, '_skills', None) is None:
+            from .skills import SkillRegistry
+            self._skills = SkillRegistry(
+                local_dir=self.config.local_path.parent / 'skills')
+            self._plugin_manager.register_skills(self._skills)
+        return self._skills
+
     def _resolve_provider_factory(self, provider: str, base_url: str):
         from .providers import PROVIDERS, detect_provider
         merged = dict(PROVIDERS)
@@ -227,7 +236,16 @@ class Engine:
         if persona is None:
             raise ValueError(f'Unknown persona: {persona_name}')
         sub_config = Config(path=str(self.config.local_path.parent.parent))
-        sub_config.apply('system_prompt', persona.system_prompt)
+        from .skills import skills_section
+        system_prompt = persona.system_prompt
+        if persona.skills:
+            section = skills_section(self.skills, persona.skills)
+            if section:
+                if system_prompt.strip():
+                    system_prompt = system_prompt.rstrip() + '\n\n' + section
+                else:
+                    system_prompt = section
+        sub_config.apply('system_prompt', system_prompt)
         if persona.model:
             sub_config.apply('model', persona.model)
         permissions = dict(self.config.get('tool_permission') or {})

@@ -362,6 +362,39 @@ class TestScheduler(unittest.TestCase):
         self.assertIn('Unknown persona', run.reason)
         self.assertEqual(job.status, 'failed')
 
+    def test_build_engine_injects_persona_skills(self):
+        from pathlib import Path as _Path
+        from replio.scheduler import _build_engine
+        base = _Path(self.tmp.name)
+        personas = {
+            'researcher': {'name': 'researcher',
+                           'system_prompt': 'You are the researcher.',
+                           'skills': ['finders']}}
+        (base / '.replio' / 'personas.json').write_text(json.dumps(personas))
+        skills_dir = base / '.replio' / 'skills'
+        skills_dir.mkdir(parents=True)
+        (skills_dir / 'finders.md').write_text('Find sources and evaluate them.')
+        job = Job('r', {'interval': 3600}, prompt='work', persona='researcher')
+        engine = _build_engine(self.config, job, verbose=False)
+        prompt = engine.config.get('system_prompt')
+        self.assertIn('You are the researcher.', prompt)
+        self.assertIn('## Skills', prompt)
+        self.assertIn('### finders', prompt)
+        self.assertIn('Find sources and evaluate them.', prompt)
+
+    def test_build_engine_skips_missing_persona_skills(self):
+        from pathlib import Path as _Path
+        from replio.scheduler import _build_engine
+        base = _Path(self.tmp.name)
+        personas = {'x': {'name': 'x', 'system_prompt': 'prompt',
+                          'skills': ['nosuch']}}
+        (base / '.replio' / 'personas.json').write_text(json.dumps(personas))
+        job = Job('x', {'interval': 3600}, prompt='work', persona='x')
+        engine = _build_engine(self.config, job, verbose=False)
+        prompt = engine.config.get('system_prompt')
+        self.assertIn('prompt', prompt)
+        self.assertNotIn('## Skills', prompt)
+
     def test_timeout_records_failure(self):
         class HungEngine:
             def __init__(self):

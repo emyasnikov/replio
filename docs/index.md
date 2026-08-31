@@ -16,7 +16,7 @@ Detailed reference for Replio. For an overview, features, and quick start, see t
 - [Providers](providers.md) - providers, auto-detection, the chat event contract, adding a provider
 - [Security](security.md) - permission model, threat model, data posture, prompt injection
 - [Sessions](session.md) - session log format, message schema, compaction, persistence
-- [Teams](teams.md) - team registry, stage shape, bundled roster and plugin contributions
+- [Skills](skills.md) - skill registry, storage, persona injection
 - [Testing](testing.md) - running the mock test suite, per-file coverage map
 - [Tools](tools.md) - tool registry, bundled tools, tool policy, registration metadata
 - [Usage](usage/) - step-by-step setup variations

@@ -76,6 +76,54 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertEqual(tp['bash'], 'deny')
         self.assertEqual(tp['web'], 'deny')
 
+    def test_subagent_injects_persona_skills(self):
+        from replio.skills import Skill
+        self.chat.personas.put(
+            Persona(name='researcher', system_prompt='You are the researcher.',
+                    skills=['finders', 'filters']),
+            scope='local')
+        self.chat.skills.put(
+            Skill(name='finders', content='Find sources and evaluate them.'))
+        self.chat.skills.put(
+            Skill(name='filters', content='Filter for credible, on-topic sources.'))
+        sub = self.chat._new_sub_engine('researcher')
+        prompt = sub.config.get('system_prompt')
+        self.assertIn('You are the researcher.', prompt)
+        self.assertIn('## Skills', prompt)
+        self.assertIn('### finders', prompt)
+        self.assertIn('Find sources and evaluate them.', prompt)
+        self.assertIn('### filters', prompt)
+
+    def test_subagent_skips_missing_skills(self):
+        from replio.skills import Skill
+        self.chat.personas.put(
+            Persona(name='x', system_prompt='prompt',
+                    skills=['present', 'deleted']),
+            scope='local')
+        self.chat.skills.put(Skill(name='present', content='Present skill body.'))
+        sub = self.chat._new_sub_engine('x')
+        prompt = sub.config.get('system_prompt')
+        self.assertIn('Present skill body.', prompt)
+        self.assertNotIn('deleted', prompt)
+        self.assertNotIn('## Skills\n\n### deleted', prompt)
+
+    def test_subagent_without_skills_prompt_unchanged(self):
+        self.chat.personas.put(
+            Persona(name='plain', system_prompt='plain prompt', skills=[]),
+            scope='local')
+        sub = self.chat._new_sub_engine('plain')
+        self.assertEqual(sub.config.get('system_prompt'), 'plain prompt')
+
+    def test_subagent_skills_only_prompt(self):
+        from replio.skills import Skill
+        self.chat.personas.put(
+            Persona(name='solo', system_prompt='', skills=['one']),
+            scope='local')
+        self.chat.skills.put(Skill(name='one', content='Skill only body.'))
+        sub = self.chat._new_sub_engine('solo')
+        prompt = sub.config.get('system_prompt')
+        self.assertEqual(prompt, '## Skills\n\n### one\n\nSkill only body.')
+
     def test_subagent_uses_null_ui(self):
         sub = self.chat._new_sub_engine('writer')
         self.assertIsInstance(sub.ui, NullUI)

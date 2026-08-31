@@ -99,7 +99,9 @@ def register_teams(teams):
 
 SKILL_PLUGIN = '''
 def register_skills(skills):
-    skills['writers'] = {'description': 'Team writing skills'}
+    skills.add_plugin({'name': 'writers',
+                       'description': 'Team writing skills',
+                       'content': '# Writers\\n\\nProduce clean prose.'})
 '''
 
 
@@ -415,9 +417,16 @@ class TestRegistration(PluginTestBase):
     def test_register_skills_hook(self):
         write_plugin(self.plugins_dir, 'skill', SKILL_PLUGIN, {'name': 'skill'})
         self.pm.load()
-        skills = {}
-        self.pm.register_skills(skills)
-        self.assertEqual(skills['writers']['description'], 'Team writing skills')
+        from replio.skills import SkillRegistry
+        reg = SkillRegistry(global_dir=self.root,
+                            local_dir=self.root / '.replio' / 'skills')
+        self.pm.register_skills(reg)
+        s = reg.find('writers')
+        self.assertIsNotNone(s)
+        self.assertEqual(s.description,
+                         'Team writing skills')
+        self.assertIn('clean prose', s.content)
+        self.assertEqual(reg.origin('writers'), 'plugin')
 
     def test_teams_and_skills_hook_failure_marks_error(self):
         write_plugin(self.plugins_dir, 'boom',
@@ -550,6 +559,15 @@ class TestEngineIntegration(PluginTestBase):
         self.assertEqual([s.persona for s in t.stages],
                          ['researcher', 'writer'])
         self.assertEqual(engine.teams.origin('sme'), 'plugin')
+
+    def test_engine_skills_include_plugin_contributions(self):
+        write_plugin(self.plugins_dir, 'skill', SKILL_PLUGIN, {'name': 'skill'})
+        from replio.engine import Engine
+        engine = Engine(self.config, ui=NullUI())
+        s = engine.skills.find('writers')
+        self.assertIsNotNone(s)
+        self.assertIn('clean prose', s.content)
+        self.assertEqual(engine.skills.origin('writers'), 'plugin')
 
 
 class TestPluginsTestCommand(PluginTestBase):
