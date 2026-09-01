@@ -228,3 +228,9 @@ class ToolRegistry:
 
     def names(self) -> list[str]:
         return list(self._tools.keys())
+
+    def is_registered(self, name: str) -> bool:
+        return name in self._tools
+
+    def primary_names(self) -> list[str]:
+        return [n for n, t in self._tools.items() if 'alias_of' not in t]

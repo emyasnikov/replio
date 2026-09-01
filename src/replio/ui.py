@@ -262,9 +262,12 @@ class ReplUI:
             answer = input(
                 f'\001\033[90m\002? {label} - approve? [y/N] \001\033[0m\002'
             ).strip().lower()
-        except (EOFError, KeyboardInterrupt):
+        except EOFError:
             sys.stdout.write('\n')
             return False
+        except KeyboardInterrupt:
+            sys.stdout.write('\n')
+            raise
         return answer in ('y', 'yes')
 
 

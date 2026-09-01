@@ -249,6 +249,12 @@ class TestFsTools(unittest.TestCase):
         out = self.run_tool('grep', pattern='zzz', path=str(self.root))
         self.assertIn('no matches', out)
 
+    def test_find_alias_resolves_to_grep(self):
+        self.assertTrue(self.registry.is_registered('find'))
+        (self.root / 'a.py').write_text('needle here\n')
+        out = self.run_tool('find', path=str(self.root), query='needle')
+        self.assertIn('a.py:1:', out)
+
     def test_grep_invalid_regex(self):
         out = self.run_tool('grep', pattern='[unclosed', path=str(self.root))
         self.assertIn('invalid regex', out)

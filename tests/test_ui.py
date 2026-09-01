@@ -310,6 +310,21 @@ class TestWordStreaming(unittest.TestCase):
         self.assertIn('? write_file a.md - approve? [y/N]', value)
         self.assertNotIn('  ? ', value)
 
+    def test_confirm_raises_on_keyboard_interrupt(self):
+        def fake_input(prompt):
+            raise KeyboardInterrupt()
+
+        with patch('replio.ui.input', side_effect=fake_input):
+            with self.assertRaises(KeyboardInterrupt):
+                self.ui.confirm('write_file', 'write_file a.md')
+
+    def test_confirm_returns_false_on_eof(self):
+        def fake_input(prompt):
+            raise EOFError()
+
+        with patch('replio.ui.input', side_effect=fake_input):
+            self.assertFalse(self.ui.confirm('write_file', 'write_file a.md'))
+
 
 if __name__ == '__main__':
     unittest.main()

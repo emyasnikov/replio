@@ -166,6 +166,10 @@ class TestOpenTarget(unittest.TestCase):
         target, err = ws_plugin._open_target(id='x')
         self.assertIn('must be an integer', err)
 
+    def test_url_string_id_is_treated_as_url(self):
+        target, err = ws_plugin._open_target(id='https://direct.example/p')
+        self.assertEqual((target, err), ('https://direct.example/p', None))
+
     def test_no_previous_results(self):
         ws_plugin.SERVICE.last_results = []
         target, err = ws_plugin._open_target(id=1)
@@ -195,6 +199,13 @@ class TestRegistration(unittest.TestCase):
             out = self.registry.execute('web_search', {'query': 'hi'})
         self.assertIn('T1', out)
         self.assertEqual(ws_plugin.SERVICE.last_results[0]['url'], 'http://x.dev/1')
+
+    def test_search_alias_resolves_to_web_search(self):
+        self.assertTrue(self.registry.is_registered('search'))
+        with patch('search.search', return_value=[
+            {'url': 'http://x.dev/1', 'title': 'T1', 'snippet': 'S1'}]):
+            out = self.registry.execute('search', {'q': 'hi'})
+        self.assertIn('T1', out)
 
     def test_open_by_id(self):
         ws_plugin.SERVICE.last_results = [{'url': 'http://x.dev/1', 'title': 'T1'}]

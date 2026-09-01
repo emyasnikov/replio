@@ -92,6 +92,8 @@ def _open_target(url: str | None = None, id=None) -> tuple[str, str | None]:
         return url, None
     if id is None:
         return None, 'Error: open requires "url" or "id" (from the most recent web_search)'
+    if isinstance(id, str) and id.lower().startswith(('http://', 'https://')):
+        return id, None
     if not SERVICE.last_results:
         return None, 'Error: no previous web_search results to open'
     try:
@@ -135,6 +137,7 @@ def register_tools(registry):
         permission='web',
         key_arg='query',
         short='Search the web',
+        aliases=['search'],
         param_aliases={'q': 'query'},
         note=lambda r: r == 'No search results found.',
     )

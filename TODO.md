@@ -104,6 +104,7 @@
 
 ## Done
 
+- [x] Agent-loop cancellation + tool-dialect hardening - Ctrl-C cancels the turn (not one tool / the REPL), unknown-tool hints list real tools, `search`/`find` aliases, `open` URL-as-id
 - [x] Skills registry - `SkillRegistry`, local/global dirs + plugins, persona `skills` in prompts
 - [x] Teams registry - `Team`/`TeamRegistry`, 4-layer `teams.json` merge, `/team` read/edit
 - [x] Plugin contribution hooks - register_personas/teams/skills hooks, `PersonaRegistry.reload()`

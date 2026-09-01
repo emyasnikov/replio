@@ -24,7 +24,7 @@ Run tests before committing changes to verify core logic isn't broken.
 
 | File | Covers |
 |------|--------|
-| `test_agent_loop.py` | Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty/truncated-stream multi-attempt retry, recovery hint after failed tool-call rounds, truncation error messages (configured cap vs provider default), auto-continue on truncation (stitch + cap + continue instruction), reasoning-only turn not flagged empty, empty-done retried |
+| `test_agent_loop.py` | Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty/truncated-stream multi-attempt retry, recovery hint after failed tool-call rounds, truncation error messages (configured cap vs provider default), auto-continue on truncation (stitch + cap + continue instruction), reasoning-only turn not flagged empty, empty-done retried, KeyboardInterrupt cancels the turn (mid-stream and after a tool call) with partial output persisted, unknown-tool results list available tools |
 | `test_bundled_plugins.py` | Bundled plugin discovery, tool registration, search service, bundled update/uninstall blocking |
 | `test_cli.py` | `replio run`: JSON/text output, session-id persistence, exit codes, one-shot overrides applied but never persisted. `replio export`: default/custom/stdout targets, unknown session. `replio models`: listing, error/empty, `main` dispatch |
 | `test_config.py` | Config scopes: local-only saves, `--global` writes, `apply()` in-memory overrides (never written), unset fallback/origin, global>local merge, empty-local-does-not-shadow-global, `replio config` CLI (get/set/unset, JSON values, show-origin). `api_key` is an ordinary key - no global forcing, `0600`, or migration |
@@ -52,7 +52,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_tool_calling.py` | Tool-calling flow: single and multiple calls, unknown tools, query refinement |
 | `test_tool_policy.py` | `ToolPolicy`: allow/ask/deny, worktree escalation, deny/allowlist precedence, per-invocation resolver (refines non-deny base, skipped without args, cannot override deny list) |
 | `test_tool_registry.py` | Tool registration metadata, schema, refine flags, note-result predicates, `_config` pass-through, activity params strings, fs tool glyphs (`* List` / `* Grep`), `permission_fn` storage + `resolver_for` |
-| `test_ui.py` | UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, `!` tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm), confirm `?` glyph at line start |
+| `test_ui.py` | UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, `!` tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm), confirm `?` glyph at line start, confirm re-raises KeyboardInterrupt / returns False on EOF |
 
 `tests/helpers.py` provides `make_chat(config_data)` - a `ChatLoop` with a mocked provider - used by most tests to drive the engine without a model.
 

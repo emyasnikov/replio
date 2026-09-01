@@ -292,6 +292,7 @@ def register_tools(registry):
         path_arg='path',
         key_arg='pattern',
         short='Search file contents for a pattern',
+        aliases=['find'],
         param_aliases={'query': 'pattern'},
         glyph='*',
         verb='Grep',

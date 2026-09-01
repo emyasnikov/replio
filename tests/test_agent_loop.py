@@ -165,6 +165,57 @@ class TestAgentLoop(unittest.TestCase):
         self.assertEqual(len(errors), 1)
         self.assertIn('Agent loop failed: boom', errors[0]['message'])
 
+    def _interrupt_stream(self):
+        def gen():
+            yield {'type': 'token', 'content': 'Partial'}
+            raise KeyboardInterrupt()
+        return gen()
+
+    def test_keyboard_interrupt_mid_stream_cancels_turn(self):
+        self.chat.provider.chat.return_value = self._interrupt_stream()
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            result = self.chat._agent_loop()
+        self.assertEqual(result.status, 'cancelled')
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.content, 'Partial')
+        self.assertIn('(cancelled)', out.getvalue())
+
+    def test_keyboard_interrupt_after_tool_call_cancels_turn(self):
+        target = self.chat.config.local_path.parent
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'tool_calls', 'tool_calls': [
+                {'id': 'call_1', 'type': 'function',
+                 'function': {'name': 'list_dir',
+                              'arguments': json.dumps({'path': str(target)})}},
+            ]}],
+            self._interrupt_stream(),
+        ]
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            result = self.chat._agent_loop()
+        self.assertEqual(result.status, 'cancelled')
+        self.assertEqual(result.errors, [])
+        tool_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'tool']
+        self.assertEqual(len(tool_msgs), 1)
+
+    def test_unknown_tool_result_lists_available_tools(self):
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'tool_calls', 'tool_calls': [
+                {'id': 'call_1', 'type': 'function',
+                 'function': {'name': 'browse', 'arguments': json.dumps({'url': 'x'})}},
+            ]}],
+            [{'type': 'token', 'content': 'Done'}, {'type': 'done', 'reason': 'stop'}],
+        ]
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            result = self.chat._agent_loop()
+        self.assertEqual(result.status, 'ok')
+        tool_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'tool']
+        self.assertEqual(len(tool_msgs), 1)
+        self.assertIn('Error: unknown tool "browse"', tool_msgs[0]['content'])
+        self.assertIn('web_search', tool_msgs[0]['content'])
+
     def test_length_finish_logs_truncation_error(self):
         self.chat.config.set('max_tokens', 500)
         self.chat.config.set('auto_continue', False)

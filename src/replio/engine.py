@@ -426,6 +426,13 @@ class Engine:
                                 reason = event.get('reason', '')
                                 end_thinking()
                                 break
+                    except KeyboardInterrupt:
+                        end_thinking()
+                        content += s_content
+                        thinking += s_thinking
+                        self.ui.info('(cancelled)')
+                        status = 'cancelled'
+                        aborted = True
                     except Exception as e:
                         end_thinking()
                         content += s_content
@@ -491,6 +498,9 @@ class Engine:
                     break
                 if aborted or not tool_calls_detected:
                     break
+        except KeyboardInterrupt:
+            self.ui.info('(cancelled)')
+            status = 'cancelled'
         finally:
             if content or thinking:
                 end = datetime.now(timezone.utc)
@@ -642,6 +652,14 @@ class Engine:
     def _run_tool(self, name: str, args: dict, echo: bool = True) -> str:
         registry = self._tool_registry
         policy = self._tool_policy
+        if not registry.is_registered(name):
+            available = ', '.join(registry.primary_names())
+            result = f'Error: unknown tool "{name}"'
+            if available:
+                result += f'. Available tools: {available}'
+            if self.config.get('show_errors', True):
+                self.ui.tool_error(result)
+            return result
         cleaned = registry.clean_args(name, args)
         path_arg = registry.path_arg_for(name)
         path = cleaned.get(path_arg) if path_arg else None
@@ -650,7 +668,11 @@ class Engine:
             self._log_permission(name, action, 'denied', path)
             return f'Error: tool "{name}" is disabled by tool policy'
         if action == 'ask':
-            granted = self._confirm_tool(name, args)
+            try:
+                granted = self._confirm_tool(name, args)
+            except KeyboardInterrupt:
+                self._log_permission(name, action, 'declined', path)
+                raise
             self._log_permission(name, action, 'granted' if granted else 'declined', path)
             if not granted:
                 return f'[cancelled] User declined the {name} call'

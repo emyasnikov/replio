@@ -10,13 +10,14 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 
 | Tool | Plugin | Category | Permission | Purpose |
 |------|--------|----------|------------|---------|
-| `web_search` | replio-core-websearch | `search` | `web` | Web search |
-| `fetch_page` | replio-core-websearch | `search` | `web` | Fetch and extract page text |
+| `web_search` | replio-core-websearch | `search` | `web` | Web search (alias `search`) |
+| `fetch_page` | replio-core-websearch | `read` | `read` | Fetch and extract page text |
+| `open` | replio-core-websearch | `read` | `read` | Open a `web_search` result by `id` or a URL directly |
 | `read_file` | replio-core-fs | `read` | `read` | Read a file with numbered lines |
 | `list_dir` | replio-core-fs | `read` | `list` | List a directory (`depth` for trees) |
 | `write_file` | replio-core-fs | `write` | `edit` | Create/overwrite/append a file |
 | `glob` | replio-core-fs | `search` | `read` | Recursive pattern lookup |
-| `grep` | replio-core-fs | `search` | `read` | Regex content search (`file:line:` results) |
+| `grep` | replio-core-fs | `search` | `read` | Regex content search (`file:line:` results, alias `find`) |
 | `run_command` | replio-core-exec | `exec` | `bash` | Run a shell command with timeout |
 | `delegate` | core | `delegate` | `delegate` | Run a task under a persona as a sub-agent |
 
@@ -29,6 +30,8 @@ Plugins register additional tools the same way. They automatically inherit tool 
 3. Each call is checked against the tool policy, then executed through `ToolRegistry.execute()`.
 4. Each result is appended as a `tool` message (with `tool_call_id` and the tool name), optionally with a one-line `analysis` when `tool_analysis` is enabled.
 5. The loop continues with the enriched context until the model answers.
+
+Ctrl-C in the REPL cancels the running turn - streaming and any in-flight tool execution are aborted, partial output is persisted, a `(cancelled)` note prints, and the prompt returns. At a y/N confirm prompt it cancels the whole turn too (typing `n` still declines just that tool). This mirrors the headless behavior, where `replio run` exits non-zero on a cancelled turn.
 
 ## Running a tool directly
 
@@ -52,6 +55,8 @@ Tools are registered with `@registry.register(name, description, parameters)` pl
 | `short` | Short label for `/help` listing (defaults to the description truncated) |
 
 `ToolRegistry.execute()` passes only arguments declared in the tool's schema - undeclared and `null`-valued arguments (e.g. a hallucinated `recursive`, or `depth: null`) are dropped, not forwarded to the handler. It also passes the engine `Config` to handlers that declare a `_config` keyword argument (e.g. `def read_file(path, offset=1, limit=500, _config=None)`), so a tool can read config keys like `tool_max_result_chars` without exposing them to the model.
+
+Models often guess tool and argument names rather than reading the schema (`search` for `web_search`, `find` for `grep`, `cursor` for `offset`). `aliases` (extra tool names resolving to a tool, e.g. `search`/`find`) and `param_aliases` (caller-side parameter synonyms, e.g. `cursor -> offset`, `query -> pattern`) let the registry absorb that dialect without advertising it in the schema. A tool the model calls that is not registered at all returns `Error: unknown tool "<name>. Available tools: <...>"` - the loop lists the registered tools so the model can pick a real one instead of retrying the same bogus name. `open` also tolerates a URL string passed in its `id` argument by treating it as the URL.
 
 ## Adding a tool
 
