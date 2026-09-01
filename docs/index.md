@@ -21,4 +21,5 @@ Detailed reference for Replio. For an overview, features, and quick start, see t
 - [Tools](tools.md) - tool registry, bundled tools, tool policy, registration metadata
 - [Usage](usage/) - step-by-step setup variations
 - [Use cases](use-cases/) - fit and adoption guides for enterprise, personal etc.
+- [Writing tools for agents](writing-tools.md) - how to design, name, and describe tools for the agent loop
 - [Versus](vs/) - Replio vs. OpenClaw, Hermes and broader landscape

@@ -2,6 +2,8 @@
 
 Tools are how the model acts. The `ToolRegistry` (`src/replio/tools/registry.py`) is the single dispatch point: the model invokes tools via OpenAI-compatible function calling, slash commands are thin wrappers that call the same `execute()`, and the loop never special-cases tool names - per-tool behavior comes from registration metadata.
 
+This page is the reference: what the registry supports, the bundled tools, and the policy that gates them. For how to design, name, and describe a new tool so agents use it well, see [writing-tools.md](writing-tools.md).
+
 Tool definitions follow the OpenAI function calling JSON schema format. The model sees the schema (filtered by policy), requests a tool call, and the loop executes it and feeds the result back into the conversation.
 
 ## Bundled tools
