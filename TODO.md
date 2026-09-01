@@ -27,7 +27,6 @@
 
 ## Open
 
-- [ ] Tool schema advertises canonical names only - aliases (search/find/bash/read/...) resolve at call time but are not shipped as separate tool schemas (20 -> 13 tool defs per request)
 - [ ] Default tool-result cap - `tool_max_result_chars` default 100k chars (Anthropic ~25k-token guide), `list_dir` gains an entry cap
 - [ ] Merge `open` into `fetch_page` - one fetch tool (`url` | `id` | `offset`), `open` kept as an alias, removes the overlapping-tool confusion
 - [ ] Tool-use evaluation harness - task fixtures (task + expected tool trace + verifier) run headless via a mock provider, reporting tool-call accuracy / redundant calls / errors / tokens, runnable against real providers for comparison
@@ -109,6 +108,7 @@
 
 ## Done
 
+- [x] Tool schema advertises canonical names only - aliases resolve at call time, not shipped as provider schemas (20 -> 13 defs)
 - [x] Agent-loop cancellation + tool-dialect hardening - Ctrl-C cancels the turn (not one tool / the REPL), unknown-tool hints list real tools, `search`/`find` aliases, `open` URL-as-id
 - [x] Skills registry - `SkillRegistry`, local/global dirs + plugins, persona `skills` in prompts
 - [x] Teams registry - `Team`/`TeamRegistry`, 4-layer `teams.json` merge, `/team` read/edit

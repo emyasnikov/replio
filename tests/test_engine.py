@@ -585,6 +585,17 @@ class TestEngineModes(unittest.TestCase):
         self.assertIn('write_file', names)
         self.assertIn('run_command', names)
 
+    def test_schema_advertises_only_canonical_names(self):
+        schema = self.engine._init_tooling()
+        names = [s['function']['name'] for s in schema]
+        self.assertEqual(set(names), {
+            'delegate', 'run_command', 'read_file', 'list_dir', 'write_file',
+            'glob', 'grep', 'mcp_connect', 'mcp_list', 'mcp_disconnect',
+            'web_search', 'fetch_page', 'open',
+        })
+        for alias in ('bash', 'exec', 'read', 'view', 'ls', 'find', 'search'):
+            self.assertNotIn(alias, names)
+
     def test_plan_mode_instruction_sent_to_provider(self):
         self.engine.config.set('mode', 'plan')
         self.engine.chat('q')

@@ -53,6 +53,8 @@ Tools are registered with `@registry.register(name, description, parameters)` pl
 | `status` | A `Callable[[dict], str]` receiving the cleaned args and returning a block whose first line becomes the `[tool: <value>]` oneliner and the rest render as dimmed detail lines (used by `write_file` to preview/diff the written text) |
 | `echo` | When true, the tool result is printed dimmed below the status oneliner (used by `run_command`) |
 | `short` | Short label for `/help` listing (defaults to the description truncated) |
+| `aliases` | Extra tool names resolving to this tool (e.g. `read`/`view` for `read_file`, `search` for `web_search`) - absorbed at call time, never advertised to the provider |
+| `param_aliases` | Caller-side parameter synonyms mapped onto declared parameters (e.g. `cursor` -> `offset`, `query` -> `pattern`) |
 
 `ToolRegistry.execute()` passes only arguments declared in the tool's schema - undeclared and `null`-valued arguments (e.g. a hallucinated `recursive`, or `depth: null`) are dropped, not forwarded to the handler. It also passes the engine `Config` to handlers that declare a `_config` keyword argument (e.g. `def read_file(path, offset=1, limit=500, _config=None)`), so a tool can read config keys like `tool_max_result_chars` without exposing them to the model.
 

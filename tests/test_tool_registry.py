@@ -178,6 +178,18 @@ class TestToolRegistry(unittest.TestCase):
         names = [s['function']['name'] for s in schema]
         self.assertEqual(names, ['search_web'])
 
+    def test_schema_filtered_advertises_canonical_only(self):
+        allowed = {'search_web', 'run_cmd', 'read_doc', 'list_dir',
+                   'glob_files', 'write_doc', 'exec'}
+        names = [s['function']['name'] for s in self.registry.schema_filtered(allowed)]
+        self.assertEqual(names, [
+            'search_web', 'run_cmd', 'read_doc', 'list_dir', 'glob_files', 'write_doc',
+        ])
+
+    def test_schema_filtered_hides_denied_canonical_even_if_alias_allowed(self):
+        names = [s['function']['name'] for s in self.registry.schema_filtered({'exec'})]
+        self.assertEqual(names, [])
+
     def test_status_parts_uses_key_arg_value(self):
         value, body = self.registry.status_parts(
             'search_web', {'query': 'latest python', 'junk': 1})

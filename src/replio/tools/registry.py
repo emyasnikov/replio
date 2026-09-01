@@ -224,7 +224,9 @@ class ToolRegistry:
         return list(self._schema)
 
     def schema_filtered(self, allowed: set[str]) -> list[dict]:
-        return [s for s in self._schema if s['function']['name'] in allowed]
+        return [tool['schema']
+                for name, tool in self._tools.items()
+                if 'alias_of' not in tool and name in allowed]
 
     def names(self) -> list[str]:
         return list(self._tools.keys())
