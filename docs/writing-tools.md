@@ -35,7 +35,7 @@ Tool results are fed back verbatim into the model's context. Return high-signal 
 Context is the model's scarcest resource. Give every potentially large response pagination, filtering, or a sensible cap, and make the truncation itself steer the agent.
 
 - Page large reads. `file_read(path, offset=1, limit=200)` then `offset=201` walks a file window by window. `web_fetch` accepts the `offset` its marker reports. Both let the agent pull only what it needs.
-- Cap with sensible defaults. `glob` stops at 200 matches and `grep` at 100, each with a `... (showing first N matches)` marker. The `tool_max_result_chars` config key is the hard cap for every tool result when you want one (default unlimited, so tools should self-cap).
+- Cap with sensible defaults. `glob` stops at 200 matches and `grep` at 100, each with a `... (showing first N matches)` marker. `list_dir` caps entries via `list_dir_max_entries` (default 200) with a `... (showing first N of M entries)` marker. The `tool_max_result_chars` config key is the hard cap for every tool result (default 100000, `0` = unlimited), so tools should still self-cap below it.
 - Offer narrowing parameters. `grep`'s `glob` filter limits which files are searched. `list_dir`'s `depth` bounds a tree. Filters and ranges let the agent ask for less.
 - Make markers actionable. A marker that says how to continue (`send "continue"`, `use cursor=N`, `showing 5-7`) converts a truncated response into the next tool call instead of a dead end.
 - Steer toward small targeted calls. A description that says "use many small searches" or "use offset to page" changes behavior more reliably than a bigger cap.
@@ -79,7 +79,7 @@ Measure how well a model uses a tool before you trust it. Replio does not ship a
 
 - Build a mock-provider loop test. The test suite runs the full agent loop against a stubbed `provider.chat` with no network and no API key. `tests/test_tool_calling.py`, `tests/test_agent_loop.py`, and the `make_chat` / `make_engine` helpers in `tests/` are the pattern. Drive the loop with a tool-call event and assert the model-visible result and the session messages.
 - Exercise a tool directly with `/tool <name> {"args": ...}` from the REPL. It routes through the same policy, `clean_args`, and display as a loop call, so it is a fast sanity check for argument handling and result format.
-- Read the session logs for misbehavior. A session that shows wrong-tool selection, repeated parameter errors, or the same search re-run means the description, naming, or schema is unclear. Models trained on tool-use data often reach for `open` to fetch a URL; the `open` alias absorbs that habit while the schema advertises `web_fetch`.
+- Read the session logs for misbehavior. A session that shows wrong-tool selection, repeated parameter errors, or the same search re-run means the description, naming, or schema is unclear. Models trained on tool-use data often reach for `open` to fetch a URL. The `open` alias absorbs that habit while the schema advertises `web_fetch`.
 - Compare providers. Replio standardizes on OpenAI-compatible tool calling, but models differ sharply in how they parse schemas. Run the same task against Ollama and a hosted OpenAI-compatible endpoint and watch which tools each reaches for. Weak backends are exactly where naming, caps, and description quality pay off.
 
 Metrics worth watching: redundant tool calls (pagination or caps too tight), invalid-parameter errors (descriptions unclear or the schema too loose), and context bloat (a tool returning more than the task needs).

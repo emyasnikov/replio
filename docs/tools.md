@@ -89,7 +89,7 @@ def pdf2text(path):
 
 ## Result size and large files
 
-Tool results are sent to the model verbatim. Nothing is truncated unless `tool_max_result_chars` is set (default `0` = unlimited). Setting it caps every tool result at N characters with a trailing `... (truncated)` marker.
+Tool results are sent to the model verbatim, up to the `tool_max_result_chars` cap (default `100000`, `0` = unlimited). A result over the cap is cut at a line boundary with a trailing `... (truncated)` marker. `list_dir` additionally caps the number of entries returned (`list_dir_max_entries`, default `200`) with a `... (showing first N of M entries)` marker, so a large tree stays bounded regardless of name lengths.
 
 `file_read` helps the model page through large files without hitting a cap:
 
@@ -133,7 +133,8 @@ Tool behavior is controlled by config keys (see [config.md](config.md) for the f
 | `tool_status_visible` | `true` | Show dimmed tool status in the REPL |
 | `glyph_lines` | `true` | Typed activity lines for mapped categories, else the `[tool: arg]` oneliner |
 | `tool_analysis` | `false` | Model-generated one-line analysis of each tool result (log-only) |
-| `tool_max_result_chars` | `0` | Cap every tool result at N chars (`0` = unlimited) |
+| `tool_max_result_chars` | `100000` | Cap every tool result at N chars (`0` = unlimited) |
+| `list_dir_max_entries` | `200` | Cap the number of entries `list_dir` returns (`0` = unlimited) |
 | `session_tool_max_chars` | `0` | Cap persisted tool-result content in session files (`0` = unlimited) |
 | `noise_tools` | `["web_fetch", "open", "fetch_page"]` | Tool results replaced by a marker in persisted sessions |
 | `query_refine` | `false` | Auto-refine short `query` args via a lightweight model call |

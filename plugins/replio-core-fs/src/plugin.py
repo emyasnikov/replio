@@ -23,23 +23,27 @@ def _truncate(text: str, max_chars: int = 0) -> str:
     return text
 
 
-def _walk(p, entries, indent, depth_left, lines):
+def _walk(p, entries, indent, depth_left, lines, appended, total, cap):
     pad = '  ' * indent
     for e in entries:
-        if e.is_dir():
-            lines.append(f'{pad}{e.name}/')
-            if depth_left > 1 and e.name not in SKIP_DIRS:
+        total[0] += 1
+        if appended[0] < cap:
+            if e.is_dir():
+                lines.append(f'{pad}{e.name}/')
+                appended[0] += 1
+            else:
                 try:
-                    sub = sorted(e.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
+                    size = e.stat().st_size
                 except OSError:
-                    sub = []
-                _walk(e, sub, indent + 1, depth_left - 1, lines)
-        else:
+                    size = 0
+                lines.append(f'{pad}{e.name}  {size}')
+                appended[0] += 1
+        if e.is_dir() and depth_left > 1 and e.name not in SKIP_DIRS:
             try:
-                size = e.stat().st_size
+                sub = sorted(e.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
             except OSError:
-                size = 0
-            lines.append(f'{pad}{e.name}  {size}')
+                sub = []
+            _walk(e, sub, indent + 1, depth_left - 1, lines, appended, total, cap)
 
 
 def _write_file_status(args):
@@ -169,8 +173,18 @@ def register_tools(registry):
             return f'Error listing {path}: {e}'
         if not entries:
             return '(empty directory)'
+        try:
+            cap = max(0, int(_config.get('list_dir_max_entries', 0))) if _config else 0
+        except (TypeError, ValueError):
+            cap = 0
+        if cap <= 0:
+            cap = 10**9
         lines = [f'{p}:']
-        _walk(p, entries, 1, level, lines)
+        appended = [0]
+        total = [0]
+        _walk(p, entries, 1, level, lines, appended, total, cap)
+        if total[0] > cap:
+            lines.append(f'... (showing first {appended[0]} of {total[0]} entries)')
         return _truncate('\n'.join(lines), _cap(_config))
 
     @registry.register(

@@ -27,9 +27,8 @@
 
 ## Open
 
-- [ ] `file_edit` tool - targeted search-and-replace in a file (Claude-Code-style Edit); today `file_write` covers create/overwrite/append only
+- [ ] `file_edit` tool - targeted search-and-replace in a file (Claude-Code-style Edit). Today `file_write` covers create/overwrite/append only
 - [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
-- [ ] Default tool-result cap - `tool_max_result_chars` default 100k chars (Anthropic ~25k-token guide), `list_dir` gains an entry cap
 - [ ] Tool-use evaluation harness - task fixtures (task + expected tool trace + verifier) run headless via a mock provider, reporting tool-call accuracy / redundant calls / errors / tokens, runnable against real providers for comparison
 - [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`web_fetch` guidance to tool descriptions
 - [ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc personas/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)
@@ -109,7 +108,8 @@
 
 ## Done
 
-- [x] Default tool names namespaced - `web_fetch` merges `open`+`fetch_page`, `file_read`/`file_write` replace `read_file`/`write_file`; old names kept as aliases
+- [x] Default tool-result cap - tool_max_result_chars default 100k, list_dir entry cap
+- [x] Default tool names namespaced - `web_fetch` merges `open`+`fetch_page`, `file_read`/`file_write` replace `read_file`/`write_file`. Old names kept as aliases
 - [x] Tool schema advertises canonical names only - aliases resolve at call time, not shipped as provider schemas (20 -> 13 defs)
 - [x] Agent-loop cancellation + tool-dialect hardening - Ctrl-C cancels the turn (not one tool / the REPL), unknown-tool hints list real tools, `search`/`find` aliases, `open` URL-as-id
 - [x] Skills registry - `SkillRegistry`, local/global dirs + plugins, persona `skills` in prompts

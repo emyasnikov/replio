@@ -97,6 +97,13 @@ class TestFsTools(unittest.TestCase):
         self.assertIn('... (truncated)', out)
         self.assertNotIn('200|', out)
 
+    def test_read_file_default_cap_boundary(self):
+        (self.root / 'huge.txt').write_text('x' * 150000)
+        out = self.run_tool_cfg('read_file',
+                                _Cfg(tool_max_result_chars=100000),
+                                path=str(self.root / 'huge.txt'))
+        self.assertIn('... (truncated)', out)
+
     def test_read_file_missing(self):
         out = self.run_tool('read_file', path=str(self.root / 'nope.txt'))
         self.assertIn('not found', out)
@@ -153,6 +160,31 @@ class TestFsTools(unittest.TestCase):
         flat = self.run_tool('list_dir', path=str(self.root))
         explicit = self.run_tool('list_dir', path=str(self.root), depth=1)
         self.assertEqual(flat, explicit)
+
+    def test_list_dir_entry_cap(self):
+        for i in range(250):
+            (self.root / f'f{i:03d}.txt').write_text('x')
+        out = self.run_tool_cfg('list_dir', _Cfg(list_dir_max_entries=200),
+                                path=str(self.root))
+        self.assertIn('... (showing first 200 of 250 entries)', out)
+        for i in range(200):
+            self.assertIn(f'f{i:03d}.txt', out)
+        self.assertNotIn('f200.txt', out)
+
+    def test_list_dir_entry_cap_zero_is_unlimited(self):
+        for i in range(250):
+            (self.root / f'f{i:03d}.txt').write_text('x')
+        out = self.run_tool_cfg('list_dir', _Cfg(list_dir_max_entries=0),
+                                path=str(self.root))
+        self.assertIn('f249.txt', out)
+        self.assertNotIn('showing first', out)
+
+    def test_list_dir_no_config_is_unlimited(self):
+        for i in range(250):
+            (self.root / f'f{i:03d}.txt').write_text('x')
+        out = self.run_tool('list_dir', path=str(self.root))
+        self.assertIn('f249.txt', out)
+        self.assertNotIn('showing first', out)
 
     def test_write_file_creates(self):
         target = self.root / 'new.txt'

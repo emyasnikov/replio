@@ -116,6 +116,13 @@ class TestConfigScopes(_IsolatedConfigBase):
         self.assertEqual(c2.get('temperature'),
                          DEFAULT_CONFIG['temperature'])
 
+    def test_tool_result_cap_defaults(self):
+        c = Config(path=str(self.project))
+        self.assertEqual(c.get('tool_max_result_chars'), 100000)
+        self.assertEqual(c.get('list_dir_max_entries'), 200)
+        self.assertEqual(DEFAULT_CONFIG['tool_max_result_chars'], 100000)
+        self.assertEqual(DEFAULT_CONFIG['list_dir_max_entries'], 200)
+
     def test_origin(self):
         c = Config(path=str(self.project))
         self.assertEqual(c.origin('temperature'), 'default')
