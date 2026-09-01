@@ -186,12 +186,30 @@ class TestRegistration(unittest.TestCase):
         self.assertTrue(self.registry.refine_required('web_search'))
         self.assertEqual(self.registry.permission_for('web_search'), 'web')
         self.assertEqual(self.registry.key_arg_for('web_search'), 'query')
+        self.assertEqual(self.registry.permission_for('web_fetch'), 'read')
+        self.assertEqual(self.registry.permission_for('open'), 'read')
         self.assertEqual(self.registry.permission_for('fetch_page'), 'read')
-        self.assertEqual(self.registry.path_arg_for('fetch_page'), None)
-        self.assertTrue(self.registry.is_note_result('fetch_page', '(end of content)'))
+        self.assertEqual(self.registry.path_arg_for('web_fetch'), None)
+        self.assertEqual(self.registry.key_arg_for('web_fetch'), 'url')
+        self.assertTrue(self.registry.is_note_result('web_fetch', '(end of content)'))
         self.assertTrue(self.registry.is_note_result('open', '(empty content)'))
         self.assertTrue(self.registry.is_note_result('web_search', 'No search results found.'))
         self.assertFalse(self.registry.is_note_result('web_search', 'Some results found.'))
+
+    def test_web_fetch_canonical_with_aliases(self):
+        self.assertTrue(self.registry.is_registered('web_fetch'))
+        self.assertTrue(self.registry.is_registered('open'))
+        self.assertTrue(self.registry.is_registered('fetch_page'))
+        names = [s['function']['name'] for s in self.registry.schema_filtered(
+            {'web_fetch', 'open', 'fetch_page'})]
+        self.assertEqual(names, ['web_fetch'])
+
+    def test_web_fetch_resolves_url_and_id(self):
+        ws_plugin.SERVICE.last_results = [{'url': 'http://x.dev/1', 'title': 'T1'}]
+        with patch('urllib.request.urlopen', return_value=_Resp('<p>page</p>')):
+            self.assertEqual(self.registry.execute('web_fetch', {'id': 1}), 'page')
+        with patch('urllib.request.urlopen', return_value=_Resp('<p>page</p>')):
+            self.assertEqual(self.registry.execute('web_fetch', {'url': 'http://x.dev/2'}), 'page')
 
     def test_web_search_records_last_results(self):
         with patch('search.search', return_value=[

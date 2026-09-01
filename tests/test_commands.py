@@ -303,7 +303,7 @@ class TestToolCommand(unittest.TestCase):
         names = [s['function']['name'] for s in schema]
         self.assertNotIn('web_search', names)
         self.assertNotIn('run_command', names)
-        self.assertIn('read_file', names)
+        self.assertIn('file_read', names)
 
 
 class TestConnectCommand(unittest.TestCase):
@@ -714,9 +714,9 @@ class TestModeCommand(unittest.TestCase):
         self._dispatch('/mode plan')
         schema = self.chat._init_tooling()
         names = [s['function']['name'] for s in schema]
-        self.assertNotIn('write_file', names)
+        self.assertNotIn('file_write', names)
         self.assertNotIn('run_command', names)
-        self.assertIn('read_file', names)
+        self.assertIn('file_read', names)
 
     def test_plan_mode_tool_listing_hides_write_tools(self):
         self._dispatch('/mode plan')
@@ -738,7 +738,7 @@ class TestModeCommand(unittest.TestCase):
         self._dispatch('/mode build')
         schema = self.chat._init_tooling()
         names = [s['function']['name'] for s in schema]
-        self.assertIn('write_file', names)
+        self.assertIn('file_write', names)
         self.assertIn('run_command', names)
 
 

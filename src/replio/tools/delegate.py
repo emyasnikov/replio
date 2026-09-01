@@ -26,7 +26,7 @@ def _summarize_session(engine, result) -> str:
         text = (m.get('content') or '').strip()
         if not text:
             continue
-        if m.get('tool') in ('write_file', 'write'):
+        if m.get('tool') in ('file_write', 'write_file', 'write'):
             head = text.splitlines()[0]
             for prefix in _WRITE_PREFIXES:
                 if head.startswith(prefix):

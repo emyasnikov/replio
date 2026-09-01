@@ -33,8 +33,8 @@ class TestBundledPlugins(unittest.TestCase):
         reg = ToolRegistry()
         self.pm.register_tools(reg)
         tools = set(reg.names())
-        self.assertTrue({'web_search', 'fetch_page'} <= tools)
-        self.assertTrue({'read_file', 'list_dir', 'write_file', 'glob', 'grep'} <= tools)
+        self.assertTrue({'web_search', 'web_fetch'} <= tools)
+        self.assertTrue({'file_read', 'list_dir', 'file_write', 'glob', 'grep'} <= tools)
         self.assertIn('run_command', tools)
 
     def test_search_service_registered(self):

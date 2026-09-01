@@ -12,9 +12,9 @@ Replio's small, local, permission-scoped design maps well onto teaching: learner
 ## Fit by use case
 
 - **Tutoring assistant** - explain concepts, work through examples, and drill problems in a scoped folder, with the session log capturing the student's learning path.
-- **Course and lesson preparation** - draft syllabi, lecture outlines, exercises, and rubrics from source material with `write_file`, then iterate under review.
+- **Course and lesson preparation** - draft syllabi, lecture outlines, exercises, and rubrics from source material with `file_write`, then iterate under review.
 - **Assessment drafting** - generate question banks and sample solutions from course notes, keeping provenance in the session log for quality control.
-- **Code and lab courses** - a repo-scoped agent that reads the assignment tree, explains errors from compiler output, and proposes fixes the student reviews before `write_file`. See the developer guide for the pattern: [developer.md](developer.md).
+- **Code and lab courses** - a repo-scoped agent that reads the assignment tree, explains errors from compiler output, and proposes fixes the student reviews before `file_write`. See the developer guide for the pattern: [developer.md](developer.md).
 - **Institutional reporting** - headless `replio run` summarizes class dashboards and documentation for administrators.
 
 ## Gaps and planned
@@ -25,5 +25,5 @@ Sandboxed execution (namespace/container isolation for `run_command`) is planned
 
 1. `pip install replio` on each machine, then `replio serve --path <course-folder>` for a per-course agent.
 2. `/connect` to a provider - local models keep everything on the student's machine.
-3. Configure the guardrails: `tool_permission.bash: ask`, and `tools.deny: [write_file]` on read-only tutor agents.
+3. Configure the guardrails: `tool_permission.bash: ask`, and `tools.deny: [file_write]` on read-only tutor agents.
 4. Run the class through the REPL or the API. Every session lands in `.replio/sessions/` for review and follow-up.

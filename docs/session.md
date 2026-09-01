@@ -135,7 +135,7 @@ Every tool permission resolution is recorded to the `permissions` array, making 
 
 ```json
 {"tool": "run_command", "action": "ask", "decision": "granted", "path": "/home/me/proj", "timestamp": "2026-08-17T12:40:00+00:00"}
-{"tool": "write_file", "action": "deny", "decision": "denied", "path": "/home/me/proj/a.md", "timestamp": "2026-08-17T12:41:00+00:00"}
+{"tool": "file_write", "action": "deny", "decision": "denied", "path": "/home/me/proj/a.md", "timestamp": "2026-08-17T12:41:00+00:00"}
 ```
 
 | Field | Description |
@@ -158,7 +158,7 @@ An `assistant` message is written whenever the turn produced content **or** thin
 
 Two config keys reshape `tool` message content when the session is written to disk, without touching the stored messages themselves:
 
-- **`noise_tools`** (default `["fetch_page"]`) - results of the listed tools are replaced with `[<tool> result excluded from log, see tool call above for parameters]`, keeping noisy results out of session files while preserving the parameters in the tool call above.
+- **`noise_tools`** (default `["web_fetch", "open", "fetch_page"]`) - results of the listed tools are replaced with `[<tool> result excluded from log, see tool call above for parameters]`, keeping noisy results out of session files while preserving the parameters in the tool call above.
 - **`session_tool_max_chars`** (default `0` = unlimited) - caps persisted tool-result content to N characters, appending `… (truncated from <len> chars)`.
 
 ## Preparing the provider context

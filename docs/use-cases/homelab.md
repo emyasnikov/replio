@@ -13,7 +13,7 @@ For home-lab operators, the appeal is the same as everywhere else but sharper: a
 
 - **Personal dashboards and reports** - scheduled `replio run` jobs summarize logs, sensor readings, service health, and monthly usage into short reports on your own schedule.
 - **Home automation assistance** - explain device status and logs, draft automation rules, and propose changes. Keep writes and exec behind the `ask` confirmation.
-- **Self-hosted knowledge base** - a docs or notes agent scoped to a folder answers from your files with `grep`/`read_file` grounded citations.
+- **Self-hosted knowledge base** - a docs or notes agent scoped to a folder answers from your files with `grep`/`file_read` grounded citations.
 - **Service-watch agent** - a per-service agent (`replio serve --path /srv/<app>`) triages logs and outage notes over the API. See [docs/fleet.md](../fleet.md) for the fleet pattern.
 - **Off-grid and lab bench** - a laptop or Pi with a local model works without connectivity, so the agent goes where the network does not.
 

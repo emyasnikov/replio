@@ -17,7 +17,7 @@ Resolution precedence (see [tools.md](tools.md) for the full flow):
 3. A per-invocation resolver (`permission_fn`) that refines the action from the tool's current arguments - e.g. `delegate` resolves per persona: a configured persona uses its own `tool_permission`, a persona outside the registry is denied (see [personas.md](personas.md)).
 4. Worktree escalation: `read` / `list` / `write` tools on paths outside the worktree escalate `allow` to `ask`.
 
-The worktree is the directory holding the local `.replio/` - the launch directory, or `--path`. A `read_file` / `list_dir` / `write_file` / `glob` / `grep` on a path outside it escalates to `ask`, so an agent cannot silently reach files beyond its scope. Launching from `~` makes home the worktree, so subdirectories do not escalate. Launch inside the project or pass `--path` for project-scoped prompting.
+The worktree is the directory holding the local `.replio/` - the launch directory, or `--path`. A `file_read` / `list_dir` / `file_write` / `glob` / `grep` on a path outside it escalates to `ask`, so an agent cannot silently reach files beyond its scope. Launching from `~` makes home the worktree, so subdirectories do not escalate. Launch inside the project or pass `--path` for project-scoped prompting.
 
 `bash` defaults to `ask`, so every `run_command` confirms unless `tool_permission.bash = "allow"` is set explicitly. `delegate` defaults to `allow`, refined per invocation by the target persona's own permission (a persona may set `delegate: "ask"` to confirm).
 
@@ -62,7 +62,7 @@ Tool results and fetched content are untrusted input returned to the model. Defe
 | Filesystem | Worktree-scoped `allow`/`ask`/`deny`, escalation outside the worktree |
 | Shell | `run_command` gated by `bash: ask` by default, headless auto-deny |
 | Delegation | Per-persona per-invocation resolution (`delegate: allow` default, set `ask` per persona, non-registry personas denied), sub-agents auto-deny `ask` and share only the caller's carve, own `sub_*` session logs |
-| Network | Explicit tools (`web_search`, `fetch_page`), `web` permission |
+| Network | Explicit tools (`web_search`, `web_fetch`), `web` permission |
 | Provider context | Policy-filtered tool schema, argument cleaning, bounded tool results |
 | Session data | Append-only local logs, local file ownership |
 | Model | Config-driven provider/model selection, no autonomous self-modification |

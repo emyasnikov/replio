@@ -261,9 +261,9 @@ class TestFsTools(unittest.TestCase):
 
     def test_metadata_registered(self):
         expected = {
-            'read_file': ('read', 'read', 'path', 'path'),
+            'file_read': ('read', 'read', 'path', 'path'),
             'list_dir': ('read', 'list', 'path', 'path'),
-            'write_file': ('write', 'edit', 'path', 'path'),
+            'file_write': ('write', 'edit', 'path', 'path'),
             'glob': ('read', 'list', 'path', 'pattern'),
             'grep': ('read', 'list', 'path', 'pattern'),
         }

@@ -60,7 +60,7 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 | `tool_analysis`             | `false`                | Model-generated one-line analysis of each tool result (log-only)      |
 | `delegate_echo`             | `true`                 | When the `delegate` tool runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result. The sub footer is emitted alongside the sub-agent's own rendered output only when on |
 | `session_tool_max_chars`    | `0`                    | `0` = unlimited. Caps persisted tool-result content                    |
-| `tool_max_result_chars`     | `0`                    | `0` = unlimited. Caps tool-result content returned to the model (`... (truncated)` appended). With the default, the model sizes files via the `read_file` header and pages with `offset`/`limit` |
+| `tool_max_result_chars`     | `0`                    | `0` = unlimited. Caps tool-result content returned to the model (`... (truncated)` appended). With the default, the model sizes files via the `file_read` header and pages with `offset`/`limit` |
 | `query_refine`              | `false`                | Auto-refine short web-search queries via a lightweight model call      |
 | `query_refine_min_words`    | `3`                    | Minimum query length before refinement applies                         |
 | `query_refine_context`      | `4`                    | Recent-message context to inject into refinement                       |
@@ -74,7 +74,7 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 | `clear_screen`              | `true`                 | Clear the screen before the REPL banner                                |
 | `show_version`              | `true`                 | Show the version in the REPL banner                                    |
 | `compact_keep`              | `4`                    | Messages to keep when compacting the provider context                  |
-| `noise_tools`               | `["fetch_page"]`       | Tool results replaced by a marker in persisted sessions                |
+| `noise_tools`               | `["web_fetch", "open", "fetch_page"]` | Tool results replaced by a marker in persisted sessions                |
 | `web_search`                | `false`                | Auto-search mode: search the web before answering                       |
 | `search_results`            | `5`                    | Number of search results to fetch                                      |
 | `tools.allow`               | `[]`                   | Name-level allowlist. Empty means no restriction                       |

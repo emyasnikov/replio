@@ -73,7 +73,7 @@ def _write_file_status(args):
 
 def register_tools(registry):
     @registry.register(
-        name='read_file',
+        name='file_read',
         description='Read the contents of a text file. Use to inspect source code, configs, logs, or any file on disk after locating it with glob. Returns numbered lines with a header reporting the total line and character count; limit=0 returns just the header as a size probe, use offset/limit to page through large files.',
         parameters={
             'type': 'object',
@@ -98,11 +98,11 @@ def register_tools(registry):
         path_arg='path',
         key_arg='path',
         short='Read the contents of a text file',
-        aliases=['read', 'view'],
+        aliases=['read_file', 'read', 'view'],
         param_aliases={'file': 'path'},
         note=lambda r: r.endswith('(empty file)'),
     )
-    def read_file(path: str, offset: int = 1, limit: int = 500,
+    def file_read(path: str, offset: int = 1, limit: int = 500,
                   _config=None) -> str:
         p = Path(path).expanduser()
         if not p.exists():
@@ -161,7 +161,7 @@ def register_tools(registry):
         if not p.exists():
             return f'Error: path not found: {path}'
         if not p.is_dir():
-            return f'Error: {path} is not a directory (use read_file instead)'
+            return f'Error: {path} is not a directory (use file_read instead)'
         level = max(1, int(depth))
         try:
             entries = sorted(p.iterdir(), key=lambda e: (not e.is_dir(), e.name.lower()))
@@ -174,7 +174,7 @@ def register_tools(registry):
         return _truncate('\n'.join(lines), _cap(_config))
 
     @registry.register(
-        name='write_file',
+        name='file_write',
         description='Write content to a file, creating parent directories as needed. Use to create or update files such as source code, configs, and notes. Relative paths resolve against the current working directory - the result reports the resolved absolute path.',
         parameters={
             'type': 'object',
@@ -201,9 +201,10 @@ def register_tools(registry):
         key_arg='path',
         short='Write content to a file',
         status=_write_file_status,
+        aliases=['write_file', 'write'],
         param_aliases={'file': 'path'},
     )
-    def write_file(path: str, content: str, mode: str = 'w') -> str:
+    def file_write(path: str, content: str, mode: str = 'w') -> str:
         p = Path(path).expanduser()
         try:
             p.parent.mkdir(parents=True, exist_ok=True)

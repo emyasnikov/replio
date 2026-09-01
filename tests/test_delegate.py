@@ -200,7 +200,7 @@ class TestDelegateTool(unittest.TestCase):
             {'role': 'user', 'content': 'build the dungeon'},
             {'role': 'assistant', 'tool_calls': [{'id': 'c1'}]},
             {'role': 'tool', 'content': 'Created /tmp/x/main.py (40 lines, 900 chars)',
-             'tool': 'write_file', 'tool_call_id': 'c1'},
+             'tool': 'file_write', 'tool_call_id': 'c1'},
             {'role': 'assistant', 'tool_calls': [{'id': 'c2'}]},
             {'role': 'tool', 'content': '$ cd /tmp/x && pytest\n1 passed',
              'tool': 'bash', 'tool_call_id': 'c2'},

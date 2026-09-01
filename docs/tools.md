@@ -12,15 +12,14 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 
 | Tool | Plugin | Category | Permission | Purpose |
 |------|--------|----------|------------|---------|
-| `web_search` | replio-core-websearch | `search` | `web` | Web search (alias `search`) |
-| `fetch_page` | replio-core-websearch | `read` | `read` | Fetch and extract page text |
-| `open` | replio-core-websearch | `read` | `read` | Open a `web_search` result by `id` or a URL directly |
-| `read_file` | replio-core-fs | `read` | `read` | Read a file with numbered lines |
-| `list_dir` | replio-core-fs | `read` | `list` | List a directory (`depth` for trees) |
-| `write_file` | replio-core-fs | `write` | `edit` | Create/overwrite/append a file |
+| `web_search` | replio-core-websearch | `search` | `web` | Web search (aliases `search`, `web`) |
+| `web_fetch` | replio-core-websearch | `read` | `read` | Fetch a page by URL or by `web_search` result `id` (aliases `open`, `fetch_page`) |
+| `file_read` | replio-core-fs | `read` | `read` | Read a file with numbered lines (aliases `read_file`, `read`, `view`) |
+| `list_dir` | replio-core-fs | `read` | `list` | List a directory (`depth` for trees, alias `ls`) |
+| `file_write` | replio-core-fs | `write` | `edit` | Create/overwrite/append a file (aliases `write_file`, `write`) |
 | `glob` | replio-core-fs | `search` | `read` | Recursive pattern lookup |
 | `grep` | replio-core-fs | `search` | `read` | Regex content search (`file:line:` results, alias `find`) |
-| `run_command` | replio-core-exec | `exec` | `bash` | Run a shell command with timeout |
+| `run_command` | replio-core-exec | `exec` | `bash` | Run a shell command with timeout (aliases `bash`, `exec`) |
 | `delegate` | core | `delegate` | `delegate` | Run a task under a persona as a sub-agent |
 
 Plugins register additional tools the same way. They automatically inherit tool policy, `/tool`, `/help`, query refinement, `noise_tools`, and session logging. See [plugins.md](plugins.md).
@@ -51,14 +50,14 @@ Tools are registered with `@registry.register(name, description, parameters)` pl
 | `permission_fn` | Optional `Callable[[dict], str]` resolving the action (`allow`/`ask`/`deny`) from the current arguments - refines a non-`deny` base action at call time (see `delegate`) |
 | `path_arg` | Which parameter is a filesystem path, for worktree scope checks |
 | `key_arg` | Which argument appears in status/confirm labels and glyph activity lines |
-| `glyph` / `verb` | Per-tool activity-line overrides (e.g. `glob` uses `* Glob`, `fetch_page` uses `↓ Fetch`) |
-| `status` | A `Callable[[dict], str]` receiving the cleaned args and returning a block whose first line becomes the `[tool: <value>]` oneliner and the rest render as dimmed detail lines (used by `write_file` to preview/diff the written text) |
+| `glyph` / `verb` | Per-tool activity-line overrides (e.g. `glob` uses `* Glob`, `web_fetch` uses `↓ Fetch`) |
+| `status` | A `Callable[[dict], str]` receiving the cleaned args and returning a block whose first line becomes the `[tool: <value>]` oneliner and the rest render as dimmed detail lines (used by `file_write` to preview/diff the written text) |
 | `echo` | When true, the tool result is printed dimmed below the status oneliner (used by `run_command`) |
 | `short` | Short label for `/help` listing (defaults to the description truncated) |
-| `aliases` | Extra tool names resolving to this tool (e.g. `read`/`view` for `read_file`, `search` for `web_search`) - absorbed at call time, never advertised to the provider |
+| `aliases` | Extra tool names resolving to this tool (e.g. `read`/`view` for `file_read`, `open`/`fetch_page` for `web_fetch`) - absorbed at call time, never advertised to the provider |
 | `param_aliases` | Caller-side parameter synonyms mapped onto declared parameters (e.g. `cursor` -> `offset`, `query` -> `pattern`) |
 
-`ToolRegistry.execute()` passes only arguments declared in the tool's schema - undeclared and `null`-valued arguments (e.g. a hallucinated `recursive`, or `depth: null`) are dropped, not forwarded to the handler. It also passes the engine `Config` to handlers that declare a `_config` keyword argument (e.g. `def read_file(path, offset=1, limit=500, _config=None)`), so a tool can read config keys like `tool_max_result_chars` without exposing them to the model.
+`ToolRegistry.execute()` passes only arguments declared in the tool's schema - undeclared and `null`-valued arguments (e.g. a hallucinated `recursive`, or `depth: null`) are dropped, not forwarded to the handler. It also passes the engine `Config` to handlers that declare a `_config` keyword argument (e.g. `def file_read(path, offset=1, limit=500, _config=None)`), so a tool can read config keys like `tool_max_result_chars` without exposing them to the model.
 
 Models often guess tool and argument names rather than reading the schema (`search` for `web_search`, `find` for `grep`, `cursor` for `offset`). `aliases` (extra tool names resolving to a tool, e.g. `search`/`find`) and `param_aliases` (caller-side parameter synonyms, e.g. `cursor -> offset`, `query -> pattern`) let the registry absorb that dialect without advertising it in the schema. A tool the model calls that is not registered at all returns `Error: unknown tool "<name>. Available tools: <...>"` - the loop lists the registered tools so the model can pick a real one instead of retrying the same bogus name. `open` also tolerates a URL string passed in its `id` argument by treating it as the URL.
 
@@ -92,11 +91,11 @@ def pdf2text(path):
 
 Tool results are sent to the model verbatim. Nothing is truncated unless `tool_max_result_chars` is set (default `0` = unlimited). Setting it caps every tool result at N characters with a trailing `... (truncated)` marker.
 
-`read_file` helps the model page through large files without hitting a cap:
+`file_read` helps the model page through large files without hitting a cap:
 
 - Every result header reports the total size: `# <path> - <N> lines, <M> chars` (plus `(showing a-b)` for partial windows), so the model learns a file's size from the first read.
 - `limit=0` returns just the header as a size probe - the model can check a file's size before committing to a read.
-- A large file is then read in windows via `offset` / `limit` arguments (`read_file(path, offset=1, limit=200)`, then `offset=201`, ...).
+- A large file is then read in windows via `offset` / `limit` arguments (`file_read(path, offset=1, limit=200)`, then `offset=201`, ...).
 
 ## Tool policy
 
@@ -136,7 +135,7 @@ Tool behavior is controlled by config keys (see [config.md](config.md) for the f
 | `tool_analysis` | `false` | Model-generated one-line analysis of each tool result (log-only) |
 | `tool_max_result_chars` | `0` | Cap every tool result at N chars (`0` = unlimited) |
 | `session_tool_max_chars` | `0` | Cap persisted tool-result content in session files (`0` = unlimited) |
-| `noise_tools` | `["fetch_page"]` | Tool results replaced by a marker in persisted sessions |
+| `noise_tools` | `["web_fetch", "open", "fetch_page"]` | Tool results replaced by a marker in persisted sessions |
 | `query_refine` | `false` | Auto-refine short `query` args via a lightweight model call |
 | `query_refine_min_words` | `3` | Minimum query length before refinement applies |
 | `query_refine_context` | `4` | Recent-message context injected into refinement |

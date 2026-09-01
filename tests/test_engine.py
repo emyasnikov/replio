@@ -574,26 +574,27 @@ class TestEngineModes(unittest.TestCase):
         self.engine.config.set('mode', 'plan')
         schema = self.engine._init_tooling()
         names = [s['function']['name'] for s in schema]
-        self.assertNotIn('write_file', names)
+        self.assertNotIn('file_write', names)
         self.assertNotIn('run_command', names)
-        self.assertIn('read_file', names)
+        self.assertIn('file_read', names)
         self.assertIn('web_search', names)
 
     def test_build_mode_schema_unfiltered(self):
         schema = self.engine._init_tooling()
         names = [s['function']['name'] for s in schema]
-        self.assertIn('write_file', names)
+        self.assertIn('file_write', names)
         self.assertIn('run_command', names)
 
     def test_schema_advertises_only_canonical_names(self):
         schema = self.engine._init_tooling()
         names = [s['function']['name'] for s in schema]
         self.assertEqual(set(names), {
-            'delegate', 'run_command', 'read_file', 'list_dir', 'write_file',
+            'delegate', 'run_command', 'file_read', 'list_dir', 'file_write',
             'glob', 'grep', 'mcp_connect', 'mcp_list', 'mcp_disconnect',
-            'web_search', 'fetch_page', 'open',
+            'web_search', 'web_fetch',
         })
-        for alias in ('bash', 'exec', 'read', 'view', 'ls', 'find', 'search'):
+        for alias in ('bash', 'exec', 'read', 'view', 'ls', 'find', 'search',
+                      'web', 'open', 'fetch_page', 'read_file', 'write_file'):
             self.assertNotIn(alias, names)
 
     def test_plan_mode_instruction_sent_to_provider(self):
@@ -643,7 +644,7 @@ class TestEngineModes(unittest.TestCase):
         self.engine.config.set('mode', 'nosuch')
         schema = self.engine._init_tooling()
         names = [s['function']['name'] for s in schema]
-        self.assertIn('write_file', names)
+        self.assertIn('file_write', names)
 
 
 if __name__ == '__main__':

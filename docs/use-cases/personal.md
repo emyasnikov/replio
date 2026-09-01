@@ -11,8 +11,8 @@ Replio's local-first, zero-dependency design makes it a natural private assistan
 
 ## Fit by use case
 
-- **Personal knowledge assistant** - point an agent at a notes or documents folder (`replio serve --path notes`) and ask questions in plain language. `glob`, `grep`, `read_file`, and `list_dir` keep answers grounded in your own files, with the matching excerpts cited.
-- **Research assistant** - `web_search`, `open`, and `fetch_page` gather current information with sources. Sessions preserve the full research trail: queries, pages fetched, and reasoning.
+- **Personal knowledge assistant** - point an agent at a notes or documents folder (`replio serve --path notes`) and ask questions in plain language. `glob`, `grep`, `file_read`, and `list_dir` keep answers grounded in your own files, with the matching excerpts cited.
+- **Research assistant** - `web_search` and `web_fetch` (alias `open`) gather current information with sources. Sessions preserve the full research trail: queries, pages fetched, and reasoning.
 - **Notes and journaling** - a daily or topic-scoped session is a structured log. `/session load` and `/session save` switch between threads, and `/compact` trims provider context without touching the stored log.
 - **Life and home automation** - with `run_command` you can drive scripts and local tools. Keep it read-only at first (reporting, summaries, reminders). Anything that writes or executes belongs behind the `ask` confirmation that `bash` carries by default.
 - **Offline and intermittent use** - local models and a stdlib core need no external service, so the agent keeps working on a train, in the field, or on a disconnected machine.
@@ -25,5 +25,5 @@ Personal power-user features are planned, not current: bookmarks (`/bookmark`), 
 
 1. `pip install replio`, then `replio` for the REPL or `replio serve --path ~/notes` for a headless agent.
 2. `/connect` to a provider - Ollama for a fully local setup, or any OpenAI-compatible endpoint for hosted models.
-3. Set permissions to taste: `tool_permission.web: allow`, `tool_permission.bash: ask` (the default), and use `tools.deny` to remove capabilities you do not want (for example `write_file` on a research-only agent).
+3. Set permissions to taste: `tool_permission.web: allow`, `tool_permission.bash: ask` (the default), and use `tools.deny` to remove capabilities you do not want (for example `file_write` on a research-only agent).
 4. Ask away. Every turn lands in `.replio/sessions/` as a complete, replayable log.

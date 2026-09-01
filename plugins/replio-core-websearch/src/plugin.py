@@ -137,7 +137,7 @@ def register_tools(registry):
         permission='web',
         key_arg='query',
         short='Search the web',
-        aliases=['search'],
+        aliases=['search', 'web'],
         param_aliases={'q': 'query'},
         note=lambda r: r == 'No search results found.',
     )
@@ -149,8 +149,8 @@ def register_tools(registry):
         return SERVICE.context(query, results)
 
     @registry.register(
-        name='fetch_page',
-        description='Fetch and read the full content of a web page. Use this when search result snippets are insufficient and you need detailed information from a specific URL. Pass offset to continue reading from a previous offset marker.',
+        name='web_fetch',
+        description='Fetch and read the full content of a web page. Use this when search result snippets are insufficient and you need detailed information from a specific URL. Pass url directly, or id (the 1-based result number from the most recent web_search) to fetch that result. Pass offset to continue reading from a previous offset marker.',
         parameters={
             'type': 'object',
             'properties': {
@@ -158,39 +158,10 @@ def register_tools(registry):
                     'type': 'string',
                     'description': 'The full URL of the page to fetch',
                 },
-                'offset': {
-                    'type': 'integer',
-                    'description': 'Character offset to resume reading from, as reported by the previous offset marker',
-                },
-            },
-            'required': ['url'],
-        },
-        category='read',
-        permission='read',
-        key_arg='url',
-        short="Fetch and read a web page's content",
-        glyph='↓',
-        verb='Fetch',
-        param_aliases={'cursor': 'offset'},
-        note=lambda r: r in ('(end of content)', '(empty content)'),
-    )
-    def fetch_page(url: str, offset: int = 0) -> str:
-        return _fetch_text(url, offset)
-
-    @registry.register(
-        name='open',
-        description='Open a web page. Preferred after web_search: pass id (the 1-based result number from the most recent web_search) to fetch that result, or pass url directly. Returns the page text, with an offset marker when the content continues.',
-        parameters={
-            'type': 'object',
-            'properties': {
                 'id': {
                     'type': 'integer',
                     'description': '1-based result number from the most recent web_search to open',
                 },
-                'url': {
-                    'type': 'string',
-                    'description': 'The full URL of the page to open',
-                },
                 'offset': {
                     'type': 'integer',
                     'description': 'Character offset to resume reading from, as reported by the previous offset marker',
@@ -199,15 +170,16 @@ def register_tools(registry):
         },
         category='read',
         permission='read',
-        key_arg='id',
+        key_arg='url',
         short='Open a web page or a web_search result',
         glyph='↓',
-        verb='Open',
+        verb='Fetch',
         status=_open_status,
+        aliases=['open', 'fetch_page'],
         param_aliases={'cursor': 'offset'},
         note=lambda r: r in ('(end of content)', '(empty content)'),
     )
-    def open(url: str | None = None, id=None, offset: int = 0) -> str:
+    def web_fetch(url: str | None = None, id=None, offset: int = 0) -> str:
         target, err = _open_target(url, id)
         if err:
             return err

@@ -27,10 +27,11 @@
 
 ## Open
 
+- [ ] `file_edit` tool - targeted search-and-replace in a file (Claude-Code-style Edit); today `file_write` covers create/overwrite/append only
+- [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
 - [ ] Default tool-result cap - `tool_max_result_chars` default 100k chars (Anthropic ~25k-token guide), `list_dir` gains an entry cap
-- [ ] Merge `open` into `fetch_page` - one fetch tool (`url` | `id` | `offset`), `open` kept as an alias, removes the overlapping-tool confusion
 - [ ] Tool-use evaluation harness - task fixtures (task + expected tool trace + verifier) run headless via a mock provider, reporting tool-call accuracy / redundant calls / errors / tokens, runnable against real providers for comparison
-- [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`fetch_page` guidance to tool descriptions
+- [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`web_fetch` guidance to tool descriptions
 - [ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc personas/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)
 - [ ] Template-based team composition - match persona/skill templates from the kit library against the request + project description, generate only the deltas, reuse proven artifacts across projects
 - [ ] Team kit library - tag/store proven teams, personas, and skills per stack and customer, importable into new projects without publishing internal know-how
@@ -108,6 +109,7 @@
 
 ## Done
 
+- [x] Default tool names namespaced - `web_fetch` merges `open`+`fetch_page`, `file_read`/`file_write` replace `read_file`/`write_file`; old names kept as aliases
 - [x] Tool schema advertises canonical names only - aliases resolve at call time, not shipped as provider schemas (20 -> 13 defs)
 - [x] Agent-loop cancellation + tool-dialect hardening - Ctrl-C cancels the turn (not one tool / the REPL), unknown-tool hints list real tools, `search`/`find` aliases, `open` URL-as-id
 - [x] Skills registry - `SkillRegistry`, local/global dirs + plugins, persona `skills` in prompts

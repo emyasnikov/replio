@@ -149,9 +149,9 @@ class TestCliRun(unittest.TestCase):
         self.assertEqual(data['content'], 'plan answer')
         tools = captured['provider'].chat.call_args.kwargs['tools']
         names = [s['function']['name'] for s in tools]
-        self.assertNotIn('write_file', names)
+        self.assertNotIn('file_write', names)
         self.assertNotIn('run_command', names)
-        self.assertIn('read_file', names)
+        self.assertIn('file_read', names)
         msgs = captured['provider'].chat.call_args.args[0]
         self.assertIn('plan mode', msgs[0]['content'])
 
@@ -175,7 +175,7 @@ class TestCliRun(unittest.TestCase):
                 cmd_run(self._args())
         tools = captured['provider'].chat.call_args.kwargs['tools']
         names = [s['function']['name'] for s in tools]
-        self.assertIn('write_file', names)
+        self.assertIn('file_write', names)
         self.assertIn('run_command', names)
 
 

@@ -50,7 +50,7 @@ DEFAULT_CONFIG = {
     'clear_screen': True,
     'show_version': True,
     'compact_keep': 4,
-    'noise_tools': ['fetch_page'],
+    'noise_tools': ['web_fetch', 'open', 'fetch_page'],
     'web_search': False,
     'search_results': 5,
     'tools.allow': [],

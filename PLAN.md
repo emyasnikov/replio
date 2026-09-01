@@ -61,7 +61,6 @@ Tools are the provider-facing surface - one OpenAI-compatible contract, registry
 | Task | Effort | Provides |
 |------|--------|----------|
 | Default result cap 100k chars + `list_dir` entry cap (P2) | S | bounded tool responses, no context blow-up on large trees/files |
-| Merge `open` into `fetch_page` (P3) | S-M | one fetch tool (`url` / `id` / `offset`), removes the overlapping-tool confusion |
 | Tool-use evaluation harness (P4) | M | task fixtures + expected tool traces run headless, accuracy / redundant-call / error / token metrics, runnable against real providers |
 | Tool spec polish (P5) - `grep.glob` -> `include`, description examples / preference guidance | S | unambiguous parameters and clearer tool selection |
 
