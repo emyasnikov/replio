@@ -54,6 +54,18 @@ One round hands off in three steps:
 
 Fleet is the substrate that stays up, not the conductor of the work.
 
+## Tool engineering for agents
+
+Tools are the provider-facing surface - one OpenAI-compatible contract, registry metadata drives the loop. Hardening it for any provider (weak OpenAI-compatible backends especially), from the Anthropic tool-writing principles (choosing the right tools, namespacing, meaningful context, token efficiency, description prompt-engineering) and the tool-use evaluation methodology.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Advertise canonical tool names only (P1) | S | alias schemas stop loading into context (20 -> 13 defs per request), less wrong-tool confusion; aliases still resolve at call time |
+| Default result cap 100k chars + `list_dir` entry cap (P2) | S | bounded tool responses, no context blow-up on large trees/files |
+| Merge `open` into `fetch_page` (P3) | S-M | one fetch tool (`url` / `id` / `offset`), removes the overlapping-tool confusion |
+| Tool-use evaluation harness (P4) | M | task fixtures + expected tool traces run headless, accuracy / redundant-call / error / token metrics, runnable against real providers |
+| Tool spec polish (P5) - `grep.glob` -> `include`, description examples / preference guidance | S | unambiguous parameters and clearer tool selection |
+
 ## Team orchestration (swarm core)
 
 Agents cooperate through personas, delegation, and team stages. Sub-agents use the caller's provider, plugin manager, and worktree (see `docs/swarm.md`).
