@@ -28,7 +28,6 @@
 ## Open
 
 - [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
-- [ ] Tool-use evaluation harness - task fixtures (task + expected tool trace + verifier) run headless via a mock provider, reporting tool-call accuracy / redundant calls / errors / tokens, runnable against real providers for comparison
 - [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`web_fetch` guidance to tool descriptions
 - [ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc personas/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)
 - [ ] Template-based team composition - match persona/skill templates from the kit library against the request + project description, generate only the deltas, reuse proven artifacts across projects
@@ -104,44 +103,45 @@
 
 ## Done
 
-- [x] Project instructions file - per-worktree `AGENTS.md` auto-loaded into the system prompt (`project_instructions`, capped)
-- [x] `run_command` command allowlist - `tool_permission.bash_allow`, chain-aware prefix match, heredocs/multi-line rejected
-- [x] `code_test`/`code_lint`/`code_format` wrappers - dev.*_cmd config, bundled replio-core-dev plugin
+- [x] Tool-use evaluation harness - replio eval + fixture plugin, metrics
+- [x] Project instructions file - per-worktree `AGENTS.md` in system prompt, capped
+- [x] `run_command` allowlist - `tool_permission.bash_allow`, heredocs/multi-line rejected
+- [x] `code_test`/`code_lint`/`code_format` wrappers - dev.*_cmd, bundled replio-core-dev plugin
 - [x] `git` tool - read-only git + gated `git_commit`, bundled replio-core-git plugin
-- [x] `file_edit` tool - targeted search-and-replace with diff preview, bundled replio-core-edit plugin
+- [x] `file_edit` tool - search-and-replace with diff preview, bundled replio-core-edit plugin
 - [x] Default tool-result cap - tool_max_result_chars default 100k, list_dir entry cap
-- [x] Default tool names namespaced - `web_fetch` merges `open`+`fetch_page`, `file_read`/`file_write` replace `read_file`/`write_file`. Old names kept as aliases
-- [x] Tool schema advertises canonical names only - aliases resolve at call time, not shipped as provider schemas (20 -> 13 defs)
-- [x] Agent-loop cancellation + tool-dialect hardening - Ctrl-C cancels the turn (not one tool / the REPL), unknown-tool hints list real tools, `search`/`find` aliases, `open` URL-as-id
+- [x] Default tool names namespaced - `web_fetch` merges `open`+`fetch_page`, old names as aliases
+- [x] Tool schema advertises canonical names only - aliases resolve at call time (20 -> 13 defs)
+- [x] Agent-loop cancellation + tool-dialect hardening - Ctrl-C cancels the turn, unknown-tool hints
 - [x] Skills registry - `SkillRegistry`, local/global dirs + plugins, persona `skills` in prompts
 - [x] Teams registry - `Team`/`TeamRegistry`, 4-layer `teams.json` merge, `/team` read/edit
 - [x] Plugin contribution hooks - register_personas/teams/skills hooks, `PersonaRegistry.reload()`
-- [x] Fleet orchestration - `replio fleet` supervisor CLI: ports, health, restart backoff, config gen
+- [x] Fleet orchestration - `replio fleet` supervisor CLI: ports, health, restart, config gen
 - [x] Per-run job sessions - `job_<ts>_<name>` files, unified `ses_`/`sub_`/`job_` naming
-- [x] Job run memory - rolling `.memory.md` run summary injected into each run, seeded with prior memory
+- [x] Job run memory - rolling `.memory.md` summary injected into each run, seeded
 - [x] Job task definition as linked Markdown - `--file` templated task files, `replio jobs edit`
-- [x] Job context management - per-run `job_*` session files, `ses_`/`sub_` naming, 100-run history cap
-- [x] Job per-run approval - `--require-approval` parks each run in `waiting_approval` until a human approves it
-- [x] Jobs diagnostics - `replio jobs status` (fired count, last error, uptime) + last output in `show`
-- [x] Watchable job runs - `replio jobs run --verbose` streams the live turn. Headless `run` prints the answer
-- [x] Richer job runs - `--persona`/`--system-prompt`, default recurring-job system prompt, tool carve
+- [x] Job context management - per-run `job_*` files, `ses_`/`sub_` naming, 100-run cap
+- [x] Job per-run approval - `--require-approval` parks a run in `waiting_approval`
+- [x] Jobs diagnostics - `replio jobs status` (fired count, last error, uptime)
+- [x] Watchable job runs - `replio jobs run --verbose` streams the live turn
+- [x] Richer job runs - `--persona`/`--system-prompt`, recurring-job prompt, tool carve
 - [x] Scheduled / durable jobs - `replio jobs`: registry, daemon, cron, retries, approval gate
 - [x] Per-agent permission profiles - persona tool_permission drives sub-agent policy
 - [x] In-process sub-engine - Engine.run_subagent: persona overrides, NullUI, sub_ session
 - [x] `delegate` tool - core, per-persona permission resolver, delegate_echo result display
 - [x] Personas registry - global+local personas.json merge, /persona command, docs/personas.md
-- [x] Soft tool results surfaced as dimmed info lines - `(empty file)`, `(no matches)`, `(end of content)` notes, gated by `show_notes`
-- [x] Session audit trail - permission decisions (allow/ask/deny -> granted/declined/denied) recorded in a session `permissions` array, always-on
+- [x] Soft tool results surfaced as dimmed info lines - `(empty file)`, `(no matches)` etc
+- [x] Session audit trail - permission decisions (allow/ask/deny -> granted/declined/denied)
 - [x] Stable message ids - `msg_<hex>` auto-assigned to every session message
 - [x] Global model registry - /connect appends models + keys, /model list/--online, picker reuse
-- [x] REPL `/config --global/--local` scope flags + apply() in-memory overrides (one-shot CLI, engine normalization never write files)
-- [x] Scoped config writes - local saves overrides only, replio config CLI. API keys live in the model registry
-- [x] Turn recovery - auto-continue on truncation, empty-done retried, reasoning-only not flagged empty
-- [x] Thinking captured from `reasoning` deltas (ollama.com) too, documented in config/providers docs
+- [x] REPL `/config --global/--local` scope flags + apply() in-memory overrides
+- [x] Scoped config writes - local saves overrides only, replio config CLI
+- [x] Turn recovery - auto-continue on truncation, reasoning-only not flagged empty
+- [x] Thinking captured from `reasoning` deltas (ollama.com), documented
 - [x] Confirm prompt `?` glyph starts at the beginning of the line, aligned with activity glyphs
 - [x] Word-level streaming buffering - buffer REPL output to word boundaries, word_streaming config
 - [x] Multi-line input - detect `"""`/`'''` blocks, one composed message, framing stripped
-- [x] Config validation (test connection on change) - /connect probe-before-save, /provider warn, connect_check toggle
+- [x] Config validation (test connection on change) - /connect probe, /provider warn
 - [x] Session export to Markdown - /session export and replio export CLI render logs to Markdown
 - [x] Plan/Build modes - plan (edit+bash denied) vs build, /mode cmd + --mode flag, per-message mode
 - [x] Thinking/reasoning toggle - show_thinking (display) + reasoning (request), /thinking cmd

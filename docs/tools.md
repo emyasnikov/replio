@@ -19,13 +19,13 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 | `file_write` | replio-core-fs | `write` | `edit` | Create/overwrite/append a file (aliases `write_file`, `write`) |
 | `glob` | replio-core-fs | `search` | `read` | Recursive pattern lookup |
 | `grep` | replio-core-fs | `search` | `read` | Regex content search (`file:line:` results, alias `find`) |
-| `file_edit` | replio-core-edit | `write` | `edit` | Targeted search-and-replace in a file with a diff preview (`count` occurrences, `0` = all; alias `edit`) |
+| `file_edit` | replio-core-edit | `write` | `edit` | Targeted search-and-replace in a file with a diff preview (`count` occurrences, `0` = all, alias `edit`) |
 | `git` | replio-core-git | `read` | `read` | Read-only git: status/diff/log/branch/show/rev_parse (aliases `git_status`, `git_diff`, `git_log`, ...) |
 | `git_commit` | replio-core-git | `write` | `edit` | Stage/commit git changes, always confirm-gated (alias `commit`) |
 | `code_test` | replio-core-dev | `exec` | `bash` | Run the project test suite (`dev.test_cmd`, default `python -m unittest discover`) |
 | `code_lint` | replio-core-dev | `exec` | `bash` | Run the project linter (`dev.lint_cmd`, default `ruff check .`) |
 | `code_format` | replio-core-dev | `exec` | `bash` | Run the project formatter (`dev.format_cmd`, default `ruff format .`) |
-| `run_command` | replio-core-exec | `exec` | `bash` | Run a shell command with timeout (aliases `bash`, `exec`); restricted by `tool_permission.bash_allow` |
+| `run_command` | replio-core-exec | `exec` | `bash` | Run a shell command with timeout (aliases `bash`, `exec`). Restricted by `tool_permission.bash_allow` |
 | `delegate` | core | `delegate` | `delegate` | Run a task under a persona as a sub-agent |
 
 Plugins register additional tools the same way. They automatically inherit tool policy, `/tool`, `/help`, query refinement, `noise_tools`, and session logging. See [plugins.md](plugins.md).

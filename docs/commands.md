@@ -31,7 +31,7 @@ Delegation is a normal tool: the lead agent proposes it, or you run it directly 
 ## CLI
 
 ```
-usage: replio [-h] [--path PATH] [-v] {run,export,models,serve,mcp,config,plugins,jobs,fleet} ...
+usage: replio [-h] [--path PATH] [-v] {run,export,models,eval,serve,mcp,config,plugins,jobs,fleet} ...
 ```
 
 Global:
@@ -76,6 +76,25 @@ List the models the connected provider advertises.
 | Flag             | Default                      | Description                       |
 |------------------|------------------------------|-----------------------------------|
 | `--path`         |                              | Project path                      |
+
+### `replio eval`
+
+Tool-use evaluation harness - run task fixtures through the agent loop and report metrics. See [eval.md](eval.md).
+
+```bash
+replio eval --path <project> list              # list discovered fixtures
+replio eval --path <project> run [--fixture <id>] [--provider P] [--model M]
+replio eval --path <project> run --compare ollama,openai --output json
+```
+
+| Flag             | Default                      | Description                       |
+|------------------|------------------------------|-----------------------------------|
+| `--fixture`      |                              | Fixture id or substring (default: all) |
+| `--provider`     |                              | Provider override                 |
+| `--model`        |                              | Model override                    |
+| `--base-url`     |                              | Base URL override                 |
+| `--compare`      |                              | Comma-separated providers to compare |
+| `--output`       | `table`                      | `table` or `json`                 |
 
 ### `replio config`
 

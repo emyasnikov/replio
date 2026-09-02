@@ -9,6 +9,7 @@ Detailed reference for Replio. For an overview, features, and quick start, see t
 - [Commands & CLI](commands.md) - slash commands and headless CLI flags
 - [Configuration](config.md) - config schema and keys
 - [Deployment](deploy.md) - Docker deployment (image + Compose fleet)
+- [Eval harness](eval.md) - tool-use evaluation (`replio eval`), task fixtures, metrics
 - [Jobs](jobs.md) - scheduled and durable jobs (`replio jobs`), cron scheduling, approvals
 - [Model Context Protocol](mcp.md) - MCP client and server
 - [Personas](personas.md) - persona catalog, storage, delegation and permission rule

@@ -327,6 +327,9 @@ class PluginManager:
     def register_skills(self, registry):
         self._run_hook('register_skills', registry)
 
+    def register_fixtures(self, fixtures):
+        self._run_hook('register_fixtures', fixtures)
+
     def provider_classes(self) -> dict[str, type]:
         return dict(self._provider_classes)
 

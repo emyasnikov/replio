@@ -104,6 +104,12 @@ def register_skills(skills):
                        'content': '# Writers\\n\\nProduce clean prose.'})
 '''
 
+FIXTURE_PLUGIN = '''
+def register_fixtures(fixtures):
+    fixtures.update({'read-foo': {'task': 'Read foo', 'expected': ['file_read']},
+                     'list-dir': {'task': 'List the dir'}})
+'''
+
 
 SIMPLE_MANIFEST = {
     'name': 'hello',
@@ -440,6 +446,24 @@ class TestRegistration(PluginTestBase):
         self.pm.load()
         self.pm.register_skills({})
         self.assertIn('register_skills failed', self.pm.get('boom').error)
+
+    def test_register_fixtures_hook(self):
+        write_plugin(self.plugins_dir, 'eval', FIXTURE_PLUGIN, {'name': 'eval'})
+        self.pm.load()
+        from replio.eval import discover_fixtures
+        fixtures = discover_fixtures(plugin_manager=self.pm)
+        self.assertIn('read-foo', fixtures)
+        self.assertEqual(fixtures['read-foo'].expected, ['file_read'])
+        self.assertEqual(fixtures['list-dir'].task, 'List the dir')
+
+    def test_fixtures_hook_failure_marks_error(self):
+        write_plugin(self.plugins_dir, 'boom',
+                     'def register_fixtures(fixtures):\n    raise RuntimeError("f")\n',
+                     {'name': 'boom'})
+        self.pm.load()
+        self.pm.register_fixtures({})
+        self.assertEqual(self.pm.get('boom').status, 'error')
+        self.assertIn('register_fixtures failed', self.pm.get('boom').error)
 
     def test_lazy_dep_error_surfaces_pip_guidance(self):
         write_plugin(self.plugins_dir, 'lazy', LAZY_DEP_PLUGIN, {'name': 'lazy'})

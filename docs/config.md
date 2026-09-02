@@ -75,7 +75,7 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 | `clear_screen`              | `true`                 | Clear the screen before the REPL banner                                |
 | `show_version`              | `true`                 | Show the version in the REPL banner                                    |
 | `compact_keep`              | `4`                    | Messages to keep when compacting the provider context                  |
-| `project_instructions`     | `"AGENTS.md"`          | Per-worktree instructions file auto-loaded into the system prompt (e.g. `AGENTS.md`, `CLAUDE.md`). `""` disables. Absent files are skipped; content is capped at 20000 chars |
+| `project_instructions`     | `"AGENTS.md"`          | Per-worktree instructions file auto-loaded into the system prompt (e.g. `AGENTS.md`, `CLAUDE.md`). `""` disables. Absent files are skipped. Content is capped at 20000 chars |
 | `noise_tools`               | `["web_fetch", "open", "fetch_page"]` | Tool results replaced by a marker in persisted sessions                |
 | `web_search`                | `false`                | Auto-search mode: search the web before answering                       |
 | `search_results`            | `5`                    | Number of search results to fetch                                      |
@@ -128,7 +128,7 @@ Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refuse
 
 - Each command is split into chained segments over `&&`, `||`, `;`, `|`, and `&`, and every segment must start with one of the allowed prefixes (e.g. `pytest -q && ruff check .` needs both `pytest` and `ruff` allowed).
 - Shell-script forms are rejected outright: multi-line commands and heredocs (`<<`) always return `deny`.
-- A matching command falls through to the normal `bash` action (`ask` by default, `allow`/`deny` per config); a non-matching command is `deny`.
+- A matching command falls through to the normal `bash` action (`ask` by default, `allow`/`deny` per config). A non-matching command is `deny`.
 
 The check runs through the per-invocation policy resolver, so it composes with modes, name-level `tools.deny`/`tools.allow`, and the worktree escalation. `bash_allow` gives a coding agent a safe default set (tests, linters, git) without opening up arbitrary shell.
 

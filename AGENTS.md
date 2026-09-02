@@ -47,7 +47,7 @@ Replio/
 │   ├── __init__.py
 │   ├── __main__.py          # python -m replio
 │   ├── main.py              # CLI arg parsing + bootstrap (default REPL, run, serve)
-│   ├── cli.py               # `replio run` / `replio serve` headless entry points
+│   ├── cli.py               # `replio run` / `replio serve` / `replio eval` headless entry points
 │   ├── config.py            # JSON config (global + local merge)
 │   ├── models.py            # global model registry - models.json (connections + keys)
 │   ├── personas.py          # Persona registry - bundled/global/local personas.json merge + tags
@@ -58,6 +58,7 @@ Replio/
 │   ├── scheduler.py         # JobScheduler - durable job daemon (retries, approvals, auto-compact)
 │   ├── fleet.py             # Fleet supervisor - AgentDef manifest, FleetController (ports, health, restart)
 │   ├── ui.py                # UISink - ReplUI / HeadlessUI / NullUI renderers
+│   ├── eval.py              # Tool-use eval harness - fixtures, runner, metrics (replio eval)
 │   ├── server.py            # stdlib HTTP JSON API (POST /chat, GET /sessions, GET /health, GET /version)
 │   ├── providers/
 │   │   ├── __init__.py
@@ -82,9 +83,10 @@ Replio/
 │       ├── __init__.py
 │       └── http.py          # urllib-based SSE streaming
 └── plugins/                 # bundled plugins (shipped as replio.plugins.bundled), each is {src/, tests/}
-    ├── replio-core-edit/        # file_edit
+├── replio-core-edit/        # file_edit
     ├── replio-core-git/         # git, git_commit
     ├── replio-core-dev/         # code_test, code_lint, code_format
+    ├── replio-core-eval/        # eval fixture catalog for replio eval
     ├── replio-core-exec/        # run_command
     ├── replio-core-fs/          # file_read, list_dir, file_write, glob, grep
     └── replio-core-websearch/   # web_search, web_fetch + search service
@@ -162,7 +164,7 @@ The chat() event contract and full provider reference are in `docs/providers.md`
 ### Adding a Plugin
 Plugins are external repositories - never modify the core to add optional functionality:
 1. Create a plugin directory with a `manifest.json` (`name`, `version`, `replio_version` semver range, `python` range, `entry` default `plugin.py` - may point into `src/`, `requires` third-party deps, `provides`), an entry module under `src/`, and an optional `tests/` unit suite (stdlib `unittest`, found by `replio plugins test` and the core suite)
-2. The entry module may define `register_tools(registry)`, `register_providers(providers: dict)`, `register_commands(commands)`, and `register_services(services)` - same decorators as core builtins
+2. The entry module may define `register_tools(registry)`, `register_providers(providers: dict)`, `register_commands(commands)`, `register_services(services)`, `register_personas`/`register_teams`/`register_skills`, and `register_fixtures(fixtures)` (eval fixture catalog, see `docs/eval.md`) - same decorators as core builtins
 3. Import third-party deps lazily **inside** tool functions, the core never imports them
 4. Install via `/plugins install <git-url|path>` or `replio plugins install`. Activation is the `plugins` config list (empty = all), and `install`/`uninstall`/`enable`/`disable` maintain it automatically
 5. See `docs/plugins.md` for the full manifest schema, compatibility contract, and management commands

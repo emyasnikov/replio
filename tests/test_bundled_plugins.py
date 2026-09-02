@@ -8,7 +8,7 @@ from replio.tools.registry import ToolRegistry
 
 BUNDLED = {'replio-core-websearch', 'replio-core-fs', 'replio-core-edit',
            'replio-core-git', 'replio-core-dev', 'replio-core-exec',
-           'replio-core-mcp'}
+           'replio-core-mcp', 'replio-core-eval'}
 
 
 class TestBundledPlugins(unittest.TestCase):

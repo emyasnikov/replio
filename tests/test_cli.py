@@ -348,6 +348,87 @@ class TestCliModels(unittest.TestCase):
         self.assertIn('1 models available from', out.getvalue())
 
 
+class TestCliEval(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.path = self.tmp.name
+        self._prev = None
+        from replio.config import Config
+        self._prev = Config.GLOBAL_DIR
+        Config.GLOBAL_DIR = Path(self.path) / 'home'
+
+    def tearDown(self):
+        from replio.config import Config
+        Config.GLOBAL_DIR = self._prev
+        import shutil
+        shutil.rmtree(self.path, ignore_errors=True)
+
+    def _fixture(self, **data):
+        eval_dir = Path(self.path) / '.replio' / 'eval'
+        eval_dir.mkdir(parents=True, exist_ok=True)
+        (eval_dir / 't.json').write_text(json.dumps(data))
+
+    def test_eval_list(self):
+        self._fixture(task='List the directory', expected=['list_dir'])
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            rc = main(['eval', '--path', self.path, 'list'])
+        self.assertEqual(rc, 0)
+        self.assertIn('t - List the directory', out.getvalue())
+
+    def test_eval_run_table(self):
+        self._fixture(task='List the directory', expected=['list_dir'],
+                      verifier={'exact': ['list_dir']})
+        rounds = [
+            [{'type': 'tool_calls', 'tool_calls': [
+                {'id': 'c1', 'type': 'function',
+                 'function': {'name': 'list_dir',
+                              'arguments': json.dumps({'path': '.'})}},
+            ]}],
+            [{'type': 'token', 'content': 'ok'},
+             {'type': 'done', 'reason': 'stop',
+              'usage': {'prompt_tokens': 4, 'completion_tokens': 1}}],
+        ]
+        with patch('replio.providers.PROVIDERS', {'ollama': _factory(rounds)}):
+            out = io.StringIO()
+            with patch('sys.stdout', new=out):
+                rc = main(['eval', '--path', self.path, 'run', '--fixture', 't'])
+        self.assertEqual(rc, 0)
+        self.assertIn('accuracy 1.00', out.getvalue())
+        self.assertIn('t', out.getvalue())
+
+    def test_eval_run_json_output(self):
+        self._fixture(task='List the directory', expected=['list_dir'])
+        rounds = [
+            [{'type': 'tool_calls', 'tool_calls': [
+                {'id': 'c1', 'type': 'function',
+                 'function': {'name': 'list_dir',
+                              'arguments': json.dumps({'path': '.'})}},
+            ]}],
+            [{'type': 'token', 'content': 'ok'},
+             {'type': 'done', 'reason': 'stop'}],
+        ]
+        with patch('replio.providers.PROVIDERS', {'ollama': _factory(rounds)}):
+            out = io.StringIO()
+            with patch('sys.stdout', new=out):
+                rc = main(['eval', '--path', self.path, 'run', '--fixture', 't',
+                           '--output', 'json'])
+        self.assertEqual(rc, 0)
+        data = json.loads(out.getvalue())
+        self.assertEqual(data['summary']['fixtures'], 1)
+        self.assertEqual(data['results'][0]['names'], ['list_dir'])
+
+    def test_eval_run_no_fixtures_errors(self):
+        err = io.StringIO()
+        with patch('sys.stderr', new=err):
+            out = io.StringIO()
+            with patch('sys.stdout', new=out):
+                rc = main(['eval', '--path', self.path, 'run', '--fixture', 'zz'])
+        self.assertEqual(rc, 1)
+        self.assertIn('No eval fixtures found', err.getvalue())
+
+
 class TestCliVersion(unittest.TestCase):
 
     def test_version_long_flag(self):

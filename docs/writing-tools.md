@@ -75,9 +75,10 @@ Error responses are guidance, not telemetry. When a call fails, tell the model w
 
 ## Evaluating your tools
 
-Measure how well a model uses a tool before you trust it. Replio does not ship an agent-level tool-evaluation harness yet (planned, see TODO and PLAN), but you can evaluate today with the pieces that exist.
+Measure how well a model uses a tool before you trust it. Replio ships an agent-level tool-evaluation harness - `replio eval` - that runs task fixtures through the headless agent loop and reports tool-call accuracy, redundant calls, errors, and tokens, against a mock or a real provider (see [eval.md](eval.md)). The `replio-core-eval` bundled plugin contributes a small fixture catalog. Author your own fixtures under `.replio/eval/*.json`.
 
 - Build a mock-provider loop test. The test suite runs the full agent loop against a stubbed `provider.chat` with no network and no API key. `tests/test_tool_calling.py`, `tests/test_agent_loop.py`, and the `make_chat` / `make_engine` helpers in `tests/` are the pattern. Drive the loop with a tool-call event and assert the model-visible result and the session messages.
+- Run `replio eval` against a real provider before and after a description change. A fixture whose `pass` flips (or whose accuracy moves) quantifies the effect of the change.
 - Exercise a tool directly with `/tool <name> {"args": ...}` from the REPL. It routes through the same policy, `clean_args`, and display as a loop call, so it is a fast sanity check for argument handling and result format.
 - Read the session logs for misbehavior. A session that shows wrong-tool selection, repeated parameter errors, or the same search re-run means the description, naming, or schema is unclear. Models trained on tool-use data often reach for `open` to fetch a URL. The `open` alias absorbs that habit while the schema advertises `web_fetch`.
 - Compare providers. Replio standardizes on OpenAI-compatible tool calling, but models differ sharply in how they parse schemas. Run the same task against Ollama and a hosted OpenAI-compatible endpoint and watch which tools each reaches for. Weak backends are exactly where naming, caps, and description quality pay off.

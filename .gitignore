@@ -1,8 +1,9 @@
-.venv/
 __pycache__/
-*.pyc
+.agents/
 .opencode/
 .replio/
+.venv/
 *.egg-info/
-dist/
+*.pyc
 build/
+dist/

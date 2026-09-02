@@ -60,7 +60,6 @@ Tools are the provider-facing surface - one OpenAI-compatible contract, registry
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Tool-use evaluation harness (P4) | M | task fixtures + expected tool traces run headless, accuracy / redundant-call / error / token metrics, runnable against real providers |
 | Tool spec polish (P5) - `grep.glob` -> `include`, description examples / preference guidance | S | unambiguous parameters and clearer tool selection |
 
 ## Team orchestration (swarm core)

@@ -42,6 +42,26 @@ def _add_models_parser(sub):
                    help='Project path (default: current directory)')
 
 
+def _add_eval_parser(sub):
+    p = sub.add_parser('eval', help='Tool-use evaluation harness '
+                       '(run task fixtures headless and report metrics)')
+    p.add_argument('--path', default=argparse.SUPPRESS,
+                   help='Project path (default: current directory)')
+    g = p.add_subparsers(dest='action', required=True)
+    g.add_parser('list', help='List discovered eval fixtures')
+    r = g.add_parser('run', help='Run the fixture suite and report metrics')
+    r.add_argument('--fixture', help='Fixture id or substring to run (default: all)')
+    r.add_argument('--provider', help='Provider override')
+    r.add_argument('--model', help='Model override')
+    r.add_argument('--base-url', help='Base URL override')
+    r.add_argument('--compare', help='Comma-separated providers to compare, '
+                   'e.g. ollama,openai')
+    r.add_argument('--output', choices=['table', 'json'], default='table',
+                   help='Output format (default: table)')
+    r.add_argument('--verbose', action='store_true',
+                   help='Print tool status and diagnostics to stderr')
+
+
 def _add_serve_parser(sub):
     p = sub.add_parser('serve', help='HTTP JSON API server (stdlib http.server)')
     p.add_argument('--host', default='127.0.0.1')
@@ -226,6 +246,7 @@ def main(argv=None):
     _add_run_parser(sub)
     _add_export_parser(sub)
     _add_models_parser(sub)
+    _add_eval_parser(sub)
     _add_serve_parser(sub)
     _add_mcp_parser(sub)
     _add_config_parser(sub)
@@ -243,6 +264,9 @@ def main(argv=None):
     if args.command == 'models':
         from .cli import cmd_models
         return cmd_models(args)
+    if args.command == 'eval':
+        from .cli import cmd_eval
+        return cmd_eval(args)
     if args.command == 'serve':
         from .cli import cmd_serve
         return cmd_serve(args)
