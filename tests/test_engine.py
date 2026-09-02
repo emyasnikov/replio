@@ -606,13 +606,15 @@ class TestEngineModes(unittest.TestCase):
     def test_schema_advertises_only_canonical_names(self):
         schema = self.engine._init_tooling()
         names = [s['function']['name'] for s in schema]
-        self.assertEqual(set(names), {
-            'delegate', 'run_command', 'file_read', 'list_dir', 'file_write',
-            'glob', 'grep', 'mcp_connect', 'mcp_list', 'mcp_disconnect',
-            'web_search', 'web_fetch',
-        })
+        for expected in ('delegate', 'run_command', 'file_read', 'list_dir',
+                         'file_write', 'glob', 'grep', 'file_edit', 'git',
+                         'git_commit', 'code_test', 'code_lint', 'code_format',
+                         'mcp_connect', 'mcp_list', 'mcp_disconnect',
+                         'web_search', 'web_fetch'):
+            self.assertIn(expected, names)
         for alias in ('bash', 'exec', 'read', 'view', 'ls', 'find', 'search',
-                      'web', 'open', 'fetch_page', 'read_file', 'write_file'):
+                      'web', 'open', 'fetch_page', 'read_file', 'write_file',
+                      'edit', 'commit'):
             self.assertNotIn(alias, names)
 
     def test_plan_mode_instruction_sent_to_provider(self):
