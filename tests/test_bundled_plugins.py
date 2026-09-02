@@ -6,7 +6,8 @@ from replio.config import Config
 from replio.plugins.manager import PluginManager, PluginError
 from replio.tools.registry import ToolRegistry
 
-BUNDLED = {'replio-core-websearch', 'replio-core-fs', 'replio-core-exec', 'replio-core-mcp'}
+BUNDLED = {'replio-core-websearch', 'replio-core-fs', 'replio-core-edit',
+           'replio-core-exec', 'replio-core-mcp'}
 
 
 class TestBundledPlugins(unittest.TestCase):
@@ -36,6 +37,7 @@ class TestBundledPlugins(unittest.TestCase):
         self.assertTrue({'web_search', 'web_fetch'} <= tools)
         self.assertTrue({'file_read', 'list_dir', 'file_write', 'glob', 'grep'} <= tools)
         self.assertIn('run_command', tools)
+        self.assertIn('file_edit', tools)
 
     def test_search_service_registered(self):
         self.pm.load()
@@ -85,6 +87,7 @@ class TestBundledPlugins(unittest.TestCase):
         from replio.config import DEFAULT_CONFIG
         self.assertIn('replio-core-websearch', DEFAULT_CONFIG['plugins'])
         self.assertIn('replio-core-fs', DEFAULT_CONFIG['plugins'])
+        self.assertIn('replio-core-edit', DEFAULT_CONFIG['plugins'])
         self.assertIn('replio-core-exec', DEFAULT_CONFIG['plugins'])
         self.assertIn('replio-core-mcp', DEFAULT_CONFIG['plugins'])
 
