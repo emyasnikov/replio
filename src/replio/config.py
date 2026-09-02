@@ -68,7 +68,7 @@ DEFAULT_CONFIG = {
     'mcp.servers': [],
     'mcp_server.allow_ask': True,
     'plugins': ['replio-core-websearch', 'replio-core-fs', 'replio-core-edit',
-                'replio-core-exec', 'replio-core-mcp'],
+                'replio-core-git', 'replio-core-exec', 'replio-core-mcp'],
 }
 
 _MISSING = object()
