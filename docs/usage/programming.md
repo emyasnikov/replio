@@ -315,7 +315,6 @@ Everything above uses only features shipped in the current release. The followin
 
 | Planned capability | Current workaround in this guide |
 |--------------------|-----------------------------------|
-| `git` tool (status/diff/commit as gated tools) | git through `run_command` behind `bash: ask`, merge by hand |
-| `run_command` command allowlist (e.g. only `pytest`, `ruff`) | Role separation, per-role containers, and `tools.allow` instead |
 | `/agent` personas command + auditor agents | `delegate` tool + bundled personas (in-process sub-agents), see the in-process section below. Auditors still need a review role |
-| `code_lint` / `code_format` / `code_test` wrappers | Plain `run_command` calls from the tester config |
+
+Shipped since this guide was written: a read-only `git` tool plus gated `git_commit` (status/diff/log/commit as gated tools instead of `run_command`), `code_test`/`code_lint`/`code_format` wrappers, the `run_command` command allowlist (`tool_permission.bash_allow`) replacing role-separation-plus-`tools.allow` for scoped shell, and the per-worktree instructions file (`project_instructions`, default `AGENTS.md`) auto-loaded into every agent's system prompt.

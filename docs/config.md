@@ -75,6 +75,7 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 | `clear_screen`              | `true`                 | Clear the screen before the REPL banner                                |
 | `show_version`              | `true`                 | Show the version in the REPL banner                                    |
 | `compact_keep`              | `4`                    | Messages to keep when compacting the provider context                  |
+| `project_instructions`     | `"AGENTS.md"`          | Per-worktree instructions file auto-loaded into the system prompt (e.g. `AGENTS.md`, `CLAUDE.md`). `""` disables. Absent files are skipped; content is capped at 20000 chars |
 | `noise_tools`               | `["web_fetch", "open", "fetch_page"]` | Tool results replaced by a marker in persisted sessions                |
 | `web_search`                | `false`                | Auto-search mode: search the web before answering                       |
 | `search_results`            | `5`                    | Number of search results to fetch                                      |
@@ -109,6 +110,7 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 ```json
 {
   "bash": "ask",
+  "bash_allow": ["pytest", "python -m unittest", "ruff", "git"],
   "delegate": "allow",
   "edit": "allow",
   "list": "allow",
@@ -119,6 +121,16 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 ```
 
 Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the project worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target persona - a configured persona uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while a persona not in the registry defaults to `deny` (see [personas.md](personas.md)).
+
+### `bash_allow` - command allowlist for `run_command`
+
+`tool_permission.bash_allow` (list, default `[]`) restricts `run_command` to commands whose first token matches an allowed prefix. Empty or unset means unrestricted (the `bash` category action applies to every command). When set:
+
+- Each command is split into chained segments over `&&`, `||`, `;`, `|`, and `&`, and every segment must start with one of the allowed prefixes (e.g. `pytest -q && ruff check .` needs both `pytest` and `ruff` allowed).
+- Shell-script forms are rejected outright: multi-line commands and heredocs (`<<`) always return `deny`.
+- A matching command falls through to the normal `bash` action (`ask` by default, `allow`/`deny` per config); a non-matching command is `deny`.
+
+The check runs through the per-invocation policy resolver, so it composes with modes, name-level `tools.deny`/`tools.allow`, and the worktree escalation. `bash_allow` gives a coding agent a safe default set (tests, linters, git) without opening up arbitrary shell.
 
 ## Model registry (not config)
 

@@ -82,6 +82,9 @@ Replio/
 │       ├── __init__.py
 │       └── http.py          # urllib-based SSE streaming
 └── plugins/                 # bundled plugins (shipped as replio.plugins.bundled), each is {src/, tests/}
+    ├── replio-core-edit/        # file_edit
+    ├── replio-core-git/         # git, git_commit
+    ├── replio-core-dev/         # code_test, code_lint, code_format
     ├── replio-core-exec/        # run_command
     ├── replio-core-fs/          # file_read, list_dir, file_write, glob, grep
     └── replio-core-websearch/   # web_search, web_fetch + search service
@@ -179,7 +182,7 @@ Plugins currently install from git URLs or local paths into the plugin roots. Sh
   - `PluginManager` discovers plugins in bundled `replio.plugins.bundled`, `~/.config/replio/plugins/`, and `.replio/plugins/` (local wins), validates the manifest (`replio_version`/`python` ranges), imports entry modules once, and hooks tools/providers/commands/services into the live registries
   - Management: `/plugins` and `replio plugins` - `install`/`update`/`uninstall`/`enable`/`disable`. Activation is via the `plugins` config list (empty = all)
   - Plugin third-party deps are lazy (imported inside plugin functions) - the core stays stdlib-only
-  - Built-in web + machine tools ship as bundled plugins (`replio-core-websearch`, `replio-core-fs`, `replio-core-exec`). Future: per-plugin venv isolation, PyPI entry-point source, externalizing the bundled plugins
+  - Built-in web + machine tools ship as bundled plugins (`replio-core-websearch`, `replio-core-fs`, `replio-core-exec`, `replio-core-edit`, `replio-core-git`, `replio-core-dev`). Future: per-plugin venv isolation, PyPI entry-point source, externalizing the bundled plugins
 
 Implement one phase at a time. Docs-first: restructure planning docs, then build the phase, mark it `[x]`, and log it in `CHANGELOG.md`.
 

@@ -27,7 +27,6 @@
 
 ## Open
 
-- [ ] `file_edit` tool - targeted search-and-replace in a file (Claude-Code-style Edit). Today `file_write` covers create/overwrite/append only
 - [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
 - [ ] Tool-use evaluation harness - task fixtures (task + expected tool trace + verifier) run headless via a mock provider, reporting tool-call accuracy / redundant calls / errors / tokens, runnable against real providers for comparison
 - [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`web_fetch` guidance to tool descriptions
@@ -58,7 +57,6 @@
     - `_provider_messages()` reconstructs the OpenAI payload (`assistant.tool_calls` + `tool`-role results) from the parts (engine.py `_provider_messages`/`_clean_messages`)
   - Optional, larger alternative - full turn-level parts + `[step-start]`/`[step-finish]` markers aggregating the multi-round tool loop into one assistant message per user turn (larger agent-loop change)
   - Touch points: `sessions/manager.py` (part-building helpers, `to_dict`/`from_dict`), `engine.py` (`_agent_loop` persistence, `_execute_tool_calls`, `_provider_messages`, `_clean_messages`, `compact_session`, `preview_session`, `_auto_name_session`), `sessions/render.py`, `docs/session.md`. Server `/sessions` + `/chat` are unaffected (names + `TurnResult` only)
-- [ ] `run_command` command allowlist - allow only safe shell commands (e.g. `pytest`, `ruff`, `git diff`, `python -m unittest`) via a `tool_permission.bash_allow` key rather than all-or-none `bash`. Match by startswith on each chained segment over `&&`/`||`/`;`/`|`/`&`, reject shell-script forms (heredocs, multi-line) (programming-fleet requirement from `docs/usage/programming.md`)
 - [ ] Thinking visibility - `/thinking on` + `reasoning` config documented, per-provider `reasoning_content` check so reasoning shows in the REPL
 - [ ] `/spawn` command - launch a scoped `replio serve` agent from the REPL (home -> project path), supervise (health/list/stop) and delegate to it (`docs/fleet.md`)
 - [ ] Remote channels - command agents from messaging apps (OpenClaw channels parity):
@@ -68,7 +66,6 @@
   - [ ] More adapters (Discord, Signal, email)
   - [ ] Remote auth + session scoping + headless deny
 - [ ] Plugin test harness - `replio plugins test <name>` ships. Bundled plugin suites live next to the plugins (`plugins/<name>/tests/`, discovered by the core suite). Remaining: external plugins are expected to ship a test suite, and `replio plugins test` is the runner for them
-- [ ] Project instructions file - per-worktree `AGENTS.md`-style context auto-loaded into the system prompt (claude-code `CLAUDE.md` parity)
 - [ ] Session recall - full-text search across past sessions (grep/index over `.replio/sessions/`) so an agent can answer from its own history
 - [ ] Tool dry-run mode - propose tool args/effects without executing (enterprise tool-gateway requirement)
 - [ ] Context-aware cross-plugin tool router - virtual tool names (`open`, `search`, ...) dispatch per-argument to the matching plugin handler via `register_handler(name, match=...)` (e.g. `open https://...` > replio-core-websearch, `open ../...` > replio-core-fs), with merged schemas and args-aware policy accessors
@@ -85,8 +82,7 @@
 - [ ] Auditor agents - sub-agents that review/check a produced output (tests, code review, fact-check)
 - [ ] Generate > check > correct orchestration - run a main agent, an auditor, and a fix pass in a loop until passing
 - [ ] Custom system prompts per session
-- [ ] `code_lint` / `code_format` / `code_test` / `code_debug` / `compile` - subprocess wrappers around existing CLIs (pylint, black, pytest, pdb, gcc/rustc), registered as tools with `category`/`permission`/`key_arg`
-- [ ] `git` - repository operations (status, diff, commit)
+- [ ] `code_debug` / `compile` - pdb/gcc/rustc wrappers (test/lint/format landed as `code_test`/`code_lint`/`code_format`)
 - [ ] `docs_search` - local grep + DuckDuckGo for documentation lookups
 - [ ] Workspace sessions - tools write into a scoped `--workspace` dir, optional `--git` sync
 - [ ] Sandboxed exec - namespace/container isolation for `run_command` (documented, planned for a later version)
@@ -108,6 +104,11 @@
 
 ## Done
 
+- [x] Project instructions file - per-worktree `AGENTS.md` auto-loaded into the system prompt (`project_instructions`, capped)
+- [x] `run_command` command allowlist - `tool_permission.bash_allow`, chain-aware prefix match, heredocs/multi-line rejected
+- [x] `code_test`/`code_lint`/`code_format` wrappers - dev.*_cmd config, bundled replio-core-dev plugin
+- [x] `git` tool - read-only git + gated `git_commit`, bundled replio-core-git plugin
+- [x] `file_edit` tool - targeted search-and-replace with diff preview, bundled replio-core-edit plugin
 - [x] Default tool-result cap - tool_max_result_chars default 100k, list_dir entry cap
 - [x] Default tool names namespaced - `web_fetch` merges `open`+`fetch_page`, `file_read`/`file_write` replace `read_file`/`write_file`. Old names kept as aliases
 - [x] Tool schema advertises canonical names only - aliases resolve at call time, not shipped as provider schemas (20 -> 13 defs)

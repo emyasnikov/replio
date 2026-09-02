@@ -126,11 +126,9 @@ Repo-aware coding assistance: version control, lint/format/test wrappers, scoped
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| `git` tool | M | status/diff/commit from the loop |
-| `code_lint`/`code_format`/`code_test` wrappers | M | test/CI triage flow |
-| `run_command` command allowlist | S-M | chain-aware startswith policy over `&&`/`||`/`,`/`|`/`&`, no shell scripts (`tool_permission.bash_allow`) |
-| Project instructions file | S-M | per-worktree AGENTS.md context |
 | Workspace sessions | M | scoped `--workspace` dir, optional git sync |
+
+Shipped (0.25): `git` / `git_commit` tools, `code_test`/`code_lint`/`code_format` wrappers, the `run_command` command allowlist (`tool_permission.bash_allow`), and the per-worktree instructions file (`project_instructions`, default `AGENTS.md`).
 
 ## Knowledge & memory
 

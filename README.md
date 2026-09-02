@@ -23,7 +23,7 @@ Replio is a deliberately small, auditable, zero-dependency agentic core built on
 - **Local-first** - config and session logs live on your disk. Bring your own provider key, or run fully local
 - **Multi-provider** - Ollama, OpenAI, Groq, Anthropic, plus any OpenAI-compatible endpoint, with automatic detection from the base URL
 - **Agentic REPL** - streaming token-by-token output, dimmed thinking, markdown-aware rendering, readline history, tab completion, and multi-line `"""` blocks
-- **Tool calling** - web search and page fetch, file read/write/list/glob/grep, and shell execution via OpenAI-compatible function calling, or directly with `/tool`
+- **Tool calling** - web search and page fetch, file read/write/list/glob/grep/edit, git status/diff/commit, test/lint/format wrappers, and shell execution via OpenAI-compatible function calling, or directly with `/tool`
 - **Permissions** - every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmation outside your worktree and an audit trail in session logs
 - **Modes** - named postures with their own instructions and permissions: `plan` (read-only) vs `build`, or custom modes, switchable live with `/mode` or via `--mode`
 - **Sessions** - complete append-only conversation logs that capture every tool call, result, and error, plus `/compact` and Markdown export
