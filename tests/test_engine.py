@@ -623,6 +623,40 @@ class TestEngineModes(unittest.TestCase):
         self.assertIn('plan mode', msgs[0]['content'])
         self.assertIn('read-only', msgs[0]['content'])
 
+    def test_project_instructions_injected_as_system_message(self):
+        worktree = self.engine.config.local_path.parent.parent
+        (worktree / 'AGENTS.md').write_text('# Replio conventions\n\nTest before commit.\n')
+        self.engine.chat('q')
+        msgs = self.engine.provider.chat.call_args.args[0]
+        system = [m for m in msgs if m['role'] == 'system']
+        self.assertTrue(any('Project instructions (AGENTS.md)' in m['content']
+                            for m in system))
+        self.assertTrue(any('Test before commit.' in m['content'] for m in system))
+
+    def test_project_instructions_absent_skipped(self):
+        worktree = self.engine.config.local_path.parent.parent
+        agents = worktree / 'AGENTS.md'
+        if agents.exists():
+            agents.rename(agents.with_suffix('.md.bak'))
+        try:
+            self.engine.chat('q')
+            msgs = self.engine.provider.chat.call_args.args[0]
+            for m in msgs:
+                self.assertNotIn('Project instructions', m.get('content', ''))
+        finally:
+            bak = worktree / 'AGENTS.md.bak'
+            if bak.exists():
+                bak.rename(agents)
+
+    def test_project_instructions_disabled_when_unset(self):
+        self.engine.config.set('project_instructions', '')
+        worktree = self.engine.config.local_path.parent.parent
+        (worktree / 'AGENTS.md').write_text('# Should be ignored\n')
+        self.engine.chat('q')
+        msgs = self.engine.provider.chat.call_args.args[0]
+        for m in msgs:
+            self.assertNotIn('Should be ignored', m.get('content', ''))
+
     def test_system_prompt_injected_for_headless(self):
         self.engine.config.set('system_prompt', 'You are a compliance bot.')
         self.engine.chat('q')

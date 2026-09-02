@@ -42,6 +42,15 @@ def merge_policy(config: Config) -> tuple[dict, list, list]:
     return permissions, allow, deny
 
 
+def _instructions_path(config: Config):
+    worktree = config.local_path.parent.parent
+    name = str(config.get('project_instructions') or '')
+    if not name.strip():
+        return None
+    candidate = worktree / name
+    return candidate if candidate.is_file() else None
+
+
 def system_instruction(config: Config) -> str:
     parts = []
     system_prompt = config.get('system_prompt')
@@ -51,3 +60,16 @@ def system_instruction(config: Config) -> str:
     if mode.instruction:
         parts.append(mode.instruction)
     return '\n\n'.join(parts).strip()
+
+
+def instructions_file_section(config: Config, max_chars: int = 20000) -> str:
+    path = _instructions_path(config)
+    if path is None:
+        return ''
+    try:
+        content = path.read_text(encoding='utf-8', errors='replace')
+    except OSError:
+        return ''
+    if max_chars > 0 and len(content) > max_chars:
+        content = content[:max_chars].rsplit('\n', 1)[0] + '\n... (truncated)'
+    return f'Project instructions ({path.name}):\n\n{content}'

@@ -51,6 +51,7 @@ DEFAULT_CONFIG = {
     'clear_screen': True,
     'show_version': True,
     'compact_keep': 4,
+    'project_instructions': 'AGENTS.md',
     'noise_tools': ['web_fetch', 'open', 'fetch_page'],
     'web_search': False,
     'search_results': 5,

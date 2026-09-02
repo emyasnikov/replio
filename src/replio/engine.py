@@ -739,7 +739,7 @@ class Engine:
         return refined_query if refined_query else query
 
     def _provider_messages(self) -> list[dict]:
-        from .modes import system_instruction
+        from .modes import system_instruction, instructions_file_section
         msgs = self.current_session.messages
         boundary = 0
         summary = None
@@ -755,6 +755,9 @@ class Engine:
                 'role': 'system',
                 'content': 'Summary of earlier conversation:\n\n' + summary,
             })
+        instructions = instructions_file_section(self.config)
+        if instructions:
+            out.append({'role': 'system', 'content': instructions})
         instruction = system_instruction(self.config)
         if instruction:
             out.append({'role': 'system', 'content': instruction})

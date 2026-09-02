@@ -4,7 +4,8 @@ import unittest
 from pathlib import Path
 
 from replio.config import Config
-from replio.modes import merge_policy, mode_list, resolve_mode, system_instruction
+from replio.modes import (instructions_file_section, merge_policy, mode_list,
+                          resolve_mode, system_instruction)
 
 
 def make_config(data: dict | None = None) -> Config:
@@ -150,6 +151,51 @@ class TestModes(unittest.TestCase):
         try:
             specs = mode_list(config)
             self.assertEqual([s.name for s in specs], ['alpha', 'zeta'])
+        finally:
+            config._tmp.cleanup()
+
+    def test_instructions_file_section_loads_worktree_file(self):
+        config = make_config({'project_instructions': 'AGENTS.md'})
+        try:
+            (config.local_path.parent.parent / 'AGENTS.md').write_text(
+                '# Conventions\n\nUse stdlib only.\n')
+            text = instructions_file_section(config)
+            self.assertIn('Project instructions (AGENTS.md)', text)
+            self.assertIn('Use stdlib only.', text)
+        finally:
+            config._tmp.cleanup()
+
+    def test_instructions_file_section_absent_file_returns_empty(self):
+        config = make_config({'project_instructions': 'MISSING.md'})
+        try:
+            self.assertEqual(instructions_file_section(config), '')
+        finally:
+            config._tmp.cleanup()
+
+    def test_instructions_file_section_disabled_when_unset(self):
+        config = make_config({'project_instructions': ''})
+        try:
+            self.assertEqual(instructions_file_section(config), '')
+        finally:
+            config._tmp.cleanup()
+
+    def test_instructions_file_section_default_is_agents_md(self):
+        config = make_config()
+        try:
+            (config.local_path.parent.parent / 'AGENTS.md').write_text('# Hi\n')
+            self.assertIn('Project instructions (AGENTS.md)',
+                          instructions_file_section(config))
+        finally:
+            config._tmp.cleanup()
+
+    def test_instructions_file_section_truncates_large(self):
+        config = make_config()
+        try:
+            (config.local_path.parent.parent / 'AGENTS.md').write_text(
+                'x\n' * 50000)
+            text = instructions_file_section(config, max_chars=1000)
+            self.assertIn('... (truncated)', text)
+            self.assertLess(len(text), 2000)
         finally:
             config._tmp.cleanup()
 
