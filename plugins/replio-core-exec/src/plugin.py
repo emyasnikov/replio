@@ -1,8 +1,12 @@
+import re
+import shlex
 import subprocess
 from pathlib import Path
 
 MAX_TIMEOUT = 600
 DEFAULT_TIMEOUT = 30
+
+_CHAIN_SPLIT = re.compile(r'(&&|\|\||;|\||&)')
 
 
 def _clamp_timeout(timeout) -> int:
@@ -25,6 +29,32 @@ def _truncate(text: str, max_chars: int = 0) -> str:
     if max_chars > 0 and len(text) > max_chars:
         return text[:max_chars].rsplit('\n', 1)[0] + '\n... (truncated)'
     return text
+
+
+def _chain_segments(command: str) -> list[str]:
+    parts = re.split(_CHAIN_SPLIT, command)
+    return [p.strip() for p in parts if p.strip() and p.strip() not in ('&&', '||', ';', '|', '&')]
+
+
+def _command_allowed(command: str, allowlist: list[str]) -> bool:
+    if not allowlist:
+        return True
+    if '\n' in command or '\r' in command or '<<' in command:
+        return False
+    for seg in _chain_segments(command):
+        if not any(seg.startswith(prefix) for prefix in allowlist if prefix):
+            return False
+    return True
+
+
+def _run_command_permission(args: dict, _permissions: dict | None = None) -> str | None:
+    allowlist = list((_permissions or {}).get('bash_allow') or [])
+    if not allowlist:
+        return None
+    command = str((args or {}).get('command') or '')
+    if _command_allowed(command, allowlist):
+        return None
+    return 'deny'
 
 
 def register_tools(registry):
@@ -56,6 +86,7 @@ def register_tools(registry):
         echo=True,
         aliases=['bash', 'exec'],
         param_aliases={'cmd': 'command'},
+        permission_fn=_run_command_permission,
     )
     def run_command(command: str, cwd: str | None = None,
                     timeout: int = 30, _config=None) -> str:

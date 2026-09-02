@@ -4,6 +4,7 @@ import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Callable
 
 from .config import Config
 from .sessions.manager import SessionManager
@@ -43,6 +44,14 @@ class TurnResult:
 
 CONTINUE_INSTRUCTION = ('Continue exactly where you stopped. '
                         'Do not repeat what was already written.')
+
+
+def _resolver_takes_policy(fn: Callable) -> bool:
+    try:
+        import inspect
+        return '_permissions' in inspect.signature(fn).parameters
+    except (TypeError, ValueError):
+        return False
 
 
 def _sanitize_session(name: str, limit: int = 64) -> str:
@@ -633,10 +642,14 @@ class Engine:
         if plugin_manager is not None:
             plugin_manager.register_tools(self._tool_registry)
         permissions, allow, deny = merge_policy(self.config)
-        resolvers = {
-            n: fn for n in self._tool_registry.names()
-            if (fn := self._tool_registry.resolver_for(n)) is not None
-        }
+        resolvers = {}
+        for n in self._tool_registry.names():
+            fn = self._tool_registry.resolver_for(n)
+            if fn is None:
+                continue
+            if _resolver_takes_policy(fn):
+                fn = (lambda f: lambda args, f=f: f(args, _permissions=permissions))(fn)
+            resolvers[n] = fn
         self._tool_policy = ToolPolicy(
             permissions=permissions,
             allow=allow,
