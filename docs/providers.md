@@ -10,9 +10,13 @@ Providers are the model backends. Replio speaks OpenAI-compatible `/v1/chat/comp
 | `openai` | `https://api.openai.com/v1` | `gpt-4o-mini` |
 | `groq` | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
 | `anthropic` | `https://api.anthropic.com/v1` | `claude-sonnet-4-20250514` |
+| `opencode` | `https://opencode.ai/zen/v1` | `kimi-k3` |
+| `opencode-go` | `https://opencode.ai/zen/go/v1` | `deepseek-v4-flash` |
 | `openai-compatible` | *(none)* | *(none)* |
 
 `openai-compatible` is the generic fallback for any other OpenAI-compatible endpoint - local models, gateways, or self-hosted servers.
+
+`opencode` (Zen) and `opencode-go` (Go) are the two hosted catalogs at `opencode.ai`. Both use the same OpenCode API key (`OPENCODE_API_KEY`, resolved from the model registry like any other provider) but are separate paid subscriptions. Zen is the curated multi-model gateway. Go is the low-cost subscription for open coding models. Model refs accept the `opencode/<model-id>` and `opencode-go/<model-id>` conventions as well as bare model ids - the prefix is stripped before the request. A successful model listing is an inventory, not an entitlement check: inference still requires the matching subscription. Fetch the current lineup from `https://opencode.ai/zen/v1/models` and `https://opencode.ai/zen/go/v1/models`.
 
 ## Configuration
 
@@ -31,7 +35,7 @@ The engine looks up the API key for the active `provider`/`base_url`/`model` in 
 
 ## Auto-detection
 
-When the configured provider name is unknown, or when `base_url` matches a known host, the provider is detected from the URL. `detect_provider()` matches `openai.com`, `groq.com`, `anthropic.com`, and `ollama.com` / `ollama.ai`, falling back to `openai-compatible` for anything else. `/connect` uses the same detection, so entering a base URL switches the provider automatically.
+When the configured provider name is unknown, or when `base_url` matches a known host, the provider is detected from the URL. `detect_provider()` matches `openai.com`, `groq.com`, `anthropic.com`, `ollama.com` / `ollama.ai`, and `opencode.ai` (path `/zen/go` selects `opencode-go`, otherwise `opencode`), falling back to `openai-compatible` for anything else. `/connect` uses the same detection, so entering a base URL switches the provider automatically.
 
 ## Setting up
 
@@ -74,7 +78,7 @@ The `reasoning` config (default `"auto"`) tells the model reasoning is desired a
 | `openai` | no `reasoning_effort` | `reasoning_effort = "low"\|"medium"\|"high"` | `reasoning_effort = "medium"` |
 | `anthropic` | `thinking: {type: "disabled"}` | `thinking: {type: "enabled", budget_tokens: 1024\|2048\|4096}` | `thinking: {type: "enabled", budget_tokens: 2048}` |
 | `ollama` (Qwen) | `enable_thinking: false` | `enable_thinking: true` (`chat_template_kwargs.thinking: true`) | `enable_thinking: true` |
-| other / `openai-compatible` | nothing | `reasoning_effort` pass-through | nothing (provider default) |
+| other / `openai-compatible` / `opencode` / `opencode-go` | nothing | `reasoning_effort` pass-through | nothing (provider default) |
 
 ## Adding a provider
 

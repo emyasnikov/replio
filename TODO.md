@@ -27,6 +27,7 @@
 
 ## Open
 
+- [ ] Externalize bundled providers - move `opencode`/`opencode-go` (and the vendor providers) out of the core into bundled plugins, keeping `BaseProvider`/`OpenAICompatibleProvider`, the `PROVIDERS` dict + `detect_provider`, and the plugin `register_providers` hook as the core mechanisms. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in `/connect`
 - [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
 - [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`web_fetch` guidance to tool descriptions
 - [ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc personas/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)
@@ -103,6 +104,7 @@
 
 ## Done
 
+- [x] OpenCode Zen + Go providers - opencode.ai endpoints, model-ref strip, URL detection
 - [x] Tool-use evaluation harness - replio eval + fixture plugin, metrics
 - [x] Project instructions file - per-worktree `AGENTS.md` in system prompt, capped
 - [x] `run_command` allowlist - `tool_permission.bash_allow`, heredocs/multi-line rejected

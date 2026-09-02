@@ -174,6 +174,7 @@ Capabilities install as discoverable, isolated packages.
 | Shared plugin virtualenv | M | one venv for all plugin dependencies |
 | Per-plugin virtualenv isolation | M | strongest dependency separation |
 | Externalize bundled plugins | M | versioned repos, bundled copies stay the default |
+| Externalize bundled providers - `opencode`/`opencode-go` (then the vendor providers) move to bundled plugins via the existing `register_providers` hook. `BaseProvider`/`OpenAICompatibleProvider`, the `PROVIDERS` dict, `detect_provider`, and engine resolution stay core. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in `/connect` | M | core stays the substrate, gateway/vendor providers version independently |
 | Plugin test harness | S-M | plugins ship a test suite, `replio plugins test <name>` runs it |
 | Cross-plugin tool router | M | virtual `open`/`search` dispatch by argument |
 | Web scraper + PDF-to-text plugins | S-M | non-text content types |

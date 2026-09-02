@@ -39,7 +39,7 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 
 | Key                         | Default                | Description                                                            |
 |-----------------------------|------------------------|------------------------------------------------------------------------|
-| `provider`                  | `"ollama"`             | Provider name (`ollama`, `openai`, `groq`, `anthropic`, `openai-compatible`) |
+| `provider`                  | `"ollama"`             | Provider name (`ollama`, `openai`, `groq`, `anthropic`, `opencode`, `opencode-go`, `openai-compatible`) |
 | `model`                     | `"llama3.2"`           | Model name                                                             |
 | `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
 | `temperature`               | `0.7`                  | Sampling temperature                                                   |

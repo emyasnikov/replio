@@ -21,7 +21,7 @@ Replio is a deliberately small, auditable, zero-dependency agentic core built on
 - **Zero dependencies** - everything is Python standard library. Nothing to audit, no supply chain, no lockfile churn
 - **One agent loop** - a single SSE stream per turn powers the REPL, the CLI, and the API. No duplicated logic across front-ends
 - **Local-first** - config and session logs live on your disk. Bring your own provider key, or run fully local
-- **Multi-provider** - Ollama, OpenAI, Groq, Anthropic, plus any OpenAI-compatible endpoint, with automatic detection from the base URL
+- **Multi-provider** - Ollama, OpenAI, Groq, Anthropic, OpenCode Zen/Go, plus any OpenAI-compatible endpoint, with automatic detection from the base URL
 - **Agentic REPL** - streaming token-by-token output, dimmed thinking, markdown-aware rendering, readline history, tab completion, and multi-line `"""` blocks
 - **Tool calling** - web search and page fetch, file read/write/list/glob/grep/edit, git status/diff/commit, test/lint/format wrappers, and shell execution via OpenAI-compatible function calling, or directly with `/tool`
 - **Permissions** - every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmation outside your worktree and an audit trail in session logs

@@ -11,7 +11,7 @@ from replio.chat import ChatLoop
 from replio.providers import (
     PROVIDERS, detect_provider,
     OpenAICompatibleProvider, OllamaProvider, OpenAIProvider,
-    GroqProvider, AnthropicProvider,
+    GroqProvider, AnthropicProvider, OpenCodeProvider, OpenCodeGoProvider,
 )
 
 
@@ -36,6 +36,16 @@ class TestProviderDefaults(unittest.TestCase):
         p = AnthropicProvider()
         self.assertEqual(p.base_url, 'https://api.anthropic.com/v1')
         self.assertEqual(p.model, 'claude-sonnet-4-20250514')
+
+    def test_opencode_defaults(self):
+        p = OpenCodeProvider()
+        self.assertEqual(p.base_url, 'https://opencode.ai/zen/v1')
+        self.assertEqual(p.model, 'kimi-k3')
+
+    def test_opencode_go_defaults(self):
+        p = OpenCodeGoProvider()
+        self.assertEqual(p.base_url, 'https://opencode.ai/zen/go/v1')
+        self.assertEqual(p.model, 'deepseek-v4-flash')
 
     def test_explicit_values_override_defaults(self):
         p = OpenAIProvider(base_url='https://custom.example.com', model='my-model')
@@ -68,6 +78,8 @@ class TestDetectProvider(unittest.TestCase):
             'https://api.groq.com/openai/v1': 'groq',
             'https://api.anthropic.com/v1': 'anthropic',
             'https://api.ollama.com': 'ollama',
+            'https://opencode.ai/zen/v1': 'opencode',
+            'https://opencode.ai/zen/go/v1': 'opencode-go',
             'http://localhost:11434': 'openai-compatible',
         }
         for url, expected in cases.items():
@@ -80,7 +92,8 @@ class TestDetectProvider(unittest.TestCase):
 class TestProviderRegistry(unittest.TestCase):
 
     def test_all_names_registered(self):
-        for name in ('ollama', 'openai', 'groq', 'anthropic', 'openai-compatible'):
+        for name in ('ollama', 'openai', 'groq', 'anthropic', 'opencode',
+                     'opencode-go', 'openai-compatible'):
             self.assertIn(name, PROVIDERS)
 
     def test_all_classes_are_compatible_subclasses(self):
@@ -89,7 +102,8 @@ class TestProviderRegistry(unittest.TestCase):
 
     def test_detected_provider_is_registered(self):
         for url in ('https://api.openai.com/v1', 'https://api.groq.com/openai/v1',
-                    'https://api.anthropic.com/v1', 'https://api.ollama.com'):
+                    'https://api.anthropic.com/v1', 'https://api.ollama.com',
+                    'https://opencode.ai/zen/v1', 'https://opencode.ai/zen/go/v1'):
             self.assertIn(detect_provider(url), PROVIDERS)
 
 
@@ -211,6 +225,8 @@ class TestProviderEndpoints(unittest.TestCase):
             OpenAIProvider: 'https://api.openai.com/v1/chat/completions',
             GroqProvider: 'https://api.groq.com/openai/v1/chat/completions',
             AnthropicProvider: 'https://api.anthropic.com/v1/chat/completions',
+            OpenCodeProvider: 'https://opencode.ai/zen/v1/chat/completions',
+            OpenCodeGoProvider: 'https://opencode.ai/zen/go/v1/chat/completions',
         }
         for factory, expected in cases.items():
             self.assertEqual(factory()._endpoint(), expected, factory.__name__)
@@ -416,6 +432,29 @@ class TestReasoningPayload(unittest.TestCase):
 
     def test_ollama_off_disables_thinking(self):
         self.assertFalse(self._payload(OllamaProvider, 'off')['enable_thinking'])
+
+
+class TestOpenCodeModelRefs(unittest.TestCase):
+
+    def test_opencode_strips_ref_prefix(self):
+        p = OpenCodeProvider(model='opencode/kimi-k3')
+        payload = p._payload([{'role': 'user', 'content': 'hi'}])
+        self.assertEqual(payload['model'], 'kimi-k3')
+
+    def test_opencode_keeps_bare_model(self):
+        p = OpenCodeProvider(model='kimi-k3')
+        payload = p._payload([{'role': 'user', 'content': 'hi'}])
+        self.assertEqual(payload['model'], 'kimi-k3')
+
+    def test_opencode_go_strips_ref_prefix(self):
+        p = OpenCodeGoProvider(model='opencode-go/deepseek-v4-flash')
+        payload = p._payload([{'role': 'user', 'content': 'hi'}])
+        self.assertEqual(payload['model'], 'deepseek-v4-flash')
+
+    def test_opencode_go_keeps_bare_model(self):
+        p = OpenCodeGoProvider(model='deepseek-v4-flash')
+        payload = p._payload([{'role': 'user', 'content': 'hi'}])
+        self.assertEqual(payload['model'], 'deepseek-v4-flash')
 
 
 if __name__ == '__main__':
