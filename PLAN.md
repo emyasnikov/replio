@@ -108,7 +108,7 @@ React to and see jobs from outside the box. Run teams on schedule.
 
 ## Fleet & control plane
 
-Run many scoped agents under a supervisor with a control surface. The supervisor itself (`replio fleet` - ports, health, restart backoff, config gen) is shipped. The rows below are the open work on top.
+Run many scoped agents under a supervisor with a control surface.
 
 | Task | Effort | Provides |
 |------|--------|----------|
@@ -126,8 +126,6 @@ Repo-aware coding assistance: version control, lint/format/test wrappers, scoped
 | Task | Effort | Provides |
 |------|--------|----------|
 | Workspace sessions | M | scoped `--workspace` dir, optional git sync |
-
-Shipped (0.25): `git` / `git_commit` tools, `code_test`/`code_lint`/`code_format` wrappers, the `run_command` command allowlist (`tool_permission.bash_allow`), and the per-worktree instructions file (`project_instructions`, default `AGENTS.md`).
 
 ## Knowledge & memory
 

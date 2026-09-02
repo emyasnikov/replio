@@ -67,8 +67,20 @@ class TestDevTools(unittest.TestCase):
                     '    def test_p(self):\n'
                     '        self.assertTrue(True)\n')
         out = self.run_tool('code_test', cwd=str(self.root))
-        self.assertIn('$ python -m unittest discover', out)
+        self.assertIn(f'$ {sys.executable} -m unittest discover', out)
         self.assertIn('exit 0', out)
+        self.assertIn('OK', out)
+
+    def test_code_test_explicit_python_resolves_interpreter(self):
+        self._write('tests/__init__.py', '')
+        self._write('tests/test_ok.py', 'import unittest\n'
+                    'class T(unittest.TestCase):\n'
+                    '    def test_p(self):\n'
+                    '        self.assertTrue(True)\n')
+        out = self.run_tool_cfg('code_test',
+                                _Cfg(**{'dev.test_cmd': 'python -m unittest discover'}),
+                                cwd=str(self.root))
+        self.assertIn(f'$ {sys.executable} -m unittest discover', out)
         self.assertIn('OK', out)
 
     def test_code_test_default_cmd_from_config(self):

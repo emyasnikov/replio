@@ -1,5 +1,6 @@
 import shlex
 import subprocess
+import sys
 from pathlib import Path
 
 MAX_TIMEOUT = 600
@@ -10,6 +11,12 @@ DEFAULTS = {
     'lint': 'ruff check .',
     'format': 'ruff format .',
 }
+
+
+def _resolve_interpreter(argv: list[str]) -> list[str]:
+    if argv and argv[0] in ('python', 'python3'):
+        return [sys.executable] + argv[1:]
+    return argv
 
 
 def _clamp_timeout(timeout) -> int:
@@ -44,7 +51,8 @@ def _cmd(config, key: str, default: str) -> list[str]:
         argv = shlex.split(raw)
     except ValueError:
         argv = raw.split()
-    return argv or [default]
+    argv = argv or [default]
+    return _resolve_interpreter(argv)
 
 
 def _run(argv: list[str], cwd: str | None, config,
