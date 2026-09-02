@@ -9,7 +9,7 @@
 - Fleet and swarm orchestration as the two layers - fleet: supervisor running many scoped `replio serve` instances (port allocation, health checks, restart policy, per-agent config generation), swarm: `/agent` personas, auditor agents, generate > check > correct
 - Community presence - decide on Discord/X channels and fill the README community link slots
 - Add multiuser capability or queue for API requests (request queue, per-token rate limits)
-- Add ReadTheDocs documentation and GitHub Pages website
+- Add ReadTheDocs documentation
 - Citations / source attribution - return URL + snippet with every answer
 - Bookmarks - `/bookmark add/remove/list` for session pinning
 - Interactive data analysis - CSV querying, SQL execution, code eval in REPL
@@ -104,6 +104,7 @@
 
 ## Done
 
+- [x] GitHub Pages website - mkdocs site + Actions workflow, docs stay in main
 - [x] OpenCode Zen + Go providers - opencode.ai endpoints, model-ref strip, URL detection
 - [x] Tool-use evaluation harness - replio eval + fixture plugin, metrics
 - [x] Project instructions file - per-worktree `AGENTS.md` in system prompt, capped

@@ -213,6 +213,6 @@ Distribution and outward-facing presence.
 |------|--------|----------|
 | `replio update` | M | self-update |
 | Standalone binary build | M | single executable |
-| Docs site | S-M | ReadTheDocs + GitHub Pages |
+| Docs site (ReadTheDocs) | S-M | ReadTheDocs reference docs |
 | Community channels | S | Discord/X slots in README |
 | Naming/positioning + competitor research | S | validated USP and name decision |

@@ -1,0 +1,44 @@
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install site builder
+        run: pip install mkdocs mkdocs-material
+      - name: Assemble site sources
+        run: |
+          rm -rf site/build
+          mkdir -p site/build/reference/usage
+          cp site/overview.md site/build/index.md
+          cp VISION.md site/build/vision.md
+          cp PLAN.md site/build/roadmap.md
+          cp TODO.md site/build/backlog.md
+          cp CHANGELOG.md site/build/changelog.md
+          cp docs/*.md site/build/reference/
+          cp docs/usage/*.md site/build/reference/usage/
+          sed -i '/](use-cases\/)/d; /](vs\/)/d' site/build/reference/index.md
+      - name: Build site
+        run: mkdocs build -f site/mkdocs.yml
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: site/site
+          publish_branch: gh-pages

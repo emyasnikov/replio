@@ -4,6 +4,7 @@
 
 <p>
   <a href="https://pypi.org/project/replio/"><img src="https://img.shields.io/pypi/v/replio" alt="PyPI version"></a>
+  <a href="https://emyasnikov.github.io/replio/"><img src="https://img.shields.io/badge/docs-site-blue" alt="Site"></a>
   <img src="https://img.shields.io/badge/python-%3E%3D3.10-blue" alt="Python >=3.10">
   <img src="https://img.shields.io/github/actions/workflow/status/emyasnikov/replio/ci.yml?branch=main" alt="CI">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="Zero dependencies">
@@ -164,7 +165,7 @@ The project is stdlib-only with no external dependencies. See [AGENTS.md](AGENTS
 
 ## Documentation
 
-Detailed references are in [docs/index.md](docs/index.md).
+The [website](https://emyasnikov.github.io/replio/) hosts the vision, development plan, and this documentation, rebuilt from `main` on every push. Detailed references are in [docs/index.md](docs/index.md).
 
 ## License
 

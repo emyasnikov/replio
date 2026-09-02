@@ -1,0 +1,61 @@
+site_name: Replio
+site_description: A lightweight, zero-dependency agentic core for fleets of single-purpose agents
+site_url: https://emyasnikov.github.io/replio/
+docs_dir: build
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.top
+    - toc.follow
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+plugins:
+  - search
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+nav:
+  - Overview: index.md
+  - Vision: vision.md
+  - Roadmap: roadmap.md
+  - Backlog: backlog.md
+  - Changelog: changelog.md
+  - Reference docs:
+      - reference/index.md
+      - reference/api.md
+      - reference/architecture.md
+      - reference/commands.md
+      - reference/config.md
+      - reference/deploy.md
+      - reference/eval.md
+      - reference/fleet.md
+      - reference/jobs.md
+      - reference/mcp.md
+      - reference/personas.md
+      - reference/plugins.md
+      - reference/providers.md
+      - reference/security.md
+      - reference/session.md
+      - reference/skills.md
+      - reference/swarm.md
+      - reference/teams.md
+      - reference/testing.md
+      - reference/tools.md
+      - reference/writing-tools.md
+      - reference/usage/programming.md
