@@ -1,0 +1,1512 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A lightweight, zero-dependency agentic core for fleets of single-purpose agents">
+      
+      
+      
+        <link rel="canonical" href="https://emyasnikov.github.io/replio/backlog/">
+      
+      
+        <link rel="prev" href="../roadmap/">
+      
+      
+        <link rel="next" href="../changelog/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Backlog - Replio</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#todo" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Replio" class="md-header__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Replio
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Backlog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Replio" class="md-nav__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Replio
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vision/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vision
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Done
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference docs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference docs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Replio Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands &amp; CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/deploy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/eval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool-use evaluation harness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent fleets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduled and durable jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP (Model Context Protocol)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/personas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Personas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/session/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/swarm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent swarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/teams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Teams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/usage/programming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Done
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="todo">TODO<a class="headerlink" href="#todo" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Human-in-the-loop channels - job events outbound (<code>proposed</code>, <code>will_run</code>, <code>failed</code>, <code>waiting_approval</code>) plus inbound actions (<code>approve</code>/<code>reject</code>/<code>run</code>/<code>disable</code>) over configurable connectors (webhook first, then email, then Telegram), so a job can reach an operator who is not on the box</li>
+<li>Global jobs overview across agents - <code>replio jobs list --root &lt;dir&gt;</code> fleet scan, a <code>GET /jobs</code> + <code>POST /jobs/&lt;name&gt;/approve|reject|run|disable</code> operator API on <code>replio serve</code>, then a web Control UI, so one view shows which agents run next and with which task</li>
+<li>Edge / offline store-and-forward buffering - offline-capable agents with local buffering for unreliable connectivity (enterprise use case)</li>
+<li>Immutable agent config - <code>replio serve</code> agents must never be able to change their own configuration, permissions, or tool list (control-plane rule from the use-case reference architecture)</li>
+<li>Hash-chained / tamper-evident audit log - additive on session logs (enterprise.md recommendation), hash-chained append or WORM storage</li>
+<li>Single-purpose agent fleet with "one agent per process, scoped to a folder" as the headline pattern. README + <code>docs/fleet.md</code> set the niche</li>
+<li>Fleet and swarm orchestration as the two layers - fleet: supervisor running many scoped <code>replio serve</code> instances (port allocation, health checks, restart policy, per-agent config generation), swarm: <code>/agent</code> personas, auditor agents, generate &gt; check &gt; correct</li>
+<li>Community presence - decide on Discord/X channels and fill the README community link slots</li>
+<li>Add multiuser capability or queue for API requests (request queue, per-token rate limits)</li>
+<li>Add ReadTheDocs documentation</li>
+<li>Citations / source attribution - return URL + snippet with every answer</li>
+<li>Bookmarks - <code>/bookmark add/remove/list</code> for session pinning</li>
+<li>Interactive data analysis - CSV querying, SQL execution, code eval in REPL</li>
+<li>Notebook mode - persistent editable cells with run outputs</li>
+<li>Hybrid web + local RAG - vector store (FAISS/Weaviate), embeddings, local document search</li>
+<li>Command palette / fuzzy search - CTRL-P style history search</li>
+<li>Topic-aware ranking - classifier for query intent to weight search results</li>
+<li>Naming / positioning decision - "Replio" collides with commercial SaaS products (<code>replio.chat</code>, <code>repliohq.com</code>, <code>replio.eu</code>), kept for now (PyPI + repo claimed), revisit before any promotion push. Candidate free names: <code>pypelio</code>, <code>replcore</code>, <code>replkit</code></li>
+<li>Competitor research - validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products. Comparison notes now live in <code>docs/vs/</code> and feed the feature backlog (Plan/Build modes, Web Control UI, plugin marketplace, telemetry, binary builds, sharing)</li>
+<li>Self-update - <code>replio update</code> (Pi <code>pi update --self</code> analogue)</li>
+<li>Standalone binary build - Pi-style release script producing a single executable (contentious for a zero-dep Python package)</li>
+<li>Opt-in telemetry contracts - vendor-neutral event schema (OpenCode, Pi <code>@earendil-works/pi-telemetry</code>). Decide whether it fits the no-telemetry stance</li>
+<li>Conversation sharing - web-shareable session links (OpenCode <code>/share</code>) or published sessions (Pi <code>pi-share-hf</code>), building on the planned Markdown export</li>
+<li>Plugin registry / marketplace - discoverable plugin sharing (OpenClaw ClawHub analogue). PyPI entry-point source is a prerequisite</li>
+</ul>
+<h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] Externalize bundled providers - move <code>opencode</code>/<code>opencode-go</code> (and the vendor providers) out of the core into bundled plugins, keeping <code>BaseProvider</code>/<code>OpenAICompatibleProvider</code>, the <code>PROVIDERS</code> dict + <code>detect_provider</code>, and the plugin <code>register_providers</code> hook as the core mechanisms. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in <code>/connect</code></li>
+<li>[ ] Full <code>file_*</code> namespace extension - if <code>file_glob</code>/<code>file_grep</code> prove better with most models, extend the prefix to <code>list_dir</code>/<code>glob</code>/<code>grep</code> (old names stay aliases)</li>
+<li>[ ] Tool spec polish - rename <code>grep.glob</code> -&gt; <code>include</code> (alias <code>glob</code>), add examples and prefer-<code>web_fetch</code> guidance to tool descriptions</li>
+<li>[ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc personas/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)</li>
+<li>[ ] Template-based team composition - match persona/skill templates from the kit library against the request + project description, generate only the deltas, reuse proven artifacts across projects</li>
+<li>[ ] Team kit library - tag/store proven teams, personas, and skills per stack and customer, importable into new projects without publishing internal know-how</li>
+<li>[ ] Sequential team runs - stage-by-stage delegation via <code>run_subagent</code> with briefs generated per run (task + prior results + team memory + stage handoff), shared team memory file (<code>.replio/teams/&lt;name&gt;/memory.md</code>), persistent member sessions for recurring teams, fresh <code>sub_</code> sessions for one-off runs (context economics in VISION.md)</li>
+<li>[ ] Plugin contribution hooks - <code>register_personas</code> / <code>register_teams</code> / <code>register_skills</code> plugin entry hooks + <code>PersonaRegistry.reload()</code>, so the kit ships templates without forking the core</li>
+<li>[ ] Mid-run blocking job approval - an <code>ask</code> tool inside a running job pauses the run in place (per-tool-call <code>waiting_approval</code>), notifies via a connector, and resumes the same session when the operator replies. Needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run <code>--require-approval</code> gate)</li>
+<li>[ ] Job event hooks - the scheduler emits typed transitions (<code>proposed</code>, <code>approved</code>, <code>will_run</code>, <code>executing</code>, <code>verified</code>, <code>failed</code>, <code>timeout</code>, <code>waiting_approval</code>) to registered <code>services</code>. Channel-agnostic core, first consumers are the connectors and the operator API</li>
+<li>[ ] Job connectors - bundled <code>replio-core-webhook</code> (stdlib JSON POST, zero deps, works with n8n/IFTTT/any URL) first. External email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API so operators can react in time</li>
+<li>[ ] Jobs operator API - <code>GET /jobs</code> and <code>POST /jobs/&lt;name&gt;/approve|reject|run|disable</code> on <code>replio serve</code>, so clients (web Control UI, connectors, fleet supervisor) can see and act per agent</li>
+<li>[ ] Fleet jobs overview - <code>replio jobs list --root &lt;dir&gt;</code> scanning agent worktrees (agent, job, status, next run, task table), then the web Control UI on top</li>
+<li>[ ] Interactive delegation focus - REPL jumps in/out of the active sub-agent (request or automatic on delegate), arrows switch between concurrent <code>delegate_*</code> session logs rendered from their own saved logs (opencode-style sub-agent views)</li>
+<li>[ ] Persona directory scan for export/import - read <code>.replio/personas/*.md</code> (front-matter personas) to import and export personas to Markdown, paralleling the sessions Markdown export/import</li>
+<li>[ ] Delegation progress in the REPL - live status of which sub-agent is working and its progress mid-run. <code>delegate</code> already surfaces the task and the final result (plus a sub footer via <code>delegate_echo</code>). The next step is a progress channel read out of the sub-engine loop, which the single blocking <code>Engine.chat()</code> does not expose today</li>
+<li>[ ] Auto team selection - the lead agent picks personas from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -&gt; Researcher &gt; Writer &gt; Referencer &gt; Editor, landing with the team kit composition flow)</li>
+<li>[ ] Session log full-restructuring (deferred) - restructure <code>messages</code> from flat role-attribute dicts into a typed <code>parts</code> model, borrowing OpenCode's session file structure (<code>.opencode/sessions/ses_*.json</code>). Deferred: the current flat format already reconstructs every conversation element, so this is architectural polish / ecosystem alignment, not a correctness fix. See the detailed spec below. Do NOT migrate existing <code>.replio/sessions/*.json</code> - they are historical and remain readable as-is</li>
+<li>Reference - OpenCode stores each turn as <code>{role, messageId, timestamp, parts[]}</code> where <code>parts</code> are typed objects:<ul>
+<li><code>{"type": "text", "text": ...}</code> - assistant/user content</li>
+<li><code>{"type": "thinking", "text": ...}</code> - reasoning as its own part (not an attribute of the message)</li>
+<li><code>{"type": "tool", "toolName, toolInput, toolOutput, isError}</code> - tool call and result co-located in one object</li>
+<li><code>[step-start]</code> / <code>[step-finish]</code> text parts delimit steps within a turn</li>
+<li>Top-level: <code>{_id, title, startedAt, updatedAt, compactedAt, parentId, subSessions[], turns[], permissions[], errors[]}</code></li>
+</ul>
+</li>
+<li>Recommended target (role-level parts + co-located tool part):<ul>
+<li>Each message becomes <code>{"id": "msg_&lt;hex&gt;", "role": ..., "timestamp": ..., &lt;role meta&gt;, "parts": [...]}</code></li>
+<li>Part types: <code>text</code>, <code>thinking</code>, and <code>tool</code> (co-locating <code>id</code>/<code>tool</code>/<code>input</code>/<code>output</code>/<code>is_error</code>/<code>analysis</code>) so a single assistant message holds thinking + answer + each tool step, dropping the separate <code>tool</code>-role messages</li>
+<li><code>_provider_messages()</code> reconstructs the OpenAI payload (<code>assistant.tool_calls</code> + <code>tool</code>-role results) from the parts (engine.py <code>_provider_messages</code>/<code>_clean_messages</code>)</li>
+</ul>
+</li>
+<li>Optional, larger alternative - full turn-level parts + <code>[step-start]</code>/<code>[step-finish]</code> markers aggregating the multi-round tool loop into one assistant message per user turn (larger agent-loop change)</li>
+<li>Touch points: <code>sessions/manager.py</code> (part-building helpers, <code>to_dict</code>/<code>from_dict</code>), <code>engine.py</code> (<code>_agent_loop</code> persistence, <code>_execute_tool_calls</code>, <code>_provider_messages</code>, <code>_clean_messages</code>, <code>compact_session</code>, <code>preview_session</code>, <code>_auto_name_session</code>), <code>sessions/render.py</code>, <code>docs/session.md</code>. Server <code>/sessions</code> + <code>/chat</code> are unaffected (names + <code>TurnResult</code> only)</li>
+<li>[ ] Thinking visibility - <code>/thinking on</code> + <code>reasoning</code> config documented, per-provider <code>reasoning_content</code> check so reasoning shows in the REPL</li>
+<li>[ ] <code>/spawn</code> command - launch a scoped <code>replio serve</code> agent from the REPL (home -&gt; project path), supervise (health/list/stop) and delegate to it (<code>docs/fleet.md</code>)</li>
+<li>[ ] Remote channels - command agents from messaging apps (OpenClaw channels parity):</li>
+<li>[ ] Channel gateway - one adapter surface over the engine/serve API</li>
+<li>[ ] Telegram adapter - long-polling bot, send + receive</li>
+<li>[ ] WhatsApp adapter - business-API HTTP channel</li>
+<li>[ ] More adapters (Discord, Signal, email)</li>
+<li>[ ] Remote auth + session scoping + headless deny</li>
+<li>[ ] Plugin test harness - <code>replio plugins test &lt;name&gt;</code> ships. Bundled plugin suites live next to the plugins (<code>plugins/&lt;name&gt;/tests/</code>, discovered by the core suite). Remaining: external plugins are expected to ship a test suite, and <code>replio plugins test</code> is the runner for them</li>
+<li>[ ] Session recall - full-text search across past sessions (grep/index over <code>.replio/sessions/</code>) so an agent can answer from its own history</li>
+<li>[ ] Tool dry-run mode - propose tool args/effects without executing (enterprise tool-gateway requirement)</li>
+<li>[ ] Context-aware cross-plugin tool router - virtual tool names (<code>open</code>, <code>search</code>, ...) dispatch per-argument to the matching plugin handler via <code>register_handler(name, match=...)</code> (e.g. <code>open https://...</code> &gt; replio-core-websearch, <code>open ../...</code> &gt; replio-core-fs), with merged schemas and args-aware policy accessors</li>
+<li>[ ] Swarm orchestration - agent cooperation layer (<code>docs/swarm.md</code>): <code>/agent</code> personas, auditor agents, generate &gt; check &gt; correct, and team patterns as sub-tasks below</li>
+<li>[ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store</li>
+<li>[ ] Agent folder watcher - internal bundled plugin (stdlib <code>threading</code> + <code>pathlib</code> polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps</li>
+<li>[ ] Minimal web Control UI - stdlib <code>http.server</code> page over the existing <code>replio serve</code> JSON API (OpenClaw Control UI analogue). Richer frameworks stay plugin-first</li>
+<li>[ ] Externalize the bundled plugins (<code>replio-core-websearch</code>/<code>fs</code>/<code>exec</code>) into separate versioned repositories - the bundled copies stay the shipped defaults. Global/local plugins of the same name already override them</li>
+<li>[ ] PyPI plugin source - discover installed plugin packages via <code>importlib.metadata</code> entry points (<code>replio.plugins</code> group)</li>
+<li>[ ] Shared plugin virtualenv - one venv for all plugin dependencies, injected at import</li>
+<li>[ ] Per-plugin virtualenv isolation - <code>~/.config/replio/plugins/&lt;name&gt;/.venv</code>. The loader injects its site-packages at import (strongest dependency separation)</li>
+<li>[ ] Web scraper plugin - full page scraping beyond <code>fetch_page</code>'s text extraction (structured content, links), shipped as an external plugin repository</li>
+<li>[ ] PDF-to-text converter plugin - extract text from local/remote PDFs, shipped as an external plugin repository</li>
+<li>[ ] Auditor agents - sub-agents that review/check a produced output (tests, code review, fact-check)</li>
+<li>[ ] Generate &gt; check &gt; correct orchestration - run a main agent, an auditor, and a fix pass in a loop until passing</li>
+<li>[ ] Custom system prompts per session</li>
+<li>[ ] <code>code_debug</code> / <code>compile</code> - pdb/gcc/rustc wrappers (test/lint/format landed as <code>code_test</code>/<code>code_lint</code>/<code>code_format</code>)</li>
+<li>[ ] <code>docs_search</code> - local grep + DuckDuckGo for documentation lookups</li>
+<li>[ ] Workspace sessions - tools write into a scoped <code>--workspace</code> dir, optional <code>--git</code> sync</li>
+<li>[ ] Sandboxed exec - namespace/container isolation for <code>run_command</code> (documented, planned for a later version)</li>
+<li>[ ] <code>/agent</code> personas - interactive persona selection/run UX (persona registry, sub-engine, and <code>delegate</code> landed. The <code>/agent</code> command itself remains)</li>
+<li>[ ] PM/dev/tester team orchestration as a user-facing pattern (the personas + <code>delegate</code> primitives landed, and it needs the jobs/team-config layer to be a pattern)</li>
+<li>[ ] Headless web API plugin-first - stdlib <code>http.server</code> fallback, richer framework (FastAPI) via the dependency plugin</li>
+<li>[ ] Enterprise plugins (stdlib-first, third-party deps optional):</li>
+<li>[ ] Data ingestion - <code>read_stream</code> / <code>write_stream</code> (MQTT, OPC-UA, Modbus)</li>
+<li>[ ] Time-series - <code>anomaly_detect</code> (z-score), <code>forecast</code></li>
+<li>[ ] Model inference - <code>model_infer</code> / <code>predict_failure</code> (ONNX)</li>
+<li>[ ] Optimization - <code>optim_schedule</code> (scheduling / linear programming)</li>
+<li>[ ] SCADA control - <code>scada_command</code> (OPC-UA registers)</li>
+<li>[ ] Reporting - <code>report_gen</code> (Markdown/PDF, email/BI push)</li>
+<li>[ ] Audit logging + metrics (<code>/metrics</code>) for enterprise deployments</li>
+<li>[ ] Onboarding wizard (<code>replio wizard</code>) for data-source / MES interface setup</li>
+<li>[ ] RBAC - role-based access control for enterprise deployments</li>
+<li>[ ] Queue-based scaling - many concurrent sensor/chat feeds without blocking the loop</li>
+<li>[ ] Session import from Markdown/JSON</li>
+</ul>
+<h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[x] GitHub Pages website - mkdocs site + Actions workflow, docs stay in main</li>
+<li>[x] OpenCode Zen + Go providers - opencode.ai endpoints, model-ref strip, URL detection</li>
+<li>[x] Tool-use evaluation harness - replio eval + fixture plugin, metrics</li>
+<li>[x] Project instructions file - per-worktree <code>AGENTS.md</code> in system prompt, capped</li>
+<li>[x] <code>run_command</code> allowlist - <code>tool_permission.bash_allow</code>, heredocs/multi-line rejected</li>
+<li>[x] <code>code_test</code>/<code>code_lint</code>/<code>code_format</code> wrappers - dev.*_cmd, bundled replio-core-dev plugin</li>
+<li>[x] <code>git</code> tool - read-only git + gated <code>git_commit</code>, bundled replio-core-git plugin</li>
+<li>[x] <code>file_edit</code> tool - search-and-replace with diff preview, bundled replio-core-edit plugin</li>
+<li>[x] Default tool-result cap - tool_max_result_chars default 100k, list_dir entry cap</li>
+<li>[x] Default tool names namespaced - <code>web_fetch</code> merges <code>open</code>+<code>fetch_page</code>, old names as aliases</li>
+<li>[x] Tool schema advertises canonical names only - aliases resolve at call time (20 -&gt; 13 defs)</li>
+<li>[x] Agent-loop cancellation + tool-dialect hardening - Ctrl-C cancels the turn, unknown-tool hints</li>
+<li>[x] Skills registry - <code>SkillRegistry</code>, local/global dirs + plugins, persona <code>skills</code> in prompts</li>
+<li>[x] Teams registry - <code>Team</code>/<code>TeamRegistry</code>, 4-layer <code>teams.json</code> merge, <code>/team</code> read/edit</li>
+<li>[x] Plugin contribution hooks - register_personas/teams/skills hooks, <code>PersonaRegistry.reload()</code></li>
+<li>[x] Fleet orchestration - <code>replio fleet</code> supervisor CLI: ports, health, restart, config gen</li>
+<li>[x] Per-run job sessions - <code>job_&lt;ts&gt;_&lt;name&gt;</code> files, unified <code>ses_</code>/<code>sub_</code>/<code>job_</code> naming</li>
+<li>[x] Job run memory - rolling <code>.memory.md</code> summary injected into each run, seeded</li>
+<li>[x] Job task definition as linked Markdown - <code>--file</code> templated task files, <code>replio jobs edit</code></li>
+<li>[x] Job context management - per-run <code>job_*</code> files, <code>ses_</code>/<code>sub_</code> naming, 100-run cap</li>
+<li>[x] Job per-run approval - <code>--require-approval</code> parks a run in <code>waiting_approval</code></li>
+<li>[x] Jobs diagnostics - <code>replio jobs status</code> (fired count, last error, uptime)</li>
+<li>[x] Watchable job runs - <code>replio jobs run --verbose</code> streams the live turn</li>
+<li>[x] Richer job runs - <code>--persona</code>/<code>--system-prompt</code>, recurring-job prompt, tool carve</li>
+<li>[x] Scheduled / durable jobs - <code>replio jobs</code>: registry, daemon, cron, retries, approval gate</li>
+<li>[x] Per-agent permission profiles - persona tool_permission drives sub-agent policy</li>
+<li>[x] In-process sub-engine - Engine.run_subagent: persona overrides, NullUI, sub_ session</li>
+<li>[x] <code>delegate</code> tool - core, per-persona permission resolver, delegate_echo result display</li>
+<li>[x] Personas registry - global+local personas.json merge, /persona command, docs/personas.md</li>
+<li>[x] Soft tool results surfaced as dimmed info lines - <code>(empty file)</code>, <code>(no matches)</code> etc</li>
+<li>[x] Session audit trail - permission decisions (allow/ask/deny -&gt; granted/declined/denied)</li>
+<li>[x] Stable message ids - <code>msg_&lt;hex&gt;</code> auto-assigned to every session message</li>
+<li>[x] Global model registry - /connect appends models + keys, /model list/--online, picker reuse</li>
+<li>[x] REPL <code>/config --global/--local</code> scope flags + apply() in-memory overrides</li>
+<li>[x] Scoped config writes - local saves overrides only, replio config CLI</li>
+<li>[x] Turn recovery - auto-continue on truncation, reasoning-only not flagged empty</li>
+<li>[x] Thinking captured from <code>reasoning</code> deltas (ollama.com), documented</li>
+<li>[x] Confirm prompt <code>?</code> glyph starts at the beginning of the line, aligned with activity glyphs</li>
+<li>[x] Word-level streaming buffering - buffer REPL output to word boundaries, word_streaming config</li>
+<li>[x] Multi-line input - detect <code>"""</code>/<code>'''</code> blocks, one composed message, framing stripped</li>
+<li>[x] Config validation (test connection on change) - /connect probe, /provider warn</li>
+<li>[x] Session export to Markdown - /session export and replio export CLI render logs to Markdown</li>
+<li>[x] Plan/Build modes - plan (edit+bash denied) vs build, /mode cmd + --mode flag, per-message mode</li>
+<li>[x] Thinking/reasoning toggle - show_thinking (display) + reasoning (request), /thinking cmd</li>
+<li>[x] Thinking spinner - animated spinner while thinking when show_thinking false, cleared \r\033[K</li>
+<li>[x] Activity lines + tool status ephemeral - never persisted to session files</li>
+<li>[x] MCP via bundled replio-core-mcp plugin - import/expose tools over MCP, dual-era</li>
+<li>[x] Alias layer - tool/param aliases (read/view, ls, bash/exec, cursor&gt;offset) + open tool</li>
+<li>[x] Glyph activity lines - dimmed <glyph> <verb> <arg> status, glyph_lines config</li>
+<li>[x] write_file reports resolved abs path (Created|Overwritten|Appended)</li>
+<li>[x] Tab completion restored (libedit binding) + extended to paths, tool names, and subcommands</li>
+<li>[x] README terminal screenshot as SVG</li>
+<li>[x] deploy/ fleet templates - Dockerfile, compose, systemd + launchd units</li>
+<li>[x] docs/fleet.md - single-purpose scoped-agent fleet pattern</li>
+<li>[x] README fleet positioning - tagline, Features, fleet section, roadmap</li>
+<li>[x] Per-turn stats on own line - footer newline when output lacked one</li>
+<li>[x] One-shot retry for empty/truncated streams before surfacing error</li>
+<li>[x] write_file status preview ends with dimmed summary (path, lines, chars, action)</li>
+<li>[x] Thinking announce - + Thinking (or + Thought 12.3s hidden). Headless mirrors</li>
+<li>[x] Human-readable tool status - [tool: arg] oneliner + dimmed detail lines</li>
+<li>[x] Built-in web + machine features moved to bundled plugins</li>
+<li>[x] Discovery precedence bundled &lt; global &lt; local, bundled can't update/uninstall</li>
+<li>[x] <code>register_services</code> entry hook - powers the <code>web_search: true</code> search-then-answer mode</li>
+<li>[x] plugins config list replaces plugins.enabled/deny, empty = all</li>
+<li>[x] <code>tests/test_bundled_plugins.py</code> (10 tests)</li>
+<li>[x] Plugin system - directory-based external plugins for tools, providers, and commands</li>
+<li>[x] PluginManager - discovery, manifest compat ranges, single entry import</li>
+<li>[x] register_tools hook - tools inherit policy, /tool, /help, logging</li>
+<li>[x] register_providers hook merged into provider registry</li>
+<li>[x] <code>register_commands(commands)</code> hook, registered after builtins at engine init</li>
+<li>[x] Plugin manifest + docs - <code>docs/plugins.md</code> (schema, compatibility contract, security)</li>
+<li>[x] Optional per-plugin deps - requires, lazy import, --deps pip-installs</li>
+<li>[x] Activation via config - <code>plugins</code> list, enable/disable/install/uninstall maintain it</li>
+<li>[x] /plugins - list/detail/enable/disable/install/update/uninstall</li>
+<li>[x] <code>replio plugins</code> CLI - headless list/install/update/uninstall</li>
+<li>[x] <code>tests/test_plugins.py</code> (30 tests)</li>
+<li>[x] PyPI proper configuration and documentation</li>
+<li>[x] Clear screen on REPL start (<code>clear_screen</code> config, default <code>true</code>)</li>
+<li>[x] /config structured values - JSON parse, -a/-r, reload</li>
+<li>[x] /compact summarization - append-only, compact_from boundary</li>
+<li>[x] <code>/session load</code> compaction offer prints the summary, load records a <code>command</code> message</li>
+<li>[x] <code>/session preview &lt;name&gt;</code> - read-only structural preview without switching sessions</li>
+<li>[x] Session-name tab completion for <code>/session load</code>/<code>delete</code></li>
+<li>[x] Context-size display - dimmed (Ns, N tokens) after each response</li>
+<li>[x] noise_tools config - noise results replaced by marker in sessions</li>
+<li>[x] max_tokens optional (0=unset), hitting cap warns + logs error</li>
+<li>[x] Provider payload from log - command filtered, dangling tool msgs skipped</li>
+<li>[x] replio run - one-shot CLI (JSON/text) reusing loop + sessions</li>
+<li>[x] Flags: <code>--prompt</code>, <code>--provider</code>, <code>--model</code>, <code>--output=json</code>, <code>--verbose</code></li>
+<li>[x] <code>--session-id</code> - address persistent sessions from headless mode</li>
+<li>[x] Headless logging (<code>--verbose</code>) instead of visual activity lines</li>
+<li>[x] <code>replio serve</code> - stdlib <code>http.server</code> HTTP JSON API (<code>POST /chat</code>) over the same agent loop</li>
+<li>[x] Tests for headless entry points (mock provider, no network)</li>
+<li>[x] Hardening: agent-loop turn failures always visible in the session log</li>
+<li>[x] Persist streamed content when the SSE stream ends without a <code>done</code> event</li>
+<li>[x] Record errors entry for silent failures (EOF, empty/thinking-only done)</li>
+<li>[x] Non-normal <code>finish_reason</code> (<code>length</code>) logs an <code>errors</code> entry + prints a warning</li>
+<li>[x] Catch unexpected exceptions escaping the agent loop, log them, keep the REPL alive</li>
+<li>[x] Tests: token-stream-then-EOF, empty <code>done</code>, streamed exception</li>
+<li>[x] Sessions are complete logs - every message, tool call + result, reasoning, error persisted</li>
+<li>[x] Append-only - compaction and load never remove or rewrite entries</li>
+<li>[x] <code>Session.to_dict()</code> keeps <code>role: tool</code> (full results, <code>noise_tools</code> replaced by a marker)</li>
+<li>[x] Per-round <code>thinking</code> metadata on assistant messages, excluded from <code>content</code></li>
+<li>[x] Session-level <code>errors</code> array</li>
+<li>[x] <code>created_at</code> / <code>updated_at</code> metadata (bumped on every message)</li>
+<li>[x] <code>tool_analysis</code> (default <code>false</code>) - model-generated one-line analysis on each tool message</li>
+<li>[x] <code>session_tool_max_chars</code> (default 0 = unlimited) - caps persisted tool-result content</li>
+<li>[x] No <code>index.json</code> - session names carry timestamp + first-message slug</li>
+<li>[x] Flat message list retained (maps 1:1 to provider context)</li>
+<li>[x] Unified streaming agent loop</li>
+<li>[x] Single SSE stream, detect <code>tool_calls</code> vs content from the first delta</li>
+<li>[x] Eliminates double-call cost when no tools are used</li>
+<li>[x] Unified dispatch</li>
+<li>[x] Slash commands call the same <code>ToolRegistry</code> as the model</li>
+<li>[x] Generic query refinement via tool metadata and collapsed <code>_handle_message</code> branches</li>
+<li>[x] Machine tools (<code>tools/machine.py</code>) - <code>read_file</code>, <code>list_dir</code>, <code>write_file</code>, <code>run_command</code></li>
+<li>[x] <code>read_file</code> - numbered lines, <code>offset</code>/<code>limit</code>, truncation, binary/permission errors</li>
+<li>[x] <code>list_dir</code> - sorted entries, trailing <code>/</code> for subdirs, file sizes</li>
+<li>[x] <code>write_file</code> - parent-dir creation, <code>w</code>/<code>a</code> modes</li>
+<li>[x] <code>run_command</code> - subprocess exec with timeout, stdout/stderr capture, exit code, 8k cap</li>
+<li>[x] <code>category</code>/<code>permission</code>/<code>path_arg</code>/<code>key_arg</code> registration metadata</li>
+<li>[x] Discovery tools - glob (recursive, noise-dir skip) + grep (regex, file:line)</li>
+<li>[x] <code>read_file</code> always reports total line count in its header</li>
+<li>[x] Tool permission model (<code>tools/policy.py</code> + config)</li>
+<li>[x] <code>tools.allow</code> / <code>tools.deny</code> name-level policies (deny + allow-whitelist take precedence)</li>
+<li>[x] tool_permission category actions - allow/ask/deny per category</li>
+<li>[x] Path-scoped confirm - outside-worktree read/write/list escalate to <code>ask</code></li>
+<li>[x] <code>bash: ask</code> default - every <code>run_command</code> prompts y/N</li>
+<li>[x] Confirm prompts - denied tools filtered, cancelled calls feed [cancelled]</li>
+<li>[x] <code>/tool</code> command routes through the same policy</li>
+<li>[x] OpenAI / Groq / Anthropic providers</li>
+<li>[x] Provider auto-detection from base_url</li>
+<li>[x] Base provider (OpenAI-compatible interface)</li>
+<li>[x] Ollama cloud provider</li>
+<li>[x] Session manager (JSON CRUD)</li>
+<li>[x] <code>/session new</code> and <code>/session load</code> actually switch the active session</li>
+<li>[x] Session save after file rename - JSON <code>name</code> field matches filename</li>
+<li>[x] Auto-session naming with first user message as context hint</li>
+<li>[x] Tool results and assistant <code>tool_calls</code> persisted in session files</li>
+<li>[x] DuckDuckGo Lite search via <code>html.parser</code></li>
+<li>[x] Terminal + AI context formatting</li>
+<li>[x] <code>/search &lt;query&gt;</code> and <code>/web &lt;query&gt;</code> commands</li>
+<li>[x] Auto-search mode (<code>web_search: true</code> config)</li>
+<li>[x] <code>fetch_page</code> - <code>_TextExtractor</code> (HTMLParser) for clean text extraction</li>
+<li>[x] Search term extraction - <code>query_refine</code> config auto-refines short queries</li>
+<li>[x] <code>tools/registry.py</code> - decorator-based tool registration</li>
+<li>[x] <code>tools/builtins.py</code> - <code>web_search</code> and <code>fetch_page</code> tools</li>
+<li>[x] <code>BaseProvider.chat_nonstreaming()</code> - non-streaming tool decision round</li>
+<li>[x] Two-phase chat: non-streaming tool decision &gt; stream final content</li>
+<li>[x] <code>_show_tool_status()</code> - dimmed status during tool execution</li>
+<li>[x] <code>/search</code> command integration with tool calling</li>
+<li>[x] Config default: <code>tool_calling: true</code></li>
+<li>[x] <code>tool_status_visible</code> config flag (default <code>true</code>)</li>
+<li>[x] Tool calling integration verified end-to-end</li>
+<li>[x] Thinking/reasoning token detection and dimmed display</li>
+<li>[x] SSE streaming survives multi-byte UTF-8 split across read chunks (byte-buffered line decoding)</li>
+<li>[x] Markdown-aware streaming (disabled by default via <code>markdown_streaming</code>)</li>
+<li>[x] Error handling improvements (network timeout, auth errors)</li>
+<li>[x] Edge cases: streaming when <code>tool_calling=true</code> but no tools used</li>
+<li>[x] Tool-call messages lost on exception - <code>try/finally</code> persists session</li>
+<li>[x] Final assistant response missing when streaming returns empty - non-streaming fallback</li>
+<li>[x] Project scaffolding (pyproject.toml, venv, dir structure)</li>
+<li>[x] Config module (global + local JSON merge)</li>
+<li>[x] HTTP SSE streaming utility (urllib)</li>
+<li>[x] REPL loop with readline history + tab completion</li>
+<li>[x] Command registry + built-in slash commands</li>
+<li>[x] Streaming token display</li>
+<li>[x] Documentation (README, AGENTS.md, TODO.md, CHANGELOG.md)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.top", "toc.follow", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

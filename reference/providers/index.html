@@ -1,0 +1,1552 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A lightweight, zero-dependency agentic core for fleets of single-purpose agents">
+      
+      
+      
+        <link rel="canonical" href="https://emyasnikov.github.io/replio/reference/providers/">
+      
+      
+        <link rel="prev" href="../plugins/">
+      
+      
+        <link rel="next" href="../security/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Providers - Replio</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#providers" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Replio" class="md-header__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Replio
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Providers
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Replio" class="md-nav__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Replio
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vision/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vision
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference docs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference docs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Replio Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands &amp; CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../eval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool-use evaluation harness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent fleets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduled and durable jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP (Model Context Protocol)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../personas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Personas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#built-in-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Built-in providers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auto-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto-detection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-chat-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The chat() contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-provider-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the provider works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requesting-reasoning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requesting reasoning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a provider
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#streaming-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swarm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent swarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../teams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Teams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/programming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#built-in-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Built-in providers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auto-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto-detection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-chat-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The chat() contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-provider-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the provider works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requesting-reasoning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requesting reasoning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a provider
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#streaming-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="providers">Providers<a class="headerlink" href="#providers" title="Permanent link">&para;</a></h1>
+<p>Providers are the model backends. Replio speaks OpenAI-compatible <code>/v1/chat/completions</code> to every provider. Providers only differ in base URL, default model, and occasionally auth or payload details. Each provider implements the event-generator <code>chat()</code> contract the agent loop consumes.</p>
+<h2 id="built-in-providers">Built-in providers<a class="headerlink" href="#built-in-providers" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Default base URL</th>
+<th>Default model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ollama</code></td>
+<td><code>https://api.ollama.com</code></td>
+<td><code>llama3.2</code></td>
+</tr>
+<tr>
+<td><code>openai</code></td>
+<td><code>https://api.openai.com/v1</code></td>
+<td><code>gpt-4o-mini</code></td>
+</tr>
+<tr>
+<td><code>groq</code></td>
+<td><code>https://api.groq.com/openai/v1</code></td>
+<td><code>llama-3.3-70b-versatile</code></td>
+</tr>
+<tr>
+<td><code>anthropic</code></td>
+<td><code>https://api.anthropic.com/v1</code></td>
+<td><code>claude-sonnet-4-20250514</code></td>
+</tr>
+<tr>
+<td><code>opencode</code></td>
+<td><code>https://opencode.ai/zen/v1</code></td>
+<td><code>kimi-k3</code></td>
+</tr>
+<tr>
+<td><code>opencode-go</code></td>
+<td><code>https://opencode.ai/zen/go/v1</code></td>
+<td><code>deepseek-v4-flash</code></td>
+</tr>
+<tr>
+<td><code>openai-compatible</code></td>
+<td><em>(none)</em></td>
+<td><em>(none)</em></td>
+</tr>
+</tbody>
+</table>
+<p><code>openai-compatible</code> is the generic fallback for any other OpenAI-compatible endpoint - local models, gateways, or self-hosted servers.</p>
+<p><code>opencode</code> (Zen) and <code>opencode-go</code> (Go) are the two hosted catalogs at <code>opencode.ai</code>. Both use the same OpenCode API key (<code>OPENCODE_API_KEY</code>, resolved from the model registry like any other provider) but are separate paid subscriptions. Zen is the curated multi-model gateway. Go is the low-cost subscription for open coding models. Model refs accept the <code>opencode/&lt;model-id&gt;</code> and <code>opencode-go/&lt;model-id&gt;</code> conventions as well as bare model ids - the prefix is stripped before the request. A successful model listing is an inventory, not an entitlement check: inference still requires the matching subscription. Fetch the current lineup from <code>https://opencode.ai/zen/v1/models</code> and <code>https://opencode.ai/zen/go/v1/models</code>.</p>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<p><code>provider</code>, <code>base_url</code>, <code>model</code>, <code>temperature</code>, and <code>max_tokens</code> are configured in the global or local config (see <a href="../config/">config.md</a>). The API key is <strong>not</strong> a config value - it is resolved from the global model registry (<code>~/.config/replio/models.json</code>, managed via <code>/connect</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"provider"</span><span class="p">:</span><span class="w"> </span><span class="s2">"openai"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"base_url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://api.openai.com/v1"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gpt-4o-mini"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"temperature"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.7</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The engine looks up the API key for the active <code>provider</code>/<code>base_url</code>/<code>model</code> in the model registry (a <code>(key)</code> entry from <code>/connect</code>), falling back to <code>""</code> - no environment variable is consulted.</p>
+<h2 id="auto-detection">Auto-detection<a class="headerlink" href="#auto-detection" title="Permanent link">&para;</a></h2>
+<p>When the configured provider name is unknown, or when <code>base_url</code> matches a known host, the provider is detected from the URL. <code>detect_provider()</code> matches <code>openai.com</code>, <code>groq.com</code>, <code>anthropic.com</code>, <code>ollama.com</code> / <code>ollama.ai</code>, and <code>opencode.ai</code> (path <code>/zen/go</code> selects <code>opencode-go</code>, otherwise <code>opencode</code>), falling back to <code>openai-compatible</code> for anything else. <code>/connect</code> uses the same detection, so entering a base URL switches the provider automatically.</p>
+<h2 id="setting-up">Setting up<a class="headerlink" href="#setting-up" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>/connect</code> - interactive setup: provider, base URL, API key, model. Detects the provider from the entered base URL, then <strong>tests the connection</strong> (a <code>GET &lt;base_url&gt;/v1/models</code> probe) before saving: broken values are rejected unless you confirm <code>Save anyway?</code>. When the configured model is missing from the list, it offers <code>Show available models?</code> so you can pick the right name.</li>
+<li><code>/model &lt;name&gt;</code> - show or switch the active model.</li>
+<li><code>/models</code> (alias <code>/model-list</code>) - list the models the connected provider advertises. <code>replio models</code> does the same headlessly and exits <code>1</code> on a failed probe.</li>
+<li><code>/provider &lt;name&gt;</code> - show or switch the active provider. After switching, the connection is probed and a warning is shown on failure (<code>/connect</code> is the fix).</li>
+<li><code>replio run --provider ... --model ... --base-url ...</code> - headless overrides.</li>
+</ul>
+<p>Connection probing is gated by the <code>connect_check</code> config (default <code>true</code>). Set it to <code>false</code> to skip the probes (e.g. offline or flaky networks). <code>OpenAICompatibleProvider.check_connection()</code> returns <code>(ok, message)</code> by reusing <code>_fetch_models()</code> - the shared <code>GET /v1/models</code> helper that <code>list_models()</code> also uses.</p>
+<h2 id="the-chat-contract">The <code>chat()</code> contract<a class="headerlink" href="#the-chat-contract" title="Permanent link">&para;</a></h2>
+<p><code>BaseProvider.chat(messages, stream=True, tools=None)</code> is a generator yielding events that the agent loop reacts to:</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Payload</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>thinking</code></td>
+<td><code>content</code></td>
+<td>Reasoning tokens (from <code>reasoning_content</code> or <code>reasoning</code> deltas - some OpenAI-compatible endpoints such as ollama.com use <code>reasoning</code>)</td>
+</tr>
+<tr>
+<td><code>token</code></td>
+<td><code>content</code></td>
+<td>Streamed content token(s)</td>
+</tr>
+<tr>
+<td><code>tool_calls</code></td>
+<td><code>tool_calls</code></td>
+<td>Completed function-call objects requested by the model</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td><code>code</code>, <code>message</code></td>
+<td>Provider/network/HTTP error</td>
+</tr>
+<tr>
+<td><code>done</code></td>
+<td><code>reason</code>, <code>usage</code></td>
+<td>Stream finished. <code>reason</code> is the finish reason, <code>usage</code> token counts when reported</td>
+</tr>
+</tbody>
+</table>
+<p>The loop runs one SSE stream per turn. When the model only produces content, that is a single round trip. <code>tool_calls</code> events append messages, execute the calls, and continue the loop until the model answers. The <code>&lt;thinking&gt;</code> marker split for reasoning embedded in content lives in the engine, so thinking stays separate from content.</p>
+<p><code>chat_nonstreaming(messages, tools=None)</code> is the non-streaming companion, used only for auxiliary decisions - query refinement, tool-result analysis, and compaction - never the main path.</p>
+<h2 id="how-the-provider-works">How the provider works<a class="headerlink" href="#how-the-provider-works" title="Permanent link">&para;</a></h2>
+<p><code>OpenAICompatibleProvider</code> (<code>src/replio/providers/base.py</code>) builds an OpenAI-format payload (<code>model</code>, <code>messages</code>, <code>temperature</code>, optional <code>max_tokens</code>, optional <code>tools</code>, <code>stream</code>), POSTs it to <code>&lt;base_url&gt;/v1/chat/completions</code>, and streams the SSE response line by line. Streaming deltas are accumulated: <code>reasoning_content</code> (or <code>reasoning</code> on endpoints such as ollama.com) becomes <code>thinking</code> events, <code>content</code> becomes <code>token</code> events, and fragmented <code>tool_calls</code> deltas are reassembled by index into complete function-call objects. HTTP and network errors are returned as <code>error</code> events.</p>
+<p><code>max_tokens</code> defaults to <code>8192</code> (sent to the provider, overriding low provider-side defaults like Ollama's 2048 cap). Set it to <code>0</code> to omit it from the payload, in which case the provider's own default applies. Hitting the limit prints a warning and logs a session <code>errors</code> entry - the warning text distinguishes a configured cap from the provider's default.</p>
+<h2 id="requesting-reasoning">Requesting reasoning<a class="headerlink" href="#requesting-reasoning" title="Permanent link">&para;</a></h2>
+<p>The <code>reasoning</code> config (default <code>"auto"</code>) tells the model reasoning is desired and controls its token budget. It is orthogonal to <code>show_thinking</code> (which only controls display). Values: <code>false</code>/<code>"off"</code> = do not request, <code>true</code>/<code>"on"</code>/<code>"auto"</code> = request with the provider default, <code>"low"</code>/<code>"medium"</code>/<code>"high"</code> = explicit budget hint. The provider maps it to its own parameter:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>off / false</th>
+<th>low / medium / high</th>
+<th>on / auto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>openai</code></td>
+<td>no <code>reasoning_effort</code></td>
+<td><code>reasoning_effort = "low"\|"medium"\|"high"</code></td>
+<td><code>reasoning_effort = "medium"</code></td>
+</tr>
+<tr>
+<td><code>anthropic</code></td>
+<td><code>thinking: {type: "disabled"}</code></td>
+<td><code>thinking: {type: "enabled", budget_tokens: 1024\|2048\|4096}</code></td>
+<td><code>thinking: {type: "enabled", budget_tokens: 2048}</code></td>
+</tr>
+<tr>
+<td><code>ollama</code> (Qwen)</td>
+<td><code>enable_thinking: false</code></td>
+<td><code>enable_thinking: true</code> (<code>chat_template_kwargs.thinking: true</code>)</td>
+<td><code>enable_thinking: true</code></td>
+</tr>
+<tr>
+<td>other / <code>openai-compatible</code> / <code>opencode</code> / <code>opencode-go</code></td>
+<td>nothing</td>
+<td><code>reasoning_effort</code> pass-through</td>
+<td>nothing (provider default)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="adding-a-provider">Adding a provider<a class="headerlink" href="#adding-a-provider" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Create <code>src/replio/providers/&lt;name&gt;.py</code>.</li>
+<li>Subclass <code>OpenAICompatibleProvider</code> and set <code>DEFAULT_BASE_URL</code> / <code>DEFAULT_MODEL</code>. Override <code>_headers()</code> / <code>_payload()</code> only for non-standard auth or request bodies.</li>
+<li>Add the class to the <code>PROVIDERS</code> dict in <code>providers/__init__.py</code>.</li>
+<li>Add a hostname match in <code>detect_provider()</code> so <code>/connect</code> auto-selects it.</li>
+</ol>
+<p>Plugins can also register providers via their <code>register_providers(providers)</code> hook - <code>/connect</code> offers plugin providers automatically (see <a href="../plugins/">plugins.md</a>).</p>
+<h2 id="streaming-contract">Streaming contract<a class="headerlink" href="#streaming-contract" title="Permanent link">&para;</a></h2>
+<p>The underlying SSE utility (<code>src/replio/utils/http.py</code>) reads the stream line by line with byte-buffered decoding, so multi-byte UTF-8 split across read chunks is handled correctly. Keep-alive and mid-stream errors surface as <code>error</code> events. A stream that ends without a completion event and with no streamed content is re-requested up to <code>1 + stream_retries</code> times (default 3 total attempts) with <code>stream_retry_delay</code> seconds between attempts before the "Stream ended before a completion event" error is reported. When tool calls have already run in the turn, the warning notes that the tool results are saved and the answer can be retried with a follow-up message.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.top", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

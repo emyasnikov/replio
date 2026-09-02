@@ -1,0 +1,1426 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A lightweight, zero-dependency agentic core for fleets of single-purpose agents">
+      
+      
+      
+        <link rel="canonical" href="https://emyasnikov.github.io/replio/reference/testing/">
+      
+      
+        <link rel="prev" href="../teams/">
+      
+      
+        <link rel="next" href="../tools/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Testing - Replio</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#testing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Replio" class="md-header__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Replio
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Testing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Replio" class="md-nav__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Replio
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vision/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vision
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference docs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference docs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Replio Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands &amp; CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../eval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool-use evaluation harness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent fleets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduled and durable jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP (Model Context Protocol)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../personas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Personas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swarm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent swarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../teams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Teams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test coverage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-test-suites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin test suites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/programming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test coverage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-test-suites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin test suites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h1>
+<p>Tests live in <code>tests/</code> and use the stdlib <code>unittest</code> framework - no external test runner, no network, no API key required. <strong>Mock tests</strong> patch provider responses so the agent loop, engine, CLI, and server are exercised without hitting a real model.</p>
+<h2 id="running-tests">Running tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h2>
+<p>Run all tests:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>discover<span class="w"> </span>tests
+</code></pre></div>
+<p>The canonical setup installs the package (<code>pip install -e .</code>), which is also what CI does. On a source checkout without installing, use <code>PYTHONPATH=$PWD/src</code> (absolute - the detached-fleet daemon changes directory, so a relative <code>src</code> would not resolve): <code>PluginManager</code> then falls back to the repo-root <code>plugins/</code> directory for the bundled plugins.</p>
+<p>Run a single file:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>tests.test_tool_calling
+</code></pre></div>
+<p>Run tests before committing changes to verify core logic isn't broken.</p>
+<h2 id="test-coverage">Test coverage<a class="headerlink" href="#test-coverage" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Covers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_agent_loop.py</code></td>
+<td>Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty/truncated-stream multi-attempt retry, recovery hint after failed tool-call rounds, truncation error messages (configured cap vs provider default), auto-continue on truncation (stitch + cap + continue instruction), reasoning-only turn not flagged empty, empty-done retried, KeyboardInterrupt cancels the turn (mid-stream and after a tool call) with partial output persisted, unknown-tool results list available tools</td>
+</tr>
+<tr>
+<td><code>test_bundled_plugins.py</code></td>
+<td>Bundled plugin discovery, tool registration, search service, bundled update/uninstall blocking</td>
+</tr>
+<tr>
+<td><code>test_cli.py</code></td>
+<td><code>replio run</code>: JSON/text output, session-id persistence, exit codes, one-shot overrides applied but never persisted. <code>replio export</code>: default/custom/stdout targets, unknown session. <code>replio models</code>: listing, error/empty, <code>main</code> dispatch</td>
+</tr>
+<tr>
+<td><code>test_config.py</code></td>
+<td>Config scopes: local-only saves, <code>--global</code> writes, <code>apply()</code> in-memory overrides (never written), unset fallback/origin, global&gt;local merge, empty-local-does-not-shadow-global, <code>replio config</code> CLI (get/set/unset, JSON values, show-origin). <code>api_key</code> is an ordinary key - no global forcing, <code>0600</code>, or migration</td>
+</tr>
+<tr>
+<td><code>test_commands.py</code></td>
+<td>Slash-command registration and <code>/help</code> output (aliases, subcommands, tools listed under <code>/tool</code>, mode-filtered listings), <code>/connect</code> probe-before-commit (decline/reject, model-mismatch show offer, registry append, picker reuse, picker hidden when configured), <code>/model</code> list/<code>--online</code>/switch-touch, <code>/config</code> scope flags (<code>--global</code>/<code>--local</code>, <code>api_key</code> as a normal key incl. global writes, <code>-a</code>/<code>-r</code> scope), <code>/models</code> listing/error/empty, <code>/provider</code> warn</td>
+</tr>
+<tr>
+<td><code>test_completion.py</code></td>
+<td>Readline tab completion: commands, session names, plugin names, tool names</td>
+</tr>
+<tr>
+<td><code>test_engine.py</code></td>
+<td><code>Engine.chat</code> turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-message <code>mode</code>, glyph param suffix gating, <code>!</code> error-line rendering and <code>show_errors</code> gating, soft-result note-line rendering and <code>show_notes</code> gating, <code>check_connection</code>/<code>list_models</code> probe resolution and overrides without state mutation, <code>_reinit_provider</code> registry-only API key resolution (no config fallback)</td>
+</tr>
+<tr>
+<td><code>test_eval.py</code></td>
+<td>Eval harness: fixture model + loading, declarative verifier (exact/must_include/avoid/max_calls/min_calls/args), metric computation (accuracy, redundant, errors, tokens), fixture discovery + precedence (plugin/global/local), cwd isolation and restore, suite aggregation</td>
+</tr>
+<tr>
+<td><code>test_fleet.py</code></td>
+<td>Fleet supervisor: port allocation (preferred/bind-probe fallback/in-use skip/exhaustion), <code>/health</code> probe ok + failure, manifest/state round-trip + corrupt tolerance, spawn &gt; health &gt; crash &gt; restart &gt; down via <code>sys.executable -c</code> mock servers, <code>max_restarts</code> give-up, unhealthy-threshold restart, disabled gate, log files, env seams (<code>REPLIO_FLEET_PORT</code>), <code>replio fleet</code> CLI (init/add/remove/status/restart/config incl. persona inline + unknown-persona error), detached-daemon end-to-end (up --detach, status, down)</td>
+</tr>
+<tr>
+<td><code>test_http.py</code></td>
+<td>SSE streaming: data parsing, <code>done</code> marker, multi-byte split across chunks, HTTP errors, POST-preserving redirects (loopback server)</td>
+</tr>
+<tr>
+<td><code>test_jobs.py</code></td>
+<td>Job model + registry (round-trip incl. <code>require_approval</code>/<code>task_file</code>/<code>created_at</code>, runnable + ready-to-run gates, corrupt file tolerance), cron parser (steps/ranges/lists/dom/dow/the restrictive day rule, leap day), <code>next_run</code>/<code>compute_next_run</code>/<code>parse_dt</code>, scheduler run/tick under a mocked engine (verified/failed, retries with backoff, per-attempt history, unknown persona, one-shot <code>at</code>, approval gates, per-run <code>require_approval</code> park/re-arm, run memory write + injection, per-run session naming + collision dedupe + <code>--session</code> stability, run content capture), <code>_build_engine</code> persona-skill injection (present/missing), task file template/linkage/missing-file failure, status/list/show rendering, <code>replio jobs</code> CLI (add/approve/list, <code>--file</code>, edit, status output, stop, auto-approval, bad cron, duplicates, run exit codes + content printing)</td>
+</tr>
+<tr>
+<td><code>test_models.py</code></td>
+<td><code>ModelRegistry</code> (global <code>models.json</code>): path under <code>GLOBAL_DIR</code>, put/find/dedupe/last_used, key kept on empty key, <code>0600</code> when keyed, reload, remove, grouped</td>
+</tr>
+<tr>
+<td><code>test_modes.py</code></td>
+<td>Mode resolution and policy merging: built-ins (<code>build</code>/<code>plan</code>), custom modes, unknown fallback, instruction composition</td>
+</tr>
+<tr>
+<td><code>test_ollama_provider.py</code></td>
+<td>Streaming provider: fragmented tool-call reassembly, thinking events (<code>reasoning_content</code> and <code>reasoning</code> keys), payload construction</td>
+</tr>
+<tr>
+<td><code>test_plugins.py</code></td>
+<td>Plugin manager: manifest compat ranges, discovery precedence, registration hooks (tools/providers/commands/services/personas/teams/skills + hook-failure status), <code>_bundled_dir</code> fallback (source layout + forced import failure), install/update/uninstall, <code>replio plugins test</code> (+ <code>load_plugin_test_suite</code>)</td>
+</tr>
+<tr>
+<td><code>test_skills.py</code></td>
+<td><code>SkillRegistry</code>: local/global dir scans, plugin/global/local merge and precedence, origins, put/remove round-trip, reload (disk re-read + plugin-manager re-apply), <code>skills_section</code>, <code>/skill</code> command (list/show/new override/remove, plugin remove rejected)</td>
+</tr>
+<tr>
+<td><code>test_teams.py</code></td>
+<td><code>TeamRegistry</code>: bundled/plugin/global/local merge and precedence, origins, stage round-trip (dict + short-string forms), put/remove, reload (disk re-read + plugin-manager re-apply), <code>/team</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
+</tr>
+<tr>
+<td><code>test_subagent.py</code></td>
+<td>In-process sub-engine: provider/plugin/worktree inheritance, persona prompt/mode/tool_permission application, persona-skill system-prompt injection (present/missing/empty/no-skills), model override, <code>NullUI</code>, unknown persona, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
+</tr>
+<tr>
+<td><code>test_delegate.py</code></td>
+<td><code>delegate</code> tool: persona allow default (no prompt) / <code>ask</code> confirm grant-decline / unknown-persona deny, <code>delegate_echo</code> on/off display + sub footer, <code>/tool delegate</code> single print, empty-content log-summary fallback, sub-agent session persistence + resolver actions</td>
+</tr>
+<tr>
+<td><code>test_personas.py</code></td>
+<td><code>PersonaRegistry</code>: bundled/plugin/global/local merge and precedence, origins (bundled/plugin/local/global origin), tags roundtrip + merge, put/remove/reload (disk re-read + plugin-manager re-apply), <code>/persona</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
+</tr>
+<tr>
+<td><code>test_providers.py</code></td>
+<td>Provider defaults, override behavior, <code>detect_provider</code>, endpoint normalization, POST-preserving redirects, <code>check_connection</code> probe (success/empty/model note/HTTP/network), <code>list_models</code> silent-on-error</td>
+</tr>
+<tr>
+<td><code>test_repl_input.py</code></td>
+<td>REPL input: multi-line <code>"""</code>/<code>'''</code> block detection, framing strip (pure, lead-in, indentation preserved), EOF exit during an open block, slash commands single-line</td>
+</tr>
+<tr>
+<td><code>test_server.py</code></td>
+<td><code>replio serve</code> HTTP API: <code>/chat</code>, <code>/sessions</code>, <code>/health</code>, <code>/version</code></td>
+</tr>
+<tr>
+<td><code>test_session_log.py</code></td>
+<td>Session model: append-only serialization, <code>tool_max_chars</code> truncation, metadata</td>
+</tr>
+<tr>
+<td><code>test_session_render.py</code></td>
+<td>Session Markdown export: renderer output per role, error section, <code>/session export</code> dispatch and file/stdout targets</td>
+</tr>
+<tr>
+<td><code>test_subagent.py</code></td>
+<td>In-process sub-engine: provider/plugin/worktree inheritance, persona prompt/mode/tool_permission application, model override, <code>NullUI</code>, unknown persona, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
+</tr>
+<tr>
+<td><code>test_tool_calling.py</code></td>
+<td>Tool-calling flow: single and multiple calls, unknown tools, query refinement</td>
+</tr>
+<tr>
+<td><code>test_tool_policy.py</code></td>
+<td><code>ToolPolicy</code>: allow/ask/deny, worktree escalation, deny/allowlist precedence, per-invocation resolver (refines non-deny base, skipped without args, cannot override deny list)</td>
+</tr>
+<tr>
+<td><code>test_tool_registry.py</code></td>
+<td>Tool registration metadata, schema, refine flags, note-result predicates, <code>_config</code> pass-through, activity params strings, fs tool glyphs (<code>* List</code> / <code>* Grep</code>), <code>permission_fn</code> storage + <code>resolver_for</code></td>
+</tr>
+<tr>
+<td><code>test_ui.py</code></td>
+<td>UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, <code>!</code> tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm), confirm <code>?</code> glyph at line start, confirm re-raises KeyboardInterrupt / returns False on EOF</td>
+</tr>
+</tbody>
+</table>
+<p><code>tests/helpers.py</code> provides <code>make_chat(config_data)</code> - a <code>ChatLoop</code> with a mocked provider - used by most tests to drive the engine without a model.</p>
+<h2 id="plugin-test-suites">Plugin test suites<a class="headerlink" href="#plugin-test-suites" title="Permanent link">&para;</a></h2>
+<p>Each bundled plugin ships its unit tests in its own directory (<code>plugins/&lt;name&gt;/tests/</code>), covering the plugin's tools and helpers without touching the core. They are discovered by the core suite through <code>tests/test_plugin_suites.py</code> (registered via <code>load_tests</code>), so <code>python -m unittest discover tests</code> runs everything. A single plugin's suite runs standalone with <code>python plugins/&lt;name&gt;/tests/&lt;file&gt;.py</code>, and headless via <code>replio plugins test &lt;name&gt;</code> (or <code>replio plugins test</code> for every plugin with a suite).</p>
+<h2 id="live-testing">Live testing<a class="headerlink" href="#live-testing" title="Permanent link">&para;</a></h2>
+<p>Manual live tests against a real provider API are done ad-hoc, not automated. Use a local model (Ollama) or a disposable API key, and verify a turn end-to-end: streaming output, a tool call round trip, and session persistence.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.top", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

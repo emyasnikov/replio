@@ -1,0 +1,1781 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A lightweight, zero-dependency agentic core for fleets of single-purpose agents">
+      
+      
+      
+        <link rel="canonical" href="https://emyasnikov.github.io/replio/reference/session/">
+      
+      
+        <link rel="prev" href="../security/">
+      
+      
+        <link rel="next" href="../skills/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Sessions - Replio</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sessions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Replio" class="md-header__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Replio
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Sessions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Replio" class="md-nav__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Replio
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vision/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vision
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference docs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference docs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Replio Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands &amp; CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../eval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool-use evaluation harness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent fleets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduled and durable jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP (Model Context Protocol)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../personas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Personas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#where-sessions-live" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where sessions live
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing sessions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exporting-to-markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exporting to Markdown
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#message-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Message schema
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Message schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permissions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#append-only-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Append-only semantics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#serialization-time-transforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serialization-time transforms
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preparing-the-provider-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preparing the provider context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compaction
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swarm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent swarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../teams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Teams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/programming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#where-sessions-live" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where sessions live
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing sessions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exporting-to-markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exporting to Markdown
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#message-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Message schema
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Message schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permissions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#append-only-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Append-only semantics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#serialization-time-transforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serialization-time transforms
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preparing-the-provider-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preparing the provider context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compaction
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="sessions">Sessions<a class="headerlink" href="#sessions" title="Permanent link">&para;</a></h1>
+<p>Sessions are complete, append-only conversation logs. Every message, tool call and its result, reasoning, and error is persisted as JSON under the project's <code>.replio/sessions/</code> directory. Entries are never removed - compaction only trims the provider context, never the log.</p>
+<h2 id="where-sessions-live">Where sessions live<a class="headerlink" href="#where-sessions-live" title="Permanent link">&para;</a></h2>
+<p>Each session is one JSON file: <code>.replio/sessions/&lt;name&gt;.json</code>, next to the local <code>.replio/config.json</code>.</p>
+<p>Names are either explicit (<code>/session new &lt;name&gt;</code>, <code>/session load &lt;name&gt;</code>, <code>replio run --session-id &lt;name&gt;</code>) or auto-generated as <code>ses_&lt;timestamp&gt;_&lt;first-message-slug&gt;</code>, for example <code>ses_20260817_120000_what_is_oee</code>.</p>
+<p>Session files carry a type prefix so the three kinds stay distinguishable at a glance:</p>
+<table>
+<thead>
+<tr>
+<th>Prefix</th>
+<th>Kind</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ses_</code></td>
+<td>Interactive/auto sessions</td>
+<td><code>ses_20260817_120000_what_is_oee.json</code></td>
+</tr>
+<tr>
+<td><code>job_</code></td>
+<td>Jobs - one fresh file per run</td>
+<td><code>job_20260826_110230_nightly_report.json</code></td>
+</tr>
+<tr>
+<td><code>sub_</code></td>
+<td>Delegation sub-agents (parent session id as suffix)</td>
+<td><code>sub_20260817_120100_ses_20260817_120000_what_is_oee.json</code></td>
+</tr>
+</tbody>
+</table>
+<p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code>, where the suffix is the calling (parent) session id (<code>sub_20260817_120100_ses_20260817_120000_what_is_oee</code>). These live in the same <code>.replio/sessions/</code> directory and are regular sessions - listed by <code>/session list</code> (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.</p>
+<h2 id="managing-sessions">Managing sessions<a class="headerlink" href="#managing-sessions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/session new &lt;name&gt;</code></td>
+<td>Create and switch to a new session</td>
+</tr>
+<tr>
+<td><code>/session list</code></td>
+<td>List saved sessions</td>
+</tr>
+<tr>
+<td><code>/session preview &lt;name&gt;</code></td>
+<td>Structural preview (roles, tool names) without switching</td>
+</tr>
+<tr>
+<td><code>/session load &lt;name&gt;</code></td>
+<td>Load a session (with compaction offer if it has a summary)</td>
+</tr>
+<tr>
+<td><code>/session delete &lt;name&gt;</code></td>
+<td>Delete a session</td>
+</tr>
+<tr>
+<td><code>/session save</code></td>
+<td>Save the current session</td>
+</tr>
+<tr>
+<td><code>/session export &lt;name&gt; [out]</code></td>
+<td>Export a session to Markdown</td>
+</tr>
+<tr>
+<td><code>replio run --session-id &lt;name&gt;</code></td>
+<td>Load or create a session from headless mode</td>
+</tr>
+</tbody>
+</table>
+<p>The current session is auto-saved after every message and command, so nothing is lost on exit.</p>
+<h2 id="exporting-to-markdown">Exporting to Markdown<a class="headerlink" href="#exporting-to-markdown" title="Permanent link">&para;</a></h2>
+<p><code>/session export &lt;name&gt;</code> renders any saved session as a Markdown transcript. It reads the persisted log directly (<code>read()</code>, not <code>load()</code>), so the current session is never switched and the source file is left untouched.</p>
+<p>The default output is <code>.replio/exports/&lt;name&gt;.md</code>, next to the <code>sessions/</code> directory. A second argument overrides the path (<code>/session export &lt;name&gt; out.md</code>), and <code>-</code> prints the transcript to stdout instead of writing a file. The command tab-completes session names.</p>
+<p>The export is the full, auditable log: each message becomes a <code>### &lt;Role&gt;</code> section with its timestamp, assistant meta (provider/model/duration) and thinking, tool calls and results as fenced code blocks (with tool <code>analysis</code>), <code>command</code> records, compaction summaries (with the trimmed context boundary), and a final <code>## Errors</code> section. Because it renders the persisted form, serialization-time transforms (<code>noise_tools</code> markers, <code>session_tool_max_chars</code> truncation) carry through as they appear in the file.</p>
+<p>The headless CLI <code>replio export &lt;name&gt; [--out &lt;file&gt;]</code> reuses the same renderer for scripts and CI - <code>--out -</code> prints to stdout, the default matches the slash command (<code>.replio/exports/&lt;name&gt;.md</code>).</p>
+<h2 id="file-structure">File structure<a class="headerlink" href="#file-structure" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"20260817_120000_what_is_oee"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"created_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:00+00:00"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:05:15+00:00"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"messages"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">"permissions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">"parent_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"sub_sessions"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>Session name, matches the filename</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>string</td>
+<td>ISO 8601 UTC timestamp of creation</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>string</td>
+<td>ISO 8601 UTC timestamp, bumped on every appended message</td>
+</tr>
+<tr>
+<td><code>messages</code></td>
+<td>array</td>
+<td>The conversation log, append-only</td>
+</tr>
+<tr>
+<td><code>errors</code></td>
+<td>array</td>
+<td>Turn-level errors (provider, network, agent loop)</td>
+</tr>
+<tr>
+<td><code>permissions</code></td>
+<td>array</td>
+<td>Audit log of tool permission decisions (see below)</td>
+</tr>
+<tr>
+<td><code>parent_id</code></td>
+<td>string</td>
+<td>Name of the session this one was spawned from (sub-agent sessions set it, empty otherwise)</td>
+</tr>
+<tr>
+<td><code>sub_sessions</code></td>
+<td>array</td>
+<td>Names of sessions spawned from this one (delegations. The delegate sets a sub-agent's <code>parent_id</code> here)</td>
+</tr>
+</tbody>
+</table>
+<p><code>/session preview</code> prints the <code>parent</code> and <code>sub-sessions</code> links. <code>/session list</code> annotates <code>sub_*</code> children with their parent.</p>
+<h2 id="message-schema">Message schema<a class="headerlink" href="#message-schema" title="Permanent link">&para;</a></h2>
+<p>Every message has at least <code>role</code>, <code>content</code>, and <code>timestamp</code> (ISO 8601 UTC). The fields beyond those depend on the role.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Applies to</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>role</code></td>
+<td>all</td>
+<td><code>user</code>, <code>assistant</code>, <code>tool</code>, <code>command</code>, or <code>system</code></td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td>all</td>
+<td>Message text, or <code>null</code> for an assistant tool-call message</td>
+</tr>
+<tr>
+<td><code>id</code></td>
+<td>all</td>
+<td>Stable message identifier (<code>msg_&lt;hex&gt;</code>), auto-assigned on creation</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>all</td>
+<td>ISO 8601 UTC timestamp</td>
+</tr>
+<tr>
+<td><code>duration</code></td>
+<td><code>assistant</code></td>
+<td>Response time in seconds</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td><code>assistant</code></td>
+<td>Model that produced the response</td>
+</tr>
+<tr>
+<td><code>provider</code></td>
+<td><code>assistant</code></td>
+<td>Provider that served it</td>
+</tr>
+<tr>
+<td><code>thinking</code></td>
+<td><code>assistant</code></td>
+<td>Reasoning text preceding the answer or tool call, excluded from <code>content</code></td>
+</tr>
+<tr>
+<td><code>reasoning</code></td>
+<td><code>assistant</code></td>
+<td>The <code>reasoning</code> config value in effect for this message (how reasoning was requested: <code>false</code>/<code>"off"</code> or an effort value)</td>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td><code>assistant</code></td>
+<td>The agent <code>mode</code> config value in effect for this message (<code>build</code>, <code>plan</code>, or a custom mode)</td>
+</tr>
+<tr>
+<td><code>tool_calls</code></td>
+<td><code>assistant</code></td>
+<td>OpenAI function-call objects requested by the model</td>
+</tr>
+<tr>
+<td><code>tool_call_id</code></td>
+<td><code>tool</code></td>
+<td>ID linking the result to the originating <code>tool_calls</code> entry</td>
+</tr>
+<tr>
+<td><code>tool</code></td>
+<td><code>tool</code></td>
+<td>Name of the tool that produced the result</td>
+</tr>
+<tr>
+<td><code>analysis</code></td>
+<td><code>tool</code></td>
+<td>Optional one-line model insight (<code>tool_analysis</code> config)</td>
+</tr>
+<tr>
+<td><code>result</code></td>
+<td><code>command</code></td>
+<td>Compaction summary, on the <code>/compact</code> record</td>
+</tr>
+<tr>
+<td><code>compact_from</code></td>
+<td><code>command</code></td>
+<td>Index into <code>messages</code> where the kept portion starts</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
+<p>A plain user/assistant exchange:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"What is OEE?"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:00+00:00"</span><span class="p">},</span>
+<span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assistant"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"OEE is Overall Equipment Effectiveness..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:05+00:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mf">4.8</span><span class="p">,</span><span class="w"> </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"llama3.2"</span><span class="p">,</span><span class="w"> </span><span class="nt">"provider"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ollama"</span><span class="p">,</span><span class="w"> </span><span class="nt">"thinking"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The user asks a definitional question, answer directly."</span><span class="p">}</span>
+</code></pre></div>
+<p>A tool call and its result:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assistant"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="nt">"tool_calls"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"call_xxx"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"function"</span><span class="p">,</span><span class="w"> </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"web_search"</span><span class="p">,</span><span class="w"> </span><span class="nt">"arguments"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{\"query\": \"latest Python release\"}"</span><span class="p">}}],</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:01:00+00:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"thinking"</span><span class="p">:</span><span class="w"> </span><span class="s2">"I need current data, search first."</span><span class="p">},</span>
+<span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tool"</span><span class="p">,</span><span class="w"> </span><span class="nt">"tool_call_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"call_xxx"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Web search results..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:01:03+00:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"tool"</span><span class="p">:</span><span class="w"> </span><span class="s2">"web_search"</span><span class="p">,</span><span class="w"> </span><span class="nt">"analysis"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Pages about recent Python releases - 3.13 is the latest."</span><span class="p">}</span>
+</code></pre></div>
+<p>A command and a compaction record:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"command"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/model llama3.3"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:02:00+00:00"</span><span class="p">},</span>
+<span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"command"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/compact"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:03:00+00:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Summary of the earlier conversation..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"compact_from"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">}</span>
+</code></pre></div>
+<p>A <code>command</code> message with a <code>result</code> is a compaction record: <code>result</code> holds the summary and <code>compact_from</code> is the index into <code>messages</code> where the kept portion starts. The system prompt set at REPL start and search contexts injected by <code>web_search: true</code> mode are recorded as <code>system</code> role messages.</p>
+<h2 id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">&para;</a></h2>
+<p>Turn-level failures are appended to the <code>errors</code> array, separate from the message log:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="mi">401</span><span class="p">,</span><span class="w"> </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unauthorized"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:40:00+00:00"</span><span class="p">}</span>
+</code></pre></div>
+<p><code>code</code> is the HTTP status where one exists, otherwise <code>0</code>. Errors include provider auth/network failures, stream EOF or empty completions, <code>max_tokens</code> truncation, and unexpected exceptions from the agent loop.</p>
+<h2 id="permissions">Permissions<a class="headerlink" href="#permissions" title="Permanent link">&para;</a></h2>
+<p>Every tool permission resolution is recorded to the <code>permissions</code> array, making the log an audit trail of what the agent was allowed to do:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"tool"</span><span class="p">:</span><span class="w"> </span><span class="s2">"run_command"</span><span class="p">,</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ask"</span><span class="p">,</span><span class="w"> </span><span class="nt">"decision"</span><span class="p">:</span><span class="w"> </span><span class="s2">"granted"</span><span class="p">,</span><span class="w"> </span><span class="nt">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/home/me/proj"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:40:00+00:00"</span><span class="p">}</span>
+<span class="p">{</span><span class="nt">"tool"</span><span class="p">:</span><span class="w"> </span><span class="s2">"file_write"</span><span class="p">,</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deny"</span><span class="p">,</span><span class="w"> </span><span class="nt">"decision"</span><span class="p">:</span><span class="w"> </span><span class="s2">"denied"</span><span class="p">,</span><span class="w"> </span><span class="nt">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/home/me/proj/a.md"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:41:00+00:00"</span><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tool</code></td>
+<td>The tool name</td>
+</tr>
+<tr>
+<td><code>action</code></td>
+<td>The resolved policy action: <code>allow</code>, <code>ask</code>, or <code>deny</code></td>
+</tr>
+<tr>
+<td><code>decision</code></td>
+<td>The outcome: <code>granted</code> (ran), <code>declined</code> (user refused an <code>ask</code>), or <code>denied</code> (blocked by policy)</td>
+</tr>
+<tr>
+<td><code>path</code></td>
+<td>The tool's <code>path_arg</code> value when the tool has one (e.g. the file or command target)</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>ISO 8601 UTC timestamp</td>
+</tr>
+</tbody>
+</table>
+<p>Per-invocation (resolver-based) actions are recorded the same way - for example <code>delegate</code> logs the action resolved from the target persona, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - there is no config switch, so the log stays a reliable audit record.</p>
+<h2 id="append-only-semantics">Append-only semantics<a class="headerlink" href="#append-only-semantics" title="Permanent link">&para;</a></h2>
+<p>Messages and errors are only ever appended. Compaction stores the summary in a new <code>command</code> record and leaves the earlier messages in place. Loading a session never rewrites history. The only transformations happen at serialization time (below), never to the in-memory log.</p>
+<p>An <code>assistant</code> message is written whenever the turn produced content <strong>or</strong> thinking - so a truncated mid-reasoning turn still persists its thinking, and a reasoning-only turn (thinking present, no content) is recorded rather than lost. Empty turns (no content, no thinking) persist nothing.</p>
+<h2 id="serialization-time-transforms">Serialization-time transforms<a class="headerlink" href="#serialization-time-transforms" title="Permanent link">&para;</a></h2>
+<p>Two config keys reshape <code>tool</code> message content when the session is written to disk, without touching the stored messages themselves:</p>
+<ul>
+<li><strong><code>noise_tools</code></strong> (default <code>["web_fetch", "open", "fetch_page"]</code>) - results of the listed tools are replaced with <code>[&lt;tool&gt; result excluded from log, see tool call above for parameters]</code>, keeping noisy results out of session files while preserving the parameters in the tool call above.</li>
+<li><strong><code>session_tool_max_chars</code></strong> (default <code>0</code> = unlimited) - caps persisted tool-result content to N characters, appending <code>… (truncated from &lt;len&gt; chars)</code>.</li>
+</ul>
+<h2 id="preparing-the-provider-context">Preparing the provider context<a class="headerlink" href="#preparing-the-provider-context" title="Permanent link">&para;</a></h2>
+<p>The provider payload is prepared from the log by <code>_provider_messages()</code>:</p>
+<ul>
+<li><code>command</code> role messages are dropped.</li>
+<li>Compaction records (<code>command</code> with <code>result</code>) become a <code>system</code> summary: <code>Summary of earlier conversation:\n\n&lt;summary&gt;</code>.</li>
+<li>Dangling <code>tool</code> messages (whose <code>tool_call_id</code> is no longer matched by a declared <code>tool_calls</code> entry, e.g. at a <code>compact_from</code> boundary) are skipped.</li>
+<li>Everything else is passed through in order.</li>
+</ul>
+<p>For compaction, tool results are folded back into the summarized context as <code>[tool result] &lt;content&gt;</code> user messages so the summary can carry forward what the tools found.</p>
+<h2 id="compaction">Compaction<a class="headerlink" href="#compaction" title="Permanent link">&para;</a></h2>
+<p><code>/compact</code> summarizes the earlier conversation and trims the provider context, controlled by <code>compact_keep</code> (default 4 = messages kept at the tail). The summary is stored in the <code>result</code> of a <code>command</code> record with a <code>compact_from</code> boundary, so the full history stays in the log while only the summary is sent to the model going forward.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.top", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2193 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A lightweight, zero-dependency agentic core for fleets of single-purpose agents">
+      
+      
+      
+        <link rel="canonical" href="https://emyasnikov.github.io/replio/roadmap/">
+      
+      
+        <link rel="prev" href="../vision/">
+      
+      
+        <link rel="next" href="../backlog/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Roadmap - Replio</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#execution-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Replio" class="md-header__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Replio
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Roadmap
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Replio" class="md-nav__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Replio
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vision/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vision
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#milestones-swarm-and-team-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Milestones - swarm and team track
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Milestones - swarm and team track">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#skeleton-and-core-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Skeleton and core hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authoring-and-template-matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authoring and template matching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reuse-scheduling-move-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reuse, scheduling, move-out
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-layers-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the layers compose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tool-engineering-for-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool engineering for agents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#team-orchestration-swarm-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Team orchestration (swarm core)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#team-kit-plugin-private-movable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Team kit plugin (private, movable)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jobs-operations-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jobs operations layer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fleet-control-plane" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fleet &amp; control plane
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#developer-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Developer workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#knowledge-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Knowledge &amp; memory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#share-polish" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Share &amp; polish
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interactive-analysis-notebooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive analysis &amp; notebooks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-ecosystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin ecosystem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remote-channels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote channels
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enterprise-operations-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enterprise operations &amp; data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-community" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release &amp; community
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference docs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference docs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Replio Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands &amp; CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/deploy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/eval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool-use evaluation harness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent fleets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduled and durable jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP (Model Context Protocol)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/personas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Personas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/session/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/swarm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent swarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/teams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Teams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/usage/programming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#milestones-swarm-and-team-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Milestones - swarm and team track
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Milestones - swarm and team track">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#skeleton-and-core-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Skeleton and core hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authoring-and-template-matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authoring and template matching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reuse-scheduling-move-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reuse, scheduling, move-out
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-layers-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the layers compose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tool-engineering-for-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool engineering for agents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#team-orchestration-swarm-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Team orchestration (swarm core)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#team-kit-plugin-private-movable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Team kit plugin (private, movable)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jobs-operations-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jobs operations layer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fleet-control-plane" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fleet &amp; control plane
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#developer-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Developer workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#knowledge-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Knowledge &amp; memory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#share-polish" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Share &amp; polish
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interactive-analysis-notebooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive analysis &amp; notebooks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-ecosystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin ecosystem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remote-channels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote channels
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enterprise-operations-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enterprise operations &amp; data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-community" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release &amp; community
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="execution-plan">Execution Plan<a class="headerlink" href="#execution-plan" title="Permanent link">&para;</a></h1>
+<p>Groups the next tasks from <code>TODO.md</code> (<code>## Open</code>) into work packages, each providing a distinct next-level capability. Packages are ordered top-to-bottom by urgency and importance, low-effort core hardening first, through capability growth, to the larger platform and enterprise goals. Re-rank the packages against the backlog before starting each next step (docs-first for the roadmap phases).</p>
+<p>Finished tasks are removed from this file - they live as one-liners in <code>TODO.md</code> <code>## Done</code> and in detail under the matching version in <code>CHANGELOG.md</code>. <code>VISION.md</code> holds the why (vision, decisions, architecture). This file holds the what. The roles and sync rules of all four planning files are in <code>AGENTS.md</code>.</p>
+<p>Sourced from the use-case gap (<code>docs/use-cases/</code>), competitor parity (<code>docs/vs/</code>), or TODO items.</p>
+<h2 id="method">Method<a class="headerlink" href="#method" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Effort: S &lt; M &lt; L</li>
+<li>Provides: the capability the task delivers</li>
+<li>Milestones: the swarm/team track (M1-M3) groups its tasks into verifiable phases</li>
+</ul>
+<h2 id="milestones-swarm-and-team-track">Milestones - swarm and team track<a class="headerlink" href="#milestones-swarm-and-team-track" title="Permanent link">&para;</a></h2>
+<p>The current priority: one terminal, whole teams (<code>VISION.md</code>). Stages run sequentially via <code>run_subagent</code>. The composition machinery (templates, recipes, generator, library) lives in a movable private plugin, never in the core.</p>
+<h3 id="skeleton-and-core-hooks">Skeleton and core hooks<a class="headerlink" href="#skeleton-and-core-hooks" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] <code>Engine.run_team</code> - sequential stage loop: brief builder, <code>run_subagent</code>, handoff, team memory write</li>
+<li>[ ] Kit skeleton - <code>plugins/replio-teamkit/</code>: manifest, entry module, one template, one recipe, tests</li>
+<li>[ ] <code>docs/teamkit.md</code> draft - authoring + move-out guide</li>
+</ul>
+<p>Verified: <code>/team run</code> end-to-end + unit tests (mock provider, no network).</p>
+<h3 id="authoring-and-template-matching">Authoring and template matching<a class="headerlink" href="#authoring-and-template-matching" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Template-based composition - stack signature from request + project description -&gt; tags -&gt; matching templates -&gt; AI-generated deltas only</li>
+<li>[ ] Team kit library - flat tagged store (stack, customer, project-type), importable into new projects</li>
+<li>[ ] <code>/teamkit</code> authoring commands - init, list, new, match, export, import, per-customer split</li>
+<li>[ ] Auto team selection - lead agent composes the team for a task and delegates in sequence</li>
+<li>[ ] <code>/agent</code> personas - interactive persona selection/run UX</li>
+<li>[ ] Docs completed (<code>docs/teamkit.md</code> full)</li>
+</ul>
+<p>Verified: one command composes a new project's team. A second project reuses stored artifacts.</p>
+<h3 id="reuse-scheduling-move-out">Reuse, scheduling, move-out<a class="headerlink" href="#reuse-scheduling-move-out" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Persistent member sessions for recurring teams (<code>job</code>-style warm sessions, one-off runs stay fresh)</li>
+<li>[ ] <code>jobs add --team</code> - scheduled team runs via the jobs daemon</li>
+<li>[ ] Reuse verified across two projects</li>
+<li>[ ] Kit moved out per the <code>docs/teamkit.md</code> checklist - own/per-customer repo, <code>plugins install --global</code>, bundled copy removed from the default plugin set</li>
+</ul>
+<p>Verified: full workflow with the kit installed externally.</p>
+<h2 id="how-the-layers-compose">How the layers compose<a class="headerlink" href="#how-the-layers-compose" title="Permanent link">&para;</a></h2>
+<p>One round hands off in three steps:</p>
+<ol>
+<li><strong>Start</strong> - the operator starts a task: <code>replio jobs add</code>/<code>run</code> for scheduled work, or a REPL prompt for ad-hoc work. The jobs operator API adds a remote start (<code>POST /jobs/&lt;name&gt;/approve</code>) later</li>
+<li><strong>Distribute + review</strong> - the lead agent splits the task into subtasks and delegates them: sequentially by persona today (<code>delegate</code> tool, team stages next), routed to fleet agents over <code>POST /chat</code> once team/job configs land, with auditor agents reviewing the output (generate &gt; check &gt; correct)</li>
+<li><strong>Return</strong> - results come back to the operator: the delegate result or job summary today, the jobs operator API + webhook/email/Telegram connectors when the jobs layer lands. The fleet supervisor restarts crashed processes underneath. The jobs layer restarts failed work - two kinds of restart, both compose</li>
+</ol>
+<p>Fleet is the substrate that stays up, not the conductor of the work.</p>
+<h2 id="tool-engineering-for-agents">Tool engineering for agents<a class="headerlink" href="#tool-engineering-for-agents" title="Permanent link">&para;</a></h2>
+<p>Tools are the provider-facing surface - one OpenAI-compatible contract, registry metadata drives the loop. Hardening it for any provider (weak OpenAI-compatible backends especially), from the Anthropic tool-writing principles (choosing the right tools, namespacing, meaningful context, token efficiency, description prompt-engineering) and the tool-use evaluation methodology.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tool spec polish (P5) - <code>grep.glob</code> -&gt; <code>include</code>, description examples / preference guidance</td>
+<td>S</td>
+<td>unambiguous parameters and clearer tool selection</td>
+</tr>
+</tbody>
+</table>
+<h2 id="team-orchestration-swarm-core">Team orchestration (swarm core)<a class="headerlink" href="#team-orchestration-swarm-core" title="Permanent link">&para;</a></h2>
+<p>Agents cooperate through personas, delegation, and team stages. Sub-agents use the caller's provider, plugin manager, and worktree (see <code>docs/swarm.md</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Plugin contribution hooks (M1)</td>
+<td>S</td>
+<td>plugin-owned personas/teams/skills without forking the core</td>
+</tr>
+<tr>
+<td>Skills registry (M1)</td>
+<td>S-M</td>
+<td>persona <code>skills</code> resolved and injected into sub-agent system prompts</td>
+</tr>
+<tr>
+<td>Teams registry (M1)</td>
+<td>S-M</td>
+<td>named team configurations ("writing" = researcher &gt; writer &gt; referencer &gt; editor, "programming" = planner &gt; programmer &gt; tester &gt; code-reviewer) with ordering + handoff - subsumes the TODO "Jobs registry - named team configurations" item</td>
+</tr>
+<tr>
+<td>Sequential team runs (M1) - <code>Engine.run_team</code></td>
+<td>M</td>
+<td>stage-by-stage delegation with generated briefs, shared team memory (<code>.replio/teams/&lt;name&gt;/memory.md</code>), handoff</td>
+</tr>
+<tr>
+<td>Auto team selection (M2)</td>
+<td>M</td>
+<td>the lead agent composes the team (personas + order + briefs) for a task</td>
+</tr>
+<tr>
+<td><code>/agent</code> personas (M2)</td>
+<td>M</td>
+<td>interactive persona selection/run UX (registry + sub-engine + delegate landed)</td>
+</tr>
+<tr>
+<td>Custom system prompts per session</td>
+<td>S-M</td>
+<td>per-site instructions</td>
+</tr>
+<tr>
+<td>Auditor agents + generate &gt; check &gt; correct orchestration</td>
+<td>M-L</td>
+<td>review-and-fix loops (later milestone, listed in VISION.md out-of-scope)</td>
+</tr>
+<tr>
+<td>PM/dev/tester team orchestration as a user-facing pattern</td>
+<td>M</td>
+<td>team pattern on top of the teams registry (lands with M1/M2)</td>
+</tr>
+<tr>
+<td>Delegation progress in the REPL + interactive delegation focus</td>
+<td>M</td>
+<td>live status of the running member, jump into its log, arrows switch views</td>
+</tr>
+<tr>
+<td>Swarm orchestration umbrella (TODO item)</td>
+<td>-</td>
+<td>decomposed by this package: <code>/agent</code> personas, auditor agents, generate &gt; check &gt; correct, team patterns</td>
+</tr>
+</tbody>
+</table>
+<h2 id="team-kit-plugin-private-movable">Team kit plugin (private, movable)<a class="headerlink" href="#team-kit-plugin-private-movable" title="Permanent link">&para;</a></h2>
+<p>Templates, recipes, library, and generator - the composition machinery, kept out of the core so internal know-how leaves the repo as one documented unit. Bundled during development as <code>plugins/replio-teamkit/</code>, moved out via the <code>docs/teamkit.md</code> checklist (M3).</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kit skeleton (M1) - <code>src/plugin.py</code>, <code>templates/</code>, <code>recipes/</code>, <code>library/</code>, <code>tests/</code></td>
+<td>M</td>
+<td>installable private kit</td>
+</tr>
+<tr>
+<td>Template-based composition (M2) - stack signature -&gt; tags -&gt; matching templates -&gt; AI-generated deltas only (<code>chat_nonstreaming</code>), persisted locally (personas.json + skills + teams.json, with reload)</td>
+<td>M</td>
+<td>fresh team per project, reusing proven artifacts</td>
+</tr>
+<tr>
+<td>Team kit library (M2) - flat tagged store per stack and customer</td>
+<td>M</td>
+<td>reuse across projects without publishing know-how</td>
+</tr>
+<tr>
+<td><code>/teamkit</code> authoring commands (M2) - init, list, new, match, export, import, per-customer split</td>
+<td>M</td>
+<td>quick team definition per customer</td>
+</tr>
+<tr>
+<td>Move-out (M3) - external repo (optionally per-customer), <code>plugins install --global</code>, bundled copy removed from the default set</td>
+<td>S-M</td>
+<td>the kit fully outside the project</td>
+</tr>
+<tr>
+<td>Plugin download service for battle-tested kits</td>
+<td>L</td>
+<td>later milestone, listed in VISION.md out-of-scope</td>
+</tr>
+</tbody>
+</table>
+<h2 id="jobs-operations-layer">Jobs operations layer<a class="headerlink" href="#jobs-operations-layer" title="Permanent link">&para;</a></h2>
+<p>React to and see jobs from outside the box. Run teams on schedule.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>jobs add --team</code> (M3) - scheduled team runs, per-run team summary session, member sessions as team stages</td>
+<td>M</td>
+<td>recurring team pipelines</td>
+</tr>
+<tr>
+<td>Jobs operator API - <code>GET /jobs</code> and <code>POST /jobs/&lt;name&gt;/approve</code> (also <code>reject</code>/<code>run</code>/<code>disable</code>) on <code>replio serve</code></td>
+<td>M</td>
+<td>any client can see/act per agent</td>
+</tr>
+<tr>
+<td>Job event hooks - the scheduler emits typed transitions (<code>proposed</code>, <code>approved</code>, <code>will_run</code>, <code>executing</code>, <code>verified</code>, <code>failed</code>, <code>timeout</code>, <code>waiting_approval</code>) to registered <code>services</code>, channel-agnostic core</td>
+<td>M</td>
+<td>notification source</td>
+</tr>
+<tr>
+<td>Job connectors - bundled <code>replio-core-webhook</code> (stdlib JSON POST, zero deps) first, email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API</td>
+<td>M-L</td>
+<td>operators react in time</td>
+</tr>
+<tr>
+<td>Fleet jobs overview - <code>replio jobs list --root &lt;dir&gt;</code> combined agent/job table (agent, job, status, next run, task), then a web Control UI on top</td>
+<td>M</td>
+<td>one view of what runs next</td>
+</tr>
+<tr>
+<td>Mid-run blocking job approval - an <code>ask</code> tool inside a running job pauses the run in place (per-tool-call <code>waiting_approval</code>), notifies via a connector, and resumes the same session when the operator replies, needs resumable mid-run state, a wait loop inside the run, and the connectors/transport above</td>
+<td>L</td>
+<td>"decide during the task"</td>
+</tr>
+</tbody>
+</table>
+<h2 id="fleet-control-plane">Fleet &amp; control plane<a class="headerlink" href="#fleet-control-plane" title="Permanent link">&para;</a></h2>
+<p>Run many scoped agents under a supervisor with a control surface.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/spawn</code> command</td>
+<td>S-M</td>
+<td>launch a scoped <code>replio serve</code> agent from the REPL (home -&gt; project path), supervise and delegate to it</td>
+</tr>
+<tr>
+<td>Immutable agent config</td>
+<td>S-M</td>
+<td>served agents cannot change their own config</td>
+</tr>
+<tr>
+<td>Minimal web Control UI</td>
+<td>M</td>
+<td>dashboard over the JSON API</td>
+</tr>
+<tr>
+<td>Multiuser API + queue / rate limits</td>
+<td>M</td>
+<td>concurrent feeds without blocking the loop</td>
+</tr>
+<tr>
+<td>Headless web API plugin-first</td>
+<td>S-M</td>
+<td>FastAPI via the dependency plugin</td>
+</tr>
+<tr>
+<td>Observability + telemetry decision</td>
+<td>M</td>
+<td>latency/cost/error metrics, Pi-style contracts</td>
+</tr>
+</tbody>
+</table>
+<h2 id="developer-workflow">Developer workflow<a class="headerlink" href="#developer-workflow" title="Permanent link">&para;</a></h2>
+<p>Repo-aware coding assistance: version control, lint/format/test wrappers, scoped shell policy, per-worktree context.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Workspace sessions</td>
+<td>M</td>
+<td>scoped <code>--workspace</code> dir, optional git sync</td>
+</tr>
+</tbody>
+</table>
+<h2 id="knowledge-memory">Knowledge &amp; memory<a class="headerlink" href="#knowledge-memory" title="Permanent link">&para;</a></h2>
+<p>Answers drawn from past sessions and local documents, bridging toward a vector store.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Session recall</td>
+<td>M</td>
+<td>full-text search over past sessions</td>
+</tr>
+<tr>
+<td>Grep text index</td>
+<td>M</td>
+<td>"search my notes" in the worktree</td>
+</tr>
+<tr>
+<td><code>docs_search</code></td>
+<td>M</td>
+<td>local grep + DuckDuckGo doc lookups</td>
+</tr>
+<tr>
+<td>Hybrid RAG + vector store</td>
+<td>L</td>
+<td>local semantic search</td>
+</tr>
+<tr>
+<td>Topic-aware ranking</td>
+<td>M</td>
+<td>intent-weighted search results</td>
+</tr>
+<tr>
+<td>Citations / source attribution</td>
+<td>S-M</td>
+<td>URL + snippet with every answer</td>
+</tr>
+</tbody>
+</table>
+<h2 id="share-polish">Share &amp; polish<a class="headerlink" href="#share-polish" title="Permanent link">&para;</a></h2>
+<p>Session artifacts become portable and navigable.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Conversation sharing links</td>
+<td>M</td>
+<td>web-shareable sessions (builds on Markdown export)</td>
+</tr>
+<tr>
+<td>Session import from Markdown/JSON</td>
+<td>M</td>
+<td>round-trip session exchange</td>
+</tr>
+<tr>
+<td>Bookmarks (<code>/bookmark</code>)</td>
+<td>S</td>
+<td>session pinning</td>
+</tr>
+<tr>
+<td>Command palette / fuzzy history</td>
+<td>M</td>
+<td>CTRL-P style history search</td>
+</tr>
+</tbody>
+</table>
+<h2 id="interactive-analysis-notebooks">Interactive analysis &amp; notebooks<a class="headerlink" href="#interactive-analysis-notebooks" title="Permanent link">&para;</a></h2>
+<p>Data work inside the loop.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interactive data analysis</td>
+<td>M</td>
+<td>CSV querying, SQL execution</td>
+</tr>
+<tr>
+<td>Notebook mode</td>
+<td>L</td>
+<td>persistent editable cells with run outputs</td>
+</tr>
+</tbody>
+</table>
+<h2 id="plugin-ecosystem">Plugin ecosystem<a class="headerlink" href="#plugin-ecosystem" title="Permanent link">&para;</a></h2>
+<p>Capabilities install as discoverable, isolated packages.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Plugin contribution hooks (M1)</td>
+<td>S</td>
+<td>personas/teams/skills from plugins</td>
+</tr>
+<tr>
+<td>PyPI plugin source</td>
+<td>M</td>
+<td>install from <code>importlib.metadata</code> entry points</td>
+</tr>
+<tr>
+<td>Plugin registry / marketplace</td>
+<td>M-L</td>
+<td>discoverable plugin sharing</td>
+</tr>
+<tr>
+<td>Shared plugin virtualenv</td>
+<td>M</td>
+<td>one venv for all plugin dependencies</td>
+</tr>
+<tr>
+<td>Per-plugin virtualenv isolation</td>
+<td>M</td>
+<td>strongest dependency separation</td>
+</tr>
+<tr>
+<td>Externalize bundled plugins</td>
+<td>M</td>
+<td>versioned repos, bundled copies stay the default</td>
+</tr>
+<tr>
+<td>Externalize bundled providers - <code>opencode</code>/<code>opencode-go</code> (then the vendor providers) move to bundled plugins via the existing <code>register_providers</code> hook. <code>BaseProvider</code>/<code>OpenAICompatibleProvider</code>, the <code>PROVIDERS</code> dict, <code>detect_provider</code>, and engine resolution stay core. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in <code>/connect</code></td>
+<td>M</td>
+<td>core stays the substrate, gateway/vendor providers version independently</td>
+</tr>
+<tr>
+<td>Plugin test harness</td>
+<td>S-M</td>
+<td>plugins ship a test suite, <code>replio plugins test &lt;name&gt;</code> runs it</td>
+</tr>
+<tr>
+<td>Cross-plugin tool router</td>
+<td>M</td>
+<td>virtual <code>open</code>/<code>search</code> dispatch by argument</td>
+</tr>
+<tr>
+<td>Web scraper + PDF-to-text plugins</td>
+<td>S-M</td>
+<td>non-text content types</td>
+</tr>
+<tr>
+<td>Agent folder watcher</td>
+<td>S-M</td>
+<td>process new files on arrival</td>
+</tr>
+</tbody>
+</table>
+<h2 id="remote-channels">Remote channels<a class="headerlink" href="#remote-channels" title="Permanent link">&para;</a></h2>
+<p>Command agents from messaging apps.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Channel gateway</td>
+<td>M</td>
+<td>one adapter surface over the engine/serve API</td>
+</tr>
+<tr>
+<td>Telegram adapter</td>
+<td>S-M</td>
+<td>long-polling bot, send + receive</td>
+</tr>
+<tr>
+<td>WhatsApp adapter</td>
+<td>M</td>
+<td>business-API HTTP channel</td>
+</tr>
+<tr>
+<td>More adapters (Discord, Signal, email)</td>
+<td>S-M</td>
+<td>extra channels as plugins</td>
+</tr>
+<tr>
+<td>Remote auth + session scoping + headless deny</td>
+<td>M</td>
+<td>secure remote command of an agent</td>
+</tr>
+</tbody>
+</table>
+<h2 id="enterprise-operations-data">Enterprise operations &amp; data<a class="headerlink" href="#enterprise-operations-data" title="Permanent link">&para;</a></h2>
+<p>Durable, auditable workflows over plant and business data.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash-chained audit log</td>
+<td>M</td>
+<td>tamper-evident additive log</td>
+</tr>
+<tr>
+<td>Edge / offline store-and-forward</td>
+<td>M</td>
+<td>buffering for unreliable connectivity</td>
+</tr>
+<tr>
+<td>Sandboxed exec</td>
+<td>L</td>
+<td>namespace/container isolation for <code>run_command</code></td>
+</tr>
+<tr>
+<td>Tool dry-run mode</td>
+<td>S-M</td>
+<td>propose args/effects without executing</td>
+</tr>
+<tr>
+<td>Connectors (<code>read_stream</code>/<code>write_stream</code>)</td>
+<td>M-L</td>
+<td>MQTT, OPC-UA, Modbus data channels</td>
+</tr>
+<tr>
+<td>Time-series, inference, optimisation tools</td>
+<td>M</td>
+<td>anomaly/forecast, <code>model_infer</code>, scheduling</td>
+</tr>
+<tr>
+<td>SCADA control + reporting</td>
+<td>M</td>
+<td>registers, Markdown/PDF/BI push</td>
+</tr>
+<tr>
+<td>Onboarding wizard, RBAC, queue scaling</td>
+<td>M</td>
+<td>MES/data-source setup, roles, concurrency</td>
+</tr>
+</tbody>
+</table>
+<h2 id="release-community">Release &amp; community<a class="headerlink" href="#release-community" title="Permanent link">&para;</a></h2>
+<p>Distribution and outward-facing presence.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>replio update</code></td>
+<td>M</td>
+<td>self-update</td>
+</tr>
+<tr>
+<td>Standalone binary build</td>
+<td>M</td>
+<td>single executable</td>
+</tr>
+<tr>
+<td>Docs site (ReadTheDocs)</td>
+<td>S-M</td>
+<td>ReadTheDocs reference docs</td>
+</tr>
+<tr>
+<td>Community channels</td>
+<td>S</td>
+<td>Discord/X slots in README</td>
+</tr>
+<tr>
+<td>Naming/positioning + competitor research</td>
+<td>S</td>
+<td>validated USP and name decision</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.top", "toc.follow", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

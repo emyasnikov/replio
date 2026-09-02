@@ -1,0 +1,2103 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A lightweight, zero-dependency agentic core for fleets of single-purpose agents">
+      
+      
+      
+        <link rel="canonical" href="https://emyasnikov.github.io/replio/changelog/">
+      
+      
+        <link rel="prev" href="../backlog/">
+      
+      
+        <link rel="next" href="../reference/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Changelog - Replio</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Replio" class="md-header__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Replio
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Replio" class="md-nav__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Replio
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vision/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vision
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v0260" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.26.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0250-2026-09-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.25.0 - 2026-09-02
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0240-2026-09-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.24.0 - 2026-09-01
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0230-2026-08-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.23.0 - 2026-08-31
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0220-2026-08-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.22.0 - 2026-08-27
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0210-2026-08-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.21.0 - 2026-08-26
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0200-2026-08-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.20.0 - 2026-08-25
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0190-2026-08-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.19.0 - 2026-08-24
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0180-2026-08-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.18.0 - 2026-08-23
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0170-2026-08-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.17.0 - 2026-08-21
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0160-2026-08-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.16.0 - 2026-08-20
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0150-2026-08-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.15.0 - 2026-08-18
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0140-2026-08-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.14.0 - 2026-08-17
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0130-2026-08-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.13.0 - 2026-08-16
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0120-2026-08-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.12.0 - 2026-08-15
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0110-2026-08-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.11.0 - 2026-08-14
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0100-2026-08-13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.10.0 - 2026-08-13
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v090-2026-08-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.9.0 - 2026-08-12
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v080-2026-08-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.8.0 - 2026-08-05
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v070-2026-08-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.7.0 - 2026-08-03
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v060-2026-08-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.6.0 - 2026-08-02
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v050-2026-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.0 - 2026-07-28
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v040-2026-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.0 - 2026-07-28
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v030-2026-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.3.0 - 2026-07-28
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v020-2026-07-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.2.0 - 2026-07-27
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v010-2026-07-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.0 - 2026-07-27
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference docs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference docs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Replio Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands &amp; CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/deploy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/eval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool-use evaluation harness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent fleets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduled and durable jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP (Model Context Protocol)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/personas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Personas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/session/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/swarm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent swarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/teams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Teams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/usage/programming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v0260" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.26.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0250-2026-09-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.25.0 - 2026-09-02
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0240-2026-09-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.24.0 - 2026-09-01
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0230-2026-08-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.23.0 - 2026-08-31
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0220-2026-08-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.22.0 - 2026-08-27
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0210-2026-08-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.21.0 - 2026-08-26
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0200-2026-08-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.20.0 - 2026-08-25
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0190-2026-08-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.19.0 - 2026-08-24
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0180-2026-08-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.18.0 - 2026-08-23
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0170-2026-08-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.17.0 - 2026-08-21
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0160-2026-08-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.16.0 - 2026-08-20
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0150-2026-08-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.15.0 - 2026-08-18
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0140-2026-08-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.14.0 - 2026-08-17
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0130-2026-08-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.13.0 - 2026-08-16
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0120-2026-08-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.12.0 - 2026-08-15
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0110-2026-08-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.11.0 - 2026-08-14
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0100-2026-08-13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.10.0 - 2026-08-13
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v090-2026-08-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.9.0 - 2026-08-12
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v080-2026-08-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.8.0 - 2026-08-05
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v070-2026-08-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.7.0 - 2026-08-03
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v060-2026-08-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.6.0 - 2026-08-02
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v050-2026-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.0 - 2026-07-28
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v040-2026-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.0 - 2026-07-28
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v030-2026-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.3.0 - 2026-07-28
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v020-2026-07-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.2.0 - 2026-07-27
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v010-2026-07-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.0 - 2026-07-27
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v0260">v0.26.0<a class="headerlink" href="#v0260" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GitHub Pages website - <code>site/</code> mkdocs project (mkdocs-material theme) plus a <code>deploy-site.yml</code> workflow that assembles the site from repo sources on push to <code>main</code> (Overview, Vision, Roadmap, Backlog, Changelog, and the reference docs minus <code>use-cases</code>/<code>vs</code>) and publishes the static build to a <code>gh-pages</code> branch, so the site is regenerated every release with no drift. The app stays zero-dependency, mkdocs is CI-only. README gains a site badge and link. <code>TODO</code>/<code>PLAN</code> "Docs site" items trimmed to the remaining ReadTheDocs part</li>
+<li><code>code_test</code> interpreter resolution - <code>replio-core-dev</code> now resolves a leading <code>python</code>/<code>python3</code> in the test command (<code>dev.test_cmd</code>, default <code>python -m unittest discover</code>) to <code>sys.executable</code>, so the default suite runs on machines with only <code>python3</code> (no <code>python</code> on PATH). Custom commands are untouched. Docs in <code>docs/tools.md</code>, tests in <code>plugins/replio-core-dev/tests/test_tools.py</code> (default + explicit-config resolution)</li>
+<li>OpenCode Zen + Go providers - <code>opencode</code> (<code>https://opencode.ai/zen/v1</code>, default <code>kimi-k3</code>) and <code>opencode-go</code> (<code>https://opencode.ai/zen/go/v1</code>, default <code>deepseek-v4-flash</code>) as OpenAI-compatible providers sharing the OpenCode API key (registered via <code>/connect</code> like any provider, no env var). <code>detect_provider()</code> recognizes <code>opencode.ai</code> (<code>/zen/go</code> path picks <code>opencode-go</code>, otherwise <code>opencode</code>) so <code>/connect</code> auto-switches. Model refs accept the <code>opencode/&lt;model-id&gt;</code> / <code>opencode-go/&lt;model-id&gt;</code> conventions as well as bare ids - the prefix is stripped from the payload (<code>_payload</code> override). The model-list endpoints are an inventory, not an entitlement check: inference still needs the matching paid subscription. Docs in <code>docs/providers.md</code> (built-in table, detection, reasoning row), <code>docs/config.md</code>, <code>README.md</code>. Tests in <code>tests/test_providers.py</code> (defaults, detection, registry, endpoints, ref-prefix stripping). Provider externalization to bundled plugins is tracked in TODO/PLAN</li>
+<li>Tool-use evaluation harness - <code>replio eval</code> runs task fixtures through the headless agent loop and reports tool-use metrics. New <code>src/replio/eval.py</code> defines the JSON fixture model (task prompt, provisioned worktree files, expected tool-name trace, declarative verifier with <code>exact</code>/<code>must_include</code>/<code>avoid</code>/<code>max_calls</code>/<code>min_calls</code>/<code>args</code>), the runner (each fixture gets an isolated temp worktree with its own <code>.replio/</code>, a throwaway engine with <code>HeadlessUI(auto='allow')</code>, and a cwd switch so relative tool paths resolve there), and per-fixture + aggregate metrics (tool-call accuracy, redundant identical calls, engine + tool errors, provider tokens). <code>replio eval list</code> / <code>run</code> (with <code>--fixture</code>, <code>--provider</code>/<code>--model</code>/<code>--base-url</code>, <code>--compare</code>, <code>--output table|json</code>) are wired through <code>main.py</code> + <code>cli.py</code>. Fixtures are discovered from the new bundled <code>replio-core-eval</code> plugin (via a new <code>register_fixtures</code> plugin entry hook, <code>PluginManager.register_fixtures</code>), <code>~/.config/replio/eval/*.json</code>, and <code>.replio/eval/*.json</code>, merged by id with local winning. The bundled catalog ships five fs fixtures (read-file-lines, find-then-read, list-directory, grep-symbol, page-large-file). Eval defaults to read/list/web allow and edit/bash/mcp deny, overridable per fixture. Docs in <code>docs/eval.md</code> (linked from <code>docs/index.md</code>, <code>docs/commands.md</code>, <code>docs/plugins.md</code>, <code>AGENTS.md</code>), and <code>docs/writing-tools.md</code> evaluating-tools section now points at the harness. Tests: <code>tests/test_eval.py</code> (model, verifier, metrics, discovery, cwd isolation), <code>tests/test_cli.py</code> eval coverage, <code>tests/test_plugins.py</code> <code>register_fixtures</code> hook + failure marking, <code>plugins/replio-core-eval/tests/test_fixtures.py</code></li>
+</ul>
+<h2 id="v0250-2026-09-02">v0.25.0 - 2026-09-02<a class="headerlink" href="#v0250-2026-09-02" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Project instructions file - per-worktree <code>AGENTS.md</code> (or any <code>project_instructions</code> name, <code>""</code> disables) is auto-loaded into the system prompt as a leading system message, capped at 20000 chars, present files only. It composes with <code>system_prompt</code> and the mode instruction and applies to sub-agents too (they share the worktree). Docs in <code>config.md</code> and <code>tools.md</code>. Tests: <code>test_modes.py</code> (<code>instructions_file_section</code> loading/absent/disabled/default/truncation) and <code>test_engine.py</code> (injection, absent skip, unset skip)</li>
+<li><code>run_command</code> command allowlist - <code>tool_permission.bash_allow</code> (default <code>[]</code>) restricts <code>run_command</code> to commands whose every chained segment (over <code>&amp;&amp;</code>/<code>||</code>/<code>;</code>/<code>|</code>/<code>&amp;</code>) starts with an allowed prefix. Heredocs and multi-line commands are rejected outright. Matching commands fall through to the normal <code>bash</code> action, others are denied. Implemented as a per-invocation policy resolver on <code>run_command</code>: the engine now injects the merged <code>tool_permission</code> into resolvers that declare a <code>_permissions</code> argument (a general capability, not a <code>run_command</code> special case), so it composes with modes, <code>tools.deny</code>/<code>tools.allow</code>, and worktree escalation. Docs in <code>config.md</code> (new <code>bash_allow</code> section) and <code>tools.md</code>. Tests: exec-suite allowlist cases (prefix, chain, pipe, heredoc, multi-line, empty) plus engine-level allow/deny</li>
+<li><code>code_test</code> / <code>code_lint</code> / <code>code_format</code> wrappers - new bundled <code>replio-core-dev</code> plugin. Each runs the project command from a config key (<code>dev.test_cmd</code> default <code>python -m unittest discover</code>, <code>dev.lint_cmd</code> default <code>ruff check .</code>, <code>dev.format_cmd</code> default <code>ruff format .</code>), appends an optional <code>target</code>, and reports exit code + output. <code>bash</code> permission, <code>cwd</code> scoping, hard timeout clamp. Added to the default plugin list. Tests: plugin suite (unittest run, config commands, target append, failure/unknown/timeout/truncation, metadata)</li>
+<li><code>git</code> tool - new bundled <code>replio-core-git</code> plugin. Read-only <code>git</code> (status/diff/log/branch/show/rev_parse, <code>read</code> permission, worktree-scoped <code>cwd</code>) and <code>git_commit</code> (add/commit, <code>edit</code> permission, always ask-gated via its resolver). Both run <code>git</code> via <code>subprocess</code> argv (never a shell string) with a hard timeout. No push/merge/checkout/history rewrite. Added to the default plugin list. Tests: plugin suite against a temp repo (status/diff/log/branch/show/rev_parse, add/commit/all, missing cwd, permissions, aliases)</li>
+<li><code>file_edit</code> tool - new bundled <code>replio-core-edit</code> plugin. Targeted search-and-replace at a <code>path</code> (<code>old</code> -&gt; <code>new</code>, optional <code>count</code>, <code>0</code> = all), with a <code>difflib</code> diff preview in the status line. <code>edit</code> permission, <code>path</code> scoping, aliases <code>edit</code>, param aliases <code>file</code>/<code>old_text</code>/<code>new_text</code>. Complements <code>file_write</code> for surgical single-hunk edits. Added to the default plugin list. Docs in <code>tools.md</code> bundled-tools table. Tests: plugin suite (first/replace-all/count/delete/missing/directory/not-found/empty/aliases/metadata/status)</li>
+<li>New bundled plugins ship in the default <code>plugins</code> list (<code>replio-core-edit</code>, <code>replio-core-git</code>, <code>replio-core-dev</code>) - <code>test_bundled_plugins.py</code> asserts discovery, origin, tools, and the default config set</li>
+</ul>
+<h2 id="v0240-2026-09-01">v0.24.0 - 2026-09-01<a class="headerlink" href="#v0240-2026-09-01" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Default tool-result cap - <code>tool_max_result_chars</code> now defaults to <code>100000</code> chars (Anthropic ~25k-token guide, <code>0</code> = unlimited), so every tool result is bounded by default: the fs tools (<code>file_read</code>/<code>list_dir</code>/<code>glob</code>/<code>grep</code>), <code>run_command</code>, and MCP tool results are each cut at a line boundary with a trailing <code>... (truncated)</code> marker. <code>list_dir</code> gains an entry cap via the new <code>list_dir_max_entries</code> config (default <code>200</code>, <code>0</code> = unlimited) with a <code>... (showing first N of M entries)</code> marker, so a large tree stays bounded regardless of name lengths and the model is told how many entries there are. Docs synced (<code>config.md</code>, <code>tools.md</code>, <code>writing-tools.md</code>). Tests: fs suite (entry cap + default-boundary truncation) and <code>test_config.py</code> defaults</li>
+<li>Default tool names namespaced, old names kept as aliases - <code>web_fetch</code> merges the former <code>open</code> and <code>fetch_page</code> web tools into one canonical fetch tool (<code>url</code> or a <code>web_search</code> result <code>id</code>, <code>offset</code> paging), <code>file_read</code>/<code>file_write</code> replace <code>read_file</code>/<code>write_file</code>, and <code>web_search</code> stays canonical. All old spellings still resolve at call time (<code>open</code>, <code>fetch_page</code>, <code>read_file</code>, <code>write_file</code>, <code>read</code>, <code>write</code>, <code>view</code>, <code>search</code>, <code>web</code>, <code>ls</code>, <code>find</code>, <code>bash</code>, <code>exec</code>), so existing configs, <code>/tool</code> calls, and session logs keep working. Only the advertised provider schema changes (13 -&gt; 12 canonical tools). The fs tool error hints now point at the canonical names, and the <code>noise_tools</code> default trims all three fetch spellings. Docs synced across <code>tools.md</code>, <code>writing-tools.md</code>, <code>config.md</code>, <code>session.md</code>, <code>plugins.md</code>, <code>fleet.md</code>, <code>security.md</code>, <code>usage/programming.md</code>, use-cases, and <code>AGENTS.md</code>. Tests updated for the new canonical set (<code>test_engine.py</code>, <code>test_commands.py</code>, <code>test_cli.py</code>) plus websearch-suite coverage for the merged <code>web_fetch</code></li>
+<li>Tool schema advertises canonical names only - <code>ToolRegistry.schema_filtered()</code> now returns one schema per registered tool and drops the alias entries (<code>bash</code>/<code>exec</code>, <code>read</code>/<code>view</code>, <code>ls</code>, <code>find</code>, <code>search</code>) from what is sent to the provider (20 -&gt; 13 tool definitions per request). Aliases still resolve at call time, so <code>/tool</code>, <code>/help</code>, policy, confirm, glyphs, and the unknown-tool hint are unchanged. A model that still calls a dialect name gets it absorbed. Docs synced (<code>tools.md</code> registration table). Tests: <code>test_tool_registry.py</code> (canonical-only advertisement, denied canonical stays hidden even when an alias is allowed) and <code>test_engine.py</code> (build-mode schema is exactly the 13 canonical names)</li>
+<li>Agent-loop cancellation and tool-dialect hardening - Ctrl-C now cancels the running turn instead of declining one tool or killing the REPL. <code>ReplUI.confirm</code> re-raises <code>KeyboardInterrupt</code> (EOF still returns False), and <code>Engine._agent_loop</code> catches it during streaming, tool execution, and retry sleeps, merging partial output, printing <code>(cancelled)</code>, persisting state, and returning <code>TurnResult(status='cancelled')</code> so the REPL returns to the prompt (headless <code>replio run</code> exits non-zero). Unknown tool calls now return <code>Error: unknown tool "X". Available tools: ...</code> via new <code>ToolRegistry.is_registered()</code>/<code>primary_names()</code>, so the model can self-correct instead of retrying a hallucinated name. Web-search and fs dialect absorption: <code>web_search</code> gains the <code>search</code> alias, <code>grep</code> gains the <code>find</code> alias (its <code>query -&gt; pattern</code> alias already maps the model's args), and <code>open</code> treats a URL string passed in <code>id</code> as the URL. Tests: <code>test_agent_loop.py</code> (cancel mid-stream/after-tool, unknown-tool hint), <code>test_ui.py</code> (confirm Ctrl-C/EOF), websearch suite (<code>search</code> alias, URL-as-id), fs suite (<code>find</code> alias)</li>
+</ul>
+<h2 id="v0230-2026-08-31">v0.23.0 - 2026-08-31<a class="headerlink" href="#v0230-2026-08-31" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Skills registry - <code>Skill</code> (name, markdown content, optional description/tags) and <code>SkillRegistry</code> in new <code>src/replio/skills.py</code>: skills are flat <code>&lt;name&gt;.md</code> files in the local <code>.replio/skills/</code> and global <code>~/.config/replio/skills/</code> dirs plus the in-memory plugin layer (<code>register_skills</code> hook, <code>registry.add_plugin({...})</code>), precedence <code>plugin &lt; global &lt; local</code>. <code>Engine.skills</code> wires the hook on first access, <code>/plugins install</code>/<code>update</code>/<code>uninstall</code> refresh all three registries live, and <code>/skill</code> manages the catalog (<code>list</code>/<code>show</code>/<code>new</code>/<code>remove</code>, plugin skills not removable). Persona <code>skills</code> (previously inert) are resolved and injected into the sub-agent system prompt as a <code>## Skills</code> section (<code>_new_sub_engine</code>) - missing skills skip silently, empty-prompt personas keep the section as their whole prompt - and the same section is appended for jobs with <code>--persona</code> (<code>scheduler._build_engine</code>, via the shared <code>skills_section</code> helper). Docs in <code>docs/skills.md</code>, linked from <code>docs/index.md</code>. <code>personas.md</code> <code>skills</code> field now points at the live registry, and <code>plugins.md</code> hook contract updated. <code>tests/test_skills.py</code> (registry, section, command), <code>test_subagent.py</code> injection cases, <code>test_jobs.py</code> <code>_build_engine</code> injection, <code>test_plugins.py</code> skills hook against a real registry</li>
+<li><code>PluginManager._bundled_dir()</code> hardens its fallback for source checkouts - when the <code>replio.plugins.bundled</code> subpackage cannot be imported (e.g. running with <code>PYTHONPATH=src</code> instead of an installed package), it now resolves the repo-root <code>plugins/</code> directory before the stale in-package path, so bundled plugins load without <code>pip install -e .</code>. <code>test_plugin_suites</code> inherits the fix. Docs note in <code>docs/testing.md</code> (absolute <code>PYTHONPATH</code> for the detached-fleet daemon)</li>
+<li>Teams registry - shape-only named team pipelines: <code>Team</code> (name, ordered <code>stages</code>, description, tags) + <code>TeamStage</code> (persona, optional mode/task_hint/handoff_note, plain-string shorthand) in new <code>src/replio/teams.py</code>, and <code>TeamRegistry</code> with the same four-layer merge as personas (<code>bundled &lt; plugin &lt; global &lt; local</code>, per-field with stages replaced wholesale). <code>src/replio/bundled_teams.json</code> ships the two pre-carved pipelines referencing the bundled personas - <code>writing</code> (researcher &gt; writer &gt; referencer &gt; editor) and <code>programming</code> (planner &gt; programmer &gt; tester &gt; code-reviewer) - with concrete task hints and handoff notes. Plugins contribute teams via the existing <code>register_teams</code> entry hook (<code>registry.add_plugin(...)</code>, in-memory layer, <code>reload(plugin_manager=None)</code> re-applies like personas), and <code>Engine.teams</code> wires it on first access. <code>/plugins install</code>/<code>update</code>/<code>uninstall</code> refresh both registries live (<code>_refresh_registries</code>). <code>/team</code> manages the catalog (<code>list</code> with tag filter + stage chain, <code>show</code>, <code>new</code>/override, <code>remove</code>, bundled remove rejected, origins marked <code>bundled</code>/<code>plugin</code>/<code>global</code>/<code>local</code>/<code>merged</code>). <code>run</code> lands with <code>Engine.run_team</code> (PLAN M1). Subsumes the TODO "Jobs registry - named team configurations" item. Docs in <code>docs/teams.md</code> (schema, layers, roster), linked from <code>docs/index.md</code> + <code>docs/swarm.md</code>. <code>tests/test_teams.py</code> (registry + command coverage) and <code>test_plugins.py</code> integration (real <code>TeamRegistry</code> hook dispatch, <code>engine.teams</code>)</li>
+<li>Plugin contribution hooks - entry modules may now define <code>register_personas(registry)</code> (personas contributed via <code>registry.add_plugin(entry)</code>, same shape as <code>personas.json</code>), <code>register_teams(teams)</code>, and <code>register_skills(skills)</code>. <code>PluginManager</code> gains the three matching dispatch methods on a shared <code>_run_hook</code> helper (extracted from <code>register_tools</code>/<code>register_commands</code>, identical semantics: loaded modules only, a hook exception marks the plugin <code>error</code> with <code>f'&lt;hook&gt; failed: ...'</code>). <code>PersonaRegistry</code> gains a fourth in-memory scope between bundled and global, so precedence is <code>bundled &lt; plugin &lt; global &lt; local</code> and a <code>personas.json</code> entry always overrides a plugin-provided persona. <code>origin()</code> reports <code>plugin</code>/<code>merged</code> and <code>/persona</code> lists plugin personas as <code>(plugin)</code>. New <code>PersonaRegistry.reload(plugin_manager=None)</code> re-reads the three files, clears the plugin scope, and re-applies <code>register_personas</code> when a plugin manager is passed. <code>Engine.personas</code> wires the hook on first access (sub-agents inherit it via the shared plugin manager), and <code>/plugins install</code>/<code>update</code>/<code>uninstall</code> refresh the running REPL's personas registry live (tools/commands still activate on next start). Plugin personas never touch disk - <code>add_plugin</code> writes nothing. Docs synced (<code>plugins.md</code> entry contract + precedence, <code>personas.md</code> layers, <code>testing.md</code>). <code>tests/test_plugins.py</code> (persona/team/skill hooks + failure marking + engine integration) and <code>tests/test_personas.py</code> (plugin scope merge, origins, reload re-read + re-apply) grow to 81 combined</li>
+</ul>
+<h2 id="v0220-2026-08-27">v0.22.0 - 2026-08-27<a class="headerlink" href="#v0220-2026-08-27" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Fleet orchestration supervisor - <code>replio fleet</code> runs many scoped <code>replio serve</code> agents as supervised children. <code>src/replio/fleet.py</code> ships the declarative roster <code>.replio/fleet.json</code> (<code>AgentDef</code>: name/dir/enabled/<code>prefer_port</code>/<code>max_restarts</code>/command test seam) and runtime state <code>.replio/fleet.state.json</code> (pids, ports, statuses, restart counts), plus <code>FleetController</code>: bind-probe port allocation (<code>find_free_port(preferred, lo=8780, hi=8890)</code>), urllib <code>GET /health</code> probing (2s timeout), spawn as <code>[sys.executable, -m, replio, serve, --host, 127.0.0.1, --port, &lt;n&gt;, --path, &lt;dir&gt;]</code> with per-agent stdout/stderr to <code>&lt;dir&gt;/.replio/logs/&lt;name&gt;.log</code> and <code>REPLIO_FLEET_PORT</code>/<code>DIR</code>/<code>AGENT</code> exported to children, and a supervisor loop with restart policy (5s backoff doubling to 60s, <code>max_restarts</code> budget pausing an agent as <code>crashed</code>, <code>enabled</code> gate), health-threshold failures, and graceful <code>SIGINT</code> down. <code>replio fleet up</code> runs the loop in the foreground (Ctrl-C = graceful down), <code>up --detach</code> re-execs a background daemon that signals <code>SIGINT</code>/<code>SIGTERM</code> to stop. CLI: <code>init</code> (scan subdirs holding <code>.replio/config.json</code>), <code>add</code>, <code>remove</code>, <code>up</code>, <code>down</code>, <code>status</code> (agent/enabled/port/pid/state/restarts/last-error table), <code>restart [name|all]</code> (stop + reset backoff + relaunch), <code>logs &lt;name&gt; [n] [--follow]</code>, and <code>config &lt;name&gt;</code> per-agent config generation (<code>--provider</code>/<code>--model</code>/<code>--persona</code>/<code>--system-prompt</code>/<code>--mode</code>/<code>--tools-deny</code>/<code>--tool-permission</code>, selected keys only, persona prompt/model/permissions inlined, unknown persona errors). Docs in <code>docs/fleet.md</code> (Supervisor section), <code>docs/commands.md</code>, <code>docs/testing.md</code>. <code>tests/test_fleet.py</code> covers allocation, loopback probes, manifest/state round-trip and corruption tolerance, the full spawn &gt; health &gt; restart &gt; down cycle, max_restarts give-up, disabled gate, env seams, the <code>config</code> CLI, and a detached-daemon end-to-end (25 tests, mock-only)</li>
+<li><code>replio fleet</code> CLI wiring - <code>main.py</code> fleet subcommand parser + dispatch, <code>cli.py</code> <code>cmd_fleet</code> with <code>--path</code> accepted before the subcommand like <code>jobs</code></li>
+<li>Config immutability is documented, not enforced: <code>replio fleet config</code> is the operator surface and a <code>serve</code> process has no config-write CLI path today. An engine-level guard stays an open TODO</li>
+<li>Bundled plugins restructured to <code>plugins/&lt;name&gt;/{src,tests}</code> - plugin code lives in <code>src/</code> (manifest <code>entry</code> points there, the loader puts the entry module's directory on <code>sys.path</code>, so sibling imports resolve from <code>src/</code>), and each bundled plugin ships its own unit suite in <code>tests/</code>. <code>replio-core-fs</code> + <code>replio-core-exec</code> suites moved out of <code>test_machine_tools.py</code>, <code>replio-core-mcp</code> out of <code>test_mcp.py</code> (now in-repo <code>src/</code>), and <code>replio-core-websearch</code> gains coverage for the DDG parser, display formatters, text extractor, and <code>open</code> target resolution. The core suite discovers the plugin suites via <code>tests/test_plugin_suites.py</code>. <code>replio plugins test [name]</code> runs them headless, and a missing <code>plugins</code> dispatch in <code>replio main</code> was fixed. <code>test_tool_registry.py</code> decoupled onto synthetic tools (plugin-specific registration metadata lives in the plugin suites), and the redundant <code>mcp_*</code> presence check was dropped from <code>test_bundled_plugins.py</code>. Packaging ships <code>src/</code> + <code>tests/</code>. Docs synced (<code>plugins.md</code>, <code>testing.md</code>)</li>
+<li>Test cleanup - dropped the redundant <code>mcp_*</code> tool-presence assertion from <code>test_bundled_plugins.py</code> (owned by the <code>test_mcp.py</code> registration suite) and single-sourced the fs/exec cap-config setup</li>
+</ul>
+<h2 id="v0210-2026-08-26">v0.21.0 - 2026-08-26<a class="headerlink" href="#v0210-2026-08-26" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Legacy support removal (breaking, dev-stage) - dropped the <code>delegate_*</code> session prefix: <code>/session list</code> annotates <code>sub_*</code> children only and old <code>delegate_*</code> files get no special handling. Dropped <code>--max-context</code> (per-run fresh session files plus the rolling run-memory summary make history capping unnecessary). Dropped the config migrations (<code>plugins.enabled</code>/<code>plugins.deny</code> -&gt; <code>plugins</code>, and local <code>api_key</code> -&gt; global). Old keys are simply ignored. Removed <code>config.api_key</code> entirely - API keys live only in the global model registry (<code>~/.config/replio/models.json</code>, via <code>/connect</code>), the engine no longer falls back to <code>config.api_key</code> (<code>_reinit_provider</code>/<code>check_connection</code>/<code>list_models</code> resolve from the registry), and <code>/config</code> + <code>replio config</code> treat <code>api_key</code> as an ordinary key (no forced-global write, masking, or <code>0600</code>). Tests updated. Docs synced (<code>config.md</code>, <code>providers.md</code>, <code>security.md</code>, <code>deploy.md</code>, <code>usage/programming.md</code>, <code>session.md</code>, <code>testing.md</code>)</li>
+<li>Per-run job session files and unified session naming - by default every job run gets a fresh session <code>.replio/sessions/job_&lt;YYYYMMDD&gt;_&lt;HHMMSS&gt;_&lt;name&gt;.json</code> (same-second collisions get a <code>_2</code> suffix), so no single file grows unbounded. Retries within a run share that run's file, and <code>--session</code> opts into a stable growing session. The session-naming scheme is now type-prefixed across the board: interactive sessions auto-name as <code>ses_&lt;ts&gt;_&lt;slug&gt;</code>, delegation sub-agents write <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code> (the suffix is the calling session id, sanitized and capped), and jobs use <code>job_*</code>. <code>/session list</code> annotates <code>sub_*</code> children with their parent. <code>run_subagent</code> no longer auto-renames the sub-agent's session. Docs synced (<code>docs/session.md</code> naming scheme table + <code>docs/jobs.md</code> per-run session section, <code>security.md</code>/<code>swarm.md</code>/<code>usage/programming.md</code> <code>sub_*</code>). Tests updated (<code>test_subagent.py</code>/<code>test_delegate.py</code> filter by parent id) and <code>tests/test_jobs.py</code> grows to 88 (per-run naming, collision dedupe, <code>--session</code> stability)</li>
+<li>Job run memory - every run (successful or failed) is summarized and written to a rolling <code>.replio/jobs/&lt;name&gt;.memory.md</code> via the same compaction summarizer as <code>/compact</code>, seeded with the previous memory so context carries. A fallback (<code>Run &lt;ts&gt;: verified|failed</code> + first part of the output/error) is stored when the summarize call fails. The memory file is injected into the next run as a <code>## Run memory</code> system prompt block, so the model knows what previous runs did without the session file growing. <code>replio jobs show &lt;name&gt;</code> prints the memory path + preview. The file is human-editable like the task file and never breaks a run. Docs in <code>docs/jobs.md</code> (Run memory section). <code>tests/test_jobs.py</code> grows to 82</li>
+<li>Job task definition as a linked Markdown file - <code>replio jobs add &lt;name&gt; --file &lt;path&gt; --cron ...</code> links the job to a task file (default <code>.replio/jobs/&lt;name&gt;.md</code>) that is re-read at the start of every run, so editing the <code>.md</code> is how you change the job - no re-adding. A missing file is created from a template (<code># &lt;name&gt;</code> / <code>## Task</code> / <code>## Done when</code> / <code>## Notes</code>) at <code>add</code> or <code>edit</code> time, and a task file deleted afterwards fails the run with a clear <code>task file not found</code> reason instead of silently using stale instructions. <code>--prompt</code> is now optional (at least one of <code>--prompt</code> / <code>--file</code> required). With both, the prompt is the short per-run trigger. New <code>replio jobs edit &lt;name&gt;</code> (and <code>/jobs edit</code>) opens the task file in <code>$EDITOR</code>, creating the template first. The scheduler composes the run's system prompt as persona prompt + task-file contents (<code>## Job task</code>) + <code>--system-prompt</code>, with the generic recurring-job prompt as the fallback. <code>Job.task_file</code> is persisted (worktree-relative when under the worktree). Docs in <code>docs/jobs.md</code> (task-file section) and <code>docs/commands.md</code>. <code>tests/test_jobs.py</code> grows to 77</li>
+<li>Job runtime operations - <code>replio jobs status</code> is the journalctl-style view (state, fired count with ok/failed, last error, next run, uptime since creation, per-run approval state). <code>replio jobs stop &lt;name&gt;</code> (alias of <code>disable</code>) makes stopping discoverable. <code>replio jobs show</code> prints the last run's output. <code>replio jobs run --verbose</code> streams the live turn (tokens stdout, tool activity stderr) for Tmux/REPL demos, and headless <code>run</code> now prints the final answer. Tests grow to 68 in <code>tests/test_jobs.py</code></li>
+<li>Job memory across runs - the rolling run-memory summary (<code>.memory.md</code>, see the run-memory bullet) plus a fresh per-run session file replace the earlier stable-session design. The register history is capped at the last 100 runs. Without <code>--persona</code> or <code>--system-prompt</code>, runs inject a default recurring-job system prompt so the model understands the recurring task and past runs. Docs in <code>docs/jobs.md</code></li>
+<li>Human-in-the-loop per-run approval - <code>--require-approval</code> arms exactly one run at a time: after every run the job parks in a new <code>waiting_approval</code> state, the daemon refuses to fire it, <code>replio jobs status</code>/<code>/jobs status</code> shows <code>WAITING for approve</code>, and <code>replio jobs approve &lt;name&gt;</code> (or <code>/jobs approve</code>) arms only the next run before it parks again. <code>reject</code> clears the grant. Manual <code>run</code> still overrides. This is the per-run gate on top of arm/disarm. Mid-run blocking (an <code>ask</code> tool pausing a running job) is documented as planned in <code>docs/jobs.md</code> and tracked in TODO</li>
+<li>Richer job run spec - <code>--persona</code> (system prompt, model override, tool carve), <code>--system-prompt</code>, <code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--tools-deny</code>, and <code>--tool-permission</code> were already present. The scheduler now falls back to a generic recurring-job system prompt and exposes <code>Job.ready_to_run()</code>. A job can already orchestrate a team by delegating to personas (<code>delegate</code> category defaults to <code>allow</code> on the job's tool carve)</li>
+<li><code>docs/jobs.md</code> rewritten - status model with <code>waiting_approval</code>, the three HITL gates (arm/disarm, per-run approval, planned mid-run blocking), per-run session + rolling memory semantics, <code>--verbose</code> run output. <code>docs/commands.md</code> gains <code>status</code>/<code>stop</code>/<code>--verbose</code> and the new <code>add</code> flags</li>
+<li>Scheduled / durable jobs - a job is a named prompt plus a schedule (<code>cron</code> 5-field expression, <code>interval</code> seconds, or a one-shot <code>at</code> datetime), a tool carve, and durability settings (retries with exponential backoff, per-attempt timeout). Jobs live in <code>.replio/jobs.json</code>, one register per worktree. <code>replio jobs list/show/add/approve/reject/enable/disable/remove/run/daemon</code> and an equivalent <code>/jobs</code> REPL command manage them. A job is a human-gated workflow: <code>add</code> starts <code>proposed</code> and only <code>approve</code> (or <code>--approval auto</code>, or a manual <code>run</code>) activates it. The daemon never approves. Running sets <code>executing</code>, then <code>verified</code> (ok/truncated) or <code>failed</code> after retries. Every attempt is recorded in an append-only <code>history</code>. Jobs run on a stable <code>job.&lt;name&gt;</code> session (cross-run context, resumable trail) through a fresh headless <code>Engine</code> per attempt with <code>HeadlessUI(auto='deny')</code> - ask-gated tools are denied, a job reaches only its <code>allow</code> tools inside its worktree. Scheduling is deterministic: <code>next_run_at</code> is the single source of truth, recomputed strictly after each run, so a stopped daemon never replays missed windows, and a one-shot <code>at</code> job disables itself after running. The scheduler is single-threaded (jobs run sequentially in name order). Concurrency is future work</li>
+<li>Cron scheduling engine (stdlib, in <code>jobs.py</code>) - the 5-field parser supports <code>*</code>, <code>*/step</code>, <code>a-b</code>, <code>a-b/step</code>, and <code>a,b,c</code> lists on all fields with <code>dow</code> <code>0</code>-<code>7</code> (both 0 and 7 are Sunday). Day-of-month and day-of-week are restrictive (both must match). <code>replio jobs daemon</code> polls on <code>--tick</code> (default 15s) and runs due jobs, <code>replio jobs run &lt;name&gt; [--no-retry]</code> runs one now and exits <code>0</code>/<code>1</code>. Per-job overrides (<code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--persona</code>, <code>--system-prompt</code>, <code>--tools-deny</code>, <code>--tool-permission</code>) rebuild the engine from the same merge <code>run_subagent</code> uses. Docs in <code>docs/jobs.md</code></li>
+<li>Tests (<code>tests/test_jobs.py</code>, 57 tests) - cron parser field expansion and edge cases (leap day, month roll, restrictive day rule), <code>next_run</code>/<code>compute_next_run</code>/<code>parse_dt</code>, job model round-trip and the runnable gate, registry store (round-trip, remove, corrupt-file tolerance), scheduler run/tick under a mocked engine (verified/failed, retries with per-attempt history, unknown persona, one-shot <code>at</code> disables itself, approval gates), <code>replio jobs</code> CLI (add/approve/list cycle, auto-approval, bad cron, duplicates, run exit codes). Docs synced (<code>commands.md</code> CLI + <code>/jobs</code> tables, <code>testing.md</code>, use-cases/homelab, <code>enterprise.md</code> durable-workflows status)</li>
+<li>Enterprise use-case note - the durable-workflows gap now points at what landed: scheduled jobs, retries with backoff, timeouts, resumability, and the <code>proposed &gt; approved &gt; executing &gt; verified &gt; failed</code> status model shipped as <code>replio jobs</code>. Dead-letter queues remain planned</li>
+</ul>
+<h2 id="v0200-2026-08-25">v0.20.0 - 2026-08-25<a class="headerlink" href="#v0200-2026-08-25" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Delegation workflow fixes - <code>delegate</code> now defaults to <code>allow</code> (runs without a confirm, <code>DEFAULT_CONFIG.tool_permission.delegate</code> and the per-persona resolver default, and a persona can still set <code>delegate: "ask"</code>), so <code>/tool delegate</code> no longer prompts. Sub-agent sessions link to their parent: <code>Session</code> gains <code>parent_id</code> and <code>sub_sessions</code> (persisted), <code>run_subagent</code> records both (<code>/session preview</code> shows <code>parent</code>/<code>sub-sessions</code>, <code>/session list</code> annotates <code>delegate_*</code> with <code>(child of ...)</code>). A sub-agent that finishes with no prose now returns a log-summary result instead of <code>(no content)</code> - files written (<code>write_file</code>), tool round counts, and the last <code>bash</code> line are read back from its session - keeping the delegate result informative for the lead model and the REPL. Direct <code>/tool</code> calls no longer double-print the delegate result (<code>ToolRegistry.execute()</code>/<code>Engine._run_tool</code> take an <code>echo</code> flag injected as a hidden <code>_echo</code> kwarg, and <code>/tool</code> passes <code>echo=False</code>). Docs synced (<code>config.md</code>, <code>personas.md</code>, <code>swarm.md</code>, <code>commands.md</code>, <code>security.md</code>, <code>session.md</code>, <code>testing.md</code>, <code>AGENTS.md</code>)</li>
+<li><code>delegate</code> tool (core) - run a task under a persona as a sub-agent and get its final answer. Permission resolves per invocation through a new <code>permission_fn</code> registration hook: <code>ToolPolicy.action()</code> now accepts the tool arguments and a per-tool <code>resolvers</code> map (policy stays the single resolution point, resolvers only refine a non-<code>deny</code> base and are skipped without args, so schema filtering is unaffected). The <code>delegate</code> tool's resolver follows the persona rule - a configured persona uses its own <code>tool_permission</code> (category <code>delegate</code> defaults to <code>ask</code>, new <code>DEFAULT_CONFIG</code> entry), a persona outside the registry is <code>deny</code>. Display is gated by the new <code>delegate_echo</code> config (default <code>true</code>): on, the final answer plus a sub footer (duration + completion tokens) print in the REPL. Off hides the result. Testable from the REPL via <code>/tool delegate {"persona": ..., "task": ...}</code>. Registered as a core tool in <code>Engine._init_tooling</code>, which also builds the resolver map. <code>tests/test_delegate.py</code> (8 tests) + resolver coverage in <code>tests/test_tool_policy.py</code>. Docs in <code>docs/tools.md</code>, <code>docs/config.md</code>, <code>docs/swarm.md</code></li>
+<li>In-process sub-agent engine - <code>Engine.run_subagent(persona, task)</code> executes a task under a selected persona and returns its <code>TurnResult</code>. A sub-engine is a fresh <code>Engine</code> built on a per-persona config: the persona's <code>system_prompt</code> becomes the system prompt, its <code>model</code> overrides the caller's model when set (else the caller's provider is reused), its <code>tool_permission</code> is merged over the caller's categories, and mode is forced to <code>build</code> so the carve alone decides edit/bash. It shares the caller's plugin manager and worktree, runs with a quiet <code>NullUI</code> (ask-gated tools auto-deny, so there are no interactive prompts), and persists a namespaced <code>delegate_&lt;persona&gt;_&lt;ts&gt;</code> session into the shared <code>sessions/</code> dir. <code>Engine.__init__</code> gains optional <code>plugin_manager</code>/<code>provider</code> injection knobs. Covers <code>tests/test_subagent.py</code> (9 tests). Docs expanded in <code>docs/swarm.md</code></li>
+<li>Persona tags - <code>Persona</code> gains a <code>tags</code> list for job-based grouping and filtering, using a controlled vocabulary (<code>research</code>, <code>writing</code>, <code>programming</code>, <code>review</code>) on the bundled roster (<code>researcher</code> = research+writing, <code>editor</code> = writing+review, <code>code-reviewer</code> = programming+review, etc.). <code>/persona</code> shows tags in <code>list</code>/<code>show</code>, and <code>/persona list &lt;tag&gt;</code> filters (unknown tags print the known vocabulary). List merge keeps the "local replaces lower layer" rule per field. Docs updated (<code>docs/personas.md</code>), tests grow to 27, and a Jobs registry (team configurations built on tags/personas) is noted as a future TODO item</li>
+<li>Bundled default personas - the registry gains a third read-only <code>bundled</code> layer (<code>src/replio/bundled_personas.json</code>, shipped via package-data) with precedence <code>bundled &lt; global &lt; local</code>, mirroring bundled plugins. Ships two pre-carved teams: document (<code>researcher</code>, <code>writer</code>, <code>referencer</code>, <code>editor</code>) and programming (<code>planner</code>, <code>programmer</code>, <code>tester</code>, <code>code-reviewer</code>), each with a system prompt and per-persona <code>tool_permission</code> (researchers/editors are read-only, programmer/tester may run bash). Personas stay model-agnostic (<code>model</code> empty = inherit the caller). <code>/persona</code> shows <code>(bundled)</code>/<code>(merged)</code> origins, <code>new &lt;name&gt;</code> now overrides any existing persona (bundled included), and <code>remove</code> rejects bundled-only personas with override guidance. Docs updated (<code>docs/personas.md</code> roster table, <code>docs/swarm.md</code>). <code>tests/test_personas.py</code> grows to 21 tests</li>
+<li>Personas registry - personas defined as a named catalog (system prompt, optional model override, optional skills and per-persona <code>tool_permission</code>), stored in single JSON files merged global (<code>~/.config/replio/personas.json</code>) then local (<code>.replio/personas.json</code>), field-by-field with local winning and empty local fields inheriting from global. <code>PersonaRegistry</code> (ModelRegistry-style, <code>personas.py</code>), <code>/persona</code> command (<code>list</code> / <code>show</code> / <code>new</code> / <code>remove</code>), <code>Engine.personas</code> accessor, <code>docs/personas.md</code> and a <code>Personas and delegation</code> section in <code>docs/swarm.md</code> (per-persona <code>delegate</code> permission rule and the document-pipeline use case). Covered by <code>tests/test_personas.py</code> (11 registry + 5 command tests)</li>
+</ul>
+<h2 id="v0190-2026-08-24">v0.19.0 - 2026-08-24<a class="headerlink" href="#v0190-2026-08-24" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Soft tool results now render as dimmed info lines - bundled tools declare a <code>note</code> predicate (read-only callable on the raw result) via registration metadata, and the shared dispatch point <code>_run_tool</code> echoes the note line under the activity line when it fires. <code>(empty file)</code>, <code>(empty directory)</code>, <code>(no matches for "x")</code>, <code>(end of content)</code>/<code>(empty content)</code>, and <code>No search results found.</code> were previously invisible in the REPL (only persisted + fed to the model), while only <code>Error:</code> results rendered. Gated by the new <code>show_notes</code> config (default <code>true</code>). Error/note checks sit side by side so a result cannot double-render, and the <code>echo</code> path excludes note results</li>
+<li>Session audit trail - every tool permission resolution and its outcome (<code>allow</code>/<code>ask</code>/<code>deny</code> -&gt; <code>granted</code>/<code>declined</code>/<code>denied</code>, with the tool's <code>path</code> when present) is recorded to a new append-only session <code>permissions</code> array. Always-on with no config switch. Replaces the old "confirm prompts are ephemeral" guarantee in docs (<code>AGENTS.md</code>, <code>tools.md</code>, <code>security.md</code>, <code>use-cases/index.md</code>, <code>session.md</code>)</li>
+<li>Stable message identifiers - every session message now carries an <code>id</code> (<code>msg_&lt;hex&gt;</code>) auto-assigned on creation, for cross-referencing and future delegation (<code>sub_sessions</code>). Legacy messages without an <code>id</code> remain readable</li>
+<li>Configurable footer token counts - the <code>(7.4s, 8 tokens)</code> footer now builds from the new <code>footer_tokens</code> config (default <code>["context"]</code>, reproducing the old output). Segments render in order joined by <code>/</code>: <code>context</code> = <code>&lt;n&gt; tokens</code> (input/context size), <code>in</code>/<code>out</code>/<code>thinking</code> = <code>&lt;n&gt;t</code> pulled from provider usage (<code>prompt_tokens</code>, <code>completion_tokens</code>, <code>completion_tokens_details.reasoning_tokens</code>), with unavailable counts skipped and an empty list hiding the token section. <code>show_context_size</code> remains the master on/off. <code>Engine._usage_counts()</code> resolves the counts. <code>footer(duration, counts)</code> replaced the old <code>(duration, usage, tokens)</code> signature across <code>ReplUI</code>/<code>HeadlessUI</code>/<code>NullUI</code></li>
+<li>Thought-duration line for streamed thinking - with <code>/thinking on</code>, each thinking block now ends with a dimmed <code>(Thought N.Ns)</code> footer-style line (the duration was previously dropped for visible thinking, and only the <code>show_thinking: off</code> spinner path showed it). Gated by the new <code>show_thought_duration</code> config (default <code>true</code>). Mirrored in <code>HeadlessUI</code> (stderr) for <code>replio run</code>/<code>serve</code>, documented in <code>docs/config.md</code>, and covered in <code>tests/test_ui.py</code></li>
+<li>Global model registry (<code>~/.config/replio/models.json</code>, separate from config) - <code>/connect</code> appends configured models (provider/base_url/model) and now stores API keys there (<code>0600</code>), no longer in <code>config.api_key</code> (kept as a read-only legacy fallback). <code>/model list</code> shows configured models grouped by provider with the active one marked <code>&gt;</code> and <code>(key)</code> presence. <code>/model list --online [provider]</code> probes a provider's advertised models. On a fresh project <code>/connect</code> offers a numbered picker (<code>#N</code>) that reuses a known model and its stored key, so deleting a project config can no longer lose connection credentials. The engine resolves the API key from the matching registry entry before falling back to <code>config.api_key</code></li>
+<li><code>/config</code> handles single config lines in either scope - leading <code>--global</code> / <code>--local</code> flags (Git-like default stays local, matching <code>replio config set --global</code>), threaded through <code>set</code>, <code>unset</code>, and <code>-a</code>/<code>-r</code> list ops. Output prints the resolved scope (e.g. <code>/config --global api_key &lt;key&gt;</code> is the one-line global key set, masked in output). <code>Config.apply()</code> replaces the old <code>persist=False</code> flag - in-memory overrides are now an explicit, separate method used by one-shot CLI flags and <code>Engine._reinit_provider</code> normalization (which can no longer write config files at startup)</li>
+<li>Config writes are now scoped and secure - the project-local file holds only explicitly selected keys (a save never re-writes the merged config, so secrets can't be copied down). <code>replio config get/set/unset</code> CLI (with <code>--global</code>/<code>--local</code>, <code>--show-origin</code>, JSON values) and <code>/config unset</code> + origin display in the listing. One-shot CLI overrides (<code>replio run --provider/--model/--base-url/--mode</code>) are no longer persisted. <code>api_key</code> was global-only (written <code>0600</code>) and is superseded by the model registry above</li>
+<li>Turn recovery for autonomous agents - on truncation (<code>finish_reason=length</code>) with a partial answer, <code>auto_continue</code> (default <code>true</code>) re-requests the turn with a "continue exactly where you stopped" instruction and stitches the parts into one message (capped by <code>auto_continue_max</code>, default <code>2</code>). A stream that completes with no content is retried (<code>stream_retries</code>) before being flagged empty. Reasoning-only turns (thinking present, no content) are no longer errors. Partial output is persisted whenever the turn produced content or thinking</li>
+<li>Thinking is captured from <code>reasoning</code> as well as <code>reasoning_content</code> deltas - ollama.com streams chain-of-thought under <code>reasoning</code>, so reasoning shows in the REPL and sessions for those endpoints instead of being silently dropped (tokens still counted against <code>max_tokens</code>)</li>
+<li>Diagnosed a real truncation+empty-response pairing: a low explicit <code>max_tokens</code>, the dropped <code>reasoning</code> delta key, and no continuation. The mechanics are documented in <code>docs/config.md</code> and <code>docs/providers.md</code> (migration landed live: local <code>max_tokens</code> dropped, global <code>max_tokens 0</code>, <code>api_key</code> moved to global)</li>
+<li>Confirm prompts align with activity glyphs - the <code>?</code> prefix starts at the beginning of the line (no leading indent), so a confirm like <code>? read_file x.txt - approve? [y/N]</code> sits flush under its <code>% Search</code> / <code>← Read</code> activity line</li>
+</ul>
+<h2 id="v0180-2026-08-23">v0.18.0 - 2026-08-23<a class="headerlink" href="#v0180-2026-08-23" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Word-level streaming buffering - the REPL now buffers streamed tokens to word boundaries and prints whole words as they complete, so responses render smoothly without mid-word pauses or breaks. The <code>&lt;&lt;&lt;</code> prefix appears on the first printed word, indentation and newlines flush correctly, and the trailing partial word is written before any status line, confirm prompt, or the turn footer. <code>HeadlessUI</code> and <code>NullUI</code> stream unchanged, and the content persisted to sessions is untouched. Gated by the new <code>word_streaming</code> config (default <code>true</code>), off restores character-by-character streaming</li>
+<li>Multi-line REPL input - opening <code>"""</code> or <code>'''</code> switches the prompt to <code>...</code> until the block closes. The composed prompt is sent as one turn with the framing quotes stripped (both <code>"""..."""</code> and <code>task: """..."""</code> work, indentation inside the block is kept, and the block is a single history entry). Balancing is overlap-aware, so <code>""""</code> reads as a matched pair. Ctrl-C or EOF on an open block exits the REPL cleanly instead of swallowing the interrupt</li>
+<li>Available models are now discoverable - <code>/models</code> (alias <code>/model-list</code>) lists the connected provider's models. <code>replio models [--path]</code> does the same headlessly and exits <code>1</code> on a failed probe. When <code>/connect</code> saves a config whose model is missing from the advertised list, it offers <code>Show available models? [y/N]</code>. <code>Engine.check_connection()</code> now returns <code>(ok, message, models)</code> from a single <code>_fetch_models()</code> call, and <code>Engine.list_models()</code> proxies the same shared fetch. <code>list_models()</code> dropped its inline <code>[Error]</code> print (pure, returns <code>[]</code> on failure)</li>
+<li>Multi-line input tests - <code>tests/test_repl_input.py</code> (22 tests: overlap-aware open-delim detection, framing strip variants incl. indentation and <code>'''</code>, and run-loop flows for single-line, block composition, EOF exit inside a block, and untouched slash commands)</li>
+<li>Word-streaming tests - <code>tests/test_ui.py</code> (9 tests: boundary and tail flush, multi-word chunks hold only the partial word, newline flush, footer flush with separator newline, off-mode immediate writes, markdown bold across a flush boundary, flush before status and confirm prompts)</li>
+<li><code>/connect</code> tests the provider connection before saving - a <code>GET &lt;base_url&gt;/v1/models</code> probe via <code>OpenAICompatibleProvider.check_connection()</code> over the shared <code>_fetch_models()</code> helper. Broken values print the error and need an explicit <code>Save anyway? [y/N]</code> to persist. A success message notes when the configured model is missing from the model list</li>
+<li><code>/provider &lt;name&gt;</code> switches then probes the new connection and prints a warning when it fails (<code>Run /connect to fix</code>). Both probes are gated by the new <code>connect_check</code> config (default <code>true</code>). Set it to <code>false</code> to skip them for offline or flaky networks</li>
+<li><code>Engine.check_connection()</code> probes a throwaway provider built from optional overrides (never mutates <code>config</code>/<code>self.provider</code>), with provider resolution extracted into <code>_resolve_provider_factory()</code> (also cleans up <code>_reinit_provider</code>'s unknown-provider handling)</li>
+<li>Tests - <code>check_connection</code> and <code>list_models</code> coverage in <code>tests/test_providers.py</code> (loopback success/empty/model-note/HTTP, network error, silent-on-error) and <code>tests/test_engine.py</code> (resolution, override precedence, no state mutation, base-URL detection, <code>list_models</code>). <code>/connect</code> probe-before-commit (decline keeps config, accept saves, <code>connect_check: false</code> skips, model-mismatch show offer) plus <code>/models</code> and <code>/provider</code> warn in <code>tests/test_commands.py</code>. <code>replio models</code> in <code>tests/test_cli.py</code>. Docs in <code>docs/config.md</code> (<code>connect_check</code>), <code>docs/providers.md</code>, <code>docs/commands.md</code>, <code>docs/testing.md</code></li>
+<li><code>replio export &lt;name&gt; [--out &lt;file&gt;]</code> - headless Markdown export for scripts and CI, reusing the same renderer and defaulting to the same <code>.replio/exports/&lt;name&gt;.md</code> target (<code>--out -</code> prints to stdout, exit <code>1</code> on an unknown session)</li>
+<li>Session export to Markdown - <code>/session export &lt;name&gt; [out]</code> renders any saved session as a Markdown transcript (default <code>.replio/exports/&lt;name&gt;.md</code>, custom path via the second arg, <code>-</code> for stdout). The pure renderer in <code>sessions/render.py</code> covers the full persisted log: thinking, tool calls and results as fenced code blocks, tool <code>analysis</code>, <code>command</code> records, compaction summaries with the trimmed boundary, and the <code>## Errors</code> section. It reads via <code>read()</code> (never switches the current session) and carries serialization-time transforms (<code>noise_tools</code>, <code>session_tool_max_chars</code>) through as persisted</li>
+<li><code>/session export</code> completes session names in the REPL, and the export format is documented in <code>docs/session.md</code></li>
+<li>Tests - <code>tests/test_session_render.py</code> (17 tests: renderer output per role, fence escaping for backtick-heavy tool results, persisted noise transforms, and <code>/session export</code> dispatch covering default/custom/stdout targets and the non-destructive read) plus <code>tests/test_cli.py</code> for <code>replio export</code> (default/custom/stdout targets, unknown session, <code>main</code> dispatch)</li>
+</ul>
+<h2 id="v0170-2026-08-21">v0.17.0 - 2026-08-21<a class="headerlink" href="#v0170-2026-08-21" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Failed tool calls now render a dimmed <code>! Error: ...</code> line (first line of the result) under the activity line, for every tool through the shared dispatch point (agent loop, <code>/tool</code>, policy-denied calls), gated by the new <code>show_errors</code> config (default <code>true</code>)</li>
+<li><code>list_dir</code> and <code>grep</code> get the <code>*</code> glyph with distinct verbs (<code>* List</code>, <code>* Grep</code>), matching <code>glob</code>'s <code>* Glob</code> - they no longer render as <code>← Read</code>, which made directory listings and greps look like <code>read_file</code> calls</li>
+<li><code>run_command</code> now validates <code>cwd</code> (friendly <code>Error: cwd not found</code> instead of an <code>OSError</code>) and clamps <code>timeout</code> to 1..600 seconds, so a nonsense value like <code>10000</code> no longer executes</li>
+<li>The confirm prompt prefix changed from <code>↳</code> to <code>?</code> so it no longer collides with the reserved delegate-category glyph</li>
+<li>Glyph activity lines and confirm prompts now show the parameters the model passed (<code>← Read engine.py [offset=299, limit=85]</code>, <code>$ Run pytest [cwd=/workspace, timeout=600]</code>), gated by the new <code>glyph_params</code> config (default <code>true</code>). The label's own argument is not repeated</li>
+<li><code>max_tokens</code> now defaults to <code>8192</code> (sent to the provider, overriding low provider-side defaults like Ollama's 2048 cap). Setting it to <code>0</code> omits it from the payload so the provider's own default applies</li>
+<li>Truncation messages now distinguish a configured <code>max_tokens</code> cap from the provider's own default limit (no more misleading <code>(0)</code> in the session log when the limit is unset)</li>
+<li>Session auto-names are now ASCII-only: non-ASCII letters are transliterated (NFKD, e.g. <code>prüfe</code> becomes <code>prufe</code>) instead of being stored in filenames</li>
+<li><code>/help</code> now lists tools as indented subcommand-style rows under <code>/tool</code> (replacing the separate "Available tools:" section), filtered by policy and mode like the <code>/tool</code> listing. Bare <code>/tool</code> shows the same rows with short descriptions</li>
+<li>Fixed streaming and non-streaming provider requests failing with <code>405 Method Not Allowed</code> on endpoints that redirect - urllib converts POST to GET on 301/302/303 redirects, so <code>api.ollama.com/v1/chat/completions</code> (which 301-redirects to <code>ollama.com</code>) ended up GETting the chat endpoint and getting 405 back. A <code>PostRedirectHandler</code> now preserves the POST method and body across redirects (<code>utils/http.py</code>, <code>providers/base.py</code>), with loopback-server tests for both the SSE stream and non-streaming <code>_post</code></li>
+<li>Fixed OpenAI/Groq/Anthropic provider defaults posting to a doubled path - <code>DEFAULT_BASE_URL</code> already includes <code>/v1</code>, and <code>_endpoint()</code> appended <code>/v1/chat/completions</code> again, producing <code>/v1/v1/chat/completions</code> (404). <code>_endpoint()</code> and <code>list_models()</code> now normalize a trailing <code>/v1</code> instead of doubling it, so default and custom base URLs both resolve correctly</li>
+<li>Plan/Build (and custom) agent modes - a mode is a named posture combining a system instruction with tool-policy overrides. New <code>mode</code> (default <code>build</code>) and <code>modes</code> config keys ship the built-ins: <code>build</code> (no overrides, current behavior) and <code>plan</code> (read-only - denies the <code>edit</code> and <code>bash</code> categories and instructs the model to investigate and propose rather than modify). Custom modes can set <code>system_prompt</code>, <code>tool_permission</code> (merged over the base, mode wins per key), <code>tools.deny</code> (appended), and <code>tools.allow</code> (replaces when non-empty). An unknown <code>mode</code> falls back to <code>build</code> with no error</li>
+<li><code>/mode</code> command - no args lists the current mode and all defined modes, <code>/mode &lt;name&gt;</code> switches live (the next turn uses the new posture, mode switches are recorded as <code>command</code> messages), unknown names print the valid list. Mode names tab-complete in the REPL. The REPL banner and the <code>replio serve</code> stderr line show the active mode when it is not <code>build</code></li>
+<li><code>--mode &lt;name&gt;</code> CLI flag on <code>replio run</code> and <code>replio serve</code> - headless agents start in the given posture (e.g. <code>replio run --mode plan</code> for a read-only review run)</li>
+<li>Mode mechanics reuse the existing <code>ToolPolicy</code> - no new machinery: <code>ToolPolicy.allowed()</code> is now permission-aware, so a category-level <code>deny</code> (<code>tool_permission.edit: deny</code> and <code>tool_permission.bash: deny</code>) filters the tool from the provider schema and from <code>/tool</code>/<code>/help</code> listings, not just direct calls. The MCP server's tool listing honors the same filtering</li>
+<li>Mode instructions and <code>system_prompt</code> are injected at the engine level (<code>_provider_messages</code>) as a virtual system message, so the REPL, <code>replio run</code>, <code>replio serve</code>, and MCP all apply them. Headless modes now receive <code>system_prompt</code> (previously REPL-only, persisted as a session message - that block is removed)</li>
+<li>Sessions record the active mode on every assistant message (<code>mode</code> field, parity with <code>reasoning</code>), so the posture in effect per turn is auditable from the append-only log</li>
+<li>Tests - <code>tests/test_modes.py</code> (12 tests: resolve/merge rules, unknown fallback, instruction composition), plus plan-mode schema filtering, instruction injection, per-message mode, <code>/mode</code> command and completer, <code>--mode</code> CLI, and permission-aware <code>allowed()</code> coverage in engine/commands/cli/policy tests</li>
+<li>Docs - <code>docs/config.md</code> (mode/modes schema + semantics), <code>docs/commands.md</code> (<code>/mode</code>, <code>--mode</code>), <code>docs/tools.md</code> (category-deny schema filtering, mode layering), <code>docs/security.md</code> (Modes section), <code>docs/session.md</code> (<code>mode</code> field), README feature line, developer use-case guide updated</li>
+</ul>
+<h2 id="v0160-2026-08-20">v0.16.0 - 2026-08-20<a class="headerlink" href="#v0160-2026-08-20" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Reasoning persisted in session logs - each <code>assistant</code> message records the <code>reasoning</code> config value in effect, alongside the existing <code>thinking</code> text. Reasoning text is always logged regardless of <code>show_thinking</code> (display hides it but never drops it from the log)</li>
+<li>Thinking/reasoning toggle - two orthogonal knobs: <code>show_thinking</code> (default <code>false</code>) controls display (stream reasoning dimmed when on, else an animated spinner + <code>+ Thought N.Ns</code> summary), and <code>reasoning</code> (default <code>"auto"</code>) requests reasoning from the model and controls its token budget. <code>reasoning</code> maps <code>false</code>/<code>"off"</code> (no request), <code>true</code>/<code>"on"</code>/<code>"auto"</code> (provider default), and <code>"low"</code>/<code>"medium"</code>/<code>"high"</code> (budget hint) to provider params - OpenAI <code>reasoning_effort</code>, Anthropic <code>thinking.budget_tokens</code> (1024/2048/4096), Qwen/Ollama <code>enable_thinking</code> - with a generic <code>reasoning_effort</code> pass-through for other OpenAI-compatible endpoints. The <code>/thinking on|off|?</code> command toggles <code>show_thinking</code> live</li>
+<li>Thinking spinner - when <code>show_thinking: false</code> the REPL now shows an animated <code>⠋⠙⠹...</code> spinner (stdlib <code>threading</code> daemon, <code>\r\033[K</code> cleared) in place of the silent wait, then falls back to the <code>+ Thought N.Ns</code> summary. No new config key - folded into <code>show_thinking</code>. Interactive <code>ReplUI</code> only, headless stderr output unchanged</li>
+<li>Activity lines and tool status are ephemeral UI - emitted through the UI sink only and never persisted to session files (tool calls/results are recorded there). Regression test locks this in</li>
+</ul>
+<h2 id="v0150-2026-08-18">v0.15.0 - 2026-08-18<a class="headerlink" href="#v0150-2026-08-18" title="Permanent link">&para;</a></h2>
+<ul>
+<li>MCP (Model Context Protocol) support via the bundled <code>replio-core-mcp</code> plugin (stdlib-only - JSON-RPC 2.0 over newline-delimited stdio and SSE over urllib, no third-party <code>mcp</code> library)</li>
+<li>MCP client - connect to external servers over stdio or streamable HTTP and import their tools into the ToolRegistry, named <code>&lt;prefix&gt;.&lt;tool&gt;</code> and registered under the new <code>mcp</code> permission category (default <code>ask</code>, so each remote call confirms in the REPL). Management tools <code>mcp_connect</code>/<code>mcp_list</code>/<code>mcp_disconnect</code> and a <code>/mcp</code> command wrap the same registry dispatch. <code>mcp.servers</code> config defines server name, transport, command/url, prefix, headers, and timeout</li>
+<li>Dual-era negotiation - the client probes <code>server/discover</code> (modern 2026-07-28 per-request <code>_meta</code> protocol) and falls back to the legacy <code>initialize</code> handshake (2025-11-25 and earlier), accepting a mutually supported version on unsupported-version errors</li>
+<li>MCP server - exposes Replio's policy-filtered tools and its sessions as resources (<code>replio://session/&lt;name&gt;</code>) to external agents, over stdio (<code>replio mcp</code>) and HTTP (<code>POST /mcp</code> on <code>replio serve</code>). The server is dual-era too, serving <code>server/discover</code>/modern requests or the legacy <code>initialize</code> handshake depending on how the client opens. <code>ask</code>-policy tools run by default when serving (<code>mcp_server.allow_ask</code>, deferred to the external client as the human-in-the-loop)</li>
+<li>Core stays MCP-agnostic - <code>replio mcp</code> and the <code>/mcp</code> HTTP route delegate to the plugin's <code>mcp_server</code> service (same generic <code>register_services</code> pattern as the web-search service), erroring cleanly if the plugin is not loaded</li>
+<li>Tests - <code>tests/test_mcp.py</code> (27 tests): JSON-RPC framing, stdio/HTTP transports over real subprocesses and a loopback server, modern/legacy negotiation, tool import + prefixing, server dispatch (initialize/discover/tools/call/resources), <code>_meta</code> validation, and policy integration</li>
+<li>Docs - <code>docs/mcp.md</code> (config schema, client + server usage, interop note and security), bundled-plugin and config/tools/testing references updated</li>
+</ul>
+<h2 id="v0140-2026-08-17">v0.14.0 - 2026-08-17<a class="headerlink" href="#v0140-2026-08-17" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Alias layer for tools and params - tool names can register <code>aliases</code> (<code>read</code>/<code>view</code> &gt; read_file, <code>ls</code> &gt; list_dir, <code>bash</code>/<code>exec</code> &gt; run_command) and <code>param_aliases</code> (<code>file</code> &gt; path, <code>query</code> &gt; pattern, <code>cmd</code> &gt; command, <code>q</code> &gt; query, <code>cursor</code> &gt; offset). The registry resolves aliases to the canonical tool and normalizes args, so the advertised schema stays in the project's own vocabulary while model-dialect tool and argument names are absorbed. <code>/tool</code>, <code>/help</code>, tool policy, confirm prompts, and glyph activity lines work through aliases unchanged</li>
+<li><code>open</code> web tool (replio-core-websearch) - fetch a web page by <code>id</code> (1-based result from the most recent <code>web_search</code>) or <code>url</code>, with <code>offset</code> (also accepted as <code>cursor</code>) to resume reading. <code>web_search</code> now retains its last results for <code>open</code> to resolve, and a shared <code>_fetch_text</code> helper gives both <code>fetch_page</code> and <code>open</code> offset-with-continuation paging, appending <code>[offset N of M chars - continue with cursor=N]</code> when content continues past the cap</li>
+<li>Configurable stream retry - a provider stream that ends before a completion event with no streamed content is re-requested up to <code>1 + stream_retries</code> times (default 3 total attempts, configurable) with <code>stream_retry_delay</code> (default 0.5s) between attempts. The retrying note shows the attempt count, and when tool calls have already run the warning notes the results are saved so the answer can be retried with a follow-up message</li>
+<li><code>tool_max_result_chars</code> config (default <code>0</code> = unlimited) - replaces the bundled plugins' hardcoded 8000-char tool-result cap with a configurable one (set via <code>/config tool_max_result_chars N</code>). With the default nothing is truncated, <code>read_file</code> headers now report the total line and character count so the model can page large files with <code>offset</code>/<code>limit</code>, and <code>read_file(path, limit=0)</code> returns just the header as a size probe before committing to a read. Handlers can read the config via a <code>_config</code> kwarg the registry passes only when declared</li>
+<li>Glyph activity lines - typed <code>&lt;glyph&gt; &lt;verb&gt; &lt;key_arg&gt;</code> status (dimmed) replaces the <code>[tool: key_arg]</code> oneliner for mapped categories, gated by the new <code>glyph_lines</code> config (default <code>true</code>). <code>ToolRegistry.activity()</code> resolves the glyph from category defaults (read <code>←</code> Read, write <code>→</code> Write, search <code>%</code> Search, exec <code>$</code> Run, ask <code>~</code> Ask, todo <code>-</code> Todo, delegate <code>↳</code> Call) or per-tool <code>glyph</code>/<code>verb</code> overrides (glob <code>*</code> Glob, fetch_page <code>↓</code> Fetch). Disabling <code>glyph_lines</code> or an unmapped category keeps the <code>[tool: key_arg]</code> oneliner + detail lines. <code>ReplUI</code>/<code>HeadlessUI</code> render the glyph line, ephemeral UI only (never persisted to session files)</li>
+<li><code>write_file</code> reports the resolved absolute path to the model - the tool result now returns <code>Created|Overwritten|Appended &lt;resolved abs path&gt; (&lt;n&gt; lines, &lt;n&gt; chars)</code> instead of echoing the raw <code>path</code> arg, so when a relative path resolves to an unexpected directory (e.g. launched from <code>~</code>) the model sees where the file actually landed, the tool description notes that relative paths resolve against the current working directory. Terminal status preview unchanged. Tests: create/overwrite/append result strings and relative-path resolution</li>
+<li>Tab completion extended - filesystem path completion after command arguments (directories get a trailing <code>/</code> for continued descent), tool-name completion for <code>/tool &lt;prefix&gt;</code>, and subcommand completion for commands declaring <code>subcommands</code> (<code>/session lo</code> &gt; <code>load</code>, <code>/plugins dis</code> &gt; <code>disable</code>)</li>
+<li>Fixed tab completion - the completer no longer fires on macOS libedit (<code>readline.parse_and_bind('tab: complete')</code> is GNU-only and silently inserts a literal tab, libedit needs <code>bind ^I rl_complete</code>). <code>/</code> is removed from the completer delimiters so the model-facing word keeps its slash and paths complete correctly</li>
+</ul>
+<h2 id="v0130-2026-08-16">v0.13.0 - 2026-08-16<a class="headerlink" href="#v0130-2026-08-16" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Per-turn stats on their own line - the <code>(Ns, N tokens)</code> footer no longer lands at the end of the last content line, <code>ReplUI</code> tracks whether streamed output ended with a newline and emits a separating one before the footer</li>
+<li>One-shot retry for empty/truncated streams - a provider stream that ends without a completion event and with no streamed content is requested once more (with a "retrying" note) before the "Stream ended before a completion event" error is surfaced, masks transient provider drops such as Ollama cloud returning an empty follow-up stream after a tool call</li>
+<li><code>write_file</code> status preview ends with a dimmed parenthesized summary - resolved absolute path, line count, char count, and created/overwritten/appended action (tool result string stays minimal)</li>
+<li>Thinking announce - <code>+ Thinking</code> on its own line before streamed reasoning when <code>show_thinking: true</code>, when hidden, <code>+ Thought 12.3s</code> (thinking duration) is printed instead and the reasoning text stays out of the terminal. The engine times the thinking window (<code>thinking_begin</code>/<code>thinking_end</code> UI hooks), <code>HeadlessUI</code> mirrors it in <code>--verbose</code> mode, and a spinner (<code>⠧ Thinking</code>) can replace the static markers later</li>
+<li>Human-readable tool status - default oneliner is now <code>[tool: key_arg]</code> (e.g. <code>[write_file: test.md]</code>, <code>[run_command: echo hi]</code>) instead of the raw args dump (<code>content='...\n...', mode='w'</code>), detail lines follow dimmed: <code>write_file</code> shows the written text via a registered <code>status</code> callback (new-file <code>+ line</code> preview, or a <code>difflib</code> unified diff of existing files - works for append too), and <code>run_command</code> echoes its output (<code>echo</code> registration metadata)</li>
+<li><code>list_dir</code> gains <code>depth</code> (default 1) - higher values render an indented recursive tree (<code>tree -L</code> style), skipping <code>SKIP_DIRS</code> during descent, <code>depth=1</code> output is unchanged</li>
+<li><code>ToolRegistry.execute()</code> drops arguments not declared in a tool's schema and <code>null</code>-valued arguments (e.g. a hallucinated <code>recursive</code>, or <code>depth: null</code>) - tools run with their valid args instead of erroring, worktree semantics documented (worktree = launch directory / <code>--path</code>, launching from <code>~</code> makes home the worktree, so subdirectories don't escalate)</li>
+<li><strong>Built-in features ship as bundled plugins</strong> - <code>web_search</code>/<code>fetch_page</code> and the machine tools (read_file, list_dir, write_file, glob, grep, run_command) moved out of the core (<code>src/replio/web/</code>, <code>tools/builtins.py</code>, <code>tools/machine.py</code> deleted) into three first-party bundled plugins under <code>plugins/</code> (shipped as <code>replio.plugins.bundled</code>): <code>replio-core-websearch</code>, <code>replio-core-fs</code>, <code>replio-core-exec</code>. Packaged via <code>package-dir</code> mapping, so the repo-root <code>plugins/</code> directory is the canonical source, discovery adds a bundled root with precedence bundled &lt; global &lt; local (local/global overrides win)</li>
+<li><strong><code>plugins</code> config list</strong> - replaces <code>plugins.enabled</code>/<code>plugins.deny</code> (migrated automatically). The default config lists the bundled plugins so they are active out of the box, empty list = all discovered plugins load, <code>/plugins enable/disable</code> and <code>install</code>/<code>uninstall</code> maintain the list</li>
+<li><strong><code>register_services</code> entry hook</strong> - plugins can power core non-tool features. <code>replio-core-websearch</code> registers the <code>search</code> service backing the <code>web_search: true</code> search-then-answer mode (<code>engine._perform_search</code> now routes through it and degrades gracefully when the plugin is absent)</li>
+<li><code>PluginInfo.origin</code> (<code>bundled</code>/<code>global</code>/<code>local</code>) shown in <code>/plugins</code> and <code>replio plugins list</code>, bundled plugins cannot be <code>update</code>d or <code>uninstall</code>ed (disable instead)</li>
+<li><code>tests/test_bundled_plugins.py</code> (10 tests) - bundled discovery, tool registration, search service, bundled uninstall/update blocking, local override, config disable, default-config membership, <code>test_tool_registry.py</code>/<code>test_machine_tools.py</code>/<code>test_commands.py</code>/<code>test_tool_calling.py</code>/<code>test_session_log.py</code> reworked to load bundled plugins and patch the search service instead of <code>replio.web.search</code></li>
+</ul>
+<h2 id="v0120-2026-08-15">v0.12.0 - 2026-08-15<a class="headerlink" href="#v0120-2026-08-15" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Plugin system (<code>src/replio/plugins/</code>) - external repositories register <strong>tools, providers, and slash commands</strong> without changing the core, <code>PluginManager</code> discovers plugins in <code>~/.config/replio/plugins/</code> and <code>.replio/plugins/</code> (local wins), validates <code>manifest.json</code> (<code>replio_version</code>/<code>python</code> semver ranges), imports entry modules once, and hooks them into the live registries</li>
+<li>Plugin entry contract - optional <code>register_tools(registry)</code> / <code>register_providers(providers)</code> / <code>register_commands(commands)</code> hooks on the entry module, matching the core's <code>register_*</code> conventions, plugin tools automatically inherit tool policy, <code>/tool</code>, <code>/help</code>, refinement, and session logging</li>
+<li>Lazy plugin dependencies - third-party packages are imported inside plugin functions (never by the core), so the stdlib-only guarantee holds and a missing dep surfaces as a tool error with <code>pip install</code> guidance</li>
+<li><code>/plugins</code> command (<code>/plugins list</code>, <code>/plugins &lt;name&gt;</code> detail with per-dep status, <code>enable</code>/<code>disable</code>, <code>install</code>/<code>update</code>/<code>uninstall</code>) plus tab completion for plugin names, <code>/connect</code> now offers plugin providers</li>
+<li><code>replio plugins</code> CLI (<code>list</code>/<code>install</code>/<code>update</code>/<code>uninstall</code>) - headless plugin management so <code>replio run</code>/CI can use freshly installed plugins, <code>install</code> clones a git URL or copies a local path, records <code>source</code>, and <code>--deps</code> pip-installs the declared <code>requires</code></li>
+<li>Config keys <code>plugins.enabled</code> (allowlist, empty = all) and <code>plugins.deny</code> (always excluded) - activation is explicit and applies on the next start</li>
+<li><code>docs/plugins.md</code> - plugin layout, manifest schema, compatibility contract, entry hooks, management, security, and future paths (per-plugin venv isolation, PyPI entry-point source, migrating core web tools out)</li>
+<li><code>tests/test_plugins.py</code> (30 tests) - manifest parsing, <code>replio_version</code>/<code>python</code> compat skipping, enable/deny filtering, global/local precedence, entry load-error isolation, all three registration hooks, lazy-dep pip guidance, tool-policy filtering, install/update/uninstall from a local path, and Engine integration (tools + commands + <code>/plugins</code>)</li>
+<li>REPL banner shows the version - <code>Replio v0.12.0 (provider: model)</code> on startup, gated by <code>show_version</code> config (default <code>true</code>), toggleable via <code>/config show_version false</code></li>
+<li><code>GET /version</code> endpoint - the serve API exposes the installed version as <code>{"version": ...}</code>, alongside <code>/health</code> and <code>/sessions</code></li>
+<li><code>/version</code> slash command (alias <code>/v</code>) - prints <code>Replio &lt;version&gt;</code> in the REPL, version lookup centralized in <code>replio.get_version()</code> and shared with the CLI <code>--version</code> flag</li>
+<li><code>--version</code> / <code>-v</code> CLI flag - <code>replio --version</code> prints the installed version (from package metadata) and exits</li>
+<li>Clear screen on REPL start - the interactive REPL wipes scrollback + visible screen (<code>\033[3J\033[2J\033[H</code>) before printing the banner, gated by <code>clear_screen</code> config (default <code>true</code>), toggleable via <code>/config clear_screen false</code>. Headless <code>run</code>/<code>serve</code> modes are unaffected.</li>
+</ul>
+<h2 id="v0110-2026-08-14">v0.11.0 - 2026-08-14<a class="headerlink" href="#v0110-2026-08-14" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Engine</code> headless agent core (<code>engine.py</code>) + <code>TurnResult</code> - the agent loop extracted from <code>ChatLoop</code> returns a structured <code>{content, thinking, tool_calls, errors, duration, usage, model, provider, session, status}</code> turn result, <code>Engine.chat(text, autoname=True)</code> and <code>Engine.load_or_create_session(name)</code> make sessions addressable from any front-end</li>
+<li><code>UISink</code> abstraction (<code>ui.py</code>) - the loop renders through <code>ReplUI</code> (terminal ANSI streaming, confirm prompts, footer), <code>HeadlessUI</code> (stderr diagnostics, auto-approve/deny confirm policy, never blocks on stdin), or <code>NullUI</code> (silent)</li>
+<li><code>replio run</code> - one-shot CLI mode (JSON or text output) over the same agent loop + session manager, flags <code>--prompt</code>, <code>--provider</code>, <code>--model</code>, <code>--base-url</code>, <code>--output</code>, <code>--verbose</code>, <code>--session-id</code>, <code>--yes</code>/<code>--no</code>, exits <code>0</code> on ok/truncated and <code>1</code> on error/empty</li>
+<li><code>replio serve</code> - stdlib <code>ThreadingHTTPServer</code> JSON API (<code>POST /chat</code>, <code>GET /sessions</code>, <code>GET /health</code>) with a shared engine serialized behind a lock, ask-gated tools are denied (fed back as <code>[cancelled]</code>), the server never blocks on stdin</li>
+<li>Headless <code>ask</code> policy - tools gated by <code>ask</code> are denied by default in headless mode, <code>--yes</code>/<code>--no</code> override to approve or deny</li>
+<li>Tests for headless entry points - <code>test_engine.py</code> (turn result, thinking split, session addressing, confirm policy), <code>test_cli.py</code> (mock provider, JSON/text output, session-id persistence, exit codes), <code>test_server.py</code> (ephemeral-port server against a mocked provider)</li>
+<li><code>ChatLoop</code> is now <code>ChatLoop(Engine)</code> - a thin REPL shell (readline, banner, prompt loop) inheriting the headless core, commands and session logic are unchanged</li>
+<li><code>_handle_message()</code> replaced by <code>Engine.chat()</code>, <code>_StreamRenderer</code> moved into <code>ReplUI</code>, and the <code>&lt;thinking&gt;</code> marker split is owned by the engine so thinking stays separate from content in JSON results</li>
+<li>The <code>input()</code> confirm prompt moved from <code>chat.py</code> to <code>ui.py</code> (tests patch <code>replio.ui.input</code>)</li>
+</ul>
+<h2 id="v0100-2026-08-13">v0.10.0 - 2026-08-13<a class="headerlink" href="#v0100-2026-08-13" title="Permanent link">&para;</a></h2>
+<ul>
+<li>OpenAI, Groq, and Anthropic providers (<code>providers/openai.py</code>, <code>providers/groq.py</code>, <code>providers/anthropic.py</code>) - OpenAI-compatible <code>/v1/chat/completions</code> subclasses of the shared <code>OpenAICompatibleProvider</code>, each with its own default <code>base_url</code> and default model (<code>gpt-4o-mini</code>, <code>llama-3.3-70b-versatile</code>, <code>claude-sonnet-4-20250514</code>)</li>
+<li>Provider auto-detection - <code>detect_provider(base_url)</code> in <code>providers/__init__.py</code> matches well-known hosts (<code>openai.com</code>, <code>groq.com</code>, <code>anthropic.com</code>, <code>ollama.com</code>/<code>ollama.ai</code>) and falls back to the generic <code>openai-compatible</code> provider for any other OpenAI-compatible endpoint</li>
+<li><code>PROVIDERS</code> registry - <code>_reinit_provider()</code> resolves the configured provider name through the dict (<code>ollama</code>, <code>openai</code>, <code>groq</code>, <code>anthropic</code>, <code>openai-compatible</code>), unknown names are auto-detected from <code>base_url</code> with a printed note instead of silently falling back to ollama</li>
+<li><code>/connect</code> detects the provider from the entered base URL and switches automatically when it matches a known host</li>
+<li>Agent-loop hardening - streamed content is persisted when the SSE stream ends without a <code>done</code> event, and session <code>errors</code> entries are recorded for silent failures: stream EOF before a completion event, empty/thinking-only <code>done</code>, and unexpected exceptions escaping the agent loop, unexpected exceptions in <code>run()</code> are caught, logged to the session <code>errors</code>, and the REPL stays alive instead of crashing</li>
+<li><code>tests/test_providers.py</code> - provider defaults, auth header, <code>detect_provider</code>, and registry coverage</li>
+<li><code>OllamaProvider</code> now subclasses the shared <code>OpenAICompatibleProvider</code> - the streaming/tool-call/error logic it previously owned moved to <code>providers/base.py</code>, behavior unchanged</li>
+<li>Switching providers swaps in the new provider's default <code>base_url</code>/<code>model</code> when the configured values still match another provider's default (i.e. were never customized), explicit custom values are preserved</li>
+<li><code>tests/test_ollama_provider.py</code> - <code>stream_sse</code> patches retargeted to the base module where the streaming logic now lives</li>
+</ul>
+<h2 id="v090-2026-08-12">v0.9.0 - 2026-08-12<a class="headerlink" href="#v090-2026-08-12" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>/session preview &lt;name&gt;</code> - read-only structural preview (name, created/updated, message counts by role, tools used) without switching the active session, shown on <code>/session load</code> too</li>
+<li><code>noise_tools</code> config (default <code>["fetch_page"]</code>) - results of these tools are replaced by a <code>[&lt;tool&gt; result excluded from log, see tool call above for parameters]</code> marker at persistence time only, the live turn still feeds the full result to the model, and the assistant <code>tool_calls</code> message keeps the query/URL so the log stays reproducible</li>
+<li>Session-name tab completion - <code>/session load</code> and <code>/session delete</code> complete against saved session names (bash-style common-prefix completion, double-tab lists candidates)</li>
+<li>Compaction summary visibility - <code>/compact</code> and <code>/session load</code> (when the compaction offer is accepted) print the generated summary text, stored as the <code>result</code> of the triggering <code>command</code> message (with a <code>compact_from</code> boundary index)</li>
+<li>Context-size visibility - dimmed <code>(Ns, N tokens)</code> line after each response, using the provider's <code>usage.prompt_tokens</code> when reported (fallback: char-based estimate), gated by <code>show_context_size</code> (default <code>true</code>)</li>
+<li><code>/session load</code> compaction offer - always prompts <code>Summarize &amp; trim history before continuing? [y/N]</code></li>
+<li><code>tests/test_http.py</code> - <code>stream_sse</code> survives a multi-byte UTF-8 character split across 4096-byte read chunks, normal data-line flow, and <code>[DONE]</code>/error passthrough</li>
+<li>Sessions are <strong>append-only logs</strong> - compaction no longer removes or rewrites session entries, it only trims the provider context via the summary record and boundary, so the full history always stays in the file</li>
+<li>Provider payload is prepared from the log - <code>role: command</code> messages are never sent as-is, compaction summary records convert to <code>system</code> messages, and dangling tool messages are skipped</li>
+<li><code>/session load</code> and <code>/session preview</code> print a structural preview, <code>/session load</code> records the load as a <code>command</code> message in the loaded session</li>
+<li><code>max_tokens</code> default is now <code>0</code> (unset) - the value is omitted from the provider payload entirely, so the provider's own default applies and long answers are no longer cut at the old 2048-token default, set a cap explicitly via <code>/config max_tokens N</code></li>
+<li><code>/session new</code> and <code>/session load</code> now reassign <code>ChatLoop.current_session</code> - previously they only updated <code>SessionManager.current</code>, so loaded/new sessions were never actually used for prompts, rendering, or autosave</li>
+<li>If a configured <code>max_tokens</code> cap is hit (<code>finish_reason: length</code>), the loop now prints a visible truncation warning and records a session <code>errors</code> entry instead of stopping silently</li>
+<li><code>OllamaProvider.chat()</code> streaming captures <code>usage</code> from the final chunk and attaches it to the <code>done</code> event</li>
+<li><code>config.py</code> - new keys <code>show_context_size</code>, <code>compact_keep</code> (default <code>4</code>), <code>noise_tools</code> (default <code>["fetch_page"]</code>), removed <code>compact_prompt_chars</code></li>
+<li>Compaction failed with sessions containing <code>command</code>/tool messages - the summarizer now sanitizes the batch (drops <code>command</code>, drops <code>tool_calls</code> declarations, converts <code>tool</code> &gt; <code>user [tool result]</code>), and provider errors are printed instead of swallowed as a generic "Compaction failed"</li>
+<li>Tab completion for <code>/</code> commands never matched - readline passes the current word, and command names have no leading slash, so the prefix test always failed, the completer now strips the <code>/</code> when comparing and re-adds it on completion</li>
+<li><code>stream_sse</code> decoded each 4096-byte chunk with strict UTF-8, so a multi-byte character split across a chunk boundary raised <code>UnicodeDecodeError</code> - caught as a generic error that aborted the stream mid-output and killed the tool loop during long web research, buffering is now byte-based and each complete line is decoded with <code>errors='replace'</code></li>
+</ul>
+<h2 id="v080-2026-08-05">v0.8.0 - 2026-08-05<a class="headerlink" href="#v080-2026-08-05" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Session</code> metadata - <code>created_at</code>/<code>updated_at</code> (bumped on every message) and a top-level <code>errors</code> array with <code>add_error()</code>, <code>to_dict()</code> now persists <strong>every</strong> message, including <code>role: tool</code></li>
+<li><code>tool_analysis</code> config (default <code>false</code>) - optional model-generated one-line insight summary stored as <code>analysis</code> on each tool message, so a session log can be reconstructed without re-running the tool, skipped for <code>[cancelled]</code>/error results</li>
+<li><code>session_tool_max_chars</code> config (default <code>0</code> = unlimited) - caps persisted tool-result content at serialization time only, the in-memory provider context always keeps full results</li>
+<li><code>_StreamRenderer</code> captures <code>thinking_text</code>, <code>_agent_loop</code> persists per-round reasoning as <code>thinking</code> metadata on tool-call and final assistant messages (still excluded from <code>content</code>)</li>
+<li>Provider <code>error</code> events now append to the session <code>errors</code> array before the loop bails, instead of being dropped</li>
+<li><code>tests/test_session_log.py</code> - session model, save/load round-trip, legacy-file loading, <code>tool_max_chars</code> truncation, thinking metadata, and <code>tool_analysis</code> behavior</li>
+<li><code>SessionManager.save()</code> accepts <code>tool_max_chars</code>, <code>session_auto_save()</code> forwards the config value</li>
+<li><code>_execute_tool_calls()</code> appends assistant tool-call and tool-result messages via <code>Session.add_message()</code> (single timestamp/<code>updated_at</code> path instead of direct list appends)</li>
+<li>Docs updated to match: session files are now complete logs (tool results, thinking, errors), confirm prompts and tool status remain ephemeral UI</li>
+</ul>
+<h2 id="v070-2026-08-03">v0.7.0 - 2026-08-03<a class="headerlink" href="#v070-2026-08-03" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Tool <code>short=</code> registration metadata - human-readable one-line labels for the <code>/help</code> tools table (falls back to a truncated <code>description</code>)</li>
+<li><code>CommandRegistry.canonical()</code> and <code>ToolRegistry.info()</code> accessors backing the <code>/help &lt;name&gt;</code> detail views</li>
+<li><code>glob</code> tool - recursive pattern file discovery (<code>**/*.py</code>, <code>src/**/chat.py</code>), skips noise dirs (<code>.git</code>, <code>.venv</code>, <code>__pycache__</code>...), marks dirs with <code>/</code>, caps at 200 matches</li>
+<li><code>grep</code> tool - regex content search returning <code>file:line: text</code> matches with an optional file-filter <code>glob</code>, skips noise dirs, caps at 100 matches, friendly invalid-regex error</li>
+<li><code>/config</code> structured values - JSON auto-parse (<code>["run_command"]</code> &gt; list, <code>0.3</code>/<code>2048</code>/<code>true</code> &gt; number/bool), <code>-a</code>/<code>-r</code> list add/remove, <code>reload</code> re-reads config from disk (warns when provider/model changed), unknown keys prompt y/N before storing</li>
+<li>Command registration metadata - <code>description</code> and <code>subcommands</code> on <code>CommandRegistry.register()</code> (<code>self.meta</code>), canonical names tracked so aliases can't shadow real command names</li>
+<li>Machine access tools (<code>tools/machine.py</code>): <code>read_file</code> (numbered lines, <code>offset</code>/<code>limit</code>, truncation), <code>list_dir</code> (sorted entries, dir markers, sizes), <code>write_file</code> (parent-dir creation, write/append), <code>run_command</code> (subprocess exec with timeout, stdout/stderr capture, exit code, 8k output cap)</li>
+<li>Tool permission model (<code>tools/policy.py</code>) - <code>ToolPolicy</code> resolves each tool call to <code>allow</code>/<code>ask</code>/<code>deny</code> from configurable permission keys (<code>tool_permission</code>: <code>read</code>/<code>list</code>/<code>edit</code>/<code>bash</code>/<code>web</code>) plus name-level <code>tools.allow</code>/<code>tools.deny</code> (deny and allow-whitelist take precedence)</li>
+<li>Path-scoped confirmation - read/write/list calls targeting paths outside the project worktree escalate to <code>ask</code> (opencode-style <code>external_directory</code>), so in-worktree file ops run unattended while external access prompts</li>
+<li>Confirm prompts in the agent loop (<code>_confirm_tool</code>) - <code>bash: ask</code> by default so every <code>run_command</code> confirms, cancelled calls feed <code>[cancelled]</code> tool results back to the model, denied tools are filtered from the provider schema entirely</li>
+<li>Registration metadata - <code>category</code>, <code>permission</code>, <code>path_arg</code>, <code>key_arg</code> on <code>ToolRegistry.register()</code> plus <code>permission_for()</code>/<code>path_arg_for()</code>/<code>key_arg_for()</code>/<code>schema_filtered()</code>, retrofitted <code>web_search</code>/<code>fetch_page</code> (forward-compat for the deferred activity-lines glyph system)</li>
+<li><code>tests/test_tool_policy.py</code> (allow/deny, permission keys, external-directory escalation, precedence) and <code>tests/test_machine_tools.py</code> (read/list/write/exec against a temp dir, timeout, metadata)</li>
+<li><code>/tool</code> policy tests - deny rejection, <code>ask</code> accept/decline, schema filtering of denied tools</li>
+<li><code>/help</code> <code>Available tools</code> section renders a clean two-column table using new <code>short=</code> registration labels (<code>Run a shell command</code>, <code>Search the web</code>, ...), category/permission/action now show only in <code>/help &lt;tool&gt;</code> details</li>
+<li><code>/help</code> is now the central help system - shows <code>Available commands</code> (aliases inline, subcommands at a standard 4-space indent) followed by <code>Available tools</code> (one per line with <code>[category / permission-key: action]</code>, policy-filtered)</li>
+<li><code>/help &lt;name&gt;</code> shows details for a specific command (aliases + subcommands) or tool (<code>category</code>, <code>permission: action</code>, full parameter schema with required/optional), commands take precedence</li>
+<li><code>/tool</code> (no args) lists allowed tool names one per line and points to <code>/help &lt;tool&gt;</code> for details</li>
+<li><code>read_file</code> always emits a <code># &lt;path&gt; - N lines</code> header (with the shown range when truncated) so the model knows the file's total size without extra reads</li>
+<li><code>/help</code> compacts to one line per command with aliases inline (<code>/help, /h</code>) and subcommand rows beneath (<code>/session</code> &gt; <code>new</code>/<code>list</code>/<code>load</code>/<code>delete</code>/<code>save</code>), all aligned to a computed description column</li>
+<li><code>/session</code> (no args) reuses the shared subcommand metadata instead of a hardcoded usage block</li>
+<li><code>/tool</code> command respects tool policy - listing shows only allowed tools, execution routes through <code>_run_tool()</code> (deny rejection + confirm prompts)</li>
+<li><code>Session.to_dict()</code> and the agent loop unchanged - confirm prompts and tool status remain ephemeral REPL UI, never persisted</li>
+<li><code>Config</code> shallow-copied <code>DEFAULT_CONFIG</code>, sharing the nested <code>tools.deny</code>/<code>tool_permission</code> lists/dicts across instances - mutations (e.g. <code>/config tools.deny -a ...</code>) leaked into later sessions, now deep-copied on load and reload</li>
+</ul>
+<h2 id="v060-2026-08-02">v0.6.0 - 2026-08-02<a class="headerlink" href="#v060-2026-08-02" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>/tool &lt;name&gt; &lt;json-args&gt;</code> slash command - generic thin wrapper executing any registered tool via the same <code>ToolRegistry</code> the model uses, no args lists registered tools</li>
+<li><code>tests/test_tool_registry.py</code> - registry metadata tests: <code>refine_required()</code> for <code>web_search</code> vs <code>fetch_page</code>/unknown</li>
+<li><code>tests/test_commands.py</code> - <code>/tool</code> dispatch tests: registry execution, name listing, disabled path, invalid JSON</li>
+<li>Unified streaming agent loop (<code>_agent_loop()</code> in <code>chat.py</code>) - a single SSE stream per turn replaces the two-phase non-streaming decision + streaming call, <code>tool_calls</code> events are handled mid-stream, eliminating the double-call cost when no tools are used</li>
+<li><code>_StreamRenderer</code> in <code>chat.py</code> - stateful streaming display (thinking markers, markdown, <code>&lt;&lt;&lt;</code> prefix) extracted from the old <code>_stream_response</code> and reused across loop rounds</li>
+<li><code>OllamaProvider.chat()</code> now accepts <code>tools</code>, forwards them in the stream payload, and accumulates fragmented <code>delta.tool_calls</code> into a <code>tool_calls</code> event</li>
+<li><code>tests/helpers.py</code> - shared <code>make_chat()</code> builder for ChatLoop tests</li>
+<li><code>tests/test_agent_loop.py</code> - loop-level tests: no-tools single round trip, thinking excluded from persisted content, error bail, empty stream</li>
+<li><code>tests/test_ollama_provider.py</code> - provider streaming tests: fragmented tool-call accumulation, <code>done</code>/<code>thinking</code> events, <code>tools</code> in payload, error passthrough</li>
+<li><code>ToolRegistry.register()</code> accepts <code>refine</code> metadata, <code>refine_required()</code> lookup added - <code>web_search</code> registered with <code>refine=True</code>, and <code>_execute_tool_calls()</code> now refines via metadata instead of special-casing the <code>web_search</code> name</li>
+<li><code>BaseProvider.chat()</code> signature gains <code>tools: list[dict] | None = None</code></li>
+<li><code>_handle_message()</code> branches collapse onto <code>_agent_loop()</code>, <code>chat_nonstreaming()</code> is now used only by <code>_refine_query()</code></li>
+<li><code>tests/test_tool_calling.py</code> rewritten against the streaming event generator</li>
+<li><code>_chat_with_tools()</code>, <code>_stream_response()</code>, <code>_output_content()</code> and <code>_response_start</code> from <code>chat.py</code></li>
+<li><code>/search</code> and <code>/web</code> slash commands - model tool-calling and <code>web_search</code> auto mode cover searching</li>
+</ul>
+<h2 id="v050-2026-07-28">v0.5.0 - 2026-07-28<a class="headerlink" href="#v050-2026-07-28" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>_TextExtractor</code> class in <code>tools/builtins.py</code> - stdlib HTMLParser-based text extraction for <code>fetch_page</code></li>
+<li>Test <code>test_empty_stream_falls_back_to_nonstreaming_content</code> - verifies fallback saves non-streaming content when streaming returns empty</li>
+<li><code>Session.to_dict()</code> filters out <code>role: tool</code> messages - session files only contain REPL-visible messages (user, assistant, command, system)</li>
+<li>Final assistant response missing from session when streaming returned no tokens - fall back to non-streaming result content when <code>_stream_response()</code> returns empty</li>
+<li><code>fetch_page</code> returned raw HTML/JS/CSS noise - replaced regex tag-stripping with <code>_TextExtractor</code> (HTMLParser) that drops <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, <code>&lt;svg&gt;</code>, <code>&lt;noscript&gt;</code> and extracts clean visible text</li>
+<li>Session files stored raw tool-result content that was never displayed in the REPL - filtered <code>role: tool</code> messages from serialized output, assistant <code>tool_calls</code> (web_search, fetch_page declarations) still documented</li>
+</ul>
+<h2 id="v040-2026-07-28">v0.4.0 - 2026-07-28<a class="headerlink" href="#v040-2026-07-28" title="Permanent link">&para;</a></h2>
+<ul>
+<li>3 new test cases: empty-content, multiple tool calls, and API error path (now 7 tests total)</li>
+<li>Tool-call messages (assistant tool_calls + tool results) lost when streaming produced empty content or an exception occurred - wrapped <code>_chat_with_tools()</code> and <code>_stream_response()</code> in <code>try/finally</code> so session is always persisted</li>
+<li><code>_chat_with_tools()</code> no longer skips <code>_stream_response()</code> when <code>chat_nonstreaming</code> returns empty/null content - final response is always streamed</li>
+<li>Session file rename left JSON <code>name</code> field stale - added <code>session_auto_save()</code> after rename so the file always has the correct session name</li>
+</ul>
+<h2 id="v030-2026-07-28">v0.3.0 - 2026-07-28<a class="headerlink" href="#v030-2026-07-28" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Auto-session naming: first user message auto-names the session (sanitized, truncated to 40 chars). Renames the <code>.json</code> file on disk</li>
+<li>Markdown-aware streaming: code blocks in cyan, inline code in green, bold text rendered with ANSI bold. Disabled by default (<code>markdown_streaming: false</code>). Enable via config.</li>
+<li>Thinking/reasoning token detection: provider-level <code>reasoning_content</code> field (DeepSeek R1, o1, o3). Configurable via <code>show_thinking</code> (default <code>true</code>)</li>
+<li>Error handling: <code>_post()</code>, <code>chat_nonstreaming()</code>, <code>chat()</code>, <code>_chat_with_tools()</code>, and <code>list_models()</code> now catch <code>HTTPError</code> (auth 401, server 500) and <code>URLError</code> (network, timeout) gracefully - errors print in red, REPL continues</li>
+<li><code>_chat_with_tools()</code>: when no tools are used, now calls <code>_stream_response()</code> for live token output instead of dumping the full response at once</li>
+<li><code>query_refine</code> config system: when enabled, short web_search queries of up to <code>query_refine_min_words</code> words are auto-refined via a lightweight model call with <code>query_refine_context</code> recent messages as context. Configurable via <code>query_refine</code>, <code>query_refine_min_words</code> (default 3), <code>query_refine_context</code> (default 4)</li>
+<li><code>tool_status_visible</code> config option (default <code>true</code>): when <code>false</code>, hides dimmed <code>[tool: args]</code> status lines during tool execution</li>
+<li>Mock test suite for tool calling (<code>tests/test_tool_calling.py</code>): 4 offline tests covering no-tools, single-tool, unknown-tool error, and force-search paths</li>
+<li>Markdown streaming now off by default, the state machine was unreliable on real streaming output</li>
+<li>Removed <code>...</code> as thinking marker/closer (too many false positives in normal text)</li>
+</ul>
+<h2 id="v020-2026-07-27">v0.2.0 - 2026-07-27<a class="headerlink" href="#v020-2026-07-27" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Auto-search mode: set <code>web_search: true</code> in config to search on every message</li>
+<li>Search results displayed as compact list, injected as AI context for grounded responses</li>
+<li><code>/search &lt;query&gt;</code> and <code>/web &lt;query&gt;</code> commands</li>
+<li><code>web/display.py</code> - <code>format_results()</code> for terminal, <code>format_context()</code> for AI context injection</li>
+<li><code>web/search.py</code> - <code>DDGResultParser</code> (HTMLParser), search endpoint at <code>lite.duckduckgo.com</code></li>
+<li>Web search: DuckDuckGo Lite via <code>html.parser</code> - <code>/search &lt;query&gt;</code> and <code>/web &lt;query&gt;</code> commands</li>
+<li>Config default: <code>tool_calling: true</code></li>
+<li><code>/search</code> command integrated with tool calling (uses <code>_chat_with_tools(force_search=...)</code>)</li>
+<li><code>_show_tool_status()</code> - dimmed <code>[web_search: "query"]</code> status during tool execution</li>
+<li><code>_chat_with_tools()</code> - decision loop that executes tool calls and injects results</li>
+<li>Ollama provider: refactored payload generation, <code>chat_nonstreaming()</code> with <code>tools</code> support</li>
+<li><code>BaseProvider.chat_nonstreaming()</code> - returns <code>{role, content, tool_calls, finish_reason}</code></li>
+<li><code>tools/builtins.py</code> - <code>web_search</code> and <code>fetch_page</code> tools</li>
+<li><code>tools/registry.py</code> - decorator-based tool registration (OpenAI function calling format)</li>
+<li>Tool calling system: two-phase chat (non-streaming tool decision &gt; stream final content)</li>
+</ul>
+<h2 id="v010-2026-07-27">v0.1.0 - 2026-07-27<a class="headerlink" href="#v010-2026-07-27" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>&lt;&lt;&lt;</code> prefix on streaming responses for clear user/AI separation</li>
+<li>Command logging: all slash commands stored as <code>command</code>-role messages in session history</li>
+<li>Model tracking: per-message <code>model</code> + <code>provider</code> on each assistant response</li>
+<li>Elapsed time display after each response</li>
+<li>Timestamps on every message and duration tracking on assistant responses</li>
+<li>Streaming token display with ANSI-colored prompt</li>
+<li>REPL loop with readline input history and tab completion</li>
+<li>Built-in slash commands: <code>/help</code>, <code>/connect</code>, <code>/model</code>, <code>/provider</code>, <code>/session</code>, <code>/config</code>, <code>/exit</code></li>
+<li>Command registry with decorator-based registration</li>
+<li>Session manager: create, list, load, delete, auto-save (JSON format)</li>
+<li>Ollama cloud provider (defaults to <code>https://api.ollama.com</code>)</li>
+<li>Provider abstraction layer (OpenAI-compatible <code>/v1/chat/completions</code>)</li>
+<li>HTTP SSE streaming via urllib for live token output</li>
+<li>Config module: global + local JSON merge (<code>~/.config/replio/</code> + <code>.replio/</code>)</li>
+<li>Project scaffold (pyproject.toml, .venv, directory structure)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.top", "toc.follow", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

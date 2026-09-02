@@ -1,0 +1,1627 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A lightweight, zero-dependency agentic core for fleets of single-purpose agents">
+      
+      
+      
+        <link rel="canonical" href="https://emyasnikov.github.io/replio/reference/config/">
+      
+      
+        <link rel="prev" href="../commands/">
+      
+      
+        <link rel="next" href="../deploy/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Configuration - Replio</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#configuration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Replio" class="md-header__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Replio
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Configuration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Replio" class="md-nav__button md-logo" aria-label="Replio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Replio
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vision/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vision
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference docs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference docs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Replio Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands &amp; CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tool_permission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tool_permission
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bash_allow-command-allowlist-for-run_command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bash_allow - command allowlist for run_command
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-registry-not-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model registry (not config)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../eval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool-use evaluation harness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent fleets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduled and durable jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP (Model Context Protocol)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../personas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Personas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swarm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent swarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../teams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Teams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/programming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tool_permission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tool_permission
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bash_allow-command-allowlist-for-run_command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bash_allow - command allowlist for run_command
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-registry-not-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model registry (not config)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h1>
+<p>Config is a single JSON object read from two files, merged per key with project-local values winning:</p>
+<ol>
+<li><strong>Global</strong> - <code>~/.config/replio/config.json</code> (user-wide defaults, credentials).</li>
+<li><strong>Local</strong> - <code>.replio/config.json</code> in the project path (project overrides).</li>
+</ol>
+<p>Every process merges them in memory. Nothing is ever distributed to folders. Writes default to the <strong>local</strong> file and hold only the keys you actually selected - a save never re-writes the merged config. API keys are not part of the config: they live in the global model registry (<code>~/.config/replio/models.json</code>) and are managed through <code>/connect</code> (see <a href="#model-registry-keys">Models</a>).</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># inspect in the REPL (origin: default/global/local)</span>
+/config
+<span class="c1"># set a value (project-local, Git-like default)</span>
+/config<span class="w"> </span>temperature<span class="w"> </span><span class="m">0</span>.3
+<span class="c1"># set a structured value</span>
+/config<span class="w"> </span>tools.deny<span class="w"> </span><span class="o">[</span><span class="s2">"run_command"</span>,<span class="w"> </span><span class="s2">"web_search"</span><span class="o">]</span>
+<span class="c1"># set a single line in the global config</span>
+/config<span class="w"> </span>--global<span class="w"> </span>temperature<span class="w"> </span><span class="m">0</span>.2
+<span class="c1"># remove a project-local value, falling back to global/default</span>
+/config<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>temperature
+<span class="c1"># remove a value from the global config</span>
+/config<span class="w"> </span>--global<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>temperature
+<span class="c1"># reload from disk</span>
+/config<span class="w"> </span>reload
+</code></pre></div>
+<p>The <code>replio config</code> CLI does the same headlessly and is fully scriptable:</p>
+<div class="highlight"><pre><span></span><code>replio<span class="w"> </span>config<span class="w"> </span>get<span class="w"> </span>max_tokens<span class="w"> </span>--show-origin<span class="w">     </span><span class="c1"># one or more values + where they come from</span>
+replio<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>max_tokens<span class="w"> </span><span class="m">0</span><span class="w">                 </span><span class="c1"># project-local</span>
+replio<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>max_tokens<span class="w"> </span><span class="m">0</span><span class="w"> </span>--global<span class="w">        </span><span class="c1"># global file</span>
+replio<span class="w"> </span>config<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>max_tokens<span class="w">                 </span><span class="c1"># remove from project-local</span>
+</code></pre></div>
+<p>Deleting a project's <code>.replio/config.json</code> reverts that project to the global and built-in defaults. To keep settings across local deletions, globalize individual lines with <code>--global</code> (both the REPL <code>/config</code> and the CLI accept it), e.g. <code>/config --global provider ollama</code>, <code>/config --global model &lt;model&gt;</code>.</p>
+<h2 id="schema">Schema<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>provider</code></td>
+<td><code>"ollama"</code></td>
+<td>Provider name (<code>ollama</code>, <code>openai</code>, <code>groq</code>, <code>anthropic</code>, <code>opencode</code>, <code>opencode-go</code>, <code>openai-compatible</code>)</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td><code>"llama3.2"</code></td>
+<td>Model name</td>
+</tr>
+<tr>
+<td><code>base_url</code></td>
+<td><code>"https://api.ollama.com"</code></td>
+<td>Provider endpoint</td>
+</tr>
+<tr>
+<td><code>temperature</code></td>
+<td><code>0.7</code></td>
+<td>Sampling temperature</td>
+</tr>
+<tr>
+<td><code>max_tokens</code></td>
+<td><code>8192</code></td>
+<td>Output token cap sent to the provider. <code>0</code> = unset (provider default applies, e.g. Ollama caps at 2048). Default <code>8192</code> overrides low provider defaults</td>
+</tr>
+<tr>
+<td><code>stream_retries</code></td>
+<td><code>2</code></td>
+<td>Extra attempts (after the first) when a provider stream ends before a completion event with no content</td>
+</tr>
+<tr>
+<td><code>stream_retry_delay</code></td>
+<td><code>0.5</code></td>
+<td>Seconds to wait between stream retries</td>
+</tr>
+<tr>
+<td><code>auto_continue</code></td>
+<td><code>true</code></td>
+<td>On truncation (<code>finish_reason=length</code>) with a partial answer, re-request the turn with a "continue" instruction and stitch the parts into one message</td>
+</tr>
+<tr>
+<td><code>auto_continue_max</code></td>
+<td><code>2</code></td>
+<td>Max continuation rounds per turn before the truncation is reported</td>
+</tr>
+<tr>
+<td><code>connect_check</code></td>
+<td><code>true</code></td>
+<td>Test the provider connection when config changes: <code>/connect</code> probes before saving (broken values are rejected unless confirmed), <code>/provider</code> warns on a failed probe. <code>false</code> skips all probes</td>
+</tr>
+<tr>
+<td><code>system_prompt</code></td>
+<td><code>""</code></td>
+<td>Optional system prompt, injected for every front-end (REPL, <code>run</code>, <code>serve</code>)</td>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td><code>"build"</code></td>
+<td>Active agent mode (<code>build</code>, <code>plan</code>, or a custom mode from <code>modes</code>)</td>
+</tr>
+<tr>
+<td><code>tool_calling</code></td>
+<td><code>true</code></td>
+<td>Enable OpenAI-compatible function calling</td>
+</tr>
+<tr>
+<td><code>tool_status_visible</code></td>
+<td><code>true</code></td>
+<td>Show dimmed tool status in the REPL</td>
+</tr>
+<tr>
+<td><code>glyph_lines</code></td>
+<td><code>true</code></td>
+<td>Typed <code>&lt;glyph&gt; &lt;verb&gt; &lt;arg&gt;</code> status lines for mapped categories. When off, or for unmapped categories, the <code>[tool: arg]</code> oneliner is used</td>
+</tr>
+<tr>
+<td><code>glyph_params</code></td>
+<td><code>true</code></td>
+<td>Append the tool call parameters to glyph status lines and confirm prompts (e.g. <code>← Read engine.py [offset=299, limit=85]</code>). Off for bare <code>&lt;glyph&gt; &lt;verb&gt; &lt;arg&gt;</code></td>
+</tr>
+<tr>
+<td><code>show_errors</code></td>
+<td><code>true</code></td>
+<td>Show a dimmed <code>! Error: ...</code> line (first line of the result) when a tool call fails. Off hides the line</td>
+</tr>
+<tr>
+<td><code>show_notes</code></td>
+<td><code>true</code></td>
+<td>Show a dimmed info line for soft tool results (e.g. <code>(empty file)</code>, <code>(no matches for "x")</code>). Off hides the line</td>
+</tr>
+<tr>
+<td><code>tool_analysis</code></td>
+<td><code>false</code></td>
+<td>Model-generated one-line analysis of each tool result (log-only)</td>
+</tr>
+<tr>
+<td><code>delegate_echo</code></td>
+<td><code>true</code></td>
+<td>When the <code>delegate</code> tool runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result. The sub footer is emitted alongside the sub-agent's own rendered output only when on</td>
+</tr>
+<tr>
+<td><code>session_tool_max_chars</code></td>
+<td><code>0</code></td>
+<td><code>0</code> = unlimited. Caps persisted tool-result content</td>
+</tr>
+<tr>
+<td><code>tool_max_result_chars</code></td>
+<td><code>100000</code></td>
+<td>Caps tool-result content returned to the model (<code>... (truncated)</code> appended). <code>0</code> = unlimited. With the default, the model sizes files via the <code>file_read</code> header and pages with <code>offset</code>/<code>limit</code></td>
+</tr>
+<tr>
+<td><code>list_dir_max_entries</code></td>
+<td><code>200</code></td>
+<td>Cap the number of entries <code>list_dir</code> returns (<code>... (showing first N of M entries)</code> appended). <code>0</code> = unlimited</td>
+</tr>
+<tr>
+<td><code>query_refine</code></td>
+<td><code>false</code></td>
+<td>Auto-refine short web-search queries via a lightweight model call</td>
+</tr>
+<tr>
+<td><code>query_refine_min_words</code></td>
+<td><code>3</code></td>
+<td>Minimum query length before refinement applies</td>
+</tr>
+<tr>
+<td><code>query_refine_context</code></td>
+<td><code>4</code></td>
+<td>Recent-message context to inject into refinement</td>
+</tr>
+<tr>
+<td><code>show_thinking</code></td>
+<td><code>false</code></td>
+<td>Stream thinking/reasoning tokens dimmed. When off, thinking is shown only as an animated spinner plus a <code>+ Thought N.Ns</code> summary (display only - does not change what is sent to the model)</td>
+</tr>
+<tr>
+<td><code>show_thought_duration</code></td>
+<td><code>true</code></td>
+<td>When thinking is streamed (<code>show_thinking</code> on), print a dimmed <code>(Thought N.Ns)</code> line after each thinking block. Off hides it</td>
+</tr>
+<tr>
+<td><code>reasoning</code></td>
+<td><code>"auto"</code></td>
+<td>Request reasoning from the model and control its token budget: <code>false</code>/<code>"off"</code> = do not request, <code>true</code>/<code>"on"</code>/<code>"auto"</code> = request with provider default, <code>"low"</code>/<code>"medium"</code>/<code>"high"</code> = explicit budget hint. Mapping is provider-specific (OpenAI <code>reasoning_effort</code>, Claude <code>thinking.budget_tokens</code>, Qwen <code>enable_thinking</code>)</td>
+</tr>
+<tr>
+<td><code>markdown_streaming</code></td>
+<td><code>false</code></td>
+<td>Basic markdown-aware streaming</td>
+</tr>
+<tr>
+<td><code>word_streaming</code></td>
+<td><code>true</code></td>
+<td>Buffer REPL output to word boundaries so words render fully formed (no mid-word pauses). <code>false</code> streams character-by-character</td>
+</tr>
+<tr>
+<td><code>show_context_size</code></td>
+<td><code>true</code></td>
+<td>Dimmed context-size line after each response</td>
+</tr>
+<tr>
+<td><code>footer_tokens</code></td>
+<td><code>["context"]</code></td>
+<td>Which token counts the footer shows, in order, joined by <code>/</code>. <code>context</code> = <code>&lt;n&gt; tokens</code> (context/input size, chars/4 fallback), <code>in</code>/<code>out</code>/<code>thinking</code> = <code>&lt;n&gt;t</code> from provider usage (unavailable counts are skipped). Empty list hides the token section entirely</td>
+</tr>
+<tr>
+<td><code>clear_screen</code></td>
+<td><code>true</code></td>
+<td>Clear the screen before the REPL banner</td>
+</tr>
+<tr>
+<td><code>show_version</code></td>
+<td><code>true</code></td>
+<td>Show the version in the REPL banner</td>
+</tr>
+<tr>
+<td><code>compact_keep</code></td>
+<td><code>4</code></td>
+<td>Messages to keep when compacting the provider context</td>
+</tr>
+<tr>
+<td><code>project_instructions</code></td>
+<td><code>"AGENTS.md"</code></td>
+<td>Per-worktree instructions file auto-loaded into the system prompt (e.g. <code>AGENTS.md</code>, <code>CLAUDE.md</code>). <code>""</code> disables. Absent files are skipped. Content is capped at 20000 chars</td>
+</tr>
+<tr>
+<td><code>noise_tools</code></td>
+<td><code>["web_fetch", "open", "fetch_page"]</code></td>
+<td>Tool results replaced by a marker in persisted sessions</td>
+</tr>
+<tr>
+<td><code>web_search</code></td>
+<td><code>false</code></td>
+<td>Auto-search mode: search the web before answering</td>
+</tr>
+<tr>
+<td><code>search_results</code></td>
+<td><code>5</code></td>
+<td>Number of search results to fetch</td>
+</tr>
+<tr>
+<td><code>tools.allow</code></td>
+<td><code>[]</code></td>
+<td>Name-level allowlist. Empty means no restriction</td>
+</tr>
+<tr>
+<td><code>tools.deny</code></td>
+<td><code>[]</code></td>
+<td>Name-level deny list (takes precedence over allow)</td>
+</tr>
+<tr>
+<td><code>tool_permission</code></td>
+<td><em>(see below)</em></td>
+<td>Category permission actions</td>
+</tr>
+<tr>
+<td><code>mcp.servers</code></td>
+<td><code>[]</code></td>
+<td>MCP client server definitions (see <a href="../mcp/">mcp.md</a> for the schema)</td>
+</tr>
+<tr>
+<td><code>mcp_server.allow_ask</code></td>
+<td><code>true</code></td>
+<td>When serving MCP, run <code>ask</code>-policy tools (deferred to the client) vs refuse them</td>
+</tr>
+<tr>
+<td><code>plugins</code></td>
+<td><em>(bundled)</em></td>
+<td>Plugins to load. Empty = all discovered plugins load</td>
+</tr>
+</tbody>
+</table>
+<h3 id="modes"><code>modes</code><a class="headerlink" href="#modes" title="Permanent link">&para;</a></h3>
+<p>Modes are named postures combining an instruction block with tool-policy overrides. The built-ins ship as defaults - <code>build</code> (no overrides) and <code>plan</code> (read-only: <code>edit</code> and <code>bash</code> categories denied):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"mode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"plan"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"modes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"build"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"system_prompt"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span><span class="nt">"tool_permission"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"plan"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"system_prompt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"You are in plan mode (read-only)..."</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"tool_permission"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"edit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deny"</span><span class="p">,</span><span class="w"> </span><span class="nt">"bash"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deny"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Each mode may define <code>system_prompt</code> (instructions), <code>tool_permission</code> (category actions merged over the base <code>tool_permission</code>, mode wins per key), <code>tools.deny</code> (appended to the base deny list), and <code>tools.allow</code> (replaces the base allowlist when non-empty). An unknown <code>mode</code> value falls back to <code>build</code>. Switch live with <code>/mode &lt;name&gt;</code> or set <code>--mode &lt;name&gt;</code> on <code>replio run</code> / <code>replio serve</code>. The mode instruction and <code>system_prompt</code> are injected as a system message for every front-end. The active mode is recorded on each assistant message in the session log.</p>
+<h3 id="tool_permission"><code>tool_permission</code><a class="headerlink" href="#tool_permission" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"bash"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ask"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"bash_allow"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"pytest"</span><span class="p">,</span><span class="w"> </span><span class="s2">"python -m unittest"</span><span class="p">,</span><span class="w"> </span><span class="s2">"ruff"</span><span class="p">,</span><span class="w"> </span><span class="s2">"git"</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"delegate"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"edit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"list"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"mcp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ask"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"read"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"web"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (y/N confirm), <code>deny</code> (tool hidden/refused). Read/write/list outside the project worktree escalate to <code>ask</code> automatically. The <code>delegate</code> category gates the <code>delegate</code> tool. On top of the category action, delegation resolves its permission from the target persona - a configured persona uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaulting to <code>allow</code>), while a persona not in the registry defaults to <code>deny</code> (see <a href="../personas/">personas.md</a>).</p>
+<h3 id="bash_allow-command-allowlist-for-run_command"><code>bash_allow</code> - command allowlist for <code>run_command</code><a class="headerlink" href="#bash_allow-command-allowlist-for-run_command" title="Permanent link">&para;</a></h3>
+<p><code>tool_permission.bash_allow</code> (list, default <code>[]</code>) restricts <code>run_command</code> to commands whose first token matches an allowed prefix. Empty or unset means unrestricted (the <code>bash</code> category action applies to every command). When set:</p>
+<ul>
+<li>Each command is split into chained segments over <code>&amp;&amp;</code>, <code>||</code>, <code>;</code>, <code>|</code>, and <code>&amp;</code>, and every segment must start with one of the allowed prefixes (e.g. <code>pytest -q &amp;&amp; ruff check .</code> needs both <code>pytest</code> and <code>ruff</code> allowed).</li>
+<li>Shell-script forms are rejected outright: multi-line commands and heredocs (<code>&lt;&lt;</code>) always return <code>deny</code>.</li>
+<li>A matching command falls through to the normal <code>bash</code> action (<code>ask</code> by default, <code>allow</code>/<code>deny</code> per config). A non-matching command is <code>deny</code>.</li>
+</ul>
+<p>The check runs through the per-invocation policy resolver, so it composes with modes, name-level <code>tools.deny</code>/<code>tools.allow</code>, and the worktree escalation. <code>bash_allow</code> gives a coding agent a safe default set (tests, linters, git) without opening up arbitrary shell.</p>
+<h2 id="model-registry-not-config">Model registry (not config)<a class="headerlink" href="#model-registry-not-config" title="Permanent link">&para;</a></h2>
+<p>A global catalogue of configured models lives separately from config in <code>~/.config/replio/models.json</code> (written <code>0600</code> when it holds keys). It is <strong>not</strong> part of the config merge - <code>/config</code> never lists or writes it, and it has no local scope. It is managed only through <code>/connect</code> and <code>/model</code>:</p>
+<ul>
+<li><code>/connect</code> appends (or updates) an entry <code>{provider, base_url, model, api_key}</code> - <strong>the registry is the only place API keys live</strong>. The active model still comes from <code>config.model</code>, so a project can use any model via its local config while the registry remembers every connection.</li>
+<li><code>/model list</code> shows the configured models grouped by provider with the active one marked <code>&gt;</code>, and <code>(key)</code> for entries that have a stored key.</li>
+<li><code>/model list --online [provider]</code> probes a provider's advertised models live (default: current provider).</li>
+</ul>
+<p>The engine resolves the API key for the active <code>provider</code>/<code>base_url</code>/<code>model</code> from the registry (matching entry or <code>""</code>). There is no <code>api_key</code> config key anymore, and <code>replio config set api_key</code> would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.top", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
