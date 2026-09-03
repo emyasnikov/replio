@@ -42,6 +42,26 @@ class TurnResult:
         }
 
 
+@dataclass
+class TeamRunResult:
+    name: str = ''
+    stages: list = field(default_factory=list)
+    content: str | None = None
+    memory: str = ''
+    status: str = 'ok'
+    errors: list = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {
+            'name': self.name,
+            'stages': [r.to_dict() for r in self.stages],
+            'content': self.content,
+            'memory': self.memory,
+            'status': self.status,
+            'errors': self.errors,
+        }
+
+
 CONTINUE_INSTRUCTION = ('Continue exactly where you stopped. '
                         'Do not repeat what was already written.')
 
@@ -240,7 +260,7 @@ class Engine:
             self.current_session = self.sessions.create()
         return self.current_session
 
-    def _new_sub_engine(self, type_name: str, provider=None) -> 'Engine':
+    def _new_sub_engine(self, type_name: str, provider=None, mode: str = '') -> 'Engine':
         agent_type = self.types.find(type_name)
         if agent_type is None:
             raise ValueError(f'Unknown agent type: {type_name}')
@@ -260,7 +280,7 @@ class Engine:
         permissions = dict(self.config.get('tool_permission') or {})
         permissions.update(agent_type.tool_permission)
         sub_config.apply('tool_permission', permissions)
-        sub_config.apply('mode', 'build')
+        sub_config.apply('mode', mode or 'build')
         if provider is None and not agent_type.model:
             provider = self.provider
         sub = Engine(sub_config, ui=NullUI(),
@@ -271,13 +291,108 @@ class Engine:
         sub.current_session.parent_id = self.current_session.name
         return sub
 
-    def run_subagent(self, type_name: str, task: str) -> TurnResult:
-        sub = self._new_sub_engine(type_name)
+    def run_subagent(self, type_name: str, task: str, mode: str = '') -> TurnResult:
+        sub = self._new_sub_engine(type_name, mode=mode)
         result = sub.chat(task, autoname=False)
         if result.session and result.session not in self.current_session.sub_sessions:
             self.current_session.sub_sessions.append(result.session)
             self.session_auto_save()
         return result
+
+    def _build_stage_brief(self, team, task: str, results: list,
+                           index: int, memory: str,
+                           prior_cap: int = 4000) -> str:
+        parts = [f'Team: {team.name}'
+                 + (f' ({team.description})' if team.description else ''),
+                 f'Original task:\n{task}']
+        for j, res in enumerate(results[:index], 1):
+            content = (res.content or '').strip()
+            if not content:
+                content = f'(no final text from {res.session or "stage"})'
+            if len(content) > prior_cap:
+                content = content[:prior_cap].rsplit(' ', 1)[0] + '\n... (truncated)'
+            parts.append(f'## Stage {j} result ({res.session or "stage"}):\n{content}')
+        stage = team.stages[index]
+        if index > 0 and team.stages[index - 1].handoff_note:
+            parts.append(f'Stage {index + 1} handoff from {team.stages[index - 1].type}: '
+                         f'{team.stages[index - 1].handoff_note}')
+        if memory:
+            parts.append(f'## Team memory\n{memory}')
+        hint = stage.task_hint or 'Complete this stage of the task.'
+        parts.append(f'Your stage ({stage.type}):\n{hint}')
+        return '\n\n'.join(parts)
+
+    def _team_memory_summary(self, team, results: list, prior: str) -> str:
+        messages = []
+        if prior:
+            messages.append({'role': 'system',
+                             'content': f'Previous team memory:\n{prior}'})
+        for res in results:
+            session = self.sessions.read(res.session) if res.session else None
+            if session is not None:
+                messages += list(session.messages)
+        if not messages:
+            return ''
+        try:
+            summary = self._summarize(messages)
+        except Exception:
+            summary = None
+        if summary:
+            return str(summary).strip()
+        lines = [f'Team {team.name} run:']
+        for i, res in enumerate(results, 1):
+            content = (res.content or '').strip().replace('\n', ' ')
+            part = f'Stage {i} ({res.session or "?"}): {res.status}'
+            if content:
+                part += f' - {content[:200]}'
+            else:
+                msg = ''
+                for e in res.errors or []:
+                    if isinstance(e, dict) and e.get('message'):
+                        msg = str(e['message'])
+                        break
+                if msg:
+                    part += f' - Error: {msg[:200]}'
+            lines.append(part)
+        return '\n'.join(lines)[:1500]
+
+    def run_team(self, team, task: str) -> TeamRunResult:
+        from .teams import read_team_memory, write_team_memory
+        worktree = self.config.local_path.parent.parent
+        memory = read_team_memory(worktree, team.name)
+        stages: list[TurnResult] = []
+        errors: list = []
+        status = 'ok'
+        try:
+            for i, stage in enumerate(team.stages):
+                brief = self._build_stage_brief(team, task, stages, i, memory)
+                mode = stage.mode or str(self.config.get('mode') or 'build')
+                res = self.run_subagent(stage.type, brief, mode=mode)
+                stages.append(res)
+                if res.status not in ('ok', 'truncated'):
+                    status = 'error'
+                    errors.extend(res.errors)
+                    break
+        except ValueError as e:
+            status = 'error'
+            errors.append({'code': '', 'message': str(e)})
+        summary = self._team_memory_summary(team, stages, memory)
+        memory_path = ''
+        if summary:
+            memory_path = str(write_team_memory(worktree, team.name, summary))
+        content = None
+        if stages:
+            last = stages[-1]
+            if last.content:
+                content = last.content
+        return TeamRunResult(
+            name=team.name,
+            stages=stages,
+            content=content,
+            memory=memory_path,
+            status=status,
+            errors=errors,
+        )
 
     def chat(self, text: str, autoname: bool = True) -> TurnResult:
         now = datetime.now(timezone.utc)

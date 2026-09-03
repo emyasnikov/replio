@@ -18,7 +18,6 @@ The current priority: one terminal, whole teams (`VISION.md`). Stages run sequen
 
 ### Skeleton and core hooks
 
-- [ ] `Engine.run_team` - sequential stage loop: brief builder, `run_subagent`, handoff, team memory write
 - [ ] Kit skeleton - `plugins/replio-teamkit/`: manifest, entry module, one template, one recipe, tests
 - [ ] `docs/teamkit.md` draft - authoring + move-out guide
 
@@ -71,7 +70,6 @@ Agents cooperate through types, delegation, and team stages. Sub-agents use the 
 | Plugin contribution hooks (M1) | S | plugin-owned types/teams/skills without forking the core |
 | Skills registry (M1) | S-M | type `skills` resolved and injected into sub-agent system prompts |
 | Teams registry (M1) | S-M | named team configurations ("writing" = researcher > writer > referencer > editor, "programming" = planner > programmer > tester > code-reviewer) with ordering + handoff - subsumes the TODO "Jobs registry - named team configurations" item |
-| Sequential team runs (M1) - `Engine.run_team` | M | stage-by-stage delegation with generated briefs, shared team memory (`.replio/teams/<name>/memory.md`), handoff |
 | Auto team selection (M2) | M | the lead agent composes the team (types + order + briefs) for a task |
 | `/agent` types (M2) | M | interactive type selection/run UX (registry + sub-engine + delegate landed) |
 | Custom system prompts per session | S-M | per-site instructions |

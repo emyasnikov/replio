@@ -27,13 +27,13 @@
 
 ## Open
 
+- [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
 - [ ] Externalize bundled providers - move `opencode`/`opencode-go` (and the vendor providers) out of the core into bundled plugins, keeping `BaseProvider`/`OpenAICompatibleProvider`, the `PROVIDERS` dict + `detect_provider`, and the plugin `register_providers` hook as the core mechanisms. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in `/connect`
 - [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
 - [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`web_fetch` guidance to tool descriptions
 - [ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc types/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)
 - [ ] Template-based team composition - match type/skill templates from the kit library against the request + project description, generate only the deltas, reuse proven artifacts across projects
 - [ ] Team kit library - tag/store proven teams, types, and skills per stack and customer, importable into new projects without publishing internal know-how
-- [ ] Sequential team runs - stage-by-stage delegation via `run_subagent` with briefs generated per run (task + prior results + team memory + stage handoff), shared team memory file (`.replio/teams/<name>/memory.md`), persistent member sessions for recurring teams, fresh `sub_` sessions for one-off runs (context economics in VISION.md)
 - [ ] Plugin contribution hooks - `register_types` / `register_teams` / `register_skills` plugin entry hooks + `TypeRegistry.reload()`, so the kit ships templates without forking the core
 - [ ] Mid-run blocking job approval - an `ask` tool inside a running job pauses the run in place (per-tool-call `waiting_approval`), notifies via a connector, and resumes the same session when the operator replies. Needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run `--require-approval` gate)
 - [ ] Job event hooks - the scheduler emits typed transitions (`proposed`, `approved`, `will_run`, `executing`, `verified`, `failed`, `timeout`, `waiting_approval`) to registered `services`. Channel-agnostic core, first consumers are the connectors and the operator API
@@ -104,6 +104,7 @@
 
 ## Done
 
+- [x] Sequential team runs - `run_team` stage loop, per-run briefs, team memory, `/team run`
 - [x] `persona` renamed to `agent type` - types.py/TypeRegistry, /type, --type, no aliases
 - [x] Bundled web plugin renamed - replio-core-websearch -> replio-core-web
 - [x] GitHub Pages website - mkdocs site + Actions workflow, docs stay in main

@@ -336,6 +336,7 @@ def register_builtins(registry):
         ('show', 'Show a team definition'),
         ('new', 'Create or override a team (local)'),
         ('remove', 'Remove a team'),
+        ('run', 'Run a team (run <name> <task>)'),
     ])
     def team_cmd(arg=''):
         from ..teams import Team
@@ -428,7 +429,34 @@ def register_builtins(registry):
             else:
                 print(f'No local team to remove: {name}')
             return
-        print('Usage: /team [list|show <name>|new <name> [description]|remove <name>]')
+        if action == 'run':
+            rest = parts[1].strip() if len(parts) > 1 else ''
+            name = rest.split(maxsplit=1)[0] if rest else ''
+            task = rest[len(name):].strip() if name else ''
+            if not name or not task:
+                print('Usage: /team run <name> <task>')
+                return
+            t = tr.find(name)
+            if t is None:
+                print(f'Team not found: {name}')
+                return
+            print(f'Running team {name} ({len(t.stages)} stages)')
+            result = chat.run_team(t, task)
+            for i, res in enumerate(result.stages, 1):
+                dur = f' {res.duration:.1f}s' if res.duration else ''
+                print(f'  {i}. {t.stages[i - 1].type:<16} {res.status}{dur}')
+            if result.errors:
+                msgs = [e.get('message', '') for e in result.errors
+                        if isinstance(e, dict) and e.get('message')]
+                if msgs:
+                    print('  errors: ' + '; '.join(msgs))
+            if result.content:
+                print('--- final result ---')
+                print(result.content)
+            if result.memory:
+                print(f'  team memory: {result.memory}')
+            return
+        print('Usage: /team [list|show <name>|new <name> [description]|remove <name>|run <name> <task>]')
 
     @registry.register('skill', description='Manage skills', subcommands=[
         ('list', 'List skills'),

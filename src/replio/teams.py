@@ -161,3 +161,23 @@ class TeamRegistry:
             self._save_scope(scope)
             return True
         return False
+
+
+def team_memory_path(worktree: Path, name: str) -> Path:
+    return (Path(worktree) / '.replio' / 'teams' / f'{name}' / 'memory.md').resolve()
+
+
+def read_team_memory(worktree: Path, name: str) -> str:
+    path = team_memory_path(worktree, name)
+    if path.exists():
+        return path.read_text().strip()
+    return ''
+
+
+def write_team_memory(worktree: Path, name: str, text: str) -> Path:
+    path = team_memory_path(worktree, name)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name('memory.md.tmp')
+    tmp.write_text(text)
+    os.replace(tmp, path)
+    return path

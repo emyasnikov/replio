@@ -1,6 +1,6 @@
 # Teams
 
-A team is a named, ordered chain of delegated stages - each stage runs under an agent type, and its result is handed to the next stage. A team turns the `delegate` primitive into a repeatable pipeline: "writing" = researcher > writer > referencer > editor for documents, "programming" = planner > programmer > tester > code-reviewer. Teams are shape-only: the registry stores the definition, the sequential stage loop that executes it (`Engine.run_team` and `/team run`) is the next step.
+A team is a named, ordered chain of delegated stages - each stage runs under an agent type, and its result is handed to the next stage. A team turns the `delegate` primitive into a repeatable pipeline: "writing" = researcher > writer > referencer > editor for documents, "programming" = planner > programmer > tester > code-reviewer. The registry stores the definition and the sequential stage loop (`Engine.run_team`, `/team run`) executes it.
 
 ## Storage
 
@@ -47,7 +47,7 @@ Team fields:
 Stage fields:
 
 - `type` - required, the agent type name (must exist in the [types registry](types.md) at run time, resolved against the same four-layer merge).
-- `mode` - optional agent mode override for the stage. Empty inherits the caller. Sub-agents today run in `build` mode, so stage modes become meaningful with the sequential stage loop.
+- `mode` - optional agent mode override for the stage. Empty inherits the caller. With the sequential stage loop, an explicit mode applies to that stage's sub-engine while the rest of the team follows the caller.
 - `task_hint` - optional guidance folded into the delegated brief for this stage.
 - `handoff_note` - optional note passed along with the previous stage's result into the next stage's brief.
 
@@ -59,4 +59,22 @@ Stage fields:
 - `/team new <name> [description]` - create a team in the local catalog (edit the JSON for stages, tags, and per-stage fields). Using an existing name overrides that team.
 - `/team remove <name>` - remove a team from the local catalog. Bundled teams cannot be removed (override them instead).
 
-Plugins contribute teams through the same `register_teams` entry hook that the kit machine (templates, recipes) uses - see [plugins.md](plugins.md). The sequential run loop, generated briefs, and shared team memory land with `Engine.run_team` (see [swarm.md](swarm.md)).
+Plugins contribute teams through the same `register_teams` entry hook that the kit machine (templates, recipes) uses - see [plugins.md](plugins.md).
+
+## Running a team
+
+`Engine.run_team(team, task)` runs the stages one after another through the same in-process sub-engine as `delegate` (`run_subagent`): each stage runs in its own fresh `sub_<ts>_<parent-session>` session, keeps its own type prompt, skills, and permission carve, and the stage `mode` overrides the caller's mode when set (an empty `mode` inherits the caller's). A stage that fails stops the run and the remaining stages do not execute.
+
+The brief handed to each member is built per run from:
+
+- the team name (and description) plus the original task,
+- each prior stage's result (a `## Stage N result (<session>)` block, capped at 4000 chars with a truncation marker),
+- the previous stage's `handoff_note` as a stage handoff line,
+- the shared team memory block, when present,
+- the stage's `task_hint` (or a generic "Complete this stage of the task." line).
+
+After the run, the whole team run is summarized - seeded with the previous team memory - and written to **`.replio/teams/<name>/memory.md`** (atomic write, human-editable). The same memory file is read back into the briefs of the next run, so facts from earlier runs carry without the session files growing. If the summarizer fails, a fallback of one line per stage (type, status, first part of the output or error) is stored instead.
+
+`/team run <name> <task>` executes a team from the REPL and prints one line per stage (`<n>. <type> <status> <duration>s`), the final member's result, and the memory file path.
+
+Recurring teams with persistent member sessions (`job`-style warm sessions) and scheduled team runs (`jobs add --team`) are later milestones.
