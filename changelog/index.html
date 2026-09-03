@@ -404,10 +404,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0260" class="md-nav__link">
+  <a href="#v0260-2026-09-03" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.26.0
+        v0.26.0 - 2026-09-03
       
     </span>
   </a>
@@ -1394,10 +1394,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0260" class="md-nav__link">
+  <a href="#v0260-2026-09-03" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.26.0
+        v0.26.0 - 2026-09-03
       
     </span>
   </a>
@@ -1697,8 +1697,9 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<h2 id="v0260">v0.26.0<a class="headerlink" href="#v0260" title="Permanent link">&para;</a></h2>
+<h2 id="v0260-2026-09-03">v0.26.0 - 2026-09-03<a class="headerlink" href="#v0260-2026-09-03" title="Permanent link">&para;</a></h2>
 <ul>
+<li>Bundled web plugin renamed - <code>replio-core-websearch</code> -&gt; <code>replio-core-web</code> (it ships both search and page fetching, so the old name understated it). Manifest bumped to 0.14.0, default <code>plugins</code> config, tool/plugin docs, and the web-search-unavailable message updated. Existing <code>plugins</code> configs that named the old plugin must switch to <code>replio-core-web</code></li>
 <li>GitHub Pages website - <code>site/</code> mkdocs project (mkdocs-material theme) plus a <code>deploy-site.yml</code> workflow that assembles the site from repo sources on push to <code>main</code> (Overview, Vision, Roadmap, Backlog, Changelog, and the reference docs minus <code>use-cases</code>/<code>vs</code>) and publishes the static build to a <code>gh-pages</code> branch, so the site is regenerated every release with no drift. The app stays zero-dependency, mkdocs is CI-only. README gains a site badge and link. <code>TODO</code>/<code>PLAN</code> "Docs site" items trimmed to the remaining ReadTheDocs part</li>
 <li><code>code_test</code> interpreter resolution - <code>replio-core-dev</code> now resolves a leading <code>python</code>/<code>python3</code> in the test command (<code>dev.test_cmd</code>, default <code>python -m unittest discover</code>) to <code>sys.executable</code>, so the default suite runs on machines with only <code>python3</code> (no <code>python</code> on PATH). Custom commands are untouched. Docs in <code>docs/tools.md</code>, tests in <code>plugins/replio-core-dev/tests/test_tools.py</code> (default + explicit-config resolution)</li>
 <li>OpenCode Zen + Go providers - <code>opencode</code> (<code>https://opencode.ai/zen/v1</code>, default <code>kimi-k3</code>) and <code>opencode-go</code> (<code>https://opencode.ai/zen/go/v1</code>, default <code>deepseek-v4-flash</code>) as OpenAI-compatible providers sharing the OpenCode API key (registered via <code>/connect</code> like any provider, no env var). <code>detect_provider()</code> recognizes <code>opencode.ai</code> (<code>/zen/go</code> path picks <code>opencode-go</code>, otherwise <code>opencode</code>) so <code>/connect</code> auto-switches. Model refs accept the <code>opencode/&lt;model-id&gt;</code> / <code>opencode-go/&lt;model-id&gt;</code> conventions as well as bare ids - the prefix is stripped from the payload (<code>_payload</code> override). The model-list endpoints are an inventory, not an entitlement check: inference still needs the matching paid subscription. Docs in <code>docs/providers.md</code> (built-in table, detection, reasoning row), <code>docs/config.md</code>, <code>README.md</code>. Tests in <code>tests/test_providers.py</code> (defaults, detection, registry, endpoints, ref-prefix stripping). Provider externalization to bundled plugins is tracked in TODO/PLAN</li>
