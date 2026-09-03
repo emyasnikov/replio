@@ -1299,6 +1299,10 @@
 <td><code>SkillRegistry</code>: local/global dir scans, plugin/global/local merge and precedence, origins, put/remove round-trip, reload (disk re-read + plugin-manager re-apply), <code>skills_section</code>, <code>/skill</code> command (list/show/new override/remove, plugin remove rejected)</td>
 </tr>
 <tr>
+<td><code>test_team_run.py</code></td>
+<td><code>Engine.run_team</code>: brief builder (task + prior results + handoff + memory + task hint, prior-result truncation), sequential stage execution with per-stage <code>sub_*</code> sessions + parent linkage + exact brief persistence, stage mode override + caller-mode inheritance, stop-on-failure, unknown-stage-type stop, zero stages, rolling team-memory write (summarized + prior-seeded + fallback), <code>/team run</code> command output (stages + final result, unknown team, usage)</td>
+</tr>
+<tr>
 <td><code>test_teams.py</code></td>
 <td><code>TeamRegistry</code>: bundled/plugin/global/local merge and precedence, origins, stage round-trip (dict + short-string forms), put/remove, reload (disk re-read + plugin-manager re-apply), <code>/team</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
 </tr>

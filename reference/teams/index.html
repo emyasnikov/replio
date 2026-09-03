@@ -960,6 +960,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#running-a-team" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running a team
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1175,6 +1186,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#running-a-team" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running a team
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1193,7 +1215,7 @@
 
 
 <h1 id="teams">Teams<a class="headerlink" href="#teams" title="Permanent link">&para;</a></h1>
-<p>A team is a named, ordered chain of delegated stages - each stage runs under an agent type, and its result is handed to the next stage. A team turns the <code>delegate</code> primitive into a repeatable pipeline: "writing" = researcher &gt; writer &gt; referencer &gt; editor for documents, "programming" = planner &gt; programmer &gt; tester &gt; code-reviewer. Teams are shape-only: the registry stores the definition, the sequential stage loop that executes it (<code>Engine.run_team</code> and <code>/team run</code>) is the next step.</p>
+<p>A team is a named, ordered chain of delegated stages - each stage runs under an agent type, and its result is handed to the next stage. A team turns the <code>delegate</code> primitive into a repeatable pipeline: "writing" = researcher &gt; writer &gt; referencer &gt; editor for documents, "programming" = planner &gt; programmer &gt; tester &gt; code-reviewer. The registry stores the definition and the sequential stage loop (<code>Engine.run_team</code>, <code>/team run</code>) executes it.</p>
 <h2 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h2>
 <p>Teams come from four layers, merged exactly like types: bundled first, then plugin contributions, then global, then local, with local winning per field. Precedence is <code>bundled &lt; plugin &lt; global &lt; local</code>:</p>
 <ul>
@@ -1234,7 +1256,7 @@
 <p>Stage fields:</p>
 <ul>
 <li><code>type</code> - required, the agent type name (must exist in the <a href="../types/">types registry</a> at run time, resolved against the same four-layer merge).</li>
-<li><code>mode</code> - optional agent mode override for the stage. Empty inherits the caller. Sub-agents today run in <code>build</code> mode, so stage modes become meaningful with the sequential stage loop.</li>
+<li><code>mode</code> - optional agent mode override for the stage. Empty inherits the caller. With the sequential stage loop, an explicit mode applies to that stage's sub-engine while the rest of the team follows the caller.</li>
 <li><code>task_hint</code> - optional guidance folded into the delegated brief for this stage.</li>
 <li><code>handoff_note</code> - optional note passed along with the previous stage's result into the next stage's brief.</li>
 </ul>
@@ -1246,7 +1268,20 @@
 <li><code>/team new &lt;name&gt; [description]</code> - create a team in the local catalog (edit the JSON for stages, tags, and per-stage fields). Using an existing name overrides that team.</li>
 <li><code>/team remove &lt;name&gt;</code> - remove a team from the local catalog. Bundled teams cannot be removed (override them instead).</li>
 </ul>
-<p>Plugins contribute teams through the same <code>register_teams</code> entry hook that the kit machine (templates, recipes) uses - see <a href="../plugins/">plugins.md</a>. The sequential run loop, generated briefs, and shared team memory land with <code>Engine.run_team</code> (see <a href="../swarm/">swarm.md</a>).</p>
+<p>Plugins contribute teams through the same <code>register_teams</code> entry hook that the kit machine (templates, recipes) uses - see <a href="../plugins/">plugins.md</a>.</p>
+<h2 id="running-a-team">Running a team<a class="headerlink" href="#running-a-team" title="Permanent link">&para;</a></h2>
+<p><code>Engine.run_team(team, task)</code> runs the stages one after another through the same in-process sub-engine as <code>delegate</code> (<code>run_subagent</code>): each stage runs in its own fresh <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code> session, keeps its own type prompt, skills, and permission carve, and the stage <code>mode</code> overrides the caller's mode when set (an empty <code>mode</code> inherits the caller's). A stage that fails stops the run and the remaining stages do not execute.</p>
+<p>The brief handed to each member is built per run from:</p>
+<ul>
+<li>the team name (and description) plus the original task,</li>
+<li>each prior stage's result (a <code>## Stage N result (&lt;session&gt;)</code> block, capped at 4000 chars with a truncation marker),</li>
+<li>the previous stage's <code>handoff_note</code> as a stage handoff line,</li>
+<li>the shared team memory block, when present,</li>
+<li>the stage's <code>task_hint</code> (or a generic "Complete this stage of the task." line).</li>
+</ul>
+<p>After the run, the whole team run is summarized - seeded with the previous team memory - and written to <strong><code>.replio/teams/&lt;name&gt;/memory.md</code></strong> (atomic write, human-editable). The same memory file is read back into the briefs of the next run, so facts from earlier runs carry without the session files growing. If the summarizer fails, a fallback of one line per stage (type, status, first part of the output or error) is stored instead.</p>
+<p><code>/team run &lt;name&gt; &lt;task&gt;</code> executes a team from the REPL and prints one line per stage (<code>&lt;n&gt;. &lt;type&gt; &lt;status&gt; &lt;duration&gt;s</code>), the final member's result, and the memory file path.</p>
+<p>Recurring teams with persistent member sessions (<code>job</code>-style warm sessions) and scheduled team runs (<code>jobs add --team</code>) are later milestones.</p>
 
 
 

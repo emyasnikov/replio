@@ -1568,7 +1568,6 @@
 <p>The current priority: one terminal, whole teams (<code>VISION.md</code>). Stages run sequentially via <code>run_subagent</code>. The composition machinery (templates, recipes, generator, library) lives in a movable private plugin, never in the core.</p>
 <h3 id="skeleton-and-core-hooks">Skeleton and core hooks<a class="headerlink" href="#skeleton-and-core-hooks" title="Permanent link">&para;</a></h3>
 <ul>
-<li>[ ] <code>Engine.run_team</code> - sequential stage loop: brief builder, <code>run_subagent</code>, handoff, team memory write</li>
 <li>[ ] Kit skeleton - <code>plugins/replio-teamkit/</code>: manifest, entry module, one template, one recipe, tests</li>
 <li>[ ] <code>docs/teamkit.md</code> draft - authoring + move-out guide</li>
 </ul>
@@ -1642,11 +1641,6 @@
 <td>Teams registry (M1)</td>
 <td>S-M</td>
 <td>named team configurations ("writing" = researcher &gt; writer &gt; referencer &gt; editor, "programming" = planner &gt; programmer &gt; tester &gt; code-reviewer) with ordering + handoff - subsumes the TODO "Jobs registry - named team configurations" item</td>
-</tr>
-<tr>
-<td>Sequential team runs (M1) - <code>Engine.run_team</code></td>
-<td>M</td>
-<td>stage-by-stage delegation with generated briefs, shared team memory (<code>.replio/teams/&lt;name&gt;/memory.md</code>), handoff</td>
 </tr>
 <tr>
 <td>Auto team selection (M2)</td>

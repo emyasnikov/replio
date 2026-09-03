@@ -1197,13 +1197,13 @@
 </ul>
 <h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[ ] Persistent member sessions for recurring teams - <code>job</code>-style warm sessions for recurring teams, one-off runs stay fresh <code>sub_</code> sessions (sequential run loop + briefs + team memory landed with <code>Engine.run_team</code>)</li>
 <li>[ ] Externalize bundled providers - move <code>opencode</code>/<code>opencode-go</code> (and the vendor providers) out of the core into bundled plugins, keeping <code>BaseProvider</code>/<code>OpenAICompatibleProvider</code>, the <code>PROVIDERS</code> dict + <code>detect_provider</code>, and the plugin <code>register_providers</code> hook as the core mechanisms. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in <code>/connect</code></li>
 <li>[ ] Full <code>file_*</code> namespace extension - if <code>file_glob</code>/<code>file_grep</code> prove better with most models, extend the prefix to <code>list_dir</code>/<code>glob</code>/<code>grep</code> (old names stay aliases)</li>
 <li>[ ] Tool spec polish - rename <code>grep.glob</code> -&gt; <code>include</code> (alias <code>glob</code>), add examples and prefer-<code>web_fetch</code> guidance to tool descriptions</li>
 <li>[ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc types/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)</li>
 <li>[ ] Template-based team composition - match type/skill templates from the kit library against the request + project description, generate only the deltas, reuse proven artifacts across projects</li>
 <li>[ ] Team kit library - tag/store proven teams, types, and skills per stack and customer, importable into new projects without publishing internal know-how</li>
-<li>[ ] Sequential team runs - stage-by-stage delegation via <code>run_subagent</code> with briefs generated per run (task + prior results + team memory + stage handoff), shared team memory file (<code>.replio/teams/&lt;name&gt;/memory.md</code>), persistent member sessions for recurring teams, fresh <code>sub_</code> sessions for one-off runs (context economics in VISION.md)</li>
 <li>[ ] Plugin contribution hooks - <code>register_types</code> / <code>register_teams</code> / <code>register_skills</code> plugin entry hooks + <code>TypeRegistry.reload()</code>, so the kit ships templates without forking the core</li>
 <li>[ ] Mid-run blocking job approval - an <code>ask</code> tool inside a running job pauses the run in place (per-tool-call <code>waiting_approval</code>), notifies via a connector, and resumes the same session when the operator replies. Needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run <code>--require-approval</code> gate)</li>
 <li>[ ] Job event hooks - the scheduler emits typed transitions (<code>proposed</code>, <code>approved</code>, <code>will_run</code>, <code>executing</code>, <code>verified</code>, <code>failed</code>, <code>timeout</code>, <code>waiting_approval</code>) to registered <code>services</code>. Channel-agnostic core, first consumers are the connectors and the operator API</li>
@@ -1278,6 +1278,7 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] Sequential team runs - <code>run_team</code> stage loop, per-run briefs, team memory, <code>/team run</code></li>
 <li>[x] <code>persona</code> renamed to <code>agent type</code> - types.py/TypeRegistry, /type, --type, no aliases</li>
 <li>[x] Bundled web plugin renamed - replio-core-websearch -&gt; replio-core-web</li>
 <li>[x] GitHub Pages website - mkdocs site + Actions workflow, docs stay in main</li>
