@@ -885,34 +885,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../plugins/" class="md-nav__link">
         
   
@@ -1165,14 +1137,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../writing-tools/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1201,6 +1173,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1470,9 +1470,9 @@
 <td>Summarize the conversation and trim the provider context</td>
 </tr>
 <tr>
-<td><code>/persona</code></td>
+<td><code>/type</code></td>
 <td></td>
-<td>Manage personas: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [prompt]</code>, <code>remove &lt;name&gt;</code>. See <a href="../personas/">personas.md</a></td>
+<td>Manage types: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [prompt]</code>, <code>remove &lt;name&gt;</code>. See <a href="../types/">types.md</a></td>
 </tr>
 <tr>
 <td><code>/tool</code></td>
@@ -1493,7 +1493,7 @@
 </table>
 <p><code>/help</code> renders commands with their subcommands indented below, and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under <code>/tool</code>. <code>/tool</code> with no arguments lists the same tools with their short descriptions.</p>
 <p><code>/session export &lt;name&gt; [out]</code> renders a saved session as Markdown (see <a href="../session/">session.md</a>).</p>
-<p>Delegation is a normal tool: the lead agent proposes it, or you run it directly - <code>/tool delegate {"persona": "researcher", "task": "..."}</code> routes through the same tool policy. A configured persona delegates without prompting (<code>delegate</code> category defaults to <code>allow</code>, set a persona's <code>delegate</code> to <code>ask</code> to confirm), and a persona outside the registry is denied. See <a href="../personas/">personas.md</a> and <a href="../swarm/">swarm.md</a>.</p>
+<p>Delegation is a normal tool: the lead agent proposes it, or you run it directly - <code>/tool delegate {"type": "researcher", "task": "..."}</code> routes through the same tool policy. A configured type delegates without prompting (<code>delegate</code> category defaults to <code>allow</code>, set an agent type's <code>delegate</code> to <code>ask</code> to confirm), and an agent type outside the registry is denied. See <a href="../types/">types.md</a> and <a href="../swarm/">swarm.md</a>.</p>
 <h2 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>usage: replio [-h] [--path PATH] [-v] {run,export,models,eval,serve,mcp,config,plugins,jobs,fleet} ...
 </code></pre></div>
@@ -1777,7 +1777,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </tr>
 <tr>
 <td><code>add</code></td>
-<td><code>replio jobs add &lt;name&gt; --file jobs/&lt;name&gt;.md --cron "0 2 * * *"</code> (or <code>--interval N</code> / <code>--at ISO</code>, <code>--prompt</code> optional when <code>--file</code> is given), plus <code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--persona</code>, <code>--system-prompt</code>, <code>--tools-deny</code>, <code>--tool-permission</code>, <code>--retries</code>, <code>--backoff</code>, <code>--timeout</code>, <code>--require-approval</code>, <code>--approval auto</code></td>
+<td><code>replio jobs add &lt;name&gt; --file jobs/&lt;name&gt;.md --cron "0 2 * * *"</code> (or <code>--interval N</code> / <code>--at ISO</code>, <code>--prompt</code> optional when <code>--file</code> is given), plus <code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--type</code>, <code>--system-prompt</code>, <code>--tools-deny</code>, <code>--tool-permission</code>, <code>--retries</code>, <code>--backoff</code>, <code>--timeout</code>, <code>--require-approval</code>, <code>--approval auto</code></td>
 </tr>
 <tr>
 <td><code>approve</code></td>
@@ -1853,7 +1853,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </tr>
 <tr>
 <td><code>config</code></td>
-<td><code>config &lt;name&gt; --provider/--model/--persona/--system-prompt/--mode/--tools-deny/--tool-permission</code> - write only those keys into <code>&lt;dir&gt;/.replio/config.json</code></td>
+<td><code>config &lt;name&gt; --provider/--model/--type/--system-prompt/--mode/--tools-deny/--tool-permission</code> - write only those keys into <code>&lt;dir&gt;/.replio/config.json</code></td>
 </tr>
 </tbody>
 </table>

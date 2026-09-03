@@ -16,7 +16,7 @@
         <link rel="prev" href="../testing/">
       
       
-        <link rel="next" href="../writing-tools/">
+        <link rel="next" href="../types/">
       
       
         
@@ -700,34 +700,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../plugins/" class="md-nav__link">
         
   
@@ -1143,14 +1115,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../writing-tools/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1179,6 +1151,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1478,7 +1478,7 @@
 <td>core</td>
 <td><code>delegate</code></td>
 <td><code>delegate</code></td>
-<td>Run a task under a persona as a sub-agent</td>
+<td>Run a task under an agent type as a sub-agent</td>
 </tr>
 </tbody>
 </table>
@@ -1595,7 +1595,7 @@
 <ol>
 <li><strong>Name-level</strong> - <code>tools.deny</code> (always denied) and <code>tools.allow</code> (when non-empty, an allowlist - everything else is denied).</li>
 <li><strong>Category action</strong> - the <code>tool_permission.&lt;key&gt;</code> action for the tool's <code>permission</code> key. <code>deny</code> here filters the tool from the provider schema and from tool listings, not just direct calls.</li>
-<li><strong>Per-invocation resolver</strong> - a tool may declare a <code>permission_fn</code> that refines the action from its current arguments (e.g. <code>delegate</code> resolves per persona: a configured persona uses its own <code>tool_permission</code> with <code>delegate</code> defaulting to <code>ask</code>, a persona outside the registry is <code>deny</code>). The resolver only refines a non-<code>deny</code> base action and is skipped when no arguments are available, so schema filtering (<code>allowed()</code>) keeps the tool visible for <code>ask</code>/<code>allow</code> categories.</li>
+<li><strong>Per-invocation resolver</strong> - a tool may declare a <code>permission_fn</code> that refines the action from its current arguments (e.g. <code>delegate</code> resolves per type: a configured type uses its own <code>tool_permission</code> with <code>delegate</code> defaulting to <code>ask</code>, an agent type outside the registry is <code>deny</code>). The resolver only refines a non-<code>deny</code> base action and is skipped when no arguments are available, so schema filtering (<code>allowed()</code>) keeps the tool visible for <code>ask</code>/<code>allow</code> categories.</li>
 <li><strong>Worktree escalation</strong> - <code>read</code> / <code>list</code> / <code>write</code> tools pointing outside the project worktree escalate from <code>allow</code> to <code>ask</code>.</li>
 </ol>
 <p>Modes (<a href="../config/">config.md</a>) layer over the base policy: a mode's <code>tool_permission</code> merges over the base (mode wins per key), its <code>tools.deny</code> appends, and its <code>tools.allow</code> replaces when non-empty. The built-in <code>plan</code> mode denies the <code>edit</code> and <code>bash</code> categories, so write and exec tools are filtered from the schema and refused on direct calls. Switch with <code>/mode &lt;name&gt;</code> in the REPL or <code>--mode &lt;name&gt;</code> on <code>replio run</code> / <code>replio serve</code>.</p>

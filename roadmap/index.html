@@ -960,34 +960,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../reference/plugins/" class="md-nav__link">
         
   
@@ -1240,14 +1212,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/writing-tools/" class="md-nav__link">
+      <a href="../reference/types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1276,6 +1248,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1579,7 +1579,7 @@
 <li>[ ] Team kit library - flat tagged store (stack, customer, project-type), importable into new projects</li>
 <li>[ ] <code>/teamkit</code> authoring commands - init, list, new, match, export, import, per-customer split</li>
 <li>[ ] Auto team selection - lead agent composes the team for a task and delegates in sequence</li>
-<li>[ ] <code>/agent</code> personas - interactive persona selection/run UX</li>
+<li>[ ] <code>/agent</code> types - interactive type selection/run UX</li>
 <li>[ ] Docs completed (<code>docs/teamkit.md</code> full)</li>
 </ul>
 <p>Verified: one command composes a new project's team. A second project reuses stored artifacts.</p>
@@ -1595,7 +1595,7 @@
 <p>One round hands off in three steps:</p>
 <ol>
 <li><strong>Start</strong> - the operator starts a task: <code>replio jobs add</code>/<code>run</code> for scheduled work, or a REPL prompt for ad-hoc work. The jobs operator API adds a remote start (<code>POST /jobs/&lt;name&gt;/approve</code>) later</li>
-<li><strong>Distribute + review</strong> - the lead agent splits the task into subtasks and delegates them: sequentially by persona today (<code>delegate</code> tool, team stages next), routed to fleet agents over <code>POST /chat</code> once team/job configs land, with auditor agents reviewing the output (generate &gt; check &gt; correct)</li>
+<li><strong>Distribute + review</strong> - the lead agent splits the task into subtasks and delegates them: sequentially by type today (<code>delegate</code> tool, team stages next), routed to fleet agents over <code>POST /chat</code> once team/job configs land, with auditor agents reviewing the output (generate &gt; check &gt; correct)</li>
 <li><strong>Return</strong> - results come back to the operator: the delegate result or job summary today, the jobs operator API + webhook/email/Telegram connectors when the jobs layer lands. The fleet supervisor restarts crashed processes underneath. The jobs layer restarts failed work - two kinds of restart, both compose</li>
 </ol>
 <p>Fleet is the substrate that stays up, not the conductor of the work.</p>
@@ -1618,7 +1618,7 @@
 </tbody>
 </table>
 <h2 id="team-orchestration-swarm-core">Team orchestration (swarm core)<a class="headerlink" href="#team-orchestration-swarm-core" title="Permanent link">&para;</a></h2>
-<p>Agents cooperate through personas, delegation, and team stages. Sub-agents use the caller's provider, plugin manager, and worktree (see <code>docs/swarm.md</code>).</p>
+<p>Agents cooperate through types, delegation, and team stages. Sub-agents use the caller's provider, plugin manager, and worktree (see <code>docs/swarm.md</code>).</p>
 <table>
 <thead>
 <tr>
@@ -1631,12 +1631,12 @@
 <tr>
 <td>Plugin contribution hooks (M1)</td>
 <td>S</td>
-<td>plugin-owned personas/teams/skills without forking the core</td>
+<td>plugin-owned types/teams/skills without forking the core</td>
 </tr>
 <tr>
 <td>Skills registry (M1)</td>
 <td>S-M</td>
-<td>persona <code>skills</code> resolved and injected into sub-agent system prompts</td>
+<td>type <code>skills</code> resolved and injected into sub-agent system prompts</td>
 </tr>
 <tr>
 <td>Teams registry (M1)</td>
@@ -1651,12 +1651,12 @@
 <tr>
 <td>Auto team selection (M2)</td>
 <td>M</td>
-<td>the lead agent composes the team (personas + order + briefs) for a task</td>
+<td>the lead agent composes the team (types + order + briefs) for a task</td>
 </tr>
 <tr>
-<td><code>/agent</code> personas (M2)</td>
+<td><code>/agent</code> types (M2)</td>
 <td>M</td>
-<td>interactive persona selection/run UX (registry + sub-engine + delegate landed)</td>
+<td>interactive type selection/run UX (registry + sub-engine + delegate landed)</td>
 </tr>
 <tr>
 <td>Custom system prompts per session</td>
@@ -1681,7 +1681,7 @@
 <tr>
 <td>Swarm orchestration umbrella (TODO item)</td>
 <td>-</td>
-<td>decomposed by this package: <code>/agent</code> personas, auditor agents, generate &gt; check &gt; correct, team patterns</td>
+<td>decomposed by this package: <code>/agent</code> types, auditor agents, generate &gt; check &gt; correct, team patterns</td>
 </tr>
 </tbody>
 </table>
@@ -1702,7 +1702,7 @@
 <td>installable private kit</td>
 </tr>
 <tr>
-<td>Template-based composition (M2) - stack signature -&gt; tags -&gt; matching templates -&gt; AI-generated deltas only (<code>chat_nonstreaming</code>), persisted locally (personas.json + skills + teams.json, with reload)</td>
+<td>Template-based composition (M2) - stack signature -&gt; tags -&gt; matching templates -&gt; AI-generated deltas only (<code>chat_nonstreaming</code>), persisted locally (types.json + skills + teams.json, with reload)</td>
 <td>M</td>
 <td>fresh team per project, reusing proven artifacts</td>
 </tr>
@@ -1945,7 +1945,7 @@
 <tr>
 <td>Plugin contribution hooks (M1)</td>
 <td>S</td>
-<td>personas/teams/skills from plugins</td>
+<td>types/teams/skills from plugins</td>
 </tr>
 <tr>
 <td>PyPI plugin source</td>

@@ -820,34 +820,6 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="reference/plugins/" class="md-nav__link">
         
   
@@ -1100,14 +1072,14 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/writing-tools/" class="md-nav__link">
+      <a href="reference/types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1136,6 +1108,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1279,14 +1279,14 @@
 <h1 id="replio">Replio<a class="headerlink" href="#replio" title="Permanent link">&para;</a></h1>
 <p><strong>A lightweight, zero-dependency agentic core for fleets of single-purpose agents.</strong></p>
 <p>Current version: <strong>v0.26.0</strong> (Python &gt;= 3.10, MIT, zero external dependencies)</p>
-<p>Replio is a deliberately small, auditable, zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (personas and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability.</p>
+<p>Replio is a deliberately small, auditable, zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability.</p>
 <h2 id="vision">Vision<a class="headerlink" href="#vision" title="Permanent link">&para;</a></h2>
-<p><strong>One terminal, whole teams.</strong> One REPL. One prompt. The lead agent composes a specialized team - personas and skills instantiated from a private template library matching the project description and request - runs the team stage-by-stage, each member working under its own persona, skills, and permissions, with generated briefs, handoff, and shared memory. Teams are stored, reused, extended per customer, and scheduled.</p>
+<p><strong>One terminal, whole teams.</strong> One REPL. One prompt. The lead agent composes a specialized team - types and skills instantiated from a private template library matching the project description and request - runs the team stage-by-stage, each member working under its own type, skills, and permissions, with generated briefs, handoff, and shared memory. Teams are stored, reused, extended per customer, and scheduled.</p>
 <p>Read the full vision, decisions, and context economics in <a href="vision/">Vision</a>.</p>
 <h2 id="current-state">Current state<a class="headerlink" href="#current-state" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Core</strong> - one SSE-stream agent loop, multi-provider (Ollama, OpenAI, Groq, Anthropic, OpenCode Zen/Go, any OpenAI-compatible endpoint), tool calling with per-tool permissions and an audit trail, plan/build modes, complete append-only session logs, plugins, <code>replio run</code> + <code>replio serve</code></li>
-<li><strong>Orchestration</strong> - swarm (personas, delegation), jobs (cron/interval/one-shot, retries, approvals, run memory), fleet (supervisor with ports, health, restart), MCP client and server</li>
+<li><strong>Orchestration</strong> - swarm (types, delegation), jobs (cron/interval/one-shot, retries, approvals, run memory), fleet (supervisor with ports, health, restart), MCP client and server</li>
 <li><strong>Latest</strong> - v0.26 in progress: tool-use evaluation harness (<code>replio eval</code>), OpenCode Zen/Go providers. See <a href="changelog/">Changelog</a></li>
 <li><strong>Tooling</strong> - bundled plugins for web search, filesystem, shell, edit, git, and dev wrappers (test/lint/format), all with path-scoped policies</li>
 </ul>

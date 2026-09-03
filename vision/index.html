@@ -811,34 +811,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../reference/plugins/" class="md-nav__link">
         
   
@@ -1091,14 +1063,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/writing-tools/" class="md-nav__link">
+      <a href="../reference/types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1127,6 +1099,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1258,9 +1258,9 @@
 
 <h1 id="vision">Vision<a class="headerlink" href="#vision" title="Permanent link">&para;</a></h1>
 <p><strong>One terminal, whole teams</strong></p>
-<p>One REPL. One prompt. The lead agent composes a specialized team - personas and skills
+<p>One REPL. One prompt. The lead agent composes a specialized team - types and skills
 instantiated from a private template library matching the project description and request -
-runs the team stage-by-stage (sequentially first), each member working under its own persona,
+runs the team stage-by-stage (sequentially first), each member working under its own type,
 skills, and permissions, with generated briefs, handoff, and shared memory. Teams are stored,
 reused, extended per customer, and scheduled. The composition machinery (templates, generator,
 library, authoring commands) lives in a <strong>movable private plugin</strong> (<code>replio-teamkit</code>), never in
@@ -1272,7 +1272,7 @@ the core, so internal know-how leaves the repo as one documented unit whenever n
   later milestone (cuts wall-clock, not tokens).</li>
 <li><strong>No pre-saved run prompts</strong>: briefs, handoff, and memory are generated per run. Stored
   artifacts are templates and proven specializations - reusable by design, never regenerated.</li>
-<li><strong>Cache model</strong>: stored personas/skills (never regenerated), generated briefs carrying facts,
+<li><strong>Cache model</strong>: stored types/skills (never regenerated), generated briefs carrying facts,
   shared team memory file, and persistent member sessions for recurring teams (<code>job</code>-style warm
   sessions). One-off runs get fresh <code>sub_</code> sessions.</li>
 <li><strong>Kit layout</strong>: flat <code>library/</code> with tags (stack, customer, project-type). Matching by tags +
@@ -1293,11 +1293,11 @@ the core, so internal know-how leaves the repo as one documented unit whenever n
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <p><strong>Core (thin):</strong></p>
 <ul>
-<li><code>PersonaRegistry.reload()</code>. Plugin hooks <code>register_personas</code> / <code>register_teams</code> /
+<li><code>TypeRegistry.reload()</code>. Plugin hooks <code>register_types</code> / <code>register_teams</code> /
   <code>register_skills</code> in <code>plugins/manager.py</code> (mirroring <code>register_tools</code>).</li>
-<li><code>teams.py</code> - <code>Team</code> (name, description, stages: persona, mode, task-hint, handoff-note),
+<li><code>teams.py</code> - <code>Team</code> (name, description, stages: type, mode, task-hint, handoff-note),
   <code>TeamRegistry</code> (<code>.replio/teams.json</code> + plugin contributions).</li>
-<li><code>skills.py</code> - <code>SkillRegistry</code> (<code>.replio/skills/*.md</code> + plugin contributions). Persona <code>skills</code>
+<li><code>skills.py</code> - <code>SkillRegistry</code> (<code>.replio/skills/*.md</code> + plugin contributions). AgentType <code>skills</code>
   resolved and injected into the sub-agent system prompt.</li>
 <li><code>Engine.run_team(team, task)</code> - sequential stage loop: brief builder (task + prior results +
   memory + stage handoff), <code>run_subagent</code>, result collection, memory write. <code>job.team</code> field so
@@ -1305,13 +1305,13 @@ the core, so internal know-how leaves the repo as one documented unit whenever n
 </ul>
 <p><strong>Kit plugin <code>replio-teamkit</code> (bundled <code>plugins/</code>, movable):</strong></p>
 <ul>
-<li><code>src/plugin.py</code> registering personas/teams/skills templates, tools, commands.</li>
-<li><code>templates/</code> - instantiable persona + skill template specs. <code>recipes/</code> - example teams (incl.
+<li><code>src/plugin.py</code> registering types/teams/skills templates, tools, commands.</li>
+<li><code>templates/</code> - instantiable type + skill template specs. <code>recipes/</code> - example teams (incl.
   the two carved teams as team definitions). <code>library/</code> - flat tagged store of proven
-  teams/personas/skills. <code>tests/</code>.</li>
+  teams/types/skills. <code>tests/</code>.</li>
 <li>Generator: stack signature from project description/request (README, manifests) -&gt; tags -&gt;
   matching templates -&gt; AI-generated deltas only (via <code>engine.chat_nonstreaming</code>), persisted to
-  local <code>personas.json</code> + <code>skills/</code> + <code>teams.json</code> (with <code>reload</code>).</li>
+  local <code>types.json</code> + <code>skills/</code> + <code>teams.json</code> (with <code>reload</code>).</li>
 <li>Authoring commands (<code>/teamkit</code>): init, list, new, match, export, import, and per-customer
   export/splitting.</li>
 <li>Core's <code>/team</code> stays registry + run only.</li>

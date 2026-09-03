@@ -13,10 +13,8 @@
         <link rel="canonical" href="https://emyasnikov.github.io/replio/reference/writing-tools/">
       
       
-        <link rel="prev" href="../tools/">
+        <link rel="prev" href="../usage/programming/">
       
-      
-        <link rel="next" href="../usage/programming/">
       
       
         
@@ -700,34 +698,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../plugins/" class="md-nav__link">
         
   
@@ -977,6 +947,62 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/programming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1147,34 +1173,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../usage/programming/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Programming agents (step-by-step setup)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1331,7 +1329,7 @@
 <p>More tools does not mean a better agent. Every tool definition is loaded into the model's context on every turn, and overlapping tools actively mislead selection. Build a few thoughtful tools that target high-impact workflows, and scale up only when a real gap shows up.</p>
 <ul>
 <li>Prefer search and point tools over dump-everything tools. An agent wastes its limited context reading irrelevant results. <code>grep</code> returns only matching <code>file:line: text</code> lines. <code>glob</code> locates a path before it is read. <code>file_read</code> reports <code>N lines, M chars</code> in its header so the agent can probe a file's size with <code>limit=0</code> before committing to a read.</li>
-<li>Consolidate operations that are usually chained. <code>file_write</code> folds create, overwrite, and append into one call behind a <code>mode</code> enum. <code>delegate</code> runs a whole task under a persona as a single call. A consolidated tool offloads multi-step reasoning from the model's context into the tool itself.</li>
+<li>Consolidate operations that are usually chained. <code>file_write</code> folds create, overwrite, and append into one call behind a <code>mode</code> enum. <code>delegate</code> runs a whole task under an agent type as a single call. A consolidated tool offloads multi-step reasoning from the model's context into the tool itself.</li>
 <li>Do not wrap a function or API endpoint just because you can. A tool needs a clear agent affordance: the model must be able to decide from its description alone when to call it and what to do with the result.</li>
 <li>Avoid near-duplicate tools. Two tools that fetched a web page (<code>open</code> and <code>fetch_page</code>) confused agents until they were merged into one <code>web_fetch</code> that takes <code>url</code> or a search-result <code>id</code>. If two tools overlap, merge them or delete one.</li>
 </ul>

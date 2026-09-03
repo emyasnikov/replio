@@ -404,6 +404,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0270" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.27.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0260-2026-09-03" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1031,34 +1042,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../reference/plugins/" class="md-nav__link">
         
   
@@ -1311,14 +1294,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/writing-tools/" class="md-nav__link">
+      <a href="../reference/types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1347,6 +1330,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1392,6 +1403,17 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v0270" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.27.0
+      
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#v0260-2026-09-03" class="md-nav__link">
@@ -1697,6 +1719,10 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v0270">v0.27.0<a class="headerlink" href="#v0270" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Renamed <code>persona</code> to <code>agent type</code> across the product - the concept is a named agent definition bundling identity (persona), function, authority, capability, expertise, and archetype into one reusable profile, and <code>type</code> is the neutral umbrella that covers all of them without colliding with <code>role</code> (chat message roles in the session/API), <code>function</code> (OpenAI function calling), or <code>profile</code> (the existing permission-profile language). Breaking rename with no legacy aliases: <code>personas.py</code> -&gt; <code>types.py</code> (<code>AgentType</code> / <code>TypeRegistry</code>), <code>bundled_personas.json</code> -&gt; <code>bundled_types.json</code>, <code>/persona</code> -&gt; <code>/type</code>, <code>--persona</code> -&gt; <code>--type</code>, <code>personas.json</code> -&gt; <code>types.json</code>, the <code>persona</code> field in jobs and team stages and the <code>delegate</code> tool argument -&gt; <code>type</code>, and the plugin hook <code>register_personas</code> -&gt; <code>register_types</code>. Existing <code>personas.json</code> files, <code>--persona</code> flags, <code>/persona</code> calls, and plugins using the old hook must be updated. <code>docs/personas.md</code> -&gt; <code>docs/types.md</code> documents the six axes and the naming rationale. Tests updated across the suite (<code>test_types.py</code>, delegate, subagent, teams, jobs, fleet, plugins, tool-policy). Docs, README, VISION, PLAN, TODO, AGENTS, and the site synced</li>
+</ul>
 <h2 id="v0260-2026-09-03">v0.26.0 - 2026-09-03<a class="headerlink" href="#v0260-2026-09-03" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Bundled web plugin renamed - <code>replio-core-websearch</code> -&gt; <code>replio-core-web</code> (it ships both search and page fetching, so the old name understated it). Manifest bumped to 0.14.0, default <code>plugins</code> config, tool/plugin docs, and the web-search-unavailable message updated. Existing <code>plugins</code> configs that named the old plugin must switch to <code>replio-core-web</code></li>

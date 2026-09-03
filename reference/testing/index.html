@@ -700,34 +700,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../plugins/" class="md-nav__link">
         
   
@@ -1071,14 +1043,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../writing-tools/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1107,6 +1079,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1268,7 +1268,7 @@
 </tr>
 <tr>
 <td><code>test_fleet.py</code></td>
-<td>Fleet supervisor: port allocation (preferred/bind-probe fallback/in-use skip/exhaustion), <code>/health</code> probe ok + failure, manifest/state round-trip + corrupt tolerance, spawn &gt; health &gt; crash &gt; restart &gt; down via <code>sys.executable -c</code> mock servers, <code>max_restarts</code> give-up, unhealthy-threshold restart, disabled gate, log files, env seams (<code>REPLIO_FLEET_PORT</code>), <code>replio fleet</code> CLI (init/add/remove/status/restart/config incl. persona inline + unknown-persona error), detached-daemon end-to-end (up --detach, status, down)</td>
+<td>Fleet supervisor: port allocation (preferred/bind-probe fallback/in-use skip/exhaustion), <code>/health</code> probe ok + failure, manifest/state round-trip + corrupt tolerance, spawn &gt; health &gt; crash &gt; restart &gt; down via <code>sys.executable -c</code> mock servers, <code>max_restarts</code> give-up, unhealthy-threshold restart, disabled gate, log files, env seams (<code>REPLIO_FLEET_PORT</code>), <code>replio fleet</code> CLI (init/add/remove/status/restart/config incl. type inline + unknown-type error), detached-daemon end-to-end (up --detach, status, down)</td>
 </tr>
 <tr>
 <td><code>test_http.py</code></td>
@@ -1276,7 +1276,7 @@
 </tr>
 <tr>
 <td><code>test_jobs.py</code></td>
-<td>Job model + registry (round-trip incl. <code>require_approval</code>/<code>task_file</code>/<code>created_at</code>, runnable + ready-to-run gates, corrupt file tolerance), cron parser (steps/ranges/lists/dom/dow/the restrictive day rule, leap day), <code>next_run</code>/<code>compute_next_run</code>/<code>parse_dt</code>, scheduler run/tick under a mocked engine (verified/failed, retries with backoff, per-attempt history, unknown persona, one-shot <code>at</code>, approval gates, per-run <code>require_approval</code> park/re-arm, run memory write + injection, per-run session naming + collision dedupe + <code>--session</code> stability, run content capture), <code>_build_engine</code> persona-skill injection (present/missing), task file template/linkage/missing-file failure, status/list/show rendering, <code>replio jobs</code> CLI (add/approve/list, <code>--file</code>, edit, status output, stop, auto-approval, bad cron, duplicates, run exit codes + content printing)</td>
+<td>Job model + registry (round-trip incl. <code>require_approval</code>/<code>task_file</code>/<code>created_at</code>, runnable + ready-to-run gates, corrupt file tolerance), cron parser (steps/ranges/lists/dom/dow/the restrictive day rule, leap day), <code>next_run</code>/<code>compute_next_run</code>/<code>parse_dt</code>, scheduler run/tick under a mocked engine (verified/failed, retries with backoff, per-attempt history, unknown type, one-shot <code>at</code>, approval gates, per-run <code>require_approval</code> park/re-arm, run memory write + injection, per-run session naming + collision dedupe + <code>--session</code> stability, run content capture), <code>_build_engine</code> type-skill injection (present/missing), task file template/linkage/missing-file failure, status/list/show rendering, <code>replio jobs</code> CLI (add/approve/list, <code>--file</code>, edit, status output, stop, auto-approval, bad cron, duplicates, run exit codes + content printing)</td>
 </tr>
 <tr>
 <td><code>test_models.py</code></td>
@@ -1292,7 +1292,7 @@
 </tr>
 <tr>
 <td><code>test_plugins.py</code></td>
-<td>Plugin manager: manifest compat ranges, discovery precedence, registration hooks (tools/providers/commands/services/personas/teams/skills + hook-failure status), <code>_bundled_dir</code> fallback (source layout + forced import failure), install/update/uninstall, <code>replio plugins test</code> (+ <code>load_plugin_test_suite</code>)</td>
+<td>Plugin manager: manifest compat ranges, discovery precedence, registration hooks (tools/providers/commands/services/types/teams/skills + hook-failure status), <code>_bundled_dir</code> fallback (source layout + forced import failure), install/update/uninstall, <code>replio plugins test</code> (+ <code>load_plugin_test_suite</code>)</td>
 </tr>
 <tr>
 <td><code>test_skills.py</code></td>
@@ -1304,15 +1304,15 @@
 </tr>
 <tr>
 <td><code>test_subagent.py</code></td>
-<td>In-process sub-engine: provider/plugin/worktree inheritance, persona prompt/mode/tool_permission application, persona-skill system-prompt injection (present/missing/empty/no-skills), model override, <code>NullUI</code>, unknown persona, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
+<td>In-process sub-engine: provider/plugin/worktree inheritance, type prompt/mode/tool_permission application, type-skill system-prompt injection (present/missing/empty/no-skills), model override, <code>NullUI</code>, unknown type, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
 </tr>
 <tr>
 <td><code>test_delegate.py</code></td>
-<td><code>delegate</code> tool: persona allow default (no prompt) / <code>ask</code> confirm grant-decline / unknown-persona deny, <code>delegate_echo</code> on/off display + sub footer, <code>/tool delegate</code> single print, empty-content log-summary fallback, sub-agent session persistence + resolver actions</td>
+<td><code>delegate</code> tool: type allow default (no prompt) / <code>ask</code> confirm grant-decline / unknown-type deny, <code>delegate_echo</code> on/off display + sub footer, <code>/tool delegate</code> single print, empty-content log-summary fallback, sub-agent session persistence + resolver actions</td>
 </tr>
 <tr>
-<td><code>test_personas.py</code></td>
-<td><code>PersonaRegistry</code>: bundled/plugin/global/local merge and precedence, origins (bundled/plugin/local/global origin), tags roundtrip + merge, put/remove/reload (disk re-read + plugin-manager re-apply), <code>/persona</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
+<td><code>test_types.py</code></td>
+<td><code>TypeRegistry</code>: bundled/plugin/global/local merge and precedence, origins (bundled/plugin/local/global origin), tags roundtrip + merge, put/remove/reload (disk re-read + plugin-manager re-apply), <code>/type</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
 </tr>
 <tr>
 <td><code>test_providers.py</code></td>
@@ -1336,7 +1336,7 @@
 </tr>
 <tr>
 <td><code>test_subagent.py</code></td>
-<td>In-process sub-engine: provider/plugin/worktree inheritance, persona prompt/mode/tool_permission application, model override, <code>NullUI</code>, unknown persona, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
+<td>In-process sub-engine: provider/plugin/worktree inheritance, type prompt/mode/tool_permission application, model override, <code>NullUI</code>, unknown type, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
 </tr>
 <tr>
 <td><code>test_tool_calling.py</code></td>

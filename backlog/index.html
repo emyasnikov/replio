@@ -767,34 +767,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../reference/plugins/" class="md-nav__link">
         
   
@@ -1047,14 +1019,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/writing-tools/" class="md-nav__link">
+      <a href="../reference/types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1083,6 +1055,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1176,7 +1176,7 @@
 <li>Immutable agent config - <code>replio serve</code> agents must never be able to change their own configuration, permissions, or tool list (control-plane rule from the use-case reference architecture)</li>
 <li>Hash-chained / tamper-evident audit log - additive on session logs (enterprise.md recommendation), hash-chained append or WORM storage</li>
 <li>Single-purpose agent fleet with "one agent per process, scoped to a folder" as the headline pattern. README + <code>docs/fleet.md</code> set the niche</li>
-<li>Fleet and swarm orchestration as the two layers - fleet: supervisor running many scoped <code>replio serve</code> instances (port allocation, health checks, restart policy, per-agent config generation), swarm: <code>/agent</code> personas, auditor agents, generate &gt; check &gt; correct</li>
+<li>Fleet and swarm orchestration as the two layers - fleet: supervisor running many scoped <code>replio serve</code> instances (port allocation, health checks, restart policy, per-agent config generation), swarm: <code>/agent</code> types, auditor agents, generate &gt; check &gt; correct</li>
 <li>Community presence - decide on Discord/X channels and fill the README community link slots</li>
 <li>Add multiuser capability or queue for API requests (request queue, per-token rate limits)</li>
 <li>Add ReadTheDocs documentation</li>
@@ -1200,20 +1200,20 @@
 <li>[ ] Externalize bundled providers - move <code>opencode</code>/<code>opencode-go</code> (and the vendor providers) out of the core into bundled plugins, keeping <code>BaseProvider</code>/<code>OpenAICompatibleProvider</code>, the <code>PROVIDERS</code> dict + <code>detect_provider</code>, and the plugin <code>register_providers</code> hook as the core mechanisms. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in <code>/connect</code></li>
 <li>[ ] Full <code>file_*</code> namespace extension - if <code>file_glob</code>/<code>file_grep</code> prove better with most models, extend the prefix to <code>list_dir</code>/<code>glob</code>/<code>grep</code> (old names stay aliases)</li>
 <li>[ ] Tool spec polish - rename <code>grep.glob</code> -&gt; <code>include</code> (alias <code>glob</code>), add examples and prefer-<code>web_fetch</code> guidance to tool descriptions</li>
-<li>[ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc personas/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)</li>
-<li>[ ] Template-based team composition - match persona/skill templates from the kit library against the request + project description, generate only the deltas, reuse proven artifacts across projects</li>
-<li>[ ] Team kit library - tag/store proven teams, personas, and skills per stack and customer, importable into new projects without publishing internal know-how</li>
+<li>[ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc types/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)</li>
+<li>[ ] Template-based team composition - match type/skill templates from the kit library against the request + project description, generate only the deltas, reuse proven artifacts across projects</li>
+<li>[ ] Team kit library - tag/store proven teams, types, and skills per stack and customer, importable into new projects without publishing internal know-how</li>
 <li>[ ] Sequential team runs - stage-by-stage delegation via <code>run_subagent</code> with briefs generated per run (task + prior results + team memory + stage handoff), shared team memory file (<code>.replio/teams/&lt;name&gt;/memory.md</code>), persistent member sessions for recurring teams, fresh <code>sub_</code> sessions for one-off runs (context economics in VISION.md)</li>
-<li>[ ] Plugin contribution hooks - <code>register_personas</code> / <code>register_teams</code> / <code>register_skills</code> plugin entry hooks + <code>PersonaRegistry.reload()</code>, so the kit ships templates without forking the core</li>
+<li>[ ] Plugin contribution hooks - <code>register_types</code> / <code>register_teams</code> / <code>register_skills</code> plugin entry hooks + <code>TypeRegistry.reload()</code>, so the kit ships templates without forking the core</li>
 <li>[ ] Mid-run blocking job approval - an <code>ask</code> tool inside a running job pauses the run in place (per-tool-call <code>waiting_approval</code>), notifies via a connector, and resumes the same session when the operator replies. Needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run <code>--require-approval</code> gate)</li>
 <li>[ ] Job event hooks - the scheduler emits typed transitions (<code>proposed</code>, <code>approved</code>, <code>will_run</code>, <code>executing</code>, <code>verified</code>, <code>failed</code>, <code>timeout</code>, <code>waiting_approval</code>) to registered <code>services</code>. Channel-agnostic core, first consumers are the connectors and the operator API</li>
 <li>[ ] Job connectors - bundled <code>replio-core-webhook</code> (stdlib JSON POST, zero deps, works with n8n/IFTTT/any URL) first. External email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API so operators can react in time</li>
 <li>[ ] Jobs operator API - <code>GET /jobs</code> and <code>POST /jobs/&lt;name&gt;/approve|reject|run|disable</code> on <code>replio serve</code>, so clients (web Control UI, connectors, fleet supervisor) can see and act per agent</li>
 <li>[ ] Fleet jobs overview - <code>replio jobs list --root &lt;dir&gt;</code> scanning agent worktrees (agent, job, status, next run, task table), then the web Control UI on top</li>
 <li>[ ] Interactive delegation focus - REPL jumps in/out of the active sub-agent (request or automatic on delegate), arrows switch between concurrent <code>delegate_*</code> session logs rendered from their own saved logs (opencode-style sub-agent views)</li>
-<li>[ ] Persona directory scan for export/import - read <code>.replio/personas/*.md</code> (front-matter personas) to import and export personas to Markdown, paralleling the sessions Markdown export/import</li>
+<li>[ ] Agent type directory scan for export/import - read <code>.replio/types/*.md</code> (front-matter types) to import and export types to Markdown, paralleling the sessions Markdown export/import</li>
 <li>[ ] Delegation progress in the REPL - live status of which sub-agent is working and its progress mid-run. <code>delegate</code> already surfaces the task and the final result (plus a sub footer via <code>delegate_echo</code>). The next step is a progress channel read out of the sub-engine loop, which the single blocking <code>Engine.chat()</code> does not expose today</li>
-<li>[ ] Auto team selection - the lead agent picks personas from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -&gt; Researcher &gt; Writer &gt; Referencer &gt; Editor, landing with the team kit composition flow)</li>
+<li>[ ] Auto team selection - the lead agent picks types from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -&gt; Researcher &gt; Writer &gt; Referencer &gt; Editor, landing with the team kit composition flow)</li>
 <li>[ ] Session log full-restructuring (deferred) - restructure <code>messages</code> from flat role-attribute dicts into a typed <code>parts</code> model, borrowing OpenCode's session file structure (<code>.opencode/sessions/ses_*.json</code>). Deferred: the current flat format already reconstructs every conversation element, so this is architectural polish / ecosystem alignment, not a correctness fix. See the detailed spec below. Do NOT migrate existing <code>.replio/sessions/*.json</code> - they are historical and remain readable as-is</li>
 <li>Reference - OpenCode stores each turn as <code>{role, messageId, timestamp, parts[]}</code> where <code>parts</code> are typed objects:<ul>
 <li><code>{"type": "text", "text": ...}</code> - assistant/user content</li>
@@ -1243,7 +1243,7 @@
 <li>[ ] Session recall - full-text search across past sessions (grep/index over <code>.replio/sessions/</code>) so an agent can answer from its own history</li>
 <li>[ ] Tool dry-run mode - propose tool args/effects without executing (enterprise tool-gateway requirement)</li>
 <li>[ ] Context-aware cross-plugin tool router - virtual tool names (<code>open</code>, <code>search</code>, ...) dispatch per-argument to the matching plugin handler via <code>register_handler(name, match=...)</code> (e.g. <code>open https://...</code> &gt; replio-core-web, <code>open ../...</code> &gt; replio-core-fs), with merged schemas and args-aware policy accessors</li>
-<li>[ ] Swarm orchestration - agent cooperation layer (<code>docs/swarm.md</code>): <code>/agent</code> personas, auditor agents, generate &gt; check &gt; correct, and team patterns as sub-tasks below</li>
+<li>[ ] Swarm orchestration - agent cooperation layer (<code>docs/swarm.md</code>): <code>/agent</code> types, auditor agents, generate &gt; check &gt; correct, and team patterns as sub-tasks below</li>
 <li>[ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store</li>
 <li>[ ] Agent folder watcher - internal bundled plugin (stdlib <code>threading</code> + <code>pathlib</code> polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps</li>
 <li>[ ] Minimal web Control UI - stdlib <code>http.server</code> page over the existing <code>replio serve</code> JSON API (OpenClaw Control UI analogue). Richer frameworks stay plugin-first</li>
@@ -1260,8 +1260,8 @@
 <li>[ ] <code>docs_search</code> - local grep + DuckDuckGo for documentation lookups</li>
 <li>[ ] Workspace sessions - tools write into a scoped <code>--workspace</code> dir, optional <code>--git</code> sync</li>
 <li>[ ] Sandboxed exec - namespace/container isolation for <code>run_command</code> (documented, planned for a later version)</li>
-<li>[ ] <code>/agent</code> personas - interactive persona selection/run UX (persona registry, sub-engine, and <code>delegate</code> landed. The <code>/agent</code> command itself remains)</li>
-<li>[ ] PM/dev/tester team orchestration as a user-facing pattern (the personas + <code>delegate</code> primitives landed, and it needs the jobs/team-config layer to be a pattern)</li>
+<li>[ ] <code>/agent</code> types - interactive type selection/run UX (type registry, sub-engine, and <code>delegate</code> landed. The <code>/agent</code> command itself remains)</li>
+<li>[ ] PM/dev/tester team orchestration as a user-facing pattern (the agent types + <code>delegate</code> primitives landed, and it needs the jobs/team-config layer to be a pattern)</li>
 <li>[ ] Headless web API plugin-first - stdlib <code>http.server</code> fallback, richer framework (FastAPI) via the dependency plugin</li>
 <li>[ ] Enterprise plugins (stdlib-first, third-party deps optional):</li>
 <li>[ ] Data ingestion - <code>read_stream</code> / <code>write_stream</code> (MQTT, OPC-UA, Modbus)</li>
@@ -1278,6 +1278,7 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] <code>persona</code> renamed to <code>agent type</code> - types.py/TypeRegistry, /type, --type, no aliases</li>
 <li>[x] Bundled web plugin renamed - replio-core-websearch -&gt; replio-core-web</li>
 <li>[x] GitHub Pages website - mkdocs site + Actions workflow, docs stay in main</li>
 <li>[x] OpenCode Zen + Go providers - opencode.ai endpoints, model-ref strip, URL detection</li>
@@ -1291,9 +1292,9 @@
 <li>[x] Default tool names namespaced - <code>web_fetch</code> merges <code>open</code>+<code>fetch_page</code>, old names as aliases</li>
 <li>[x] Tool schema advertises canonical names only - aliases resolve at call time (20 -&gt; 13 defs)</li>
 <li>[x] Agent-loop cancellation + tool-dialect hardening - Ctrl-C cancels the turn, unknown-tool hints</li>
-<li>[x] Skills registry - <code>SkillRegistry</code>, local/global dirs + plugins, persona <code>skills</code> in prompts</li>
+<li>[x] Skills registry - <code>SkillRegistry</code>, local/global dirs + plugins, type <code>skills</code> in prompts</li>
 <li>[x] Teams registry - <code>Team</code>/<code>TeamRegistry</code>, 4-layer <code>teams.json</code> merge, <code>/team</code> read/edit</li>
-<li>[x] Plugin contribution hooks - register_personas/teams/skills hooks, <code>PersonaRegistry.reload()</code></li>
+<li>[x] Plugin contribution hooks - register_types/teams/skills hooks, <code>TypeRegistry.reload()</code></li>
 <li>[x] Fleet orchestration - <code>replio fleet</code> supervisor CLI: ports, health, restart, config gen</li>
 <li>[x] Per-run job sessions - <code>job_&lt;ts&gt;_&lt;name&gt;</code> files, unified <code>ses_</code>/<code>sub_</code>/<code>job_</code> naming</li>
 <li>[x] Job run memory - rolling <code>.memory.md</code> summary injected into each run, seeded</li>
@@ -1302,12 +1303,12 @@
 <li>[x] Job per-run approval - <code>--require-approval</code> parks a run in <code>waiting_approval</code></li>
 <li>[x] Jobs diagnostics - <code>replio jobs status</code> (fired count, last error, uptime)</li>
 <li>[x] Watchable job runs - <code>replio jobs run --verbose</code> streams the live turn</li>
-<li>[x] Richer job runs - <code>--persona</code>/<code>--system-prompt</code>, recurring-job prompt, tool carve</li>
+<li>[x] Richer job runs - <code>--type</code>/<code>--system-prompt</code>, recurring-job prompt, tool carve</li>
 <li>[x] Scheduled / durable jobs - <code>replio jobs</code>: registry, daemon, cron, retries, approval gate</li>
-<li>[x] Per-agent permission profiles - persona tool_permission drives sub-agent policy</li>
-<li>[x] In-process sub-engine - Engine.run_subagent: persona overrides, NullUI, sub_ session</li>
-<li>[x] <code>delegate</code> tool - core, per-persona permission resolver, delegate_echo result display</li>
-<li>[x] Personas registry - global+local personas.json merge, /persona command, docs/personas.md</li>
+<li>[x] Per-agent permission profiles - type tool_permission drives sub-agent policy</li>
+<li>[x] In-process sub-engine - Engine.run_subagent: type overrides, NullUI, sub_ session</li>
+<li>[x] <code>delegate</code> tool - core, per-type permission resolver, delegate_echo result display</li>
+<li>[x] Agent types registry - global+local types.json merge, /type command, docs/types.md</li>
 <li>[x] Soft tool results surfaced as dimmed info lines - <code>(empty file)</code>, <code>(no matches)</code> etc</li>
 <li>[x] Session audit trail - permission decisions (allow/ask/deny -&gt; granted/declined/denied)</li>
 <li>[x] Stable message ids - <code>msg_&lt;hex&gt;</code> auto-assigned to every session message</li>

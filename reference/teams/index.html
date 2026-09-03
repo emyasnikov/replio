@@ -700,34 +700,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../plugins/" class="md-nav__link">
         
   
@@ -1060,14 +1032,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../writing-tools/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1096,6 +1068,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1193,9 +1193,9 @@
 
 
 <h1 id="teams">Teams<a class="headerlink" href="#teams" title="Permanent link">&para;</a></h1>
-<p>A team is a named, ordered chain of delegated stages - each stage runs under a persona, and its result is handed to the next stage. A team turns the <code>delegate</code> primitive into a repeatable pipeline: "writing" = researcher &gt; writer &gt; referencer &gt; editor for documents, "programming" = planner &gt; programmer &gt; tester &gt; code-reviewer. Teams are shape-only: the registry stores the definition, the sequential stage loop that executes it (<code>Engine.run_team</code> and <code>/team run</code>) is the next step.</p>
+<p>A team is a named, ordered chain of delegated stages - each stage runs under an agent type, and its result is handed to the next stage. A team turns the <code>delegate</code> primitive into a repeatable pipeline: "writing" = researcher &gt; writer &gt; referencer &gt; editor for documents, "programming" = planner &gt; programmer &gt; tester &gt; code-reviewer. Teams are shape-only: the registry stores the definition, the sequential stage loop that executes it (<code>Engine.run_team</code> and <code>/team run</code>) is the next step.</p>
 <h2 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h2>
-<p>Teams come from four layers, merged exactly like personas: bundled first, then plugin contributions, then global, then local, with local winning per field. Precedence is <code>bundled &lt; plugin &lt; global &lt; local</code>:</p>
+<p>Teams come from four layers, merged exactly like types: bundled first, then plugin contributions, then global, then local, with local winning per field. Precedence is <code>bundled &lt; plugin &lt; global &lt; local</code>:</p>
 <ul>
 <li><strong>Bundled</strong> - the read-only default roster shipped in the package (<code>src/replio/bundled_teams.json</code>, the <code>writing</code> and <code>programming</code> pipelines above).</li>
 <li><strong>Plugin</strong> - teams contributed by plugins via the <code>register_teams</code> entry hook (<code>registry.add_plugin(...)</code>, see <a href="../plugins/">plugins.md</a>). An in-memory layer: never written to any <code>teams.json</code>, refreshed on <code>/plugins install</code>/<code>update</code>/<code>uninstall</code>.</li>
@@ -1210,12 +1210,12 @@
 <span class="w">    </span><span class="nt">"tags"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"research"</span><span class="p">,</span><span class="w"> </span><span class="s2">"writing"</span><span class="p">],</span>
 <span class="w">    </span><span class="nt">"stages"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"persona"</span><span class="p">:</span><span class="w"> </span><span class="s2">"researcher"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"researcher"</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">"task_hint"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Gather and evaluate sources on the topic."</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">"handoff_note"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hand the findings list to the writer."</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"persona"</span><span class="p">:</span><span class="w"> </span><span class="s2">"writer"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"writer"</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">"mode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"build"</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">"task_hint"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Write the document from the findings list."</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">"handoff_note"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hand the document path to the referencer."</span>
@@ -1227,13 +1227,13 @@
 <p>Team fields:</p>
 <ul>
 <li><code>name</code> - unique key (the file/registry key).</li>
-<li><code>stages</code> - ordered list of stage objects. A stage may also be a plain string (<code>"researcher"</code>), shorthand for a stage with only a persona.</li>
+<li><code>stages</code> - ordered list of stage objects. A stage may also be a plain string (<code>"researcher"</code>), shorthand for a stage with only an agent type.</li>
 <li><code>description</code> - optional, shown in <code>/team show</code>.</li>
-<li><code>tags</code> - optional list for grouping and filtering (<code>/team list &lt;tag&gt;</code>), same vocabulary as personas.</li>
+<li><code>tags</code> - optional list for grouping and filtering (<code>/team list &lt;tag&gt;</code>), same vocabulary as types.</li>
 </ul>
 <p>Stage fields:</p>
 <ul>
-<li><code>persona</code> - required, the persona name (must exist in the <a href="../personas/">personas registry</a> at run time, resolved against the same four-layer merge).</li>
+<li><code>type</code> - required, the agent type name (must exist in the <a href="../types/">types registry</a> at run time, resolved against the same four-layer merge).</li>
 <li><code>mode</code> - optional agent mode override for the stage. Empty inherits the caller. Sub-agents today run in <code>build</code> mode, so stage modes become meaningful with the sequential stage loop.</li>
 <li><code>task_hint</code> - optional guidance folded into the delegated brief for this stage.</li>
 <li><code>handoff_note</code> - optional note passed along with the previous stage's result into the next stage's brief.</li>

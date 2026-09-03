@@ -868,34 +868,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../plugins/" class="md-nav__link">
         
   
@@ -1148,14 +1120,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../writing-tools/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1184,6 +1156,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1371,7 +1371,7 @@
 <h1 id="scheduled-and-durable-jobs">Scheduled and durable jobs<a class="headerlink" href="#scheduled-and-durable-jobs" title="Permanent link">&para;</a></h1>
 <p><code>replio jobs</code> turns the one-shot agent loop into a durable workflow engine. A job is a named task run on a schedule, retried with backoff, recorded with a human-in-the-loop status model, and stored as a file so it survives daemon restarts. <code>replio run</code> is a single turn. A job is that turn plus scheduling, retries, approvals, and an append-only run history.</p>
 <h2 id="job-store">Job store<a class="headerlink" href="#job-store" title="Permanent link">&para;</a></h2>
-<p>Jobs live in <code>.replio/jobs.json</code> next to the sessions, one register per worktree (same rule as personas). The file is plain JSON and the last writer wins, so run one scheduler per <code>.replio</code>. Removing a job removes only its definition - its sessions stay as the append-only log of every run. The register keeps the most recent 100 runs. The full transcript always stays in the session file.</p>
+<p>Jobs live in <code>.replio/jobs.json</code> next to the sessions, one register per worktree (same rule as types). The file is plain JSON and the last writer wins, so run one scheduler per <code>.replio</code>. Removing a job removes only its definition - its sessions stay as the append-only log of every run. The register keeps the most recent 100 runs. The full transcript always stays in the session file.</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">"jobs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
@@ -1380,7 +1380,7 @@
 <span class="w">      </span><span class="nt">"prompt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Summarize today's operations logs into a short report."</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"session"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"mode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"plan"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"persona"</span><span class="p">:</span><span class="w"> </span><span class="s2">"researcher"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"researcher"</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"system_prompt"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"retries"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"backoff"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span>
@@ -1427,7 +1427,7 @@
 <li><strong><code>replio jobs edit &lt;name&gt;</code></strong> (also <code>/jobs edit &lt;name&gt;</code>) opens the job's task file in <code>$EDITOR</code> (creating the template first if needed). <code>replio jobs show &lt;name&gt;</code> prints the stored path.</li>
 <li>Paths under the worktree are stored relative to it. Absolute paths stay absolute. A missing task file at run time fails that run with a clear <code>task file not found</code> reason so a broken link is never silently ignored.</li>
 </ul>
-<p>At run time the system prompt is composed as: <code>persona.system_prompt</code> (if a persona is set), the task file contents (<code>## Job task</code>), <code>--system-prompt</code>, and the run memory (<code>## Run memory</code>, below). The engine's mode instruction is appended last. With none of persona / task file / custom prompt / memory set, a generic recurring-job prompt is used.</p>
+<p>At run time the system prompt is composed as: <code>type.system_prompt</code> (if an agent type is set), the task file contents (<code>## Job task</code>), <code>--system-prompt</code>, and the run memory (<code>## Run memory</code>, below). The engine's mode instruction is appended last. With none of type / task file / custom prompt / memory set, a generic recurring-job prompt is used.</p>
 <h2 id="run-memory">Run memory<a class="headerlink" href="#run-memory" title="Permanent link">&para;</a></h2>
 <p>Every run is summarized and the summary is kept as the job's rolling memory, so the next run knows what happened before without a growing session file:</p>
 <ul>
@@ -1486,12 +1486,12 @@ replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </spa
 <td>Provider / model overrides</td>
 </tr>
 <tr>
-<td><code>--persona</code></td>
-<td>Apply a persona's system prompt, model, and tool permissions</td>
+<td><code>--type</code></td>
+<td>Apply an agent type's system prompt, model, and tool permissions</td>
 </tr>
 <tr>
 <td><code>--system-prompt</code></td>
-<td>System prompt describing the job. Without it or a persona, a generic recurring-job prompt is used</td>
+<td>System prompt describing the job. Without it or an agent type, a generic recurring-job prompt is used</td>
 </tr>
 <tr>
 <td><code>--tools-deny NAME</code></td>
@@ -1531,7 +1531,7 @@ replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </spa
 <li><strong>Per-run approval (<code>--require-approval</code>)</strong> - the gate you want when "something has to be decided" about <em>this</em> run, not just arm-or-disarm for all time. Each run parks in <code>waiting_approval</code>: the daemon will not fire it, <code>replio jobs status</code> shows <code>WAITING for approve</code>, and <code>replio jobs approve &lt;name&gt;</code> (or <code>/jobs approve</code>) arms exactly the next run. After the run finishes it parks again. <code>reject</code> clears the grant. <code>run</code> still overrides and executes now.</li>
 <li><strong>Mid-run blocking approval (tool-level, planned)</strong> - an <code>ask</code> tool inside a running job pauses the run in place and waits for a human reply before resuming on the same session. This is the deepest "decide during the task" model and is tracked separately in <a href="../../TODO.md">TODO.md</a>: it needs resumable mid-run state, a wait loop inside the run, and a transport to deliver the ask and return the answer (the planned webhook/email/Telegram connectors drive the same operator API).</li>
 </ol>
-<p>A job runs with <code>HeadlessUI(auto='deny')</code> - the same posture as <code>replio serve</code>. That means as long as mid-run blocking is not implemented, an <code>ask</code> tool inside a run is denied, not paused: the run continues without it (or fails if the task depended on it). Give a job the permissions it needs up front (<code>--tool-permission bash=allow</code>, a persona carve, or a <code>--tools-deny</code> list) and it will not need mid-run interruption.</p>
+<p>A job runs with <code>HeadlessUI(auto='deny')</code> - the same posture as <code>replio serve</code>. That means as long as mid-run blocking is not implemented, an <code>ask</code> tool inside a run is denied, not paused: the run continues without it (or fails if the task depended on it). Give a job the permissions it needs up front (<code>--tool-permission bash=allow</code>, an agent type carve, or a <code>--tools-deny</code> list) and it will not need mid-run interruption.</p>
 <p><code>timeout</code> runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so a timed-out job should be inspected with <code>replio jobs show &lt;name&gt;</code> before a manual retry.</p>
 <h2 id="session-files-per-run">Session files per run<a class="headerlink" href="#session-files-per-run" title="Permanent link">&para;</a></h2>
 <p>The <strong>compact memory</strong> is the run-memory file (<a href="#run-memory">Run memory</a>): a rolling summary that is injected into every run and keeps the model oriented no matter how many runs have happened. Session files are the per-run audit:</p>
@@ -1541,7 +1541,7 @@ replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </spa
 <li>The job register keeps the most recent 100 runs, each recording its session file.</li>
 </ul>
 <h2 id="how-a-run-executes">How a run executes<a class="headerlink" href="#how-a-run-executes" title="Permanent link">&para;</a></h2>
-<p>Each attempt builds a fresh headless <code>Engine</code> from the job's overrides, using the run's session file (fresh <code>job_&lt;ts&gt;_&lt;name&gt;</code>, or the <code>--session</code> override), and calls <code>chat()</code> once. The system prompt is composed from the persona (if set), the linked task file (<code>## Job task</code>), <code>--system-prompt</code>, and the rolling run memory (<code>## Run memory</code>). With none of them a generic recurring-job prompt is layered in, telling the model this is a recurring job with earlier context. After the run finishes, the run is summarized into <code>.replio/jobs/&lt;name&gt;.memory.md</code> for the next run, so continuity lives in the memory file rather than in a growing session. A retry continues from the failed attempt's trail (same run's session file) with a "Previous attempt failed. Retry this job" header. <code>replio jobs run --verbose</code> streams the live turn (tokens to stdout, tool activity to stderr) before the summary. <code>replio jobs run</code> prints the final answer headlessly.</p>
+<p>Each attempt builds a fresh headless <code>Engine</code> from the job's overrides, using the run's session file (fresh <code>job_&lt;ts&gt;_&lt;name&gt;</code>, or the <code>--session</code> override), and calls <code>chat()</code> once. The system prompt is composed from the agent type (if set), the linked task file (<code>## Job task</code>), <code>--system-prompt</code>, and the rolling run memory (<code>## Run memory</code>). With none of them a generic recurring-job prompt is layered in, telling the model this is a recurring job with earlier context. After the run finishes, the run is summarized into <code>.replio/jobs/&lt;name&gt;.memory.md</code> for the next run, so continuity lives in the memory file rather than in a growing session. A retry continues from the failed attempt's trail (same run's session file) with a "Previous attempt failed. Retry this job" header. <code>replio jobs run --verbose</code> streams the live turn (tokens to stdout, tool activity to stderr) before the summary. <code>replio jobs run</code> prints the final answer headlessly.</p>
 <h2 id="scheduling-semantics">Scheduling semantics<a class="headerlink" href="#scheduling-semantics" title="Permanent link">&para;</a></h2>
 <p>The daemon (<code>replio jobs daemon</code>) wakes on the <code>--tick</code> interval (default 15s), runs every due, runnable job sequentially, and sleeps. Jobs are single-threaded: one at a time, in name order. Concurrent execution is future work. <code>next_run_at</code> is the single source of truth - it is computed when a job is added and after each run, and a <code>next_run_at</code> in the past makes a job due immediately. A missed window is not backlogged: after any run the next run is recomputed strictly after the current time (or the run's finish for interval schedules), so a scheduler stopped overnight runs the current schedule on wake instead of replaying old ones.</p>
 <h2 id="session-logs">Session logs<a class="headerlink" href="#session-logs" title="Permanent link">&para;</a></h2>

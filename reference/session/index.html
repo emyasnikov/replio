@@ -700,34 +700,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../plugins/" class="md-nav__link">
         
   
@@ -1165,14 +1137,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../writing-tools/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1201,6 +1173,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1695,7 +1695,7 @@
 </tr>
 </tbody>
 </table>
-<p>Per-invocation (resolver-based) actions are recorded the same way - for example <code>delegate</code> logs the action resolved from the target persona, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - there is no config switch, so the log stays a reliable audit record.</p>
+<p>Per-invocation (resolver-based) actions are recorded the same way - for example <code>delegate</code> logs the action resolved from the target type, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - there is no config switch, so the log stays a reliable audit record.</p>
 <h2 id="append-only-semantics">Append-only semantics<a class="headerlink" href="#append-only-semantics" title="Permanent link">&para;</a></h2>
 <p>Messages and errors are only ever appended. Compaction stores the summary in a new <code>command</code> record and leaves the earlier messages in place. Loading a session never rewrites history. The only transformations happen at serialization time (below), never to the in-memory log.</p>
 <p>An <code>assistant</code> message is written whenever the turn produced content <strong>or</strong> thinking - so a truncated mid-reasoning turn still persists its thinking, and a reasoning-only turn (thinking present, no content) is recorded rather than lost. Empty turns (no content, no thinking) persist nothing.</p>

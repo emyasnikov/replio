@@ -700,34 +700,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../plugins/" class="md-nav__link">
         
   
@@ -1071,14 +1043,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../writing-tools/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1107,6 +1079,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1215,9 +1215,9 @@
 
 
 <h1 id="skills">Skills<a class="headerlink" href="#skills" title="Permanent link">&para;</a></h1>
-<p>A skill is a named set of markdown instructions a persona can attach: <code>Persona.skills</code> lists skill names, and when that persona runs, each resolved skill's content is injected into its system prompt under a <code>## Skills</code> section. Skills are capability instructions distinct from tools and plugins - a persona carries them, the sub-agent reads them.</p>
+<p>A skill is a named set of markdown instructions an agent type can attach: <code>AgentType.skills</code> lists skill names, and when that type runs, each resolved skill's content is injected into its system prompt under a <code>## Skills</code> section. Skills are capability instructions distinct from tools and plugins - an agent type carries them, the sub-agent reads them.</p>
 <h2 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h2>
-<p>Skills come from three layers, merged like personas and teams: plugin contributions first, then global, then local, with local winning per field:</p>
+<p>Skills come from three layers, merged like types and teams: plugin contributions first, then global, then local, with local winning per field:</p>
 <ul>
 <li><strong>Plugin</strong> - skills contributed by plugins via the <code>register_skills</code> entry hook (<code>registry.add_plugin(...)</code>, see <a href="../plugins/">plugins.md</a>). An in-memory layer: never written to <code>.replio/skills/</code>, refreshed on <code>/plugins install</code>/<code>update</code>/<code>uninstall</code>.</li>
 <li><strong>Global</strong> - <code>~/.config/replio/skills/&lt;name&gt;.md</code>.</li>
@@ -1232,8 +1232,8 @@ the source URL, and a one-line reliability assessment.
 </code></pre></div>
 <p>A skill has:</p>
 <ul>
-<li><code>name</code> - the filename stem (<code>finders.md</code> -&gt; <code>finders</code>), referenced from <code>Persona.skills</code>.</li>
-<li><code>content</code> - the full file body, injected verbatim into the persona's system prompt.</li>
+<li><code>name</code> - the filename stem (<code>finders.md</code> -&gt; <code>finders</code>), referenced from <code>AgentType.skills</code>.</li>
+<li><code>content</code> - the full file body, injected verbatim into the agent type's system prompt.</li>
 <li><code>description</code> - optional, defaults to the first line of the content for file-based skills. Plugin contributions may set it explicitly along with <code>tags</code>.</li>
 </ul>
 <p>Plugin contributions use the same entry shape, with an explicit <code>content</code> field:</p>
@@ -1241,8 +1241,8 @@ the source URL, and a one-line reliability assessment.
     <span class="n">registry</span><span class="o">.</span><span class="n">add_plugin</span><span class="p">({</span><span class="s1">'name'</span><span class="p">:</span> <span class="s1">'finders'</span><span class="p">,</span> <span class="s1">'content'</span><span class="p">:</span> <span class="s1">'# finders</span><span class="se">\n\n</span><span class="s1">...'</span><span class="p">})</span>
 </code></pre></div>
 <h2 id="injection">Injection<a class="headerlink" href="#injection" title="Permanent link">&para;</a></h2>
-<p>When a persona with <code>skills</code> runs as a sub-agent (<code>delegate</code>), each registered skill's content is appended to the persona's system prompt:</p>
-<div class="highlight"><pre><span></span><code>&lt;persona system prompt&gt;
+<p>When an agent type with <code>skills</code> runs as a sub-agent (<code>delegate</code>), each registered skill's content is appended to the agent type's system prompt:</p>
+<div class="highlight"><pre><span></span><code>&lt;type system prompt&gt;
 
 ## Skills
 
@@ -1250,7 +1250,7 @@ the source URL, and a one-line reliability assessment.
 
 Find sources and evaluate them. ...
 </code></pre></div>
-<p>Missing or empty skills are skipped silently, and a persona without skills gets an unchanged prompt. Jobs with <code>--persona</code> inject the same section (from the global/local file layers - plugin contributions do not reach the scheduler's preparse, same rule as plugin personas there). The injection format is built by <code>skills_section(registry, names)</code> in <code>replio.skills</code>.</p>
+<p>Missing or empty skills are skipped silently, and an agent type without skills gets an unchanged prompt. Jobs with <code>--type</code> inject the same section (from the global/local file layers - plugin contributions do not reach the scheduler's preparse, same rule as plugin types there). The injection format is built by <code>skills_section(registry, names)</code> in <code>replio.skills</code>.</p>
 <h2 id="managing-skills">Managing skills<a class="headerlink" href="#managing-skills" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>/skill</code> - list skills (name, first-line description, origin) - <code>(local)</code> / <code>(global)</code> / <code>(plugin)</code> / <code>(merged)</code>.</li>

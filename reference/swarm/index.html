@@ -700,34 +700,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../plugins/" class="md-nav__link">
         
   
@@ -939,10 +911,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#personas-and-delegation" class="md-nav__link">
+  <a href="#agent-types-and-delegation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Personas and delegation
+        Agent types and delegation
       
     </span>
   </a>
@@ -1071,14 +1043,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../writing-tools/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1107,6 +1079,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1165,10 +1165,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#personas-and-delegation" class="md-nav__link">
+  <a href="#agent-types-and-delegation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Personas and delegation
+        Agent types and delegation
       
     </span>
   </a>
@@ -1234,12 +1234,12 @@
 <tr>
 <td>Unit</td>
 <td><code>replio serve</code> process scoped to a folder</td>
-<td>Agent with a persona, either a fleet process or an in-process engine</td>
+<td>Agent with an agent type, either a fleet process or an in-process engine</td>
 </tr>
 <tr>
 <td>Primitives</td>
 <td>Supervisor with port allocation, health checks, restart policy, config generation</td>
-<td><code>/agent</code> personas, <code>delegate</code> tool, sub-agent loops, auditor agents</td>
+<td><code>/agent</code> types, <code>delegate</code> tool, sub-agent loops, auditor agents</td>
 </tr>
 <tr>
 <td>Channel</td>
@@ -1256,16 +1256,16 @@
 <p>The two compose. A swarm can run on top of a fleet, with each swarm agent being a fleet process and <code>delegate</code> routing over the same <code>POST /chat</code> API. Delegation also works in-process as a sub-<code>Engine</code> with no fleet at all. That is why the two tasks are separable and neither is subordinate to the other. See <a href="../fleet/">fleet.md</a> for the fleet side of the pattern.</p>
 <h2 id="building-blocks">Building blocks<a class="headerlink" href="#building-blocks" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Personas</strong> (<code>/agent</code>): per-agent system prompt, session namespace, and optional model override. A persona makes a sub-agent specialized instead of a copy of the caller. Per-agent permission profiles build on this.</li>
-<li><strong><code>delegate(persona, task)</code> tool</strong>: spawns a sub-agent loop that runs a task with its own persona, session, and model, and returns the result. This is the core swarm primitive.</li>
+<li><strong>Agent types</strong> (<code>/agent</code>): per-agent system prompt, session namespace, and optional model override. A type makes a sub-agent specialized instead of a copy of the caller. Per-agent permission profiles build on this.</li>
+<li><strong><code>delegate(type, task)</code> tool</strong>: spawns a sub-agent loop that runs a task with its own type, session, and model, and returns the result. This is the core swarm primitive.</li>
 <li><strong>Auditor agents</strong>: sub-agents that review a produced output, such as tests, code review, or fact-checking, instead of producing content themselves.</li>
 <li><strong>Generate to check to correct</strong>: run a main agent, an auditor, and a fix pass in a loop until the auditor passes.</li>
 <li><strong>PM/dev/tester orchestration</strong>: multiple specialized agents cooperating on one outcome as a user-facing pattern.</li>
 </ul>
-<h2 id="personas-and-delegation">Personas and delegation<a class="headerlink" href="#personas-and-delegation" title="Permanent link">&para;</a></h2>
-<p>Personas are named agent definitions - a system prompt, optional model override, and optional per-agent tool permissions - stored in a single JSON catalog with bundled, global, and local layers (schema, permission rule, and the bundled default roster in <a href="../personas/">personas.md</a>). <code>delegate(persona, task)</code> spawns a sub-agent that runs the task with the persona's prompt, session, and model, and returns the result. Delegation resolves its permission from the selected persona: a configured persona uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaults to <code>allow</code>, so delegation runs without a prompt unless a persona sets <code>ask</code>), while a temporary persona created only for parallel work defaults to <code>deny</code> until opted in. The bundled catalog ships two pre-carved teams - <code>researcher</code>/<code>writer</code>/<code>referencer</code>/<code>editor</code> for documents and <code>planner</code>/<code>programmer</code>/<code>tester</code>/<code>code-reviewer</code> for programming - ready to delegate to out of the box.</p>
-<p>In-process sub-engines run with a quiet <code>NullUI</code> so they never interleave with the caller's REPL, execute synchronously (one sub-agent at a time), and keep their own session (<code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code> in the shared <code>sessions/</code> dir, the suffix being the calling session id, saved as a complete log). A sub-engine inherits the caller's provider, plugin manager, and worktree. The persona's <code>system_prompt</code> becomes the sub-agent's system prompt, its <code>model</code> overrides the caller's model when set, and its <code>tool_permission</code> overrides are merged on top of the caller's categories. Sub-agents run in <code>build</code> mode regardless of the caller's mode, so the persona carve alone decides edit/bash. Ask-gated tools are auto-denied (no interactive confirm), so a sub-agent's effective permissions are exactly the categories its carve allows. The <code>delegate</code> tool (category <code>delegate</code>) surfaces which persona and task are running, returns the sub-agent's final answer as its result, and - when <code>delegate_echo</code> is on (default) - renders the answer plus a sub footer (duration + completion tokens) in the REPL. Live in-REPL progress of a running sub-agent is a deferred enhancement - <code>Engine.chat()</code> is a single blocking call and does not yet expose a progress channel. An interactive "jump into the active sub-agent" view is also future work.</p>
-<p>A document pipeline is a typical use: a lead agent asks a <code>researcher</code> for findings, hands those to a <code>writer</code>, has a <code>referencer</code> collect citations into a <code>.bib</code> file, and runs an <code>editor</code> to check the result against the original prompt. This is team orchestration built on personas and delegation. Named pipelines are stored as teams - ordered persona chains with per-stage task hints and handoff notes, in a four-layer registry (bundled <code>writing</code>/<code>programming</code> rosters, plugin contributions, global/local <code>teams.json</code>, see <a href="../teams/">teams.md</a>). The registry is shape-only today. The sequential stage loop (<code>Engine.run_team</code>) that executes a team is the next step.</p>
+<h2 id="agent-types-and-delegation">Agent types and delegation<a class="headerlink" href="#agent-types-and-delegation" title="Permanent link">&para;</a></h2>
+<p>Agent types are named agent definitions - a system prompt, optional model override, and optional per-agent tool permissions - stored in a single JSON catalog with bundled, global, and local layers (schema, permission rule, and the bundled default roster in <a href="../types/">types.md</a>). <code>delegate(type, task)</code> spawns a sub-agent that runs the task with the agent type's prompt, session, and model, and returns the result. Delegation resolves its permission from the selected type: a configured type uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaults to <code>allow</code>, so delegation runs without a prompt unless an agent type sets <code>ask</code>), while a temporary type created only for parallel work defaults to <code>deny</code> until opted in. The bundled catalog ships two pre-carved teams - <code>researcher</code>/<code>writer</code>/<code>referencer</code>/<code>editor</code> for documents and <code>planner</code>/<code>programmer</code>/<code>tester</code>/<code>code-reviewer</code> for programming - ready to delegate to out of the box.</p>
+<p>In-process sub-engines run with a quiet <code>NullUI</code> so they never interleave with the caller's REPL, execute synchronously (one sub-agent at a time), and keep their own session (<code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code> in the shared <code>sessions/</code> dir, the suffix being the calling session id, saved as a complete log). A sub-engine inherits the caller's provider, plugin manager, and worktree. The type's <code>system_prompt</code> becomes the sub-agent's system prompt, its <code>model</code> overrides the caller's model when set, and its <code>tool_permission</code> overrides are merged on top of the caller's categories. Sub-agents run in <code>build</code> mode regardless of the caller's mode, so the agent type carve alone decides edit/bash. Ask-gated tools are auto-denied (no interactive confirm), so a sub-agent's effective permissions are exactly the categories its carve allows. The <code>delegate</code> tool (category <code>delegate</code>) surfaces which type and task are running, returns the sub-agent's final answer as its result, and - when <code>delegate_echo</code> is on (default) - renders the answer plus a sub footer (duration + completion tokens) in the REPL. Live in-REPL progress of a running sub-agent is a deferred enhancement - <code>Engine.chat()</code> is a single blocking call and does not yet expose a progress channel. An interactive "jump into the active sub-agent" view is also future work.</p>
+<p>A document pipeline is a typical use: a lead agent asks a <code>researcher</code> for findings, hands those to a <code>writer</code>, has a <code>referencer</code> collect citations into a <code>.bib</code> file, and runs an <code>editor</code> to check the result against the original prompt. This is team orchestration built on types and delegation. Named pipelines are stored as teams - ordered type chains with per-stage task hints and handoff notes, in a four-layer registry (bundled <code>writing</code>/<code>programming</code> rosters, plugin contributions, global/local <code>teams.json</code>, see <a href="../teams/">teams.md</a>). The registry is shape-only today. The sequential stage loop (<code>Engine.run_team</code>) that executes a team is the next step.</p>
 <h2 id="in-process-vs-cross-process">In-process vs. cross-process<a class="headerlink" href="#in-process-vs-cross-process" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1283,7 +1283,7 @@
 </tr>
 <tr>
 <td>Setup</td>
-<td>Spawn a child engine with a persona</td>
+<td>Spawn a child engine with an agent type</td>
 <td>Point <code>delegate</code> at a sibling agent's <code>POST /chat</code></td>
 </tr>
 <tr>

@@ -808,34 +808,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../plugins/" class="md-nav__link">
         
   
@@ -1088,14 +1060,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../writing-tools/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1124,6 +1096,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1545,7 +1545,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <span class="w">  </span><span class="nt">"web"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (y/N confirm), <code>deny</code> (tool hidden/refused). Read/write/list outside the project worktree escalate to <code>ask</code> automatically. The <code>delegate</code> category gates the <code>delegate</code> tool. On top of the category action, delegation resolves its permission from the target persona - a configured persona uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaulting to <code>allow</code>), while a persona not in the registry defaults to <code>deny</code> (see <a href="../personas/">personas.md</a>).</p>
+<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (y/N confirm), <code>deny</code> (tool hidden/refused). Read/write/list outside the project worktree escalate to <code>ask</code> automatically. The <code>delegate</code> category gates the <code>delegate</code> tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaulting to <code>allow</code>), while an agent type not in the registry defaults to <code>deny</code> (see <a href="../types/">types.md</a>).</p>
 <h3 id="bash_allow-command-allowlist-for-run_command"><code>bash_allow</code> - command allowlist for <code>run_command</code><a class="headerlink" href="#bash_allow-command-allowlist-for-run_command" title="Permanent link">&para;</a></h3>
 <p><code>tool_permission.bash_allow</code> (list, default <code>[]</code>) restricts <code>run_command</code> to commands whose first token matches an allowed prefix. Empty or unset means unrestricted (the <code>bash</code> category action applies to every command). When set:</p>
 <ul>

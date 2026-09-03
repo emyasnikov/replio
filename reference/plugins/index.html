@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://emyasnikov.github.io/replio/reference/plugins/">
       
       
-        <link rel="prev" href="../personas/">
+        <link rel="prev" href="../mcp/">
       
       
         <link rel="next" href="../providers/">
@@ -697,34 +697,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -844,10 +816,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#personas-teams-and-skills" class="md-nav__link">
+  <a href="#agent-types-teams-and-skills" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Personas, teams, and skills
+        Agent types, teams, and skills
       
     </span>
   </a>
@@ -1204,14 +1176,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../writing-tools/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1240,6 +1212,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1343,10 +1343,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#personas-teams-and-skills" class="md-nav__link">
+  <a href="#agent-types-teams-and-skills" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Personas, teams, and skills
+        Agent types, teams, and skills
       
     </span>
   </a>
@@ -1596,7 +1596,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">register_providers</span><span class="p">(</span><span class="n">providers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>   <span class="c1"># providers["name"] = ProviderClass</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_commands</span><span class="p">(</span><span class="n">commands</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>     <span class="c1"># @commands.register(...) - same as core commands</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_services</span><span class="p">(</span><span class="n">services</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>     <span class="c1"># services["name"] = service object for core features</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">register_personas</span><span class="p">(</span><span class="n">registry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>     <span class="c1"># registry.add_plugin({...}) - plugin-owned personas</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">register_types</span><span class="p">(</span><span class="n">registry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>     <span class="c1"># registry.add_plugin({...}) - plugin-owned types</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_teams</span><span class="p">(</span><span class="n">teams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>           <span class="c1"># register into the TeamRegistry (see swarm.md)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_skills</span><span class="p">(</span><span class="n">skills</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>         <span class="c1"># skills.add_plugin({...}) - see skills.md</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_fixtures</span><span class="p">(</span><span class="n">fixtures</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>     <span class="c1"># fixtures["id"] = fixture data - see eval.md</span>
@@ -1605,8 +1605,8 @@
 <p>A tool handler may declare a <code>_config</code> keyword argument to receive the engine's <code>Config</code> (e.g. to read a config key like <code>tool_max_result_chars</code>). The registry passes it only when the handler's signature accepts it, and it is never exposed to the model. See <a href="../tools/">tools.md</a>.</p>
 <h3 id="services">Services<a class="headerlink" href="#services" title="Permanent link">&para;</a></h3>
 <p><code>register_services</code> lets a plugin power a core feature that is not tool-calling. Today the only service is the web search-then-answer mode (<code>web_search: true</code>). The bundled <code>replio-core-web</code> registers <code>services['search']</code> with <code>search(query, num)</code>, <code>display(query, results)</code>, and <code>context(query, results)</code> methods. If no plugin registers the service, that mode reports that it is unavailable instead of erroring.</p>
-<h3 id="personas-teams-and-skills">Personas, teams, and skills<a class="headerlink" href="#personas-teams-and-skills" title="Permanent link">&para;</a></h3>
-<p><code>register_personas(registry)</code> contributes personas to the <code>PersonaRegistry</code> via <code>registry.add_plugin(entry)</code> (same entry shape as <code>personas.json</code>). Plugin personas form an in-memory layer between bundled and global, so precedence is <code>bundled &lt; plugin &lt; global &lt; local</code>, and a <code>personas.json</code> entry can always override or replace a plugin-provided persona. <code>register_teams(teams)</code> and <code>register_skills(skills)</code> register into the team and skills registries the same way (<code>teams.add_plugin(...)</code> / <code>skills.add_plugin(...)</code>, entry shapes in <a href="../teams/">teams.md</a> and <a href="../skills/">skills.md</a>). The <code>/persona</code> list marks plugin personas <code>(plugin)</code>, and after <code>/plugins install</code>/<code>update</code>/<code>uninstall</code> the running REPL re-applies all three hooks immediately. Tools and commands still activate on the next start.</p>
+<h3 id="agent-types-teams-and-skills">Agent types, teams, and skills<a class="headerlink" href="#agent-types-teams-and-skills" title="Permanent link">&para;</a></h3>
+<p><code>register_types(registry)</code> contributes types to the <code>TypeRegistry</code> via <code>registry.add_plugin(entry)</code> (same entry shape as <code>types.json</code>). Plugin types form an in-memory layer between bundled and global, so precedence is <code>bundled &lt; plugin &lt; global &lt; local</code>, and a <code>types.json</code> entry can always override or replace a plugin-provided type. <code>register_teams(teams)</code> and <code>register_skills(skills)</code> register into the team and skills registries the same way (<code>teams.add_plugin(...)</code> / <code>skills.add_plugin(...)</code>, entry shapes in <a href="../teams/">teams.md</a> and <a href="../skills/">skills.md</a>). The <code>/type</code> list marks plugin types <code>(plugin)</code>, and after <code>/plugins install</code>/<code>update</code>/<code>uninstall</code> the running REPL re-applies all three hooks immediately. Tools and commands still activate on the next start.</p>
 <h3 id="eval-fixtures">Eval fixtures<a class="headerlink" href="#eval-fixtures" title="Permanent link">&para;</a></h3>
 <p><code>register_fixtures(fixtures)</code> contributes task fixtures to the tool-use evaluation harness. The hook receives a dict of fixture <code>id</code> to fixture data (same shape as the JSON fixtures under <code>.replio/eval/</code>, see <a href="../eval/">eval.md</a>). Local and global fixture files override plugin fixtures by <code>id</code>. The bundled <code>replio-core-eval</code> plugin ships the default catalog this way.</p>
 <h3 id="lazy-dependencies">Lazy dependencies<a class="headerlink" href="#lazy-dependencies" title="Permanent link">&para;</a></h3>

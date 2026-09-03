@@ -700,34 +700,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Personas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../plugins/" class="md-nav__link">
         
   
@@ -1148,14 +1120,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../writing-tools/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Writing tools for agents
+    Agent types
   
 
     
@@ -1184,6 +1156,34 @@
     
   
     Programming agents (step-by-step setup)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing tools for agents
   
 
     
@@ -1381,15 +1381,15 @@
 <ol>
 <li>Name-level <code>tools.deny</code> and the <code>tools.allow</code> allowlist.</li>
 <li>The category action from <code>tool_permission</code> (<code>read</code> / <code>list</code> / <code>edit</code> / <code>bash</code> / <code>web</code> / <code>delegate</code>).</li>
-<li>A per-invocation resolver (<code>permission_fn</code>) that refines the action from the tool's current arguments - e.g. <code>delegate</code> resolves per persona: a configured persona uses its own <code>tool_permission</code>, a persona outside the registry is denied (see <a href="../personas/">personas.md</a>).</li>
+<li>A per-invocation resolver (<code>permission_fn</code>) that refines the action from the tool's current arguments - e.g. <code>delegate</code> resolves per type: a configured type uses its own <code>tool_permission</code>, an agent type outside the registry is denied (see <a href="../types/">types.md</a>).</li>
 <li>Worktree escalation: <code>read</code> / <code>list</code> / <code>write</code> tools on paths outside the worktree escalate <code>allow</code> to <code>ask</code>.</li>
 </ol>
 <p>The worktree is the directory holding the local <code>.replio/</code> - the launch directory, or <code>--path</code>. A <code>file_read</code> / <code>list_dir</code> / <code>file_write</code> / <code>glob</code> / <code>grep</code> on a path outside it escalates to <code>ask</code>, so an agent cannot silently reach files beyond its scope. Launching from <code>~</code> makes home the worktree, so subdirectories do not escalate. Launch inside the project or pass <code>--path</code> for project-scoped prompting.</p>
-<p><code>bash</code> defaults to <code>ask</code>, so every <code>run_command</code> confirms unless <code>tool_permission.bash = "allow"</code> is set explicitly. <code>delegate</code> defaults to <code>allow</code>, refined per invocation by the target persona's own permission (a persona may set <code>delegate: "ask"</code> to confirm).</p>
+<p><code>bash</code> defaults to <code>ask</code>, so every <code>run_command</code> confirms unless <code>tool_permission.bash = "allow"</code> is set explicitly. <code>delegate</code> defaults to <code>allow</code>, refined per invocation by the target type's own permission (an agent type may set <code>delegate: "ask"</code> to confirm).</p>
 <h2 id="headless-agents-are-confined">Headless agents are confined<a class="headerlink" href="#headless-agents-are-confined" title="Permanent link">&para;</a></h2>
 <p>In headless mode (<code>replio serve</code> / <code>replio run</code>), <code>ask</code>-gated tools are denied outright - the headless UI auto-answers with the configured <code>--yes</code> / <code>--no</code> policy. An agent's reachable surface is therefore exactly its <code>allow</code> tools on paths inside its worktree. This is the isolation boundary that makes one-agent-per-process fleets safe: a crash or a misbehaving agent cannot touch another agent's folder or run commands it was not given. See <a href="../fleet/">fleet.md</a>.</p>
 <h2 id="delegation">Delegation<a class="headerlink" href="#delegation" title="Permanent link">&para;</a></h2>
-<p>The <code>delegate</code> tool runs a task under a persona as an in-process sub-agent. A sub-agent shares the caller's worktree and tool policy, narrowed by the persona's <code>tool_permission</code> carve, so it can reach exactly what the caller can minus what the carve denies. Ask-gated tools are auto-denied inside a sub-agent (no interactive confirm), so its effective permissions are the categories its carve allows. The permission resolves per invocation from the target persona: a configured persona uses its own <code>tool_permission</code> (category <code>delegate</code> defaults to <code>allow</code>, set <code>ask</code> on a persona to confirm each delegation), and a persona outside the registry is denied outright. Delegation is recorded in the session <code>permissions</code> audit array like any tool call, and each sub-agent's work persists as its own <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code> session log (suffix = the calling session id). For delegation across trust boundaries, run separate <code>replio serve</code> processes scoped to their own folders and delegate over the API instead - see <a href="../fleet/">fleet.md</a>.</p>
+<p>The <code>delegate</code> tool runs a task under an agent type as an in-process sub-agent. A sub-agent shares the caller's worktree and tool policy, narrowed by the agent type's <code>tool_permission</code> carve, so it can reach exactly what the caller can minus what the carve denies. Ask-gated tools are auto-denied inside a sub-agent (no interactive confirm), so its effective permissions are the categories its carve allows. The permission resolves per invocation from the target type: a configured type uses its own <code>tool_permission</code> (category <code>delegate</code> defaults to <code>allow</code>, set <code>ask</code> on an agent type to confirm each delegation), and an agent type outside the registry is denied outright. Delegation is recorded in the session <code>permissions</code> audit array like any tool call, and each sub-agent's work persists as its own <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code> session log (suffix = the calling session id). For delegation across trust boundaries, run separate <code>replio serve</code> processes scoped to their own folders and delegate over the API instead - see <a href="../fleet/">fleet.md</a>.</p>
 <h2 id="modes">Modes<a class="headerlink" href="#modes" title="Permanent link">&para;</a></h2>
 <p>Modes (<a href="../config/">config.md</a>) are named postures that combine an instruction block with tool-policy overrides. The built-in <code>plan</code> mode is a read-only posture: it denies the <code>edit</code> and <code>bash</code> categories, so write and exec tools are filtered from the provider schema and refused on direct calls, and its system prompt instructs the model to investigate and propose rather than modify. Custom modes can express stronger postures (e.g. deny <code>mcp</code> as well) per deployment. The active mode is recorded on each assistant message in the session log, so the posture in effect for every turn is auditable. Mode switches are recorded as <code>command</code> messages.</p>
 <h2 id="config-driven-surface">Config-driven surface<a class="headerlink" href="#config-driven-surface" title="Permanent link">&para;</a></h2>
@@ -1425,7 +1425,7 @@
 </tr>
 <tr>
 <td>Delegation</td>
-<td>Per-persona per-invocation resolution (<code>delegate: allow</code> default, set <code>ask</code> per persona, non-registry personas denied), sub-agents auto-deny <code>ask</code> and share only the caller's carve, own <code>sub_*</code> session logs</td>
+<td>Per-type per-invocation resolution (<code>delegate: allow</code> default, set <code>ask</code> per type, non-registry types denied), sub-agents auto-deny <code>ask</code> and share only the caller's carve, own <code>sub_*</code> session logs</td>
 </tr>
 <tr>
 <td>Network</td>
