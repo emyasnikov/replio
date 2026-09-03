@@ -65,7 +65,7 @@ def register_tools(registry) -> None: ...        # @registry.register(...) - sam
 def register_providers(providers) -> None: ...   # providers["name"] = ProviderClass
 def register_commands(commands) -> None: ...     # @commands.register(...) - same as core commands
 def register_services(services) -> None: ...     # services["name"] = service object for core features
-def register_personas(registry) -> None: ...     # registry.add_plugin({...}) - plugin-owned personas
+def register_types(registry) -> None: ...     # registry.add_plugin({...}) - plugin-owned types
 def register_teams(teams) -> None: ...           # register into the TeamRegistry (see swarm.md)
 def register_skills(skills) -> None: ...         # skills.add_plugin({...}) - see skills.md
 def register_fixtures(fixtures) -> None: ...     # fixtures["id"] = fixture data - see eval.md
@@ -79,9 +79,9 @@ A tool handler may declare a `_config` keyword argument to receive the engine's 
 
 `register_services` lets a plugin power a core feature that is not tool-calling. Today the only service is the web search-then-answer mode (`web_search: true`). The bundled `replio-core-web` registers `services['search']` with `search(query, num)`, `display(query, results)`, and `context(query, results)` methods. If no plugin registers the service, that mode reports that it is unavailable instead of erroring.
 
-### Personas, teams, and skills
+### Agent types, teams, and skills
 
-`register_personas(registry)` contributes personas to the `PersonaRegistry` via `registry.add_plugin(entry)` (same entry shape as `personas.json`). Plugin personas form an in-memory layer between bundled and global, so precedence is `bundled < plugin < global < local`, and a `personas.json` entry can always override or replace a plugin-provided persona. `register_teams(teams)` and `register_skills(skills)` register into the team and skills registries the same way (`teams.add_plugin(...)` / `skills.add_plugin(...)`, entry shapes in [teams.md](teams.md) and [skills.md](skills.md)). The `/persona` list marks plugin personas `(plugin)`, and after `/plugins install`/`update`/`uninstall` the running REPL re-applies all three hooks immediately. Tools and commands still activate on the next start.
+`register_types(registry)` contributes types to the `TypeRegistry` via `registry.add_plugin(entry)` (same entry shape as `types.json`). Plugin types form an in-memory layer between bundled and global, so precedence is `bundled < plugin < global < local`, and a `types.json` entry can always override or replace a plugin-provided type. `register_teams(teams)` and `register_skills(skills)` register into the team and skills registries the same way (`teams.add_plugin(...)` / `skills.add_plugin(...)`, entry shapes in [teams.md](teams.md) and [skills.md](skills.md)). The `/type` list marks plugin types `(plugin)`, and after `/plugins install`/`update`/`uninstall` the running REPL re-applies all three hooks immediately. Tools and commands still activate on the next start.
 
 ### Eval fixtures
 

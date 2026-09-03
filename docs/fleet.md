@@ -68,7 +68,7 @@ Build and run a fleet:
 
 ```bash
 replio fleet init                    # scan subdirectories holding .replio/config.json
-replio fleet config docs-agent --persona research-agent    # generate a config
+replio fleet config docs-agent --type research-agent    # generate a config
 replio fleet add code-agent --dir ../repo --port 8782
 replio fleet up                      # foreground, Ctrl-C = graceful down
 replio fleet up --detach             # background daemon (replio fleet down stops it)
@@ -94,10 +94,10 @@ replio fleet config code-agent \
   --system-prompt "You implement code." \
   --tools-deny web_search \
   --tool-permission "bash=allow" \
-  --persona programmer
+  --type programmer
 ```
 
-`--persona` resolves the persona (bundled + global + local registry) and inlines its `system_prompt`, `model`, and `tool_permission` into the generated keys, so the running agent needs no personas registry of its own. An unknown persona aborts the write.
+`--type` resolves the agent type (bundled + global + local registry) and inlines its `system_prompt`, `model`, and `tool_permission` into the generated keys, so the running agent needs no types registry of its own. An unknown type aborts the write.
 
 Agent config is operator-managed: `replio fleet config` is the only intended writer, and a `serve` process has no config-write CLI path today. An engine-level guard making served agents immutable is an open TODO (see TODO).
 

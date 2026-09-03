@@ -1,10 +1,10 @@
 # Teams
 
-A team is a named, ordered chain of delegated stages - each stage runs under a persona, and its result is handed to the next stage. A team turns the `delegate` primitive into a repeatable pipeline: "writing" = researcher > writer > referencer > editor for documents, "programming" = planner > programmer > tester > code-reviewer. Teams are shape-only: the registry stores the definition, the sequential stage loop that executes it (`Engine.run_team` and `/team run`) is the next step.
+A team is a named, ordered chain of delegated stages - each stage runs under an agent type, and its result is handed to the next stage. A team turns the `delegate` primitive into a repeatable pipeline: "writing" = researcher > writer > referencer > editor for documents, "programming" = planner > programmer > tester > code-reviewer. Teams are shape-only: the registry stores the definition, the sequential stage loop that executes it (`Engine.run_team` and `/team run`) is the next step.
 
 ## Storage
 
-Teams come from four layers, merged exactly like personas: bundled first, then plugin contributions, then global, then local, with local winning per field. Precedence is `bundled < plugin < global < local`:
+Teams come from four layers, merged exactly like types: bundled first, then plugin contributions, then global, then local, with local winning per field. Precedence is `bundled < plugin < global < local`:
 
 - **Bundled** - the read-only default roster shipped in the package (`src/replio/bundled_teams.json`, the `writing` and `programming` pipelines above).
 - **Plugin** - teams contributed by plugins via the `register_teams` entry hook (`registry.add_plugin(...)`, see [plugins.md](plugins.md)). An in-memory layer: never written to any `teams.json`, refreshed on `/plugins install`/`update`/`uninstall`.
@@ -22,12 +22,12 @@ Merging is field-by-field for the same `name`: a local or global entry overrides
     "tags": ["research", "writing"],
     "stages": [
       {
-        "persona": "researcher",
+        "type": "researcher",
         "task_hint": "Gather and evaluate sources on the topic.",
         "handoff_note": "Hand the findings list to the writer."
       },
       {
-        "persona": "writer",
+        "type": "writer",
         "mode": "build",
         "task_hint": "Write the document from the findings list.",
         "handoff_note": "Hand the document path to the referencer."
@@ -40,13 +40,13 @@ Merging is field-by-field for the same `name`: a local or global entry overrides
 Team fields:
 
 - `name` - unique key (the file/registry key).
-- `stages` - ordered list of stage objects. A stage may also be a plain string (`"researcher"`), shorthand for a stage with only a persona.
+- `stages` - ordered list of stage objects. A stage may also be a plain string (`"researcher"`), shorthand for a stage with only an agent type.
 - `description` - optional, shown in `/team show`.
-- `tags` - optional list for grouping and filtering (`/team list <tag>`), same vocabulary as personas.
+- `tags` - optional list for grouping and filtering (`/team list <tag>`), same vocabulary as types.
 
 Stage fields:
 
-- `persona` - required, the persona name (must exist in the [personas registry](personas.md) at run time, resolved against the same four-layer merge).
+- `type` - required, the agent type name (must exist in the [types registry](types.md) at run time, resolved against the same four-layer merge).
 - `mode` - optional agent mode override for the stage. Empty inherits the caller. Sub-agents today run in `build` mode, so stage modes become meaningful with the sequential stage loop.
 - `task_hint` - optional guidance folded into the delegated brief for this stage.
 - `handoff_note` - optional note passed along with the previous stage's result into the next stage's brief.

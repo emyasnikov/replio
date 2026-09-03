@@ -26,7 +26,7 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 | `code_lint` | replio-core-dev | `exec` | `bash` | Run the project linter (`dev.lint_cmd`, default `ruff check .`) |
 | `code_format` | replio-core-dev | `exec` | `bash` | Run the project formatter (`dev.format_cmd`, default `ruff format .`) |
 | `run_command` | replio-core-exec | `exec` | `bash` | Run a shell command with timeout (aliases `bash`, `exec`). Restricted by `tool_permission.bash_allow` |
-| `delegate` | core | `delegate` | `delegate` | Run a task under a persona as a sub-agent |
+| `delegate` | core | `delegate` | `delegate` | Run a task under an agent type as a sub-agent |
 
 Plugins register additional tools the same way. They automatically inherit tool policy, `/tool`, `/help`, query refinement, `noise_tools`, and session logging. See [plugins.md](plugins.md).
 
@@ -115,7 +115,7 @@ Resolution precedence:
 
 1. **Name-level** - `tools.deny` (always denied) and `tools.allow` (when non-empty, an allowlist - everything else is denied).
 2. **Category action** - the `tool_permission.<key>` action for the tool's `permission` key. `deny` here filters the tool from the provider schema and from tool listings, not just direct calls.
-3. **Per-invocation resolver** - a tool may declare a `permission_fn` that refines the action from its current arguments (e.g. `delegate` resolves per persona: a configured persona uses its own `tool_permission` with `delegate` defaulting to `ask`, a persona outside the registry is `deny`). The resolver only refines a non-`deny` base action and is skipped when no arguments are available, so schema filtering (`allowed()`) keeps the tool visible for `ask`/`allow` categories.
+3. **Per-invocation resolver** - a tool may declare a `permission_fn` that refines the action from its current arguments (e.g. `delegate` resolves per type: a configured type uses its own `tool_permission` with `delegate` defaulting to `ask`, an agent type outside the registry is `deny`). The resolver only refines a non-`deny` base action and is skipped when no arguments are available, so schema filtering (`allowed()`) keeps the tool visible for `ask`/`allow` categories.
 4. **Worktree escalation** - `read` / `list` / `write` tools pointing outside the project worktree escalate from `allow` to `ask`.
 
 Modes ([config.md](config.md)) layer over the base policy: a mode's `tool_permission` merges over the base (mode wins per key), its `tools.deny` appends, and its `tools.allow` replaces when non-empty. The built-in `plan` mode denies the `edit` and `bash` categories, so write and exec tools are filtered from the schema and refused on direct calls. Switch with `/mode <name>` in the REPL or `--mode <name>` on `replio run` / `replio serve`.

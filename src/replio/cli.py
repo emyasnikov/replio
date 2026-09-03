@@ -368,7 +368,7 @@ def cmd_jobs(args) -> int:
             mode=getattr(args, 'mode', '') or '',
             provider=getattr(args, 'provider', '') or '',
             model=getattr(args, 'model', '') or '',
-            persona=getattr(args, 'persona', '') or '',
+            type=getattr(args, 'type', '') or '',
             system_prompt=getattr(args, 'system_prompt', '') or '',
             task_file=_store_task_file(config.local_path.parent.parent, file_arg),
             tool_permission=tool_permission,
@@ -632,7 +632,7 @@ def _fleet_logs(controller, args) -> int:
 
 def _fleet_config(controller, args) -> int:
     import json
-    from .personas import PersonaRegistry
+    from .types import TypeRegistry
     agent = controller.manifest.find(args.name)
     if agent is None:
         print(f'Agent not found: {args.name}', file=sys.stderr)
@@ -658,24 +658,24 @@ def _fleet_config(controller, args) -> int:
             return 1
         category, _, action = pair.partition('=')
         perms[category.strip()] = action.strip()
-    persona_name = getattr(args, 'persona', '') or ''
-    if persona_name:
-        registry = PersonaRegistry(local_path=agent_dir / '.replio' / 'personas.json')
-        persona = registry.find(persona_name)
-        if persona is None:
-            print(f'Unknown persona: {persona_name}', file=sys.stderr)
+    type_name = getattr(args, 'type', '') or ''
+    if type_name:
+        registry = TypeRegistry(local_path=agent_dir / '.replio' / 'types.json')
+        agent_type = registry.find(type_name)
+        if agent_type is None:
+            print(f'Unknown agent type: {type_name}', file=sys.stderr)
             return 1
-        if persona.system_prompt and 'system_prompt' not in patch:
-            patch['system_prompt'] = persona.system_prompt
-        if persona.model and 'model' not in patch:
-            patch['model'] = persona.model
-        for key, value in persona.tool_permission.items():
+        if agent_type.system_prompt and 'system_prompt' not in patch:
+            patch['system_prompt'] = agent_type.system_prompt
+        if agent_type.model and 'model' not in patch:
+            patch['model'] = agent_type.model
+        for key, value in agent_type.tool_permission.items():
             perms.setdefault(key, value)
     if perms:
         patch['tool_permission'] = perms
     if not patch:
         print('Nothing to set - give at least one of --provider/--model/'
-              '--persona/--system-prompt/--mode/--tools-deny/--tool-permission',
+              '--type/--system-prompt/--mode/--tools-deny/--tool-permission',
               file=sys.stderr)
         return 1
     target = agent_dir / '.replio' / 'config.json'

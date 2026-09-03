@@ -2,9 +2,9 @@
 
 **One terminal, whole teams**
 
-One REPL. One prompt. The lead agent composes a specialized team - personas and skills
+One REPL. One prompt. The lead agent composes a specialized team - types and skills
 instantiated from a private template library matching the project description and request -
-runs the team stage-by-stage (sequentially first), each member working under its own persona,
+runs the team stage-by-stage (sequentially first), each member working under its own type,
 skills, and permissions, with generated briefs, handoff, and shared memory. Teams are stored,
 reused, extended per customer, and scheduled. The composition machinery (templates, generator,
 library, authoring commands) lives in a **movable private plugin** (`replio-teamkit`), never in
@@ -17,7 +17,7 @@ the core, so internal know-how leaves the repo as one documented unit whenever n
   later milestone (cuts wall-clock, not tokens).
 - **No pre-saved run prompts**: briefs, handoff, and memory are generated per run. Stored
   artifacts are templates and proven specializations - reusable by design, never regenerated.
-- **Cache model**: stored personas/skills (never regenerated), generated briefs carrying facts,
+- **Cache model**: stored types/skills (never regenerated), generated briefs carrying facts,
   shared team memory file, and persistent member sessions for recurring teams (`job`-style warm
   sessions). One-off runs get fresh `sub_` sessions.
 - **Kit layout**: flat `library/` with tags (stack, customer, project-type). Matching by tags +
@@ -39,11 +39,11 @@ the core, so internal know-how leaves the repo as one documented unit whenever n
 
 **Core (thin):**
 
-- `PersonaRegistry.reload()`. Plugin hooks `register_personas` / `register_teams` /
+- `TypeRegistry.reload()`. Plugin hooks `register_types` / `register_teams` /
   `register_skills` in `plugins/manager.py` (mirroring `register_tools`).
-- `teams.py` - `Team` (name, description, stages: persona, mode, task-hint, handoff-note),
+- `teams.py` - `Team` (name, description, stages: type, mode, task-hint, handoff-note),
   `TeamRegistry` (`.replio/teams.json` + plugin contributions).
-- `skills.py` - `SkillRegistry` (`.replio/skills/*.md` + plugin contributions). Persona `skills`
+- `skills.py` - `SkillRegistry` (`.replio/skills/*.md` + plugin contributions). AgentType `skills`
   resolved and injected into the sub-agent system prompt.
 - `Engine.run_team(team, task)` - sequential stage loop: brief builder (task + prior results +
   memory + stage handoff), `run_subagent`, result collection, memory write. `job.team` field so
@@ -51,13 +51,13 @@ the core, so internal know-how leaves the repo as one documented unit whenever n
 
 **Kit plugin `replio-teamkit` (bundled `plugins/`, movable):**
 
-- `src/plugin.py` registering personas/teams/skills templates, tools, commands.
-- `templates/` - instantiable persona + skill template specs. `recipes/` - example teams (incl.
+- `src/plugin.py` registering types/teams/skills templates, tools, commands.
+- `templates/` - instantiable type + skill template specs. `recipes/` - example teams (incl.
   the two carved teams as team definitions). `library/` - flat tagged store of proven
-  teams/personas/skills. `tests/`.
+  teams/types/skills. `tests/`.
 - Generator: stack signature from project description/request (README, manifests) -> tags ->
   matching templates -> AI-generated deltas only (via `engine.chat_nonstreaming`), persisted to
-  local `personas.json` + `skills/` + `teams.json` (with `reload`).
+  local `types.json` + `skills/` + `teams.json` (with `reload`).
 - Authoring commands (`/teamkit`): init, list, new, match, export, import, and per-customer
   export/splitting.
 - Core's `/team` stays registry + run only.

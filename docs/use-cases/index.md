@@ -54,7 +54,7 @@ Users / shift lead / web / TUI / API
 
 - **Control plane** - agents, configuration, policies, tool approvals, versions, deployments. Agents must never be able to change their own configuration, permissions, or tool list.
 - **Data plane** - production data, documents, events, tool execution, and local connectors.
-- **Fleet and swarm** - [fleet.md](../fleet.md) and [swarm.md](../swarm.md) describe the two composable layers: a fleet of scoped `replio serve` processes, and a swarm of cooperating agents (personas, `delegate`, auditors) that runs on top of the fleet or in-process. For enterprise use the research recommends a bounded, hierarchical multi-agent system - a coordinator delegating to specialized agents with clear responsibilities, minimal tool sets, and defined output formats - rather than a freely communicating swarm.
+- **Fleet and swarm** - [fleet.md](../fleet.md) and [swarm.md](../swarm.md) describe the two composable layers: a fleet of scoped `replio serve` processes, and a swarm of cooperating agents (types, `delegate`, auditors) that runs on top of the fleet or in-process. For enterprise use the research recommends a bounded, hierarchical multi-agent system - a coordinator delegating to specialized agents with clear responsibilities, minimal tool sets, and defined output formats - rather than a freely communicating swarm.
 - **Human-in-the-loop** - write and control actions flow through `propose -> policy check -> human approval -> execute -> verify -> audit`, so "autonomous agents" become an auditable business process.
 
 ## The use-case guides

@@ -4,7 +4,7 @@
 
 A terminal-based **agentic REPL core**. The model is the planner. The tool registry is how it acts. It is a zero-dependency Python app (`stdlib only`) built around a **single agent loop**: one SSE stream per turn where the model either emits content or requests tool calls, which the loop executes and feeds back until the model answers.
 
-Multi-provider chat, web search, sessions, slash commands, machine access, personas and delegation, and plugins are all capabilities on top of that core.
+Multi-provider chat, web search, sessions, slash commands, machine access, types and delegation, and plugins are all capabilities on top of that core.
 
 ## Tech Stack
 
@@ -26,7 +26,7 @@ The agentic core has three layers:
 
    One stream, one round trip when no tools are used. `chat_nonstreaming()` is reserved for query refinement, not the main path. The loop is front-end agnostic: `ChatLoop` (REPL), `replio run` (CLI), and `replio serve` (HTTP) all call `Engine.chat(text) -> TurnResult`. The `<thinking>` marker split lives in the engine so thinking stays separate from content.
 
-2. **ToolRegistry** (`tools/registry.py`) - the **single dispatch point**. The model invokes tools via OpenAI function calling, slash commands are thin wrappers that call the same `execute()`. The loop never special-cases tool names - per-tool behavior comes from registration metadata (`refine`, `permission_fn`, `note`, later `confirm`). The `delegate` tool (`tools/delegate.py`) is a core tool that runs a task under a persona by spawning an in-process sub-`Engine` (`Engine.run_subagent`) - the same agent loop, its own `sub_<ts>_<parent-session>` session, a quiet `NullUI`. Its permission is a per-invocation `permission_fn` resolved per persona.
+2. **ToolRegistry** (`tools/registry.py`) - the **single dispatch point**. The model invokes tools via OpenAI function calling, slash commands are thin wrappers that call the same `execute()`. The loop never special-cases tool names - per-tool behavior comes from registration metadata (`refine`, `permission_fn`, `note`, later `confirm`). The `delegate` tool (`tools/delegate.py`) is a core tool that runs a task under an agent type by spawning an in-process sub-`Engine` (`Engine.run_subagent`) - the same agent loop, its own `sub_<ts>_<parent-session>` session, a quiet `NullUI`. Its permission is a per-invocation `permission_fn` resolved per type.
 
 3. **Commands** (`commands/`) - user-facing affordances. A command either wraps a tool or performs a local action (`/model`, `/session`).
 
@@ -50,8 +50,8 @@ Replio/
 │   ├── cli.py               # `replio run` / `replio serve` / `replio eval` headless entry points
 │   ├── config.py            # JSON config (global + local merge)
 │   ├── models.py            # global model registry - models.json (connections + keys)
-│   ├── personas.py          # Persona registry - bundled/global/local personas.json merge + tags
-│   ├── bundled_personas.json # bundled default personas (8, two pre-carved teams)
+│   ├── types.py             # TypeRegistry - bundled/global/local types.json merge + tags
+│   ├── bundled_types.json  # bundled default types (8, two pre-carved teams)
 │   ├── engine.py            # Headless agent core - Engine + TurnResult + run_subagent
 │   ├── chat.py              # ChatLoop(Engine) - REPL shell with readline
 │   ├── jobs.py              # Scheduled jobs - Job/JobRun model, registry, cron parser
@@ -75,7 +75,7 @@ Replio/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Tool registration + dispatch (OpenAI function calling)
 │   │   ├── policy.py        # ToolPolicy - allow/ask/deny permissions + path scoping
-│   │   └── delegate.py      # Core delegate tool - persona sub-agents via per-invocation policy
+│   │   └── delegate.py      # Core delegate tool - type sub-agents via per-invocation policy
 │   ├── plugins/
 │   │   ├── __init__.py
 │   │   └── manager.py       # PluginManager - discovery, manifest/compat, install/update/uninstall
@@ -139,13 +139,13 @@ Replio/
 ### Machine Access & Permissions
 - `ToolPolicy` (`tools/policy.py`) is the single permission resolution point. The loop and `/tool` both route through it, so never special-case tool names for permission logic
 - Actions: `allow` (no prompt), `ask` (y/N confirm in the loop via `_confirm_tool`), `deny` (tool filtered from the provider schema and refused on direct calls)
-- Precedence: name-level `deny` / allow-whitelist > category action from `tool_permission` > per-invocation resolver (`permission_fn`, refined from the tool's current arguments - e.g. `delegate` resolves per persona) > worktree escalation (read/write/list outside the worktree becomes `ask`)
+- Precedence: name-level `deny` / allow-whitelist > category action from `tool_permission` > per-invocation resolver (`permission_fn`, refined from the tool's current arguments - e.g. `delegate` resolves per type) > worktree escalation (read/write/list outside the worktree becomes `ask`)
 - The worktree is the directory holding the local `.replio/` - i.e. the launch directory, or `--path`. Launching from `~` makes the whole home directory the worktree, so subdirectories (including other projects) do **not** escalate. Launch inside the project or pass `--path` for project-scoped prompting
-- `bash: ask` by default - every `run_command` confirms. Set `tool_permission.bash = "allow"` to disable prompting. `delegate` defaults to `allow` (runs without a prompt), refined per persona: a configured persona uses its own `tool_permission` (set `delegate: "ask"` on a persona to confirm), a persona outside the registry is denied
-- Delegation (`run_subagent`) builds an in-process sub-`Engine` with the persona's prompt, model override, and merged `tool_permission`, forces mode `build`, shares the caller's provider/plugin manager/worktree, and runs with `NullUI` - ask-gated tools auto-deny, so a sub-agent's effective permissions are exactly its carve. Sub-agent results echo via `delegate_echo` (default on). Each sub-agent persists its own `sub_<ts>_<parent-session>` session
+- `bash: ask` by default - every `run_command` confirms. Set `tool_permission.bash = "allow"` to disable prompting. `delegate` defaults to `allow` (runs without a prompt), refined per type: a configured type uses its own `tool_permission` (set `delegate: "ask"` on an agent type to confirm), an agent type outside the registry is denied
+- Delegation (`run_subagent`) builds an in-process sub-`Engine` with the agent type's prompt, model override, and merged `tool_permission`, forces mode `build`, shares the caller's provider/plugin manager/worktree, and runs with `NullUI` - ask-gated tools auto-deny, so a sub-agent's effective permissions are exactly its carve. Sub-agent results echo via `delegate_echo` (default on). Each sub-agent persists its own `sub_<ts>_<parent-session>` session
 - Confirm prompts and tool status are ephemeral REPL UI - never persisted to session files. The permission decision itself (granted / declined / denied) is recorded in the session `permissions` audit array
 - Full policy flow and registration metadata in `docs/tools.md`. Threat model in `docs/security.md`
-- Sandboxed exec (namespace/container isolation) is planned future work (see TODO). Per-agent permission profiles landed with personas (`tool_permission` on each persona)
+- Sandboxed exec (namespace/container isolation) is planned future work (see TODO). Per-agent permission profiles landed with types (`tool_permission` on each type)
 
 ### Adding a Provider
 1. Create `src/replio/providers/<name>.py`
@@ -164,7 +164,7 @@ The chat() event contract and full provider reference are in `docs/providers.md`
 ### Adding a Plugin
 Plugins are external repositories - never modify the core to add optional functionality:
 1. Create a plugin directory with a `manifest.json` (`name`, `version`, `replio_version` semver range, `python` range, `entry` default `plugin.py` - may point into `src/`, `requires` third-party deps, `provides`), an entry module under `src/`, and an optional `tests/` unit suite (stdlib `unittest`, found by `replio plugins test` and the core suite)
-2. The entry module may define `register_tools(registry)`, `register_providers(providers: dict)`, `register_commands(commands)`, `register_services(services)`, `register_personas`/`register_teams`/`register_skills`, and `register_fixtures(fixtures)` (eval fixture catalog, see `docs/eval.md`) - same decorators as core builtins
+2. The entry module may define `register_tools(registry)`, `register_providers(providers: dict)`, `register_commands(commands)`, `register_services(services)`, `register_types`/`register_teams`/`register_skills`, and `register_fixtures(fixtures)` (eval fixture catalog, see `docs/eval.md`) - same decorators as core builtins
 3. Import third-party deps lazily **inside** tool functions, the core never imports them
 4. Install via `/plugins install <git-url|path>` or `replio plugins install`. Activation is the `plugins` config list (empty = all), and `install`/`uninstall`/`enable`/`disable` maintain it automatically
 5. See `docs/plugins.md` for the full manifest schema, compatibility contract, and management commands
@@ -178,8 +178,8 @@ Plugins currently install from git URLs or local paths into the plugin roots. Sh
 - **Phase 0** - Unified streaming agent loop (single SSE stream, `tool_calls` events)
 - **Phase 1** - Unified dispatch (slash commands > same `ToolRegistry`, generic refinement)
 - **Phase 2** - Machine access (read/write/exec tools, tool policies, `confirm`-gated exec)
-- **Phase 3** - Personas - landed: persona catalog (`bundled_personas.json` + global/local `personas.json` merge), `/persona` (list/show/new/remove, tag filter), tags, per-persona `tool_permission`. Remaining: interactive `/agent` command
-- **Phase 4** - Delegation - landed (core): `delegate` tool > in-process sub-`Engine` (`run_subagent`), per-persona permission resolver, `delegate_echo`. Remaining: auditor agents, generate > check > correct, jobs/team orchestration, delegation progress/focus in the REPL
+- **Phase 3** - Agent types - landed: type catalog (`bundled_types.json` + global/local `types.json` merge), `/type` (list/show/new/remove, tag filter), tags, per-type `tool_permission`. Remaining: interactive `/agent` command
+- **Phase 4** - Delegation - landed (core): `delegate` tool > in-process sub-`Engine` (`run_subagent`), per-type permission resolver, `delegate_echo`. Remaining: auditor agents, generate > check > correct, jobs/team orchestration, delegation progress/focus in the REPL
 - **Phase 5** - Plugins (tools + providers + commands installable, directory-based)
   - `PluginManager` discovers plugins in bundled `replio.plugins.bundled`, `~/.config/replio/plugins/`, and `.replio/plugins/` (local wins), validates the manifest (`replio_version`/`python` ranges), imports entry modules once, and hooks tools/providers/commands/services into the live registries
   - Management: `/plugins` and `replio plugins` - `install`/`update`/`uninstall`/`enable`/`disable`. Activation is via the `plugins` config list (empty = all)

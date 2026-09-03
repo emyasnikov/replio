@@ -240,96 +240,96 @@ def register_builtins(registry):
         if model and model not in models:
             print(f'  (configured model "{model}" not in the model list)')
 
-    @registry.register('persona', description='Manage personas', subcommands=[
-        ('list', 'List personas (list <tag> filters by tag)'),
-        ('show', 'Show a persona definition'),
-        ('new', 'Create or override a persona (local)'),
-        ('remove', 'Remove a persona'),
+    @registry.register('type', description='Manage agent types', subcommands=[
+        ('list', 'List agent types (list <tag> filters by tag)'),
+        ('show', 'Show an agent type definition'),
+        ('new', 'Create or override an agent type (local)'),
+        ('remove', 'Remove an agent type'),
     ])
-    def persona_cmd(arg=''):
-        from ..personas import Persona
-        pr = chat.personas
+    def type_cmd(arg=''):
+        from ..types import AgentType
+        tr = chat.types
         parts = arg.strip().split(maxsplit=1)
         action = parts[0] if parts else ''
         if not action or action == 'list':
             tag = ''
             if action == 'list' and len(parts) > 1:
                 tag = parts[1].strip()
-            personas = pr.all()
+            types = tr.all()
             if tag:
-                personas = [p for p in personas if tag in p.tags]
-            if not personas:
+                types = [t for t in types if tag in t.tags]
+            if not types:
                 if tag:
-                    print(f'  (no personas tagged "{tag}")')
-                    known = ', '.join(sorted({t for p in pr.all()
-                                              for t in p.tags}))
+                    print(f'  (no agent types tagged "{tag}")')
+                    known = ', '.join(sorted({t for t in tr.all()
+                                              for t in t.tags}))
                     if known:
                         print(f'  known tags: {known}')
                 else:
-                    print('  (no personas configured)')
-                    print('  Create one with /persona new <name>, or edit '
-                          f'{pr.local_path}')
+                    print('  (no agent types configured)')
+                    print('  Create one with /type new <name>, or edit '
+                          f'{tr.local_path}')
                 return
             label = f' tagged "{tag}"' if tag else ''
-            print(f'{len(personas)} personas{label}:')
-            for p in personas:
-                model = f' [{p.model}]' if p.model else ''
-                tags = f' tags={",".join(p.tags)}' if p.tags else ''
-                origin = f' ({pr.origin(p.name)})'
-                print(f'  - {p.name}{model}{tags}{origin}')
+            print(f'{len(types)} agent types{label}:')
+            for t in types:
+                model = f' [{t.model}]' if t.model else ''
+                tags = f' tags={",".join(t.tags)}' if t.tags else ''
+                origin = f' ({tr.origin(t.name)})'
+                print(f'  - {t.name}{model}{tags}{origin}')
             return
         if action == 'show':
             name = parts[1].strip() if len(parts) > 1 else ''
             if not name:
-                print('Usage: /persona show <name>')
+                print('Usage: /type show <name>')
                 return
-            p = pr.find(name)
-            if p is None:
-                print(f'Persona not found: {name}')
+            t = tr.find(name)
+            if t is None:
+                print(f'Agent type not found: {name}')
                 return
-            print(f'{p.name} ({pr.origin(p.name)})')
-            print(f'  system_prompt: {p.system_prompt or "(empty)"}')
-            if p.tags:
-                print(f'  tags: {", ".join(p.tags)}')
-            if p.model:
-                print(f'  model: {p.model}')
-            if p.skills:
-                print(f'  skills: {", ".join(p.skills)}')
-            if p.tool_permission:
+            print(f'{t.name} ({tr.origin(t.name)})')
+            print(f'  system_prompt: {t.system_prompt or "(empty)"}')
+            if t.tags:
+                print(f'  tags: {", ".join(t.tags)}')
+            if t.model:
+                print(f'  model: {t.model}')
+            if t.skills:
+                print(f'  skills: {", ".join(t.skills)}')
+            if t.tool_permission:
                 print('  tool_permission: '
-                      + json.dumps(p.tool_permission))
+                      + json.dumps(t.tool_permission))
             return
         if action == 'new':
             rest = parts[1].strip() if len(parts) > 1 else ''
             if not rest:
-                print('Usage: /persona new <name> [system prompt]')
+                print('Usage: /type new <name> [system prompt]')
                 return
             name = rest.split(maxsplit=1)[0]
             prompt = rest[len(name):].strip()
-            existing = pr.find(name)
-            prev_origin = pr.origin(name)
-            pr.put(Persona(name=name, system_prompt=prompt), scope='local')
+            existing = tr.find(name)
+            prev_origin = tr.origin(name)
+            tr.put(AgentType(name=name, system_prompt=prompt), scope='local')
             if existing is not None:
-                print(f'Overrode persona: {name} (was {prev_origin}) - '
-                      f'edit {pr.local_path}')
+                print(f'Overrode agent type: {name} (was {prev_origin}) - '
+                      f'edit {tr.local_path}')
             else:
-                print(f'Created persona: {name} (local) - edit {pr.local_path}')
+                print(f'Created agent type: {name} (local) - edit {tr.local_path}')
             return
         if action == 'remove':
             name = parts[1].strip() if len(parts) > 1 else ''
             if not name:
-                print('Usage: /persona remove <name>')
+                print('Usage: /type remove <name>')
                 return
-            if pr.remove(name):
-                print(f'Removed persona: {name} (local)')
-            elif pr.is_bundled(name):
+            if tr.remove(name):
+                print(f'Removed agent type: {name} (local)')
+            elif tr.is_bundled(name):
                 print(f'{name} is bundled with replio - override it with '
-                      '/persona new <name>, or edit the local personas file, '
+                      '/type new <name>, or edit the local types file, '
                       'instead of removing')
             else:
-                print(f'No local persona to remove: {name}')
+                print(f'No local agent type to remove: {name}')
             return
-        print('Usage: /persona [list|show <name>|new <name> [prompt]|remove <name>]')
+        print('Usage: /type [list|show <name>|new <name> [prompt]|remove <name>]')
 
     @registry.register('team', description='Manage teams', subcommands=[
         ('list', 'List teams (list <tag> filters by tag)'),
@@ -364,7 +364,7 @@ def register_builtins(registry):
             label = f' tagged "{tag}"' if tag else ''
             print(f'{len(teams)} teams{label}:')
             for t in teams:
-                stages = ' > '.join(s.persona for s in t.stages)
+                stages = ' > '.join(s.type for s in t.stages)
                 tags = f' tags={",".join(t.tags)}' if t.tags else ''
                 origin = f' ({tr.origin(t.name)})'
                 print(f'  - {t.name}{tags}{origin}')
@@ -390,7 +390,7 @@ def register_builtins(registry):
                 return
             print('  stages:')
             for i, s in enumerate(t.stages, 1):
-                print(f'    {i}. {s.persona}'
+                print(f'    {i}. {s.type}'
                       + (f' [mode={s.mode}]' if s.mode else ''))
                 if s.task_hint:
                     print(f'       task_hint: {s.task_hint}')
@@ -934,7 +934,7 @@ def register_builtins(registry):
             while i < len(tokens):
                 tok = tokens[i]
                 if tok in ('--cron', '--interval', '--at', '--prompt', '--file',
-                           '--session', '--mode', '--provider', '--model', '--persona'):
+                           '--session', '--mode', '--provider', '--model', '--type'):
                     opts[tok] = tokens[i + 1] if i + 1 < len(tokens) else ''
                     i += 2
                 elif tok == '--approval':
@@ -985,7 +985,7 @@ def register_builtins(registry):
                 mode=opts.get('--mode', '') or '',
                 provider=opts.get('--provider', '') or '',
                 model=opts.get('--model', '') or '',
-                persona=opts.get('--persona', '') or '',
+                type=opts.get('--type', '') or '',
                 task_file=task_file,
                 enabled=auto,
                 status='approved' if auto else 'proposed',
@@ -1070,7 +1070,7 @@ def _toggle_plugin(chat, pm, name, action):
 
 
 def _refresh_registries(chat, pm):
-    for name in ('personas', 'teams', 'skills'):
+    for name in ('types', 'teams', 'skills'):
         registry = getattr(chat, name, None)
         if registry is not None:
             registry.reload(pm)

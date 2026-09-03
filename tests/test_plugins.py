@@ -77,24 +77,24 @@ def register_services(services):
     services['greet'] = lambda: 'hello from service'
 '''
 
-PERSONA_PLUGIN = '''
-def register_personas(registry):
+TYPE_PLUGIN = '''
+def register_types(registry):
     registry.add_plugin({'name': 'helper',
-                         'system_prompt': 'Helper persona from a plugin',
+                         'system_prompt': 'Helper type from a plugin',
                          'tags': ['plugin']})
 '''
 
-PERSONA_FAIL_PLUGIN = '''
-def register_personas(registry):
-    raise RuntimeError('persona hook exploded')
+TYPE_FAIL_PLUGIN = '''
+def register_types(registry):
+    raise RuntimeError('type hook exploded')
 '''
 
 TEAM_PLUGIN = '''
 def register_teams(teams):
     teams.add_plugin({'name': 'sme',
                       'description': 'Small team from a plugin',
-                      'stages': [{'persona': 'researcher', 'task_hint': 'gather'},
-                                 {'persona': 'writer'}]})
+                      'stages': [{'type': 'researcher', 'task_hint': 'gather'},
+                                 {'type': 'writer'}]})
 '''
 
 SKILL_PLUGIN = '''
@@ -379,31 +379,31 @@ class TestRegistration(PluginTestBase):
         self.pm.register_commands(reg)
         self.assertIn('frobnicate', reg.commands)
 
-    def _persona_registry(self):
-        from replio.personas import PersonaRegistry
-        return PersonaRegistry(
+    def _type_registry(self):
+        from replio.types import TypeRegistry
+        return TypeRegistry(
             global_dir=self.root,
-            local_path=self.root / '.replio' / 'personas.json',
-            bundled_path=self.root / 'nobundled' / 'personas.json')
+            local_path=self.root / '.replio' / 'types.json',
+            bundled_path=self.root / 'nobundled' / 'types.json')
 
-    def test_register_personas_hook(self):
-        write_plugin(self.plugins_dir, 'pers', PERSONA_PLUGIN, {'name': 'pers'})
+    def test_register_types_hook(self):
+        write_plugin(self.plugins_dir, 'pers', TYPE_PLUGIN, {'name': 'pers'})
         self.pm.load()
-        reg = self._persona_registry()
-        self.pm.register_personas(reg)
+        reg = self._type_registry()
+        self.pm.register_types(reg)
         p = reg.find('helper')
         self.assertIsNotNone(p)
-        self.assertEqual(p.system_prompt, 'Helper persona from a plugin')
+        self.assertEqual(p.system_prompt, 'Helper type from a plugin')
         self.assertEqual(reg.origin('helper'), 'plugin')
 
-    def test_register_personas_hook_failure_marks_error(self):
-        write_plugin(self.plugins_dir, 'boom', PERSONA_FAIL_PLUGIN, {'name': 'boom'})
+    def test_register_types_hook_failure_marks_error(self):
+        write_plugin(self.plugins_dir, 'boom', TYPE_FAIL_PLUGIN, {'name': 'boom'})
         self.pm.load()
-        reg = self._persona_registry()
-        self.pm.register_personas(reg)
+        reg = self._type_registry()
+        self.pm.register_types(reg)
         info = self.pm.get('boom')
         self.assertEqual(info.status, 'error')
-        self.assertIn('register_personas failed', info.error)
+        self.assertIn('register_types failed', info.error)
 
     def test_register_teams_hook(self):
         write_plugin(self.plugins_dir, 'team', TEAM_PLUGIN, {'name': 'team'})
@@ -415,7 +415,7 @@ class TestRegistration(PluginTestBase):
         self.pm.register_teams(reg)
         t = reg.find('sme')
         self.assertIsNotNone(t)
-        self.assertEqual([s.persona for s in t.stages],
+        self.assertEqual([s.type for s in t.stages],
                          ['researcher', 'writer'])
         self.assertEqual(t.stages[0].task_hint, 'gather')
         self.assertEqual(reg.origin('sme'), 'plugin')
@@ -565,14 +565,14 @@ class TestEngineIntegration(PluginTestBase):
             engine.registry.dispatch('/plugins')
         self.assertIn('hello', buf.getvalue())
 
-    def test_engine_personas_include_plugin_contributions(self):
-        write_plugin(self.plugins_dir, 'pers', PERSONA_PLUGIN, {'name': 'pers'})
+    def test_engine_types_include_plugin_contributions(self):
+        write_plugin(self.plugins_dir, 'pers', TYPE_PLUGIN, {'name': 'pers'})
         from replio.engine import Engine
         engine = Engine(self.config, ui=NullUI())
-        p = engine.personas.find('helper')
+        p = engine.types.find('helper')
         self.assertIsNotNone(p)
-        self.assertEqual(p.system_prompt, 'Helper persona from a plugin')
-        self.assertEqual(engine.personas.origin('helper'), 'plugin')
+        self.assertEqual(p.system_prompt, 'Helper type from a plugin')
+        self.assertEqual(engine.types.origin('helper'), 'plugin')
 
     def test_engine_teams_include_plugin_contributions(self):
         write_plugin(self.plugins_dir, 'team', TEAM_PLUGIN, {'name': 'team'})
@@ -580,7 +580,7 @@ class TestEngineIntegration(PluginTestBase):
         engine = Engine(self.config, ui=NullUI())
         t = engine.teams.find('sme')
         self.assertIsNotNone(t)
-        self.assertEqual([s.persona for s in t.stages],
+        self.assertEqual([s.type for s in t.stages],
                          ['researcher', 'writer'])
         self.assertEqual(engine.teams.origin('sme'), 'plugin')
 

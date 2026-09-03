@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.27.0
+
+- Renamed `persona` to `agent type` across the product - the concept is a named agent definition bundling identity (persona), function, authority, capability, expertise, and archetype into one reusable profile, and `type` is the neutral umbrella that covers all of them without colliding with `role` (chat message roles in the session/API), `function` (OpenAI function calling), or `profile` (the existing permission-profile language). Breaking rename with no legacy aliases: `personas.py` -> `types.py` (`AgentType` / `TypeRegistry`), `bundled_personas.json` -> `bundled_types.json`, `/persona` -> `/type`, `--persona` -> `--type`, `personas.json` -> `types.json`, the `persona` field in jobs and team stages and the `delegate` tool argument -> `type`, and the plugin hook `register_personas` -> `register_types`. Existing `personas.json` files, `--persona` flags, `/persona` calls, and plugins using the old hook must be updated. `docs/personas.md` -> `docs/types.md` documents the six axes and the naming rationale. Tests updated across the suite (`test_types.py`, delegate, subagent, teams, jobs, fleet, plugins, tool-policy). Docs, README, VISION, PLAN, TODO, AGENTS, and the site synced
+
 ## v0.26.0 - 2026-09-03
 
 - Bundled web plugin renamed - `replio-core-websearch` -> `replio-core-web` (it ships both search and page fetching, so the old name understated it). Manifest bumped to 0.14.0, default `plugins` config, tool/plugin docs, and the web-search-unavailable message updated. Existing `plugins` configs that named the old plugin must switch to `replio-core-web`

@@ -208,7 +208,7 @@ class TestJobModel(unittest.TestCase):
     def test_round_trip_with_history(self):
         job = Job(
             'nightly', {'cron': '0 2 * * *'}, prompt='summarize logs',
-            session='ops.nightly', mode='plan', persona='editor',
+            session='ops.nightly', mode='plan', type='editor',
             retries=5, backoff=120.0, enabled=True, status='verified',
             next_run_at=_iso(BASE), last_run_at=_iso(BASE - timedelta(hours=24)),
             history=[JobRun(started_at=_iso(BASE), finished_at=_iso(BASE),
@@ -353,28 +353,28 @@ class TestScheduler(unittest.TestCase):
         self.assertIn('x', run.reason)
         self.assertTrue(job.next_run_at)
 
-    def test_unknown_persona_fails_immediately(self):
-        job = Job('a', {'interval': 60}, prompt='work', persona='ghost',
+    def test_unknown_type_fails_immediately(self):
+        job = Job('a', {'interval': 60}, prompt='work', type='ghost',
                   status='approved')
         self.registry.put(job)
         run = self.scheduler.run_job(job)
         self.assertEqual(run.status, 'failed')
-        self.assertIn('Unknown persona', run.reason)
+        self.assertIn('Unknown agent type', run.reason)
         self.assertEqual(job.status, 'failed')
 
-    def test_build_engine_injects_persona_skills(self):
+    def test_build_engine_injects_type_skills(self):
         from pathlib import Path as _Path
         from replio.scheduler import _build_engine
         base = _Path(self.tmp.name)
-        personas = {
+        types = {
             'researcher': {'name': 'researcher',
                            'system_prompt': 'You are the researcher.',
                            'skills': ['finders']}}
-        (base / '.replio' / 'personas.json').write_text(json.dumps(personas))
+        (base / '.replio' / 'types.json').write_text(json.dumps(types))
         skills_dir = base / '.replio' / 'skills'
         skills_dir.mkdir(parents=True)
         (skills_dir / 'finders.md').write_text('Find sources and evaluate them.')
-        job = Job('r', {'interval': 3600}, prompt='work', persona='researcher')
+        job = Job('r', {'interval': 3600}, prompt='work', type='researcher')
         engine = _build_engine(self.config, job, verbose=False)
         prompt = engine.config.get('system_prompt')
         self.assertIn('You are the researcher.', prompt)
@@ -382,14 +382,14 @@ class TestScheduler(unittest.TestCase):
         self.assertIn('### finders', prompt)
         self.assertIn('Find sources and evaluate them.', prompt)
 
-    def test_build_engine_skips_missing_persona_skills(self):
+    def test_build_engine_skips_missing_type_skills(self):
         from pathlib import Path as _Path
         from replio.scheduler import _build_engine
         base = _Path(self.tmp.name)
-        personas = {'x': {'name': 'x', 'system_prompt': 'prompt',
+        types = {'x': {'name': 'x', 'system_prompt': 'prompt',
                           'skills': ['nosuch']}}
-        (base / '.replio' / 'personas.json').write_text(json.dumps(personas))
-        job = Job('x', {'interval': 3600}, prompt='work', persona='x')
+        (base / '.replio' / 'types.json').write_text(json.dumps(types))
+        job = Job('x', {'interval': 3600}, prompt='work', type='x')
         engine = _build_engine(self.config, job, verbose=False)
         prompt = engine.config.get('system_prompt')
         self.assertIn('prompt', prompt)
@@ -594,12 +594,12 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(read_memory(worktree, job), 'second summary')
 
     def test_memory_recorded_when_engine_cannot_start(self):
-        job = Job('boom', {'interval': 60}, prompt='p', persona='ghost',
+        job = Job('boom', {'interval': 60}, prompt='p', type='ghost',
                   status='approved')
         self.registry.put(job)
         self.scheduler.run_job(job)
         memory = read_memory(Path(self.tmp.name), job)
-        self.assertIn('Unknown persona', memory)
+        self.assertIn('Unknown agent type', memory)
 
     def test_memory_injected_into_system_prompt(self):
         worktree = Path(self.tmp.name)
@@ -721,7 +721,7 @@ class TestJobsCli(unittest.TestCase):
                                     retries=3, backoff=60.0, timeout=0,
                                     require_approval=False,
                                     session='', mode='', provider='', model='',
-                                    persona='', system_prompt='', file='',
+                                    type='', system_prompt='', file='',
                                     no_retry=False, verbose=False,
                                     tick=15.0, quiet=False)
         for key, value in kw.items():

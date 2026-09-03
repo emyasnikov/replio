@@ -58,12 +58,12 @@ class TestTeamRegistry(unittest.TestCase):
     def test_put_local_and_find(self):
         reg = self.reg()
         reg.put(Team(name='writing', stages=[
-            TeamStage(persona='researcher', task_hint='gather'),
-            TeamStage(persona='writer', handoff_note='pass the draft'),
+            TeamStage(type='researcher', task_hint='gather'),
+            TeamStage(type='writer', handoff_note='pass the draft'),
         ]))
         t = reg.find('writing')
         self.assertIsNotNone(t)
-        self.assertEqual([s.persona for s in t.stages],
+        self.assertEqual([s.type for s in t.stages],
                          ['researcher', 'writer'])
         self.assertEqual(t.stages[0].task_hint, 'gather')
         self.assertEqual(t.stages[1].handoff_note, 'pass the draft')
@@ -72,21 +72,21 @@ class TestTeamRegistry(unittest.TestCase):
     def test_put_fields_roundtrip(self):
         reg = self.reg()
         reg.put(Team(name='x', description='d', tags=['writing'],
-                     stages=[TeamStage(persona='p', mode='plan',
+                     stages=[TeamStage(type='p', mode='plan',
                                        task_hint='h', handoff_note='n')]))
         t = reg.find('x')
         self.assertEqual(t.description, 'd')
         self.assertEqual(t.tags, ['writing'])
         self.assertEqual(t.stages[0].mode, 'plan')
         s = t.stages[0]
-        self.assertEqual((s.persona, s.mode, s.task_hint, s.handoff_note),
+        self.assertEqual((s.type, s.mode, s.task_hint, s.handoff_note),
                          ('p', 'plan', 'h', 'n'))
 
     def test_short_string_stage(self):
         reg = self.reg()
-        reg.put(Team(name='x', stages=[TeamStage(persona='p')]))
+        reg.put(Team(name='x', stages=[TeamStage(type='p')]))
         t = reg.find('x')
-        self.assertEqual(t.stages[0].persona, 'p')
+        self.assertEqual(t.stages[0].type, 'p')
 
     def test_global_and_local_merge_local_wins(self):
         g = TeamRegistry(global_dir=self.base,
@@ -100,17 +100,17 @@ class TestTeamRegistry(unittest.TestCase):
 
     def test_stage_fields_inherit_on_field_merge(self):
         reg = self.reg()
-        reg.put(Team(name='x', stages=[TeamStage(persona='p')]), scope='global')
+        reg.put(Team(name='x', stages=[TeamStage(type='p')]), scope='global')
         reg.put(Team(name='x'), scope='local')
         t = reg.find('x')
-        self.assertEqual([s.persona for s in t.stages], ['p'])
+        self.assertEqual([s.type for s in t.stages], ['p'])
 
     def test_local_stages_replace_wholesale(self):
         reg = self.reg()
-        reg.put(Team(name='x', stages=[TeamStage(persona='a')]), scope='global')
-        reg.put(Team(name='x', stages=[TeamStage(persona='b')]), scope='local')
+        reg.put(Team(name='x', stages=[TeamStage(type='a')]), scope='global')
+        reg.put(Team(name='x', stages=[TeamStage(type='b')]), scope='local')
         t = reg.find('x')
-        self.assertEqual([s.persona for s in t.stages], ['b'])
+        self.assertEqual([s.type for s in t.stages], ['b'])
 
     def test_local_only_does_not_add_to_global(self):
         reg = self.reg()
@@ -155,10 +155,10 @@ class TestTeamRegistry(unittest.TestCase):
         self.assertIn('writing', names)
         self.assertIn('programming', names)
         self.assertEqual(reg.origin('writing'), 'bundled')
-        self.assertEqual([s.persona for s in reg.find('writing').stages],
+        self.assertEqual([s.type for s in reg.find('writing').stages],
                          ['researcher', 'writer', 'referencer', 'editor'])
         self.assertEqual(
-            [s.persona for s in reg.find('programming').stages],
+            [s.type for s in reg.find('programming').stages],
             ['planner', 'programmer', 'tester', 'code-reviewer'])
         self.assertEqual(reg.find('writing').tags, ['research', 'writing'])
         self.assertEqual(reg.find('programming').tags, ['programming'])
@@ -167,11 +167,11 @@ class TestTeamRegistry(unittest.TestCase):
 
     def test_add_plugin_team(self):
         reg = self.reg()
-        reg.add_plugin({'name': 'plug', 'stages': [{'persona': 'writer'}],
+        reg.add_plugin({'name': 'plug', 'stages': [{'type': 'writer'}],
                         'description': 'from a plugin'})
         t = reg.find('plug')
         self.assertIsNotNone(t)
-        self.assertEqual([s.persona for s in t.stages], ['writer'])
+        self.assertEqual([s.type for s in t.stages], ['writer'])
         self.assertEqual(reg.origin('plug'), 'plugin')
         self.assertIn('plug', reg.names())
 
@@ -194,7 +194,7 @@ class TestTeamRegistry(unittest.TestCase):
         reg.add_plugin({'name': 'writing', 'description': 'plugin variant'})
         t = reg.find('writing')
         self.assertEqual(t.description, 'plugin variant')
-        self.assertEqual([s.persona for s in t.stages],
+        self.assertEqual([s.type for s in t.stages],
                          ['researcher', 'writer', 'referencer', 'editor'])
         self.assertEqual(reg.origin('writing'), 'merged')
 
@@ -211,9 +211,9 @@ class TestTeamRegistry(unittest.TestCase):
         reg = self.reg()
         self.local.parent.mkdir(parents=True, exist_ok=True)
         self.local.write_text(json.dumps(
-            {'x': {'name': 'x', 'stages': [{'persona': 'p'}]}}))
+            {'x': {'name': 'x', 'stages': [{'type': 'p'}]}}))
         reg.reload()
-        self.assertEqual([s.persona for s in reg.find('x').stages], ['p'])
+        self.assertEqual([s.type for s in reg.find('x').stages], ['p'])
 
     def test_reload_reapplies_plugin_contributions(self):
         reg = self.reg()

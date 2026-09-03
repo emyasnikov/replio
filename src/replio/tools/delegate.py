@@ -4,8 +4,8 @@ _WRITE_PREFIXES = ('Created ', 'Overwritten ', 'Appended ')
 
 
 def _delegate_action(engine, args: dict) -> str:
-    persona = (args or {}).get('persona', '')
-    entry = engine.personas.find(persona)
+    type_name = (args or {}).get('type', '')
+    entry = engine.types.find(type_name)
     if entry is None:
         return 'deny'
     action = (entry.tool_permission or {}).get('delegate', 'allow')
@@ -51,17 +51,17 @@ def _summarize_session(engine, result) -> str:
     return summary
 
 
-def _format_result(engine, persona: str, res) -> str:
+def _format_result(engine, type_name: str, res) -> str:
     if res.status == 'error':
         msgs = '; '.join(e.get('message', '') for e in (res.errors or []) if e.get('message'))
         return f'Error: delegated task failed: {msgs or "unknown error"}'
     content = (res.content or '').strip()
     if content:
-        return f'[delegate {persona}] {content}'
+        return f'[delegate {type_name}] {content}'
     summary = _summarize_session(engine, res)
     if summary:
-        return f'[delegate {persona}] (no final text; {summary})'
-    return f'[delegate {persona}] (no content)'
+        return f'[delegate {type_name}] (no final text; {summary})'
+    return f'[delegate {type_name}] (no content)'
 
 
 def _sub_footer(engine, res):
@@ -77,39 +77,39 @@ def register_delegate_tool(registry, engine) -> Callable:
     @registry.register(
         name='delegate',
         description=(
-            "Run a task with a persona as a sub-agent and return its final answer. "
-            "The sub-agent runs in its own session under the persona's system prompt "
+            "Run a task with an agent type as a sub-agent and return its final answer. "
+            "The sub-agent runs in its own session under the agent type's system prompt "
             "and permissions. Use it for specialized work (research, writing, review), "
             "then continue from the returned result."
         ),
         parameters={
             'type': 'object',
             'properties': {
-                'persona': {
+                'type': {
                     'type': 'string',
-                    'description': 'Name of the persona to delegate to',
+                    'description': 'Name of the agent type to delegate to',
                 },
                 'task': {
                     'type': 'string',
                     'description': 'Task for the sub-agent to complete',
                 },
             },
-            'required': ['persona', 'task'],
+            'required': ['type', 'task'],
         },
         category='delegate',
         permission='delegate',
-        key_arg='persona',
-        short='Run a task with a persona',
+        key_arg='type',
+        short='Run a task with an agent type',
         glyph='↳',
         verb='Delegate',
         permission_fn=lambda args: _delegate_action(engine, args),
     )
-    def delegate(persona: str, task: str, _config=None, _echo: bool = True) -> str:
+    def delegate(type: str, task: str, _config=None, _echo: bool = True) -> str:
         try:
-            res = engine.run_subagent(persona, task)
+            res = engine.run_subagent(type, task)
         except ValueError as e:
             return f'Error: {e}'
-        result = _format_result(engine, persona, res)
+        result = _format_result(engine, type, res)
         if (_echo and _config is not None and _config.get('delegate_echo', True)
                 and not result.startswith('Error')):
             engine.ui.tool_result(result)

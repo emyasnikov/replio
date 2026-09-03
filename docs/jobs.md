@@ -4,7 +4,7 @@
 
 ## Job store
 
-Jobs live in `.replio/jobs.json` next to the sessions, one register per worktree (same rule as personas). The file is plain JSON and the last writer wins, so run one scheduler per `.replio`. Removing a job removes only its definition - its sessions stay as the append-only log of every run. The register keeps the most recent 100 runs. The full transcript always stays in the session file.
+Jobs live in `.replio/jobs.json` next to the sessions, one register per worktree (same rule as types). The file is plain JSON and the last writer wins, so run one scheduler per `.replio`. Removing a job removes only its definition - its sessions stay as the append-only log of every run. The register keeps the most recent 100 runs. The full transcript always stays in the session file.
 
 ```json
 {
@@ -15,7 +15,7 @@ Jobs live in `.replio/jobs.json` next to the sessions, one register per worktree
       "prompt": "Summarize today's operations logs into a short report.",
       "session": "",
       "mode": "plan",
-      "persona": "researcher",
+      "type": "researcher",
       "system_prompt": "",
       "retries": 3,
       "backoff": 60,
@@ -72,7 +72,7 @@ replio jobs add nightly --file jobs/nightly-report.md --cron "0 2 * * *"
 - **`replio jobs edit <name>`** (also `/jobs edit <name>`) opens the job's task file in `$EDITOR` (creating the template first if needed). `replio jobs show <name>` prints the stored path.
 - Paths under the worktree are stored relative to it. Absolute paths stay absolute. A missing task file at run time fails that run with a clear `task file not found` reason so a broken link is never silently ignored.
 
-At run time the system prompt is composed as: `persona.system_prompt` (if a persona is set), the task file contents (`## Job task`), `--system-prompt`, and the run memory (`## Run memory`, below). The engine's mode instruction is appended last. With none of persona / task file / custom prompt / memory set, a generic recurring-job prompt is used.
+At run time the system prompt is composed as: `type.system_prompt` (if an agent type is set), the task file contents (`## Job task`), `--system-prompt`, and the run memory (`## Run memory`, below). The engine's mode instruction is appended last. With none of type / task file / custom prompt / memory set, a generic recurring-job prompt is used.
 
 ## Run memory
 
@@ -113,8 +113,8 @@ replio jobs daemon [--tick 15] [--quiet]        # scheduler loop, Ctrl-C to stop
 | `--session` | Stable session name. Default is a fresh per-run `job_<ts>_<name>` file |
 | `--mode` | Mode override (`plan`, `build`, or custom) |
 | `--provider` / `--model` | Provider / model overrides |
-| `--persona` | Apply a persona's system prompt, model, and tool permissions |
-| `--system-prompt` | System prompt describing the job. Without it or a persona, a generic recurring-job prompt is used |
+| `--type` | Apply an agent type's system prompt, model, and tool permissions |
+| `--system-prompt` | System prompt describing the job. Without it or an agent type, a generic recurring-job prompt is used |
 | `--tools-deny NAME` | Deny a tool (repeatable) |
 | `--tool-permission category=action` | Permission override, e.g. `bash=allow` (repeatable) |
 | `--retries N` | Retries after a failed attempt. Default `3` |
@@ -133,7 +133,7 @@ There are three distinct gates, from coarsest to finest:
 2. **Per-run approval (`--require-approval`)** - the gate you want when "something has to be decided" about *this* run, not just arm-or-disarm for all time. Each run parks in `waiting_approval`: the daemon will not fire it, `replio jobs status` shows `WAITING for approve`, and `replio jobs approve <name>` (or `/jobs approve`) arms exactly the next run. After the run finishes it parks again. `reject` clears the grant. `run` still overrides and executes now.
 3. **Mid-run blocking approval (tool-level, planned)** - an `ask` tool inside a running job pauses the run in place and waits for a human reply before resuming on the same session. This is the deepest "decide during the task" model and is tracked separately in [TODO.md](../../TODO.md): it needs resumable mid-run state, a wait loop inside the run, and a transport to deliver the ask and return the answer (the planned webhook/email/Telegram connectors drive the same operator API).
 
-A job runs with `HeadlessUI(auto='deny')` - the same posture as `replio serve`. That means as long as mid-run blocking is not implemented, an `ask` tool inside a run is denied, not paused: the run continues without it (or fails if the task depended on it). Give a job the permissions it needs up front (`--tool-permission bash=allow`, a persona carve, or a `--tools-deny` list) and it will not need mid-run interruption.
+A job runs with `HeadlessUI(auto='deny')` - the same posture as `replio serve`. That means as long as mid-run blocking is not implemented, an `ask` tool inside a run is denied, not paused: the run continues without it (or fails if the task depended on it). Give a job the permissions it needs up front (`--tool-permission bash=allow`, an agent type carve, or a `--tools-deny` list) and it will not need mid-run interruption.
 
 `timeout` runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so a timed-out job should be inspected with `replio jobs show <name>` before a manual retry.
 
@@ -147,7 +147,7 @@ The **compact memory** is the run-memory file ([Run memory](#run-memory)): a rol
 
 ## How a run executes
 
-Each attempt builds a fresh headless `Engine` from the job's overrides, using the run's session file (fresh `job_<ts>_<name>`, or the `--session` override), and calls `chat()` once. The system prompt is composed from the persona (if set), the linked task file (`## Job task`), `--system-prompt`, and the rolling run memory (`## Run memory`). With none of them a generic recurring-job prompt is layered in, telling the model this is a recurring job with earlier context. After the run finishes, the run is summarized into `.replio/jobs/<name>.memory.md` for the next run, so continuity lives in the memory file rather than in a growing session. A retry continues from the failed attempt's trail (same run's session file) with a "Previous attempt failed. Retry this job" header. `replio jobs run --verbose` streams the live turn (tokens to stdout, tool activity to stderr) before the summary. `replio jobs run` prints the final answer headlessly.
+Each attempt builds a fresh headless `Engine` from the job's overrides, using the run's session file (fresh `job_<ts>_<name>`, or the `--session` override), and calls `chat()` once. The system prompt is composed from the agent type (if set), the linked task file (`## Job task`), `--system-prompt`, and the rolling run memory (`## Run memory`). With none of them a generic recurring-job prompt is layered in, telling the model this is a recurring job with earlier context. After the run finishes, the run is summarized into `.replio/jobs/<name>.memory.md` for the next run, so continuity lives in the memory file rather than in a growing session. A retry continues from the failed attempt's trail (same run's session file) with a "Previous attempt failed. Retry this job" header. `replio jobs run --verbose` streams the live turn (tokens to stdout, tool activity to stderr) before the summary. `replio jobs run` prints the final answer headlessly.
 
 ## Scheduling semantics
 

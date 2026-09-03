@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from replio.personas import Persona
+from replio.types import AgentType
 
 from tests.helpers import make_chat
 
@@ -18,12 +18,12 @@ class TestDelegateTool(unittest.TestCase):
     def tearDown(self):
         self.chat._tmp.cleanup()
 
-    def _delegate_call(self, persona='writer', task='write the doc'):
+    def _delegate_call(self, type_name='writer', task='write the doc'):
         return [{
             'id': 'call_del001',
             'type': 'function',
             'function': {'name': 'delegate',
-                         'arguments': json.dumps({'persona': persona,
+                         'arguments': json.dumps({'type': type_name,
                                                   'task': task})},
         }]
 
@@ -36,11 +36,11 @@ class TestDelegateTool(unittest.TestCase):
                 if m['role'] == 'tool']
 
     def _allow_delegate(self, name='writer'):
-        self.chat.personas.put(
-            Persona(name=name, system_prompt='Writer persona',
-                    tool_permission={'delegate': 'allow'}), scope='local')
+        self.chat.types.put(
+            AgentType(name=name, system_prompt='Writer agent',
+                      tool_permission={'delegate': 'allow'}), scope='local')
 
-    def _delegate_logs(self, persona):
+    def _delegate_logs(self, type_name):
         return sorted(
             f for f in self.sessions_dir.glob('sub_*.json')
             if json.loads(f.read_text()).get('parent_id')
@@ -53,7 +53,7 @@ class TestDelegateTool(unittest.TestCase):
                 return True
         return False
 
-    def test_allowed_persona_runs_subagent(self):
+    def test_allowed_type_runs_subagent(self):
         self._allow_delegate()
         self.chat.provider.chat.side_effect = [
             [{'type': 'tool_calls', 'tool_calls': self._delegate_call()}],
@@ -116,10 +116,10 @@ class TestDelegateTool(unittest.TestCase):
         self.assertIn('[delegate writer] Draft text.',
                       self._tool_msgs()[0]['content'])
 
-    def test_persona_ask_requires_confirm(self):
-        self.chat.personas.put(
-            Persona(name='writer', system_prompt='W',
-                    tool_permission={'delegate': 'ask'}), scope='local')
+    def test_type_ask_requires_confirm(self):
+        self.chat.types.put(
+            AgentType(name='writer', system_prompt='W',
+                      tool_permission={'delegate': 'ask'}), scope='local')
         self.chat._ui.confirm = MagicMock(return_value=False)
         self.chat.provider.chat.side_effect = [
             [{'type': 'tool_calls', 'tool_calls': self._delegate_call()}],
@@ -134,9 +134,9 @@ class TestDelegateTool(unittest.TestCase):
         self.assertFalse(self._delegate_logs('writer'))
 
     def test_confirm_granted_runs(self):
-        self.chat.personas.put(
-            Persona(name='writer', system_prompt='W',
-                    tool_permission={'delegate': 'ask'}), scope='local')
+        self.chat.types.put(
+            AgentType(name='writer', system_prompt='W',
+                      tool_permission={'delegate': 'ask'}), scope='local')
         self.chat._ui.confirm = MagicMock(return_value=True)
         self.chat.provider.chat.side_effect = [
             [{'type': 'tool_calls', 'tool_calls': self._delegate_call()}],
@@ -150,7 +150,7 @@ class TestDelegateTool(unittest.TestCase):
         self.assertIn('[delegate writer] Draft text.',
                       self._tool_msgs()[0]['content'])
 
-    def test_unknown_persona_denied(self):
+    def test_unknown_type_denied(self):
         self.chat.provider.chat.side_effect = [
             [{'type': 'tool_calls', 'tool_calls': self._delegate_call('ghost')}],
             [{'type': 'token', 'content': 'Final.'},
@@ -171,7 +171,7 @@ class TestDelegateTool(unittest.TestCase):
         ]
         with patch('sys.stdout', new=io.StringIO()) as buf:
             self.chat.registry.dispatch(
-                '/tool delegate {"persona": "writer", "task": "write"}')
+                '/tool delegate {"type": "writer", "task": "write"}')
         out = buf.getvalue()
         self.assertEqual(out.count('[delegate writer] Sub result.'), 1)
         self.assertTrue(self._delegate_logs('writer'))
@@ -180,9 +180,9 @@ class TestDelegateTool(unittest.TestCase):
         self._allow_delegate()
         self.chat._init_tooling()
         policy = self.chat._tool_policy
-        args_allow = {'persona': 'writer', 'task': 't'}
-        args_default = {'persona': 'programmer', 'task': 't'}
-        args_unknown = {'persona': 'ghost', 'task': 't'}
+        args_allow = {'type': 'writer', 'task': 't'}
+        args_default = {'type': 'programmer', 'task': 't'}
+        args_unknown = {'type': 'ghost', 'task': 't'}
         self.assertEqual(
             policy.action('delegate', 'delegate', None, args_allow), 'allow')
         self.assertEqual(

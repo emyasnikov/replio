@@ -9,7 +9,7 @@ The registry mechanics (registration metadata, policy, aliases, `clean_args`) ar
 More tools does not mean a better agent. Every tool definition is loaded into the model's context on every turn, and overlapping tools actively mislead selection. Build a few thoughtful tools that target high-impact workflows, and scale up only when a real gap shows up.
 
 - Prefer search and point tools over dump-everything tools. An agent wastes its limited context reading irrelevant results. `grep` returns only matching `file:line: text` lines. `glob` locates a path before it is read. `file_read` reports `N lines, M chars` in its header so the agent can probe a file's size with `limit=0` before committing to a read.
-- Consolidate operations that are usually chained. `file_write` folds create, overwrite, and append into one call behind a `mode` enum. `delegate` runs a whole task under a persona as a single call. A consolidated tool offloads multi-step reasoning from the model's context into the tool itself.
+- Consolidate operations that are usually chained. `file_write` folds create, overwrite, and append into one call behind a `mode` enum. `delegate` runs a whole task under an agent type as a single call. A consolidated tool offloads multi-step reasoning from the model's context into the tool itself.
 - Do not wrap a function or API endpoint just because you can. A tool needs a clear agent affordance: the model must be able to decide from its description alone when to call it and what to do with the result.
 - Avoid near-duplicate tools. Two tools that fetched a web page (`open` and `fetch_page`) confused agents until they were merged into one `web_fetch` that takes `url` or a search-result `id`. If two tools overlap, merge them or delete one.
 

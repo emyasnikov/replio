@@ -318,8 +318,8 @@ class PluginManager:
     def register_commands(self, registry):
         self._run_hook('register_commands', registry)
 
-    def register_personas(self, registry):
-        self._run_hook('register_personas', registry)
+    def register_types(self, registry):
+        self._run_hook('register_types', registry)
 
     def register_teams(self, registry):
         self._run_hook('register_teams', registry)

@@ -146,7 +146,7 @@ Every tool permission resolution is recorded to the `permissions` array, making 
 | `path` | The tool's `path_arg` value when the tool has one (e.g. the file or command target) |
 | `timestamp` | ISO 8601 UTC timestamp |
 
-Per-invocation (resolver-based) actions are recorded the same way - for example `delegate` logs the action resolved from the target persona, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - there is no config switch, so the log stays a reliable audit record.
+Per-invocation (resolver-based) actions are recorded the same way - for example `delegate` logs the action resolved from the target type, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - there is no config switch, so the log stays a reliable audit record.
 
 ## Append-only semantics
 

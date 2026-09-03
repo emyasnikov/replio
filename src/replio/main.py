@@ -146,7 +146,7 @@ def _add_jobs_parser(sub):
     ga.add_argument('--mode', help='Agent mode override (plan, build, or custom)')
     ga.add_argument('--provider', help='Provider override')
     ga.add_argument('--model', help='Model override')
-    ga.add_argument('--persona', help='Persona whose prompt, model, and permissions apply')
+    ga.add_argument('--type', help='Agent type whose prompt, model, and permissions apply')
     ga.add_argument('--system-prompt', help='System prompt override')
     ga.add_argument('--tools-deny', action='append', default=[],
                     help='Tool name to deny (repeatable)')
@@ -222,7 +222,7 @@ def _add_fleet_parser(sub):
     gc.add_argument('name')
     gc.add_argument('--provider', help='Provider override')
     gc.add_argument('--model', help='Model override')
-    gc.add_argument('--persona', help='Inline a persona\'s prompt, model, and permissions')
+    gc.add_argument('--type', help='Inline an agent type\'s prompt, model, and permissions')
     gc.add_argument('--system-prompt', help='System prompt override')
     gc.add_argument('--mode', help='Agent mode override (plan, build, or custom)')
     gc.add_argument('--tools-deny', action='append', default=[],

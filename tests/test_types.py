@@ -4,51 +4,51 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from replio import personas as personas_mod
-from replio.personas import Persona, PersonaRegistry
+from replio import types as types_mod
+from replio.types import AgentType, TypeRegistry
 from replio.config import Config
 
 from tests.helpers import make_chat
 
-BUNDLED = Path(personas_mod.__file__).with_name(
-    PersonaRegistry.BUNDLED_FILENAME)
+BUNDLED = Path(types_mod.__file__).with_name(
+    TypeRegistry.BUNDLED_FILENAME)
 
 
 class StubPluginManager:
     def __init__(self, entries):
         self.entries = entries
 
-    def register_personas(self, registry):
+    def register_types(self, registry):
         for entry in self.entries:
             registry.add_plugin(entry)
 
 
-class TestPersonaRegistry(unittest.TestCase):
+class TestTypeRegistry(unittest.TestCase):
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.base = Path(self.tmp.name)
-        self.local = self.base / 'proj' / '.replio' / 'personas.json'
+        self.local = self.base / 'proj' / '.replio' / 'types.json'
 
     def tearDown(self):
         self.tmp.cleanup()
 
     def reg(self, global_dir=None, local_path=None, bundled_path=None):
         if bundled_path is None:
-            bundled_path = self.base / 'nobundled' / 'personas.json'
-        return PersonaRegistry(global_dir=global_dir or self.base,
-                               local_path=local_path or self.local,
-                               bundled_path=bundled_path)
+            bundled_path = self.base / 'nobundled' / 'types.json'
+        return TypeRegistry(global_dir=global_dir or self.base,
+                            local_path=local_path or self.local,
+                            bundled_path=bundled_path)
 
     def bundled(self, local_path=None):
-        return PersonaRegistry(global_dir=self.base,
-                               local_path=local_path or self.local,
-                               bundled_path=BUNDLED)
+        return TypeRegistry(global_dir=self.base,
+                            local_path=local_path or self.local,
+                            bundled_path=BUNDLED)
 
     def test_paths(self):
         reg = self.reg()
         self.assertEqual(reg.global_path,
-                         self.base / '.config' / 'replio' / 'personas.json')
+                         self.base / '.config' / 'replio' / 'types.json')
         self.assertEqual(reg.local_path, self.local)
 
     def test_empty(self):
@@ -57,7 +57,7 @@ class TestPersonaRegistry(unittest.TestCase):
 
     def test_put_local_and_find(self):
         reg = self.reg()
-        reg.put(Persona(name='researcher', system_prompt='Search the web.'))
+        reg.put(AgentType(name='researcher', system_prompt='Search the web.'))
         p = reg.find('researcher')
         self.assertIsNotNone(p)
         self.assertEqual(p.system_prompt, 'Search the web.')
@@ -65,21 +65,21 @@ class TestPersonaRegistry(unittest.TestCase):
 
     def test_put_fields_roundtrip(self):
         reg = self.reg()
-        reg.put(Persona(name='writer', model='deepseek-r1',
-                        skills=['writers'],
-                        tool_permission={'delegate': 'ask'}))
+        reg.put(AgentType(name='writer', model='deepseek-r1',
+                         skills=['writers'],
+                         tool_permission={'delegate': 'ask'}))
         p = reg.find('writer')
         self.assertEqual(p.model, 'deepseek-r1')
         self.assertEqual(p.skills, ['writers'])
         self.assertEqual(p.tool_permission, {'delegate': 'ask'})
 
     def test_global_and_local_merge_local_wins(self):
-        g = PersonaRegistry(global_dir=self.base,
-                            local_path=Path(self.tmp.name) / 'g' / 'p.json')
-        g.put(Persona(name='x', system_prompt='global prompt', model='m1'),
+        g = TypeRegistry(global_dir=self.base,
+                         local_path=Path(self.tmp.name) / 'g' / 't.json')
+        g.put(AgentType(name='x', system_prompt='global prompt', model='m1'),
               scope='global')
         reg = self.reg()
-        reg.put(Persona(name='x', system_prompt='local prompt'), scope='local')
+        reg.put(AgentType(name='x', system_prompt='local prompt'), scope='local')
         p = reg.find('x')
         self.assertEqual(p.system_prompt, 'local prompt')
         self.assertEqual(p.model, 'm1')
@@ -87,27 +87,27 @@ class TestPersonaRegistry(unittest.TestCase):
 
     def test_local_only_does_not_add_to_global(self):
         reg = self.reg()
-        reg.put(Persona(name='only-local'), scope='local')
-        fresh = PersonaRegistry(global_dir=self.base,
-                                local_path=Path(self.tmp.name) / 'z' / 'p.json')
+        reg.put(AgentType(name='only-local'), scope='local')
+        fresh = TypeRegistry(global_dir=self.base,
+                             local_path=Path(self.tmp.name) / 'z' / 't.json')
         self.assertIsNone(fresh.find('only-local'))
 
     def test_remove_local(self):
         reg = self.reg()
-        reg.put(Persona(name='x'))
+        reg.put(AgentType(name='x'))
         self.assertTrue(reg.remove('x'))
         self.assertIsNone(reg.find('x'))
         self.assertFalse(reg.remove('x'))
 
     def test_reload_from_disk(self):
-        self.reg().put(Persona(name='x', system_prompt='p'))
+        self.reg().put(AgentType(name='x', system_prompt='p'))
         reg2 = self.reg()
         self.assertEqual(reg2.find('x').system_prompt, 'p')
 
     def test_all_sorted_by_name(self):
         reg = self.reg()
-        reg.put(Persona(name='z'))
-        reg.put(Persona(name='a'))
+        reg.put(AgentType(name='z'))
+        reg.put(AgentType(name='a'))
         self.assertEqual([p.name for p in reg.all()], ['a', 'z'])
         self.assertEqual(reg.names(), ['a', 'z'])
 
@@ -115,9 +115,9 @@ class TestPersonaRegistry(unittest.TestCase):
         prev = Config.GLOBAL_DIR
         Config.GLOBAL_DIR = self.base
         try:
-            reg = PersonaRegistry(local_path=self.local)
+            reg = TypeRegistry(local_path=self.local)
             self.assertEqual(reg.global_path,
-                             self.base / '.config' / 'replio' / 'personas.json')
+                             self.base / '.config' / 'replio' / 'types.json')
         finally:
             Config.GLOBAL_DIR = prev
 
@@ -151,13 +151,13 @@ class TestPersonaRegistry(unittest.TestCase):
 
     def test_tags_roundtrip(self):
         reg = self.reg()
-        reg.put(Persona(name='x', tags=['writing', 'review']))
+        reg.put(AgentType(name='x', tags=['writing', 'review']))
         p = reg.find('x')
         self.assertEqual(p.tags, ['writing', 'review'])
 
     def test_tags_merge_local_replaces_bundled(self):
         reg = self.bundled()
-        reg.put(Persona(name='researcher', tags=['custom']), scope='local')
+        reg.put(AgentType(name='researcher', tags=['custom']), scope='local')
         p = reg.find('researcher')
         self.assertEqual(p.tags, ['custom'])
         self.assertEqual(reg.origin('researcher'), 'merged')
@@ -166,27 +166,27 @@ class TestPersonaRegistry(unittest.TestCase):
 
     def test_bundled_overridden_by_global_and_local(self):
         reg = self.bundled()
-        reg.put(Persona(name='researcher', system_prompt='global variant'),
+        reg.put(AgentType(name='researcher', system_prompt='global variant'),
                 scope='global')
         p = reg.find('researcher')
         self.assertEqual(p.system_prompt, 'global variant')
         self.assertEqual(p.tool_permission['edit'], 'deny')
         self.assertEqual(reg.origin('researcher'), 'merged')
-        reg.put(Persona(name='researcher', system_prompt='local variant'),
+        reg.put(AgentType(name='researcher', system_prompt='local variant'),
                 scope='local')
         self.assertEqual(reg.find('researcher').system_prompt, 'local variant')
 
     def test_bundled_restored_after_override_removed(self):
         reg = self.bundled()
         bundled_prompt = reg.find('researcher').system_prompt
-        reg.put(Persona(name='researcher', system_prompt='mine'), scope='local')
+        reg.put(AgentType(name='researcher', system_prompt='mine'), scope='local')
         self.assertEqual(reg.find('researcher').system_prompt, 'mine')
         self.assertTrue(reg.remove('researcher'))
         p = reg.find('researcher')
         self.assertEqual(p.system_prompt, bundled_prompt)
         self.assertEqual(reg.origin('researcher'), 'bundled')
 
-    def test_add_plugin_persona(self):
+    def test_add_plugin_type(self):
         reg = self.reg()
         reg.add_plugin({'name': 'helper', 'system_prompt': 'from a plugin',
                         'tags': ['plugin']})
@@ -207,7 +207,7 @@ class TestPersonaRegistry(unittest.TestCase):
         reg = self.reg()
         reg.add_plugin({'name': 'helper', 'system_prompt': 'x'})
         self.assertFalse(self.local.exists())
-        reg.put(Persona(name='mine', system_prompt='p'), scope='local')
+        reg.put(AgentType(name='mine', system_prompt='p'), scope='local')
         import json as _json
         saved = _json.loads(self.local.read_text())
         self.assertEqual(list(saved), ['mine'])
@@ -223,7 +223,7 @@ class TestPersonaRegistry(unittest.TestCase):
     def test_global_overrides_plugin(self):
         reg = self.reg()
         reg.add_plugin({'name': 'x', 'system_prompt': 'plugin prompt'})
-        reg.put(Persona(name='x', system_prompt='global prompt'), scope='global')
+        reg.put(AgentType(name='x', system_prompt='global prompt'), scope='global')
         self.assertEqual(reg.find('x').system_prompt, 'global prompt')
         self.assertEqual(reg.origin('x'), 'merged')
         reg.remove('x', scope='global')
@@ -232,7 +232,7 @@ class TestPersonaRegistry(unittest.TestCase):
     def test_local_overrides_plugin(self):
         reg = self.reg()
         reg.add_plugin({'name': 'x', 'system_prompt': 'plugin prompt'})
-        reg.put(Persona(name='x', system_prompt='local prompt'), scope='local')
+        reg.put(AgentType(name='x', system_prompt='local prompt'), scope='local')
         self.assertEqual(reg.find('x').system_prompt, 'local prompt')
         self.assertEqual(reg.origin('x'), 'merged')
 
@@ -271,7 +271,7 @@ class TestPersonaRegistry(unittest.TestCase):
         self.assertIsNone(reg.find('helper'))
 
 
-class TestPersonaCommand(unittest.TestCase):
+class TestTypeCommand(unittest.TestCase):
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -281,68 +281,68 @@ class TestPersonaCommand(unittest.TestCase):
         self.chat._tmp.cleanup()
         self.tmp.cleanup()
 
-    def _persona(self, arg=''):
+    def _type(self, arg=''):
         with patch('sys.stdout', new=io.StringIO()) as buf:
-            self.chat.registry.dispatch('/persona ' + arg)
+            self.chat.registry.dispatch('/type ' + arg)
         return buf.getvalue()
 
     def test_list_shows_bundled(self):
-        out = self._persona()
-        self.assertIn('8 personas', out)
+        out = self._type()
+        self.assertIn('8 agent types', out)
         self.assertIn('researcher', out)
         self.assertIn('(bundled)', out)
 
     def test_list_shows_tags(self):
-        out = self._persona()
+        out = self._type()
         self.assertIn('tags=research,writing', out)
         self.assertIn('tags=programming', out)
 
     def test_list_filter_by_tag(self):
-        out = self._persona('list programming')
+        out = self._type('list programming')
         self.assertIn('programmer', out)
         self.assertIn('code-reviewer', out)
         self.assertNotIn('researcher ', out)
-        out = self._persona('list review')
+        out = self._type('list review')
         self.assertIn('editor', out)
         self.assertIn('code-reviewer', out)
 
     def test_list_unknown_tag(self):
-        out = self._persona('list nonexistent')
-        self.assertIn('no personas tagged "nonexistent"', out)
+        out = self._type('list nonexistent')
+        self.assertIn('no agent types tagged "nonexistent"', out)
         self.assertIn('known tags', out)
 
     def test_new_then_list(self):
-        self._persona('new custom')
-        out = self._persona()
+        self._type('new custom')
+        out = self._type()
         self.assertIn('custom', out)
 
     def test_show(self):
-        self._persona('new researcher Web search agent')
-        out = self._persona('show researcher')
+        self._type('new researcher Web search agent')
+        out = self._type('show researcher')
         self.assertIn('Web search agent', out)
 
     def test_new_overrides_existing(self):
-        self._persona('new x one')
-        out = self._persona('new x two')
-        self.assertIn('Overrode persona: x', out)
-        out = self._persona('show x')
+        self._type('new x one')
+        out = self._type('new x two')
+        self.assertIn('Overrode agent type: x', out)
+        out = self._type('show x')
         self.assertIn('two', out)
 
     def test_remove_local(self):
-        self._persona('new x')
-        out = self._persona('remove x')
-        self.assertIn('Removed persona: x', out)
+        self._type('new x')
+        out = self._type('remove x')
+        self.assertIn('Removed agent type: x', out)
 
     def test_remove_bundled_rejected(self):
-        out = self._persona('remove researcher')
+        out = self._type('remove researcher')
         self.assertIn('bundled with replio', out)
 
     def test_override_bundled_then_remove(self):
-        self._persona('new researcher local text')
-        out = self._persona('show researcher')
+        self._type('new researcher local text')
+        out = self._type('show researcher')
         self.assertIn('local text', out)
-        out = self._persona('remove researcher')
-        self.assertIn('Removed persona: researcher', out)
+        out = self._type('remove researcher')
+        self.assertIn('Removed agent type: researcher', out)
 
 
 if __name__ == '__main__':

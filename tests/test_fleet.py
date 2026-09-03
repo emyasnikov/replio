@@ -384,7 +384,7 @@ class TestFleetCli(unittest.TestCase):
         rc, out, _ = self._capture(self._args(
             action='config', name='alpha', provider='ollama', model='m1',
             system_prompt='hello', mode='plan', tools_deny=['run_command'],
-            tool_permission=['bash=deny', 'web=allow'], persona=''))
+            tool_permission=['bash=deny', 'web=allow'], type=''))
         self.assertEqual(rc, 0)
         target = self.root / 'alpha' / '.replio' / 'config.json'
         data = json.loads(target.read_text())
@@ -397,10 +397,10 @@ class TestFleetCli(unittest.TestCase):
                          {'bash': 'deny', 'web': 'allow'})
         self.assertIn('Updated', out)
 
-    def test_config_persona_inlined(self):
+    def test_config_type_inlined(self):
         ctrl = self._ctrl()
         ctrl.manifest.add(AgentDef(name='alpha', dir=str(self.root / 'alpha')))
-        lp = self.root / 'alpha' / '.replio' / 'personas.json'
+        lp = self.root / 'alpha' / '.replio' / 'types.json'
         lp.parent.mkdir(parents=True)
         lp.write_text(json.dumps({
             'archivist': {
@@ -411,23 +411,23 @@ class TestFleetCli(unittest.TestCase):
         rc, _, _ = self._capture(self._args(
             action='config', name='alpha', provider='', model='',
             system_prompt='', mode='', tools_deny=[], tool_permission=[],
-            persona='archivist'))
+            type='archivist'))
         self.assertEqual(rc, 0)
         data = json.loads((self.root / 'alpha' / '.replio' / 'config.json').read_text())
         self.assertEqual(data['system_prompt'], 'You organise notes.')
         self.assertEqual(data['model'], 'tiny-model')
         self.assertEqual(data['tool_permission']['bash'], 'deny')
 
-    def test_config_unknown_persona_errors(self):
+    def test_config_unknown_type_errors(self):
         ctrl = self._ctrl()
         ctrl.manifest.add(AgentDef(name='alpha',
                                    dir=str(self.root / 'alpha')))
         rc, _, err = self._capture(self._args(
             action='config', name='alpha', provider='', model='',
             system_prompt='', mode='', tools_deny=[], tool_permission=[],
-            persona='nosuch'))
+            type='nosuch'))
         self.assertEqual(rc, 1)
-        self.assertIn('Unknown persona: nosuch', err)
+        self.assertIn('Unknown agent type: nosuch', err)
 
     def test_config_nothing_to_set_errors(self):
         ctrl = self._ctrl()
@@ -435,7 +435,7 @@ class TestFleetCli(unittest.TestCase):
         rc, _, err = self._capture(self._args(
             action='config', name='alpha', provider='', model='',
             system_prompt='', mode='', tools_deny=[], tool_permission=[],
-            persona=''))
+            type=''))
         self.assertEqual(rc, 1)
         self.assertIn('Nothing to set', err)
 

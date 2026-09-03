@@ -34,7 +34,7 @@ This document compares **Replio** (github.com/emyasnikov/replio) and **Langflow*
 |---------|--------|----------|
 | RAG | None built-in | First-class (vector stores, retrievers, embeddings) |
 | MCP | Client and server via bundled plugin | Build and deploy MCP servers, and connect MCP tools |
-| Multi-agent | Partially - bundled personas, `delegate` tool, in-process sub-agents. Fleet/swarm orchestration and auditor agents on the roadmap | Native multi-agent orchestration (e.g. via Crew AI) |
+| Multi-agent | Partially - bundled types, `delegate` tool, in-process sub-agents. Fleet/swarm orchestration and auditor agents on the roadmap | Native multi-agent orchestration (e.g. via Crew AI) |
 | Integrations | Web search, files, shell | Many data sources, LLMs, vector stores, and services |
 | Deployment | Local process or `replio serve` HTTP API | Self-host OSS, free cloud, or flow-as-API deployment |
 

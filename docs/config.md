@@ -120,7 +120,7 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 }
 ```
 
-Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the project worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target persona - a configured persona uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while a persona not in the registry defaults to `deny` (see [personas.md](personas.md)).
+Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the project worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)).
 
 ### `bash_allow` - command allowlist for `run_command`
 

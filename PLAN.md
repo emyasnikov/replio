@@ -30,7 +30,7 @@ Verified: `/team run` end-to-end + unit tests (mock provider, no network).
 - [ ] Team kit library - flat tagged store (stack, customer, project-type), importable into new projects
 - [ ] `/teamkit` authoring commands - init, list, new, match, export, import, per-customer split
 - [ ] Auto team selection - lead agent composes the team for a task and delegates in sequence
-- [ ] `/agent` personas - interactive persona selection/run UX
+- [ ] `/agent` types - interactive type selection/run UX
 - [ ] Docs completed (`docs/teamkit.md` full)
 
 Verified: one command composes a new project's team. A second project reuses stored artifacts.
@@ -49,7 +49,7 @@ Verified: full workflow with the kit installed externally.
 One round hands off in three steps:
 
 1. **Start** - the operator starts a task: `replio jobs add`/`run` for scheduled work, or a REPL prompt for ad-hoc work. The jobs operator API adds a remote start (`POST /jobs/<name>/approve`) later
-2. **Distribute + review** - the lead agent splits the task into subtasks and delegates them: sequentially by persona today (`delegate` tool, team stages next), routed to fleet agents over `POST /chat` once team/job configs land, with auditor agents reviewing the output (generate > check > correct)
+2. **Distribute + review** - the lead agent splits the task into subtasks and delegates them: sequentially by type today (`delegate` tool, team stages next), routed to fleet agents over `POST /chat` once team/job configs land, with auditor agents reviewing the output (generate > check > correct)
 3. **Return** - results come back to the operator: the delegate result or job summary today, the jobs operator API + webhook/email/Telegram connectors when the jobs layer lands. The fleet supervisor restarts crashed processes underneath. The jobs layer restarts failed work - two kinds of restart, both compose
 
 Fleet is the substrate that stays up, not the conductor of the work.
@@ -64,21 +64,21 @@ Tools are the provider-facing surface - one OpenAI-compatible contract, registry
 
 ## Team orchestration (swarm core)
 
-Agents cooperate through personas, delegation, and team stages. Sub-agents use the caller's provider, plugin manager, and worktree (see `docs/swarm.md`).
+Agents cooperate through types, delegation, and team stages. Sub-agents use the caller's provider, plugin manager, and worktree (see `docs/swarm.md`).
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Plugin contribution hooks (M1) | S | plugin-owned personas/teams/skills without forking the core |
-| Skills registry (M1) | S-M | persona `skills` resolved and injected into sub-agent system prompts |
+| Plugin contribution hooks (M1) | S | plugin-owned types/teams/skills without forking the core |
+| Skills registry (M1) | S-M | type `skills` resolved and injected into sub-agent system prompts |
 | Teams registry (M1) | S-M | named team configurations ("writing" = researcher > writer > referencer > editor, "programming" = planner > programmer > tester > code-reviewer) with ordering + handoff - subsumes the TODO "Jobs registry - named team configurations" item |
 | Sequential team runs (M1) - `Engine.run_team` | M | stage-by-stage delegation with generated briefs, shared team memory (`.replio/teams/<name>/memory.md`), handoff |
-| Auto team selection (M2) | M | the lead agent composes the team (personas + order + briefs) for a task |
-| `/agent` personas (M2) | M | interactive persona selection/run UX (registry + sub-engine + delegate landed) |
+| Auto team selection (M2) | M | the lead agent composes the team (types + order + briefs) for a task |
+| `/agent` types (M2) | M | interactive type selection/run UX (registry + sub-engine + delegate landed) |
 | Custom system prompts per session | S-M | per-site instructions |
 | Auditor agents + generate > check > correct orchestration | M-L | review-and-fix loops (later milestone, listed in VISION.md out-of-scope) |
 | PM/dev/tester team orchestration as a user-facing pattern | M | team pattern on top of the teams registry (lands with M1/M2) |
 | Delegation progress in the REPL + interactive delegation focus | M | live status of the running member, jump into its log, arrows switch views |
-| Swarm orchestration umbrella (TODO item) | - | decomposed by this package: `/agent` personas, auditor agents, generate > check > correct, team patterns |
+| Swarm orchestration umbrella (TODO item) | - | decomposed by this package: `/agent` types, auditor agents, generate > check > correct, team patterns |
 
 ## Team kit plugin (private, movable)
 
@@ -87,7 +87,7 @@ Templates, recipes, library, and generator - the composition machinery, kept out
 | Task | Effort | Provides |
 |------|--------|----------|
 | Kit skeleton (M1) - `src/plugin.py`, `templates/`, `recipes/`, `library/`, `tests/` | M | installable private kit |
-| Template-based composition (M2) - stack signature -> tags -> matching templates -> AI-generated deltas only (`chat_nonstreaming`), persisted locally (personas.json + skills + teams.json, with reload) | M | fresh team per project, reusing proven artifacts |
+| Template-based composition (M2) - stack signature -> tags -> matching templates -> AI-generated deltas only (`chat_nonstreaming`), persisted locally (types.json + skills + teams.json, with reload) | M | fresh team per project, reusing proven artifacts |
 | Team kit library (M2) - flat tagged store per stack and customer | M | reuse across projects without publishing know-how |
 | `/teamkit` authoring commands (M2) - init, list, new, match, export, import, per-customer split | M | quick team definition per customer |
 | Move-out (M3) - external repo (optionally per-customer), `plugins install --global`, bundled copy removed from the default set | S-M | the kit fully outside the project |
@@ -166,7 +166,7 @@ Capabilities install as discoverable, isolated packages.
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Plugin contribution hooks (M1) | S | personas/teams/skills from plugins |
+| Plugin contribution hooks (M1) | S | types/teams/skills from plugins |
 | PyPI plugin source | M | install from `importlib.metadata` entry points |
 | Plugin registry / marketplace | M-L | discoverable plugin sharing |
 | Shared plugin virtualenv | M | one venv for all plugin dependencies |

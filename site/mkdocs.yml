@@ -47,7 +47,6 @@ nav:
       - reference/fleet.md
       - reference/jobs.md
       - reference/mcp.md
-      - reference/personas.md
       - reference/plugins.md
       - reference/providers.md
       - reference/security.md
@@ -57,5 +56,6 @@ nav:
       - reference/teams.md
       - reference/testing.md
       - reference/tools.md
-      - reference/writing-tools.md
+      - reference/types.md
       - reference/usage/programming.md
+      - reference/writing-tools.md

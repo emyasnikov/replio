@@ -17,7 +17,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)` |
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
-| `/persona`              |                | Manage personas: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [personas.md](personas.md) |
+| `/type`              |                | Manage types: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [types.md](types.md) |
 | `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
 | `/jobs`                 |                | Manage scheduled and durable jobs: `list`, `status`, `show`, `add`, `approve`, `reject`, `enable`, `disable`, `stop`, `remove`, `run`. See [jobs.md](jobs.md) |
 | `/plugins`              | `/plugin`      | Manage plugins: `list`, `enable`, `disable`, `install`, `update`, `uninstall` |
@@ -26,7 +26,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 
 `/session export <name> [out]` renders a saved session as Markdown (see [session.md](session.md)).
 
-Delegation is a normal tool: the lead agent proposes it, or you run it directly - `/tool delegate {"persona": "researcher", "task": "..."}` routes through the same tool policy. A configured persona delegates without prompting (`delegate` category defaults to `allow`, set a persona's `delegate` to `ask` to confirm), and a persona outside the registry is denied. See [personas.md](personas.md) and [swarm.md](swarm.md).
+Delegation is a normal tool: the lead agent proposes it, or you run it directly - `/tool delegate {"type": "researcher", "task": "..."}` routes through the same tool policy. A configured type delegates without prompting (`delegate` category defaults to `allow`, set an agent type's `delegate` to `ask` to confirm), and an agent type outside the registry is denied. See [types.md](types.md) and [swarm.md](swarm.md).
 
 ## CLI
 
@@ -141,7 +141,7 @@ Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, 
 | `list`        | Table of jobs: schedule, status, next and last run                       |
 | `status`      | Runtime summary per job: fired count, last error, uptime, approval state |
 | `show`        | `replio jobs show <name>` - definition plus full run history + last output|
-| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`, `--prompt` optional when `--file` is given), plus `--mode`, `--provider`/`--model`, `--persona`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approval auto` |
+| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`, `--prompt` optional when `--file` is given), plus `--mode`, `--provider`/`--model`, `--type`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approval auto` |
 | `approve`     | `approve <name>` - activate a job (or arm the next run for `--require-approval` jobs) |
 | `reject`      | `reject <name>` - send back to proposed and disable                       |
 | `enable` / `disable` / `stop` | Toggle the enabled gate (`stop` = `disable`)                     |
@@ -164,7 +164,7 @@ Supervise a fleet of scoped `replio serve` agents: ports, health checks, restart
 | `status`      | Live table: agent, enabled, port, pid, state, restarts, last error               |
 | `restart`     | `restart [name|all]` - stop, reset restart backoff, relaunch (default: all)     |
 | `logs`        | `logs <name> [n] [--follow]` - tail an agent's `.replio/logs/<name>.log`         |
-| `config`      | `config <name> --provider/--model/--persona/--system-prompt/--mode/--tools-deny/--tool-permission` - write only those keys into `<dir>/.replio/config.json` |
+| `config`      | `config <name> --provider/--model/--type/--system-prompt/--mode/--tools-deny/--tool-permission` - write only those keys into `<dir>/.replio/config.json` |
 
 `--path` may be given either before the subcommand (`replio --path X fleet status`) or after it (`replio fleet --path X status`).
 

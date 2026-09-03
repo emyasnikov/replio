@@ -170,7 +170,7 @@ class Job:
     mode: str = ''
     provider: str = ''
     model: str = ''
-    persona: str = ''
+    type: str = ''
     system_prompt: str = ''
     task_file: str = ''
     tool_permission: dict = field(default_factory=dict)
@@ -206,7 +206,7 @@ class Job:
             'mode': self.mode,
             'provider': self.provider,
             'model': self.model,
-            'persona': self.persona,
+            'type': self.type,
             'system_prompt': self.system_prompt,
             'task_file': self.task_file,
             'tool_permission': dict(self.tool_permission),
@@ -234,7 +234,7 @@ class Job:
             mode=d.get('mode', ''),
             provider=d.get('provider', ''),
             model=d.get('model', ''),
-            persona=d.get('persona', ''),
+            type=d.get('type', ''),
             system_prompt=d.get('system_prompt', ''),
             task_file=d.get('task_file', ''),
             tool_permission=dict(d.get('tool_permission') or {}),
@@ -379,10 +379,10 @@ def write_memory(worktree: Path, job: 'Job', text: str) -> Path:
     return path
 
 
-def system_prompt_for(job: 'Job', worktree: Path, persona=None) -> str:
+def system_prompt_for(job: 'Job', worktree: Path, agent_type=None) -> str:
     parts = []
-    if persona is not None and getattr(persona, 'system_prompt', ''):
-        parts.append(persona.system_prompt)
+    if agent_type is not None and getattr(agent_type, 'system_prompt', ''):
+        parts.append(agent_type.system_prompt)
     if job.task_file:
         content = read_task_file(worktree, job)
         if content is None:
@@ -519,8 +519,8 @@ def render_show(registry: JobRegistry, name: str, print=print) -> bool:
         print(f'  memory:     {memory_rel} (written after the first run)')
     if job.mode:
         print(f'  mode:       {job.mode}')
-    if job.persona:
-        print(f'  persona:    {job.persona}')
+    if job.type:
+        print(f'  type:       {job.type}')
     if job.provider:
         print(f'  provider:   {job.provider}')
     if job.model:

@@ -1,10 +1,10 @@
 # Skills
 
-A skill is a named set of markdown instructions a persona can attach: `Persona.skills` lists skill names, and when that persona runs, each resolved skill's content is injected into its system prompt under a `## Skills` section. Skills are capability instructions distinct from tools and plugins - a persona carries them, the sub-agent reads them.
+A skill is a named set of markdown instructions an agent type can attach: `AgentType.skills` lists skill names, and when that type runs, each resolved skill's content is injected into its system prompt under a `## Skills` section. Skills are capability instructions distinct from tools and plugins - an agent type carries them, the sub-agent reads them.
 
 ## Storage
 
-Skills come from three layers, merged like personas and teams: plugin contributions first, then global, then local, with local winning per field:
+Skills come from three layers, merged like types and teams: plugin contributions first, then global, then local, with local winning per field:
 
 - **Plugin** - skills contributed by plugins via the `register_skills` entry hook (`registry.add_plugin(...)`, see [plugins.md](plugins.md)). An in-memory layer: never written to `.replio/skills/`, refreshed on `/plugins install`/`update`/`uninstall`.
 - **Global** - `~/.config/replio/skills/<name>.md`.
@@ -23,8 +23,8 @@ the source URL, and a one-line reliability assessment.
 
 A skill has:
 
-- `name` - the filename stem (`finders.md` -> `finders`), referenced from `Persona.skills`.
-- `content` - the full file body, injected verbatim into the persona's system prompt.
+- `name` - the filename stem (`finders.md` -> `finders`), referenced from `AgentType.skills`.
+- `content` - the full file body, injected verbatim into the agent type's system prompt.
 - `description` - optional, defaults to the first line of the content for file-based skills. Plugin contributions may set it explicitly along with `tags`.
 
 Plugin contributions use the same entry shape, with an explicit `content` field:
@@ -36,10 +36,10 @@ def register_skills(registry):
 
 ## Injection
 
-When a persona with `skills` runs as a sub-agent (`delegate`), each registered skill's content is appended to the persona's system prompt:
+When an agent type with `skills` runs as a sub-agent (`delegate`), each registered skill's content is appended to the agent type's system prompt:
 
 ```
-<persona system prompt>
+<type system prompt>
 
 ## Skills
 
@@ -48,7 +48,7 @@ When a persona with `skills` runs as a sub-agent (`delegate`), each registered s
 Find sources and evaluate them. ...
 ```
 
-Missing or empty skills are skipped silently, and a persona without skills gets an unchanged prompt. Jobs with `--persona` inject the same section (from the global/local file layers - plugin contributions do not reach the scheduler's preparse, same rule as plugin personas there). The injection format is built by `skills_section(registry, names)` in `replio.skills`.
+Missing or empty skills are skipped silently, and an agent type without skills gets an unchanged prompt. Jobs with `--type` inject the same section (from the global/local file layers - plugin contributions do not reach the scheduler's preparse, same rule as plugin types there). The injection format is built by `skills_section(registry, names)` in `replio.skills`.
 
 ## Managing skills
 

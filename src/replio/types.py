@@ -8,7 +8,7 @@ from .config import Config
 
 
 @dataclass
-class Persona:
+class AgentType:
     name: str
     system_prompt: str = ''
     model: str = ''
@@ -17,7 +17,7 @@ class Persona:
     tool_permission: dict = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, d: dict) -> 'Persona':
+    def from_dict(cls, d: dict) -> 'AgentType':
         return cls(
             name=d.get('name', ''),
             system_prompt=d.get('system_prompt', ''),
@@ -55,16 +55,16 @@ def _load_scope(path: Path) -> dict[str, dict[str, Any]]:
     return out
 
 
-class PersonaRegistry:
-    BUNDLED_FILENAME = 'bundled_personas.json'
+class TypeRegistry:
+    BUNDLED_FILENAME = 'bundled_types.json'
 
     def __init__(self, global_dir: Path | None = None,
                  local_path: Path | None = None,
                  bundled_path: Path | None = None):
         base = global_dir if global_dir is not None else (Config.GLOBAL_DIR or Path.home())
-        self.global_path = base / '.config' / 'replio' / 'personas.json'
+        self.global_path = base / '.config' / 'replio' / 'types.json'
         self.local_path = Path(local_path) if local_path is not None else (
-            Path.cwd() / '.replio' / 'personas.json')
+            Path.cwd() / '.replio' / 'types.json')
         self.bundled_path = Path(bundled_path) if bundled_path is not None else (
             Path(__file__).with_name(self.BUNDLED_FILENAME))
         self._bundled: dict[str, dict[str, Any]] = {}
@@ -87,7 +87,7 @@ class PersonaRegistry:
         self._load()
         self._plugins = {}
         if plugin_manager is not None:
-            register = getattr(plugin_manager, 'register_personas', None)
+            register = getattr(plugin_manager, 'register_types', None)
             if register:
                 register(self)
 
@@ -113,17 +113,17 @@ class PersonaRegistry:
             merged[name] = entry
         return merged
 
-    def all(self) -> list[Persona]:
+    def all(self) -> list[AgentType]:
         return sorted(
-            (Persona.from_dict(e) for e in self._merged_entries().values()),
+            (AgentType.from_dict(e) for e in self._merged_entries().values()),
             key=lambda p: p.name)
 
     def names(self) -> list[str]:
         return sorted(self._merged_entries())
 
-    def find(self, name: str) -> Persona | None:
+    def find(self, name: str) -> AgentType | None:
         entry = self._merged_entries().get(name)
-        return Persona.from_dict(entry) if entry is not None else None
+        return AgentType.from_dict(entry) if entry is not None else None
 
     def origin(self, name: str) -> str:
         has_local = name in self._local
@@ -146,11 +146,11 @@ class PersonaRegistry:
     def is_bundled(self, name: str) -> bool:
         return name in self._bundled
 
-    def put(self, persona: Persona, scope: str = 'local') -> Persona:
+    def put(self, agent_type: AgentType, scope: str = 'local') -> AgentType:
         raw = self._local if scope == 'local' else self._global
-        raw[persona.name] = persona.to_body()
+        raw[agent_type.name] = agent_type.to_body()
         self._save_scope(scope)
-        return persona
+        return agent_type
 
     def remove(self, name: str, scope: str = 'local') -> bool:
         raw = self._local if scope == 'local' else self._global

@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from replio.personas import Persona
+from replio.types import AgentType
 from replio.ui import NullUI
 
 from tests.helpers import make_chat
@@ -19,7 +19,7 @@ class TestSubAgentEngine(unittest.TestCase):
     def tearDown(self):
         self.chat._tmp.cleanup()
 
-    def _delegate_log(self, persona):
+    def _delegate_log(self, type_name):
         files = sorted(
             f for f in self.sessions_dir.glob('sub_*.json')
             if json.loads(f.read_text()).get('parent_id')
@@ -66,7 +66,7 @@ class TestSubAgentEngine(unittest.TestCase):
         name = _sub_session_name('20260825_120000', parent, self.sessions_dir)
         self.assertEqual(name, 'sub_20260825_120000_ses_parent_2')
 
-    def test_subagent_applies_persona_prompt_mode_permissions(self):
+    def test_subagent_applies_type_prompt_mode_permissions(self):
         sub = self.chat._new_sub_engine('writer')
         self.assertEqual(sub.config.get('mode'), 'build')
         self.assertTrue(sub.config.get('system_prompt').startswith(
@@ -76,10 +76,10 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertEqual(tp['bash'], 'deny')
         self.assertEqual(tp['web'], 'deny')
 
-    def test_subagent_injects_persona_skills(self):
+    def test_subagent_injects_type_skills(self):
         from replio.skills import Skill
-        self.chat.personas.put(
-            Persona(name='researcher', system_prompt='You are the researcher.',
+        self.chat.types.put(
+            AgentType(name='researcher', system_prompt='You are the researcher.',
                     skills=['finders', 'filters']),
             scope='local')
         self.chat.skills.put(
@@ -96,8 +96,8 @@ class TestSubAgentEngine(unittest.TestCase):
 
     def test_subagent_skips_missing_skills(self):
         from replio.skills import Skill
-        self.chat.personas.put(
-            Persona(name='x', system_prompt='prompt',
+        self.chat.types.put(
+            AgentType(name='x', system_prompt='prompt',
                     skills=['present', 'deleted']),
             scope='local')
         self.chat.skills.put(Skill(name='present', content='Present skill body.'))
@@ -108,16 +108,16 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertNotIn('## Skills\n\n### deleted', prompt)
 
     def test_subagent_without_skills_prompt_unchanged(self):
-        self.chat.personas.put(
-            Persona(name='plain', system_prompt='plain prompt', skills=[]),
+        self.chat.types.put(
+            AgentType(name='plain', system_prompt='plain prompt', skills=[]),
             scope='local')
         sub = self.chat._new_sub_engine('plain')
         self.assertEqual(sub.config.get('system_prompt'), 'plain prompt')
 
     def test_subagent_skills_only_prompt(self):
         from replio.skills import Skill
-        self.chat.personas.put(
-            Persona(name='solo', system_prompt='', skills=['one']),
+        self.chat.types.put(
+            AgentType(name='solo', system_prompt='', skills=['one']),
             scope='local')
         self.chat.skills.put(Skill(name='one', content='Skill only body.'))
         sub = self.chat._new_sub_engine('solo')
@@ -129,8 +129,8 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertIsInstance(sub.ui, NullUI)
 
     def test_model_override_applies(self):
-        self.chat.personas.put(
-            Persona(name='special', system_prompt='sp', model='deepseek-r1'),
+        self.chat.types.put(
+            AgentType(name='special', system_prompt='sp', model='deepseek-r1'),
             scope='local')
         sub = self.chat._new_sub_engine('special')
         self.assertEqual(sub.config.get('model'), 'deepseek-r1')
@@ -141,7 +141,7 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertEqual(sub.config.local_path.parent.parent,
                          self.chat.config.local_path.parent.parent)
 
-    def test_unknown_persona_raises(self):
+    def test_unknown_type_raises(self):
         with self.assertRaises(ValueError):
             self.chat._new_sub_engine('nope')
 
@@ -164,13 +164,13 @@ class TestSubAgentEngine(unittest.TestCase):
         parent = self.chat.sessions.read(self.chat.current_session.name)
         self.assertIn(result.session, parent.sub_sessions)
 
-    def test_run_subagent_unknown_persona_raises(self):
+    def test_run_subagent_unknown_type_raises(self):
         with self.assertRaises(ValueError):
             self.chat.run_subagent('nope', 'anything')
 
     def test_ask_gated_tool_cancelled_without_prompt(self):
-        self.chat.personas.put(
-            Persona(name='defaults', system_prompt='plain agent'),
+        self.chat.types.put(
+            AgentType(name='defaults', system_prompt='plain agent'),
             scope='local')
         self.chat.provider.chat.side_effect = [
             [{'type': 'tool_calls', 'tool_calls': self._tool_call()}],

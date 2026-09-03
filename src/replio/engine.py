@@ -109,13 +109,13 @@ class Engine:
         return self._models
 
     @property
-    def personas(self):
-        if getattr(self, '_personas', None) is None:
-            from .personas import PersonaRegistry
-            self._personas = PersonaRegistry(
-                local_path=self.config.local_path.parent / 'personas.json')
-            self._plugin_manager.register_personas(self._personas)
-        return self._personas
+    def types(self):
+        if getattr(self, '_types', None) is None:
+            from .types import TypeRegistry
+            self._types = TypeRegistry(
+                local_path=self.config.local_path.parent / 'types.json')
+            self._plugin_manager.register_types(self._types)
+        return self._types
 
     @property
     def teams(self):
@@ -240,28 +240,28 @@ class Engine:
             self.current_session = self.sessions.create()
         return self.current_session
 
-    def _new_sub_engine(self, persona_name: str, provider=None) -> 'Engine':
-        persona = self.personas.find(persona_name)
-        if persona is None:
-            raise ValueError(f'Unknown persona: {persona_name}')
+    def _new_sub_engine(self, type_name: str, provider=None) -> 'Engine':
+        agent_type = self.types.find(type_name)
+        if agent_type is None:
+            raise ValueError(f'Unknown agent type: {type_name}')
         sub_config = Config(path=str(self.config.local_path.parent.parent))
         from .skills import skills_section
-        system_prompt = persona.system_prompt
-        if persona.skills:
-            section = skills_section(self.skills, persona.skills)
+        system_prompt = agent_type.system_prompt
+        if agent_type.skills:
+            section = skills_section(self.skills, agent_type.skills)
             if section:
                 if system_prompt.strip():
                     system_prompt = system_prompt.rstrip() + '\n\n' + section
                 else:
                     system_prompt = section
         sub_config.apply('system_prompt', system_prompt)
-        if persona.model:
-            sub_config.apply('model', persona.model)
+        if agent_type.model:
+            sub_config.apply('model', agent_type.model)
         permissions = dict(self.config.get('tool_permission') or {})
-        permissions.update(persona.tool_permission)
+        permissions.update(agent_type.tool_permission)
         sub_config.apply('tool_permission', permissions)
         sub_config.apply('mode', 'build')
-        if provider is None and not persona.model:
+        if provider is None and not agent_type.model:
             provider = self.provider
         sub = Engine(sub_config, ui=NullUI(),
                      plugin_manager=self._plugin_manager, provider=provider)
@@ -271,8 +271,8 @@ class Engine:
         sub.current_session.parent_id = self.current_session.name
         return sub
 
-    def run_subagent(self, persona_name: str, task: str) -> TurnResult:
-        sub = self._new_sub_engine(persona_name)
+    def run_subagent(self, type_name: str, task: str) -> TurnResult:
+        sub = self._new_sub_engine(type_name)
         result = sub.chat(task, autoname=False)
         if result.session and result.session not in self.current_session.sub_sessions:
             self.current_session.sub_sessions.append(result.session)

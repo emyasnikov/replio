@@ -24,23 +24,23 @@ def _fresh_job_session(sessions_dir: Path, name: str, when: datetime) -> str:
 def _build_engine(config: Config, job: Job, verbose: bool,
                   stream: bool = False, session_name: str | None = None) -> Engine:
     sub_config = Config(path=str(config.local_path.parent.parent))
-    persona = None
+    agent_type = None
     skill_names = []
-    if job.persona:
-        from .personas import PersonaRegistry
-        personas = PersonaRegistry(local_path=config.local_path.parent / 'personas.json')
-        persona = personas.find(job.persona)
-        if persona is None:
-            raise ValueError(f'Unknown persona: {job.persona}')
-        if persona.model:
-            sub_config.apply('model', persona.model)
+    if job.type:
+        from .types import TypeRegistry
+        types = TypeRegistry(local_path=config.local_path.parent / 'types.json')
+        agent_type = types.find(job.type)
+        if agent_type is None:
+            raise ValueError(f'Unknown agent type: {job.type}')
+        if agent_type.model:
+            sub_config.apply('model', agent_type.model)
         permissions = dict(sub_config.get('tool_permission') or {})
-        permissions.update(persona.tool_permission)
+        permissions.update(agent_type.tool_permission)
         sub_config.apply('tool_permission', permissions)
-        skill_names = list(persona.skills or [])
+        skill_names = list(agent_type.skills or [])
     try:
         system_text = system_prompt_for(job, config.local_path.parent.parent,
-                                        persona)
+                                        agent_type)
     except FileNotFoundError as e:
         raise ValueError(str(e)) from e
     if skill_names:

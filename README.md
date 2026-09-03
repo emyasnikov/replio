@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
 </p>
 
-Replio is a deliberately small, auditable, zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (personas and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability.
+Replio is a deliberately small, auditable, zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability.
 
 <p align="center"><img src="replio.svg" width="540" alt="Replio terminal session"></p>
 
@@ -33,12 +33,12 @@ Replio is a deliberately small, auditable, zero-dependency agentic core built on
 
 ### Orchestration
 
-- **Swarm** - make agents cooperate. A persona catalog (bundled defaults plus global/local `.replio/personas.json`) and the `delegate` tool, which runs a task under a persona as an in-process sub-agent with its own `sub_*` session log, its own prompt, model override, and tool permissions. Manage personas with `/persona` (and tag-filter them)
+- **Swarm** - make agents cooperate. A type catalog (bundled defaults plus global/local `.replio/types.json`) and the `delegate` tool, which runs a task under an agent type as an in-process sub-agent with its own `sub_*` session log, its own prompt, model override, and tool permissions. Manage types with `/type` (and tag-filter them)
 - **Jobs** - scheduled, durable workflows with built-in discipline. Cron / interval / one-shot schedules, retries with exponential backoff, per-run timeouts, linked Markdown task files, a rolling run-memory summary, and human-in-the-loop approvals. Managed by `replio jobs`, `/jobs`, and the long-running `replio jobs daemon`
 - **Fleet** - run many scoped agents under one supervisor. `replio fleet` allocates conflict-free ports, health-checks every `replio serve` child, restarts failures with a bounded backoff, and generates per-agent configs - with `status`, `logs`, and `restart` for ops, foreground or detached
 - **MCP (Model Context Protocol)** - work alongside other AI tools. Import external MCP servers' tools, or expose Replio's policy-filtered tools and session resources to other agents over `replio mcp` or `POST /mcp`
 
-The layers are complementary: **fleet keeps agents alive, swarm cooperates, jobs schedule the work.** All speak the same API, so they compose - a supervised fleet agent can delegate by persona, and a job can drive a team.
+The layers are complementary: **fleet keeps agents alive, swarm cooperates, jobs schedule the work.** All speak the same API, so they compose - a supervised fleet agent can delegate by type, and a job can drive a team.
 
 ## Quick Start
 
@@ -104,19 +104,19 @@ curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
 {"content": "Hello! How can I help you today?", "thinking": null, "tool_calls": [], "errors": [], "duration": 7.0, "usage": null, "model": "gpt-oss:20b-cloud", "provider": "ollama", "session": "20260814_192711_hi", "status": "ok"}
 ```
 
-### Swarm - delegation by persona
+### Swarm - delegation by type
 
-A lead agent (or you) hands a task to a specialized persona. The sub-agent runs in-process, writes its own session log, and returns its final answer. Personas are model- and permission-scoped: a researcher is read-only, a programmer may run shell.
+A lead agent (or you) hands a task to a specialized type. The sub-agent runs in-process, writes its own session log, and returns its final answer. Agent types are model- and permission-scoped: a researcher is read-only, a programmer may run shell.
 
 ```
->>> /persona list
->>> /tool delegate {"persona": "researcher", "task": "Summarize docs/ and cite sources"}
+>>> /type list
+>>> /tool delegate {"type": "researcher", "task": "Summarize docs/ and cite sources"}
 [delegate researcher] <final answer of the research sub-agent, sources cited>
 ```
 
 The REPL shows the sub-agent's dimmed activity and a duration footer as it works.
 
-See [docs/swarm.md](docs/swarm.md) and [docs/personas.md](docs/personas.md).
+See [docs/swarm.md](docs/swarm.md) and [docs/types.md](docs/types.md).
 
 ### Jobs - scheduled durable work
 
@@ -137,7 +137,7 @@ One agent per folder, each a `replio serve` process with its own config, permiss
 
 ```bash
 replio fleet init                                              # scan existing agent folders
-replio fleet config docs-agent --persona researcher --port 8781
+replio fleet config docs-agent --type researcher --port 8781
 replio fleet up                                                # Ctrl-C = graceful down, or --detach
 replio fleet status
 replio fleet logs docs-agent -f
@@ -157,7 +157,7 @@ On `replio serve` the same is available at `POST /mcp`. See [docs/mcp.md](docs/m
 
 ## Roadmap
 
-Fleet orchestration (v0.22), scheduled and durable jobs (v0.21), and the swarm foundations - bundled personas, in-process sub-agents, and the `delegate` tool (v0.20) - are live. Building next: auditor agents with generate > check > correct, the interactive `/agent` command and delegation focus, named team and job configs, the jobs operator API with webhook/email/Telegram connectors, a web Control UI over the JSON API, `/spawn` from the REPL, and remote channels. See [docs/fleet.md](docs/fleet.md), [docs/jobs.md](docs/jobs.md), [docs/swarm.md](docs/swarm.md), and the open tasks in [TODO.md](TODO.md).
+Fleet orchestration (v0.22), scheduled and durable jobs (v0.21), and the swarm foundations - bundled types, in-process sub-agents, and the `delegate` tool (v0.20) - are live. Building next: auditor agents with generate > check > correct, the interactive `/agent` command and delegation focus, named team and job configs, the jobs operator API with webhook/email/Telegram connectors, a web Control UI over the JSON API, `/spawn` from the REPL, and remote channels. See [docs/fleet.md](docs/fleet.md), [docs/jobs.md](docs/jobs.md), [docs/swarm.md](docs/swarm.md), and the open tasks in [TODO.md](TODO.md).
 
 ## Contributing
 
