@@ -69,7 +69,7 @@ DEFAULT_CONFIG = {
     },
     'mcp.servers': [],
     'mcp_server.allow_ask': True,
-'plugins': ['replio-core-websearch', 'replio-core-fs', 'replio-core-edit',
+'plugins': ['replio-core-web', 'replio-core-fs', 'replio-core-edit',
                 'replio-core-git', 'replio-core-dev', 'replio-core-exec',
                 'replio-core-mcp', 'replio-core-eval'],
 }

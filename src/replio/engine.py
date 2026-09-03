@@ -610,7 +610,7 @@ class Engine:
         service = pm.service('search') if pm is not None else None
         if service is None:
             if not silent:
-                self.ui.info('(web search unavailable - replio-core-websearch plugin not loaded)')
+                self.ui.info('(web search unavailable - replio-core-web plugin not loaded)')
             return None
 
         num = self.config.get('search_results', 5)

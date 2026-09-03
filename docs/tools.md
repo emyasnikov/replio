@@ -12,8 +12,8 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 
 | Tool | Plugin | Category | Permission | Purpose |
 |------|--------|----------|------------|---------|
-| `web_search` | replio-core-websearch | `search` | `web` | Web search (aliases `search`, `web`) |
-| `web_fetch` | replio-core-websearch | `read` | `read` | Fetch a page by URL or by `web_search` result `id` (aliases `open`, `fetch_page`) |
+| `web_search` | replio-core-web | `search` | `web` | Web search (aliases `search`, `web`) |
+| `web_fetch` | replio-core-web | `read` | `read` | Fetch a page by URL or by `web_search` result `id` (aliases `open`, `fetch_page`) |
 | `file_read` | replio-core-fs | `read` | `read` | Read a file with numbered lines (aliases `read_file`, `read`, `view`) |
 | `list_dir` | replio-core-fs | `read` | `list` | List a directory (`depth` for trees, alias `ls`) |
 | `file_write` | replio-core-fs | `write` | `edit` | Create/overwrite/append a file (aliases `write_file`, `write`) |

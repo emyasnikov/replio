@@ -10,7 +10,7 @@ Plugins extend Replio with **tools**, **providers**, **slash commands**, and **s
 | `~/.config/replio/plugins/` | global, all projects | middle |
 | `.replio/plugins/` | local to a project | highest (wins on name collision) |
 
-First-party plugins ship with replio and are listed in the default `plugins` config, so they are active out of the box. `replio-core-websearch` provides `web_search` and `web_fetch`. `replio-core-fs` provides `file_read`, `list_dir`, `file_write`, `glob`, and `grep`. `replio-core-exec` provides `run_command`. `replio-core-mcp` provides the MCP client (`mcp_connect`/`mcp_list`/`mcp_disconnect`) and server (`replio mcp` and `POST /mcp`) - see [mcp.md](mcp.md). `replio-core-eval` provides the eval fixture catalog for `replio eval` - see [eval.md](eval.md). They behave like any other plugin. Remove a name from `plugins` (or use `/plugins disable`) to stop it loading, but they cannot be uninstalled or updated, since they version with replio. A global or local plugin with the same name overrides the bundled one.
+First-party plugins ship with replio and are listed in the default `plugins` config, so they are active out of the box. `replio-core-web` provides `web_search` and `web_fetch`. `replio-core-fs` provides `file_read`, `list_dir`, `file_write`, `glob`, and `grep`. `replio-core-exec` provides `run_command`. `replio-core-mcp` provides the MCP client (`mcp_connect`/`mcp_list`/`mcp_disconnect`) and server (`replio mcp` and `POST /mcp`) - see [mcp.md](mcp.md). `replio-core-eval` provides the eval fixture catalog for `replio eval` - see [eval.md](eval.md). They behave like any other plugin. Remove a name from `plugins` (or use `/plugins disable`) to stop it loading, but they cannot be uninstalled or updated, since they version with replio. A global or local plugin with the same name overrides the bundled one.
 
 ## Plugin layout
 
@@ -77,7 +77,7 @@ A tool handler may declare a `_config` keyword argument to receive the engine's 
 
 ### Services
 
-`register_services` lets a plugin power a core feature that is not tool-calling. Today the only service is the web search-then-answer mode (`web_search: true`). The bundled `replio-core-websearch` registers `services['search']` with `search(query, num)`, `display(query, results)`, and `context(query, results)` methods. If no plugin registers the service, that mode reports that it is unavailable instead of erroring.
+`register_services` lets a plugin power a core feature that is not tool-calling. Today the only service is the web search-then-answer mode (`web_search: true`). The bundled `replio-core-web` registers `services['search']` with `search(query, num)`, `display(query, results)`, and `context(query, results)` methods. If no plugin registers the service, that mode reports that it is unavailable instead of erroring.
 
 ### Personas, teams, and skills
 
@@ -112,7 +112,7 @@ This is why the core stays zero-dependency. Plugin packages are only imported in
 
 ```json
 {
-  "plugins": ["replio-core-websearch", "replio-core-fs", "replio-core-exec"]
+  "plugins": ["replio-core-web", "replio-core-fs", "replio-core-exec"]
 }
 ```
 

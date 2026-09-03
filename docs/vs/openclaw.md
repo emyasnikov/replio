@@ -28,7 +28,7 @@ The two projects make different trade-offs. Replio bundles everything into a sin
 | Aspect | Replio | OpenClaw |
 |--------|---------|----------|
 | Built-in tools | web search, fetch page, file read/write/search, shell execution | web search, fetch page, file I/O, shell, voice, canvas, camera, screen capture, and more |
-| Tool delivery | Ship as bundled plugins (`replio-core-websearch`, `replio-core-fs`, `replio-core-exec`) | Built into the gateway and extensible via plugins |
+| Tool delivery | Ship as bundled plugins (`replio-core-web`, `replio-core-fs`, `replio-core-exec`) | Built into the gateway and extensible via plugins |
 | Permission model | Path-scoped `allow`/`ask`/`deny` with confirmation prompts | Tools run on the host by default, sandboxing is configurable |
 | Function calling | OpenAI-compatible JSON schema | OpenAI-compatible function calling |
 | Extensibility | Plugins register tools via a simple Python registry | Plugins expose `@tool`, `@skill`, `@channel` decorators, SDK enforces the API contract |

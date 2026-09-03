@@ -68,12 +68,12 @@
 - [ ] Plugin test harness - `replio plugins test <name>` ships. Bundled plugin suites live next to the plugins (`plugins/<name>/tests/`, discovered by the core suite). Remaining: external plugins are expected to ship a test suite, and `replio plugins test` is the runner for them
 - [ ] Session recall - full-text search across past sessions (grep/index over `.replio/sessions/`) so an agent can answer from its own history
 - [ ] Tool dry-run mode - propose tool args/effects without executing (enterprise tool-gateway requirement)
-- [ ] Context-aware cross-plugin tool router - virtual tool names (`open`, `search`, ...) dispatch per-argument to the matching plugin handler via `register_handler(name, match=...)` (e.g. `open https://...` > replio-core-websearch, `open ../...` > replio-core-fs), with merged schemas and args-aware policy accessors
+- [ ] Context-aware cross-plugin tool router - virtual tool names (`open`, `search`, ...) dispatch per-argument to the matching plugin handler via `register_handler(name, match=...)` (e.g. `open https://...` > replio-core-web, `open ../...` > replio-core-fs), with merged schemas and args-aware policy accessors
 - [ ] Swarm orchestration - agent cooperation layer (`docs/swarm.md`): `/agent` personas, auditor agents, generate > check > correct, and team patterns as sub-tasks below
 - [ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
 - [ ] Agent folder watcher - internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps
 - [ ] Minimal web Control UI - stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue). Richer frameworks stay plugin-first
-- [ ] Externalize the bundled plugins (`replio-core-websearch`/`fs`/`exec`) into separate versioned repositories - the bundled copies stay the shipped defaults. Global/local plugins of the same name already override them
+- [ ] Externalize the bundled plugins (`replio-core-web`/`fs`/`exec`) into separate versioned repositories - the bundled copies stay the shipped defaults. Global/local plugins of the same name already override them
 - [ ] PyPI plugin source - discover installed plugin packages via `importlib.metadata` entry points (`replio.plugins` group)
 - [ ] Shared plugin virtualenv - one venv for all plugin dependencies, injected at import
 - [ ] Per-plugin virtualenv isolation - `~/.config/replio/plugins/<name>/.venv`. The loader injects its site-packages at import (strongest dependency separation)
@@ -104,6 +104,7 @@
 
 ## Done
 
+- [x] Bundled web plugin renamed - replio-core-websearch -> replio-core-web
 - [x] GitHub Pages website - mkdocs site + Actions workflow, docs stay in main
 - [x] OpenCode Zen + Go providers - opencode.ai endpoints, model-ref strip, URL detection
 - [x] Tool-use evaluation harness - replio eval + fixture plugin, metrics

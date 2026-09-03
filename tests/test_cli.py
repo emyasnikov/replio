@@ -204,7 +204,7 @@ class TestCliPlugins(unittest.TestCase):
     def test_plugins_list_shows_bundled(self):
         rc, out, _ = self._capture(self._args())
         self.assertEqual(rc, 0)
-        self.assertIn('replio-core-websearch', out)
+        self.assertIn('replio-core-web', out)
         self.assertIn('bundled', out)
 
     def test_plugins_install_list_uninstall(self):

@@ -18,7 +18,7 @@ More tools does not mean a better agent. Every tool definition is loaded into th
 Tool names are how the model selects behavior, so they should be distinct, purposeful, and grouped by domain.
 
 - Give every tool a clear, distinct purpose and a name that states it. `web_search`, `web_fetch`, `file_read`, `list_dir`, `file_write`, `glob`, `grep`, `run_command` all read as one distinct action each.
-- Namespace by domain when a surface grows. The bundled plugins already do this by module (`replio-core-websearch` exposes `web_search`, `web_fetch`), and MCP tools use the `mcp_` prefix. Prefixing (`web_`, `file_`, `mcp_`) helps the model pick the right tool when many are loaded.
+- Namespace by domain when a surface grows. The bundled plugins already do this by module (`replio-core-web` exposes `web_search`, `web_fetch`), and MCP tools use the `mcp_` prefix. Prefixing (`web_`, `file_`, `mcp_`) helps the model pick the right tool when many are loaded.
 - Advertise canonical names only, and absorb model dialect with `aliases`. The provider schema shows `run_command`, not `bash` or `exec`, and `web_fetch`, not `open` or `fetch_page`. Aliases resolve at call time, so a model that still says `open`, `search`, or `find` gets the real tool anyway. Advertising both spellings doubles the tool list in every request for no benefit.
 - Name parameters unambiguously. Prefer `include` over `glob`, `pattern` over `query` inside `grep`, and concrete nouns over pronouns. A parameter named `path` with a description is clearer than a bare `file`.
 

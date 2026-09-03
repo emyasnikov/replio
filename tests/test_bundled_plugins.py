@@ -6,7 +6,7 @@ from replio.config import Config
 from replio.plugins.manager import PluginManager, PluginError
 from replio.tools.registry import ToolRegistry
 
-BUNDLED = {'replio-core-websearch', 'replio-core-fs', 'replio-core-edit',
+BUNDLED = {'replio-core-web', 'replio-core-fs', 'replio-core-edit',
            'replio-core-git', 'replio-core-dev', 'replio-core-exec',
            'replio-core-mcp', 'replio-core-eval'}
 
@@ -81,15 +81,15 @@ class TestBundledPlugins(unittest.TestCase):
         self.assertEqual(info.origin, 'local')
 
     def test_bundled_disabled_via_plugins_config(self):
-        self.config.set('plugins', ['replio-core-websearch', 'replio-core-fs'])
+        self.config.set('plugins', ['replio-core-web', 'replio-core-fs'])
         self.pm.load()
-        self.assertEqual(self.pm.get('replio-core-websearch').status, 'loaded')
+        self.assertEqual(self.pm.get('replio-core-web').status, 'loaded')
         self.assertEqual(self.pm.get('replio-core-fs').status, 'loaded')
         self.assertEqual(self.pm.get('replio-core-exec').status, 'disabled')
 
     def test_bundled_in_default_config(self):
         from replio.config import DEFAULT_CONFIG
-        self.assertIn('replio-core-websearch', DEFAULT_CONFIG['plugins'])
+        self.assertIn('replio-core-web', DEFAULT_CONFIG['plugins'])
         self.assertIn('replio-core-fs', DEFAULT_CONFIG['plugins'])
         self.assertIn('replio-core-edit', DEFAULT_CONFIG['plugins'])
         self.assertIn('replio-core-git', DEFAULT_CONFIG['plugins'])
