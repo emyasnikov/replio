@@ -13,7 +13,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/models`                | `/model-list` | List models available from the connected provider              |
 | `/provider`              |                | Show or switch the active provider                             |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
-| `/connect`              |                | Interactive provider connection setup (tests the connection before saving). Appends the model to the global `models.json` registry (storing the API key there, not in config). On a fresh project with known models it offers a numbered picker (`#N`) to reuse one |
+| `/connect`              |                | Interactive provider connection setup (tests the connection before saving). Stores the API key (and any custom base URL) in the global `providers.json` registry, not in config, and records the model in `models.json`. On a fresh project with known models it offers a numbered picker (`#N`) to reuse one |
 | `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)` |
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |

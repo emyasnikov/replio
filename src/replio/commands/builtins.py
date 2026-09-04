@@ -594,6 +594,7 @@ def register_builtins(registry):
 
         was_known = registry.find(provider, base_url, model) is not None
         registry.put(provider, base_url, model, api_key)
+        chat.providers.put(provider, base_url, api_key)
         chat.config.set('base_url', base_url)
         chat.config.set('provider', provider)
         chat.config.set('model', model)

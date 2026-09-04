@@ -20,7 +20,7 @@ Providers are the model backends. Replio speaks OpenAI-compatible `/v1/chat/comp
 
 ## Configuration
 
-`provider`, `base_url`, `model`, `temperature`, and `max_tokens` are configured in the global or local config (see [config.md](config.md)). The API key is **not** a config value - it is resolved from the global model registry (`~/.config/replio/models.json`, managed via `/connect`):
+`provider`, `base_url`, `model`, `temperature`, and `max_tokens` are configured in the global or local config (see [config.md](config.md)). The API key is **not** a config value - it lives in the global provider registry (`~/.config/replio/providers.json`, one key per provider) and is managed through `/connect`:
 
 ```json
 {
@@ -31,7 +31,7 @@ Providers are the model backends. Replio speaks OpenAI-compatible `/v1/chat/comp
 }
 ```
 
-The engine looks up the API key for the active `provider`/`base_url`/`model` in the model registry (a `(key)` entry from `/connect`), falling back to `""` - no environment variable is consulted.
+The engine resolves the API key for the active provider from the provider registry (a `(key)` entry from `/connect`), falling back to `""` - no environment variable is consulted. A custom `base_url` stored there is used when the config leaves it empty. The configured-models catalogue (`~/.config/replio/models.json`) records every connection for `/model list`.
 
 ## Auto-detection
 

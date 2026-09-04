@@ -59,7 +59,6 @@ Active connections and model history split into two global registries, and model
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Provider registry - `~/.config/replio/providers.json` with one API key per provider and a custom `base_url` only when it differs from the provider default; the engine resolves keys and a fallback `base_url` from it | M | active connections stored separately from model history |
 | `models.json` reshaped to approved-model history - entries `{provider, model, added_at, last_used}` without keys; `/model list`, the `/connect` picker, and active-model marking adapt | M | usage history without key duplication |
 | Model refs unfold gated on active providers and approved models - `<provider>/<model>` resolves in `/model`, `--model`, and `AgentType.model`; interactive ask-on-load / `/team run` stage pre-check approve new models, headless `--approve-model` | M | per-type provider selection for teams |
 | `/connect` provider rework - `/connect <name>` presets provider defaults and re-enters the API key; `/connect <url>` detects a known host or creates a named custom provider entry | M | connect by name or URL without typing defaults |

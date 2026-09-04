@@ -5,7 +5,7 @@ Config is a single JSON object read from two files, merged per key with project-
 1. **Global** - `~/.config/replio/config.json` (user-wide defaults, credentials).
 2. **Local** - `.replio/config.json` in the project path (project overrides).
 
-Every process merges them in memory. Nothing is ever distributed to folders. Writes default to the **local** file and hold only the keys you actually selected - a save never re-writes the merged config. API keys are not part of the config: they live in the global model registry (`~/.config/replio/models.json`) and are managed through `/connect` (see [Models](#model-registry-keys)).
+Every process merges them in memory. Nothing is ever distributed to folders. Writes default to the **local** file and hold only the keys you actually selected - a save never re-writes the merged config. API keys are not part of the config: they live in the global provider registry (`~/.config/replio/providers.json`) and are managed through `/connect` (see [Models](#model-registry-not-config)).
 
 ```bash
 # inspect in the REPL (origin: default/global/local)
@@ -134,10 +134,32 @@ The check runs through the per-invocation policy resolver, so it composes with m
 
 ## Model registry (not config)
 
-A global catalogue of configured models lives separately from config in `~/.config/replio/models.json` (written `0600` when it holds keys). It is **not** part of the config merge - `/config` never lists or writes it, and it has no local scope. It is managed only through `/connect` and `/model`:
+Two global files live separately from config in `~/.config/replio/`. Neither is part of the config merge - `/config` never lists or writes them, and they have no local scope.
 
-- `/connect` appends (or updates) an entry `{provider, base_url, model, api_key}` - **the registry is the only place API keys live**. The active model still comes from `config.model`, so a project can use any model via its local config while the registry remembers every connection.
-- `/model list` shows the configured models grouped by provider with the active one marked `>`, and `(key)` for entries that have a stored key.
+### Provider registry (`providers.json`)
+
+`~/.config/replio/providers.json` (written `0600` when it holds keys) stores the active connections, keyed by provider name:
+
+```json
+{
+  "ollama": {
+    "base_url": "https://custom.example/v1",
+    "api_key": "...",
+    "added_at": "...",
+    "last_used": "..."
+  }
+}
+```
+
+- `api_key` lives here, one per provider. It is the only place API keys live.
+- `base_url` is stored only when it differs from the provider's default; otherwise the provider class default applies.
+- Managed through `/connect` (which writes the key and any custom base URL). Re-running `/connect` lets you re-enter a missing or stale key.
+- The engine resolves the API key for the active provider from this file (matching entry or `""`), and falls back to a stored custom `base_url` when the config has none. There is no `api_key` config key anymore, and `replio config set api_key` would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.
+
+### Model registry (`models.json`)
+
+`~/.config/replio/models.json` is the catalogue of configured models, grouped by provider. The active model still comes from `config.model`, so a project can use any model via its local config while the registry remembers every connection.
+
+- `/connect` appends (or updates) the model entry for the connection it just saved.
+- `/model list` shows the configured models grouped by provider with the active one marked `>`, and `(key)` for entries that carry a stored key.
 - `/model list --online [provider]` probes a provider's advertised models live (default: current provider).
-
-The engine resolves the API key for the active `provider`/`base_url`/`model` from the registry (matching entry or `""`). There is no `api_key` config key anymore, and `replio config set api_key` would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.

@@ -129,6 +129,13 @@ class Engine:
         return self._models
 
     @property
+    def providers(self):
+        if getattr(self, '_providers', None) is None:
+            from .providers.registry import ProviderRegistry
+            self._providers = ProviderRegistry()
+        return self._providers
+
+    @property
     def types(self):
         if getattr(self, '_types', None) is None:
             from .types import TypeRegistry
@@ -180,6 +187,8 @@ class Engine:
             provider_name = resolved
 
         base_url = self.config.get('base_url')
+        if not base_url:
+            base_url = self.providers.base_url_for(provider_name)
         model = self.config.get('model')
         if factory.DEFAULT_BASE_URL and base_url:
             for other in merged.values():
@@ -196,8 +205,7 @@ class Engine:
         if model != self.config.get('model'):
             self.config.apply('model', model)
 
-        entry = self.models.find(provider_name, base_url, model)
-        api_key = entry.api_key if entry is not None else ''
+        api_key = self.providers.api_key_for(provider_name)
 
         self.provider = factory(
             base_url=base_url,
@@ -214,10 +222,11 @@ class Engine:
         from .providers.base import _connection_message
         provider = provider or self.config.get('provider')
         base_url = self.config.get('base_url') if base_url is None else base_url
+        if not base_url:
+            base_url = self.providers.base_url_for(provider)
         model = model or self.config.get('model')
         if api_key is None:
-            entry = self.models.find(provider, base_url, model)
-            api_key = entry.api_key if entry is not None else ''
+            api_key = self.providers.api_key_for(provider)
         factory, _, _ = self._resolve_provider_factory(provider, base_url)
         if factory is None:
             return False, f'No provider registered for "{provider}"', []
@@ -233,10 +242,11 @@ class Engine:
                     model: str | None = None) -> tuple[list[str], str | None]:
         provider = provider or self.config.get('provider')
         base_url = self.config.get('base_url') if base_url is None else base_url
+        if not base_url:
+            base_url = self.providers.base_url_for(provider)
         model = self.config.get('model') if model is None else model
         if api_key is None:
-            entry = self.models.find(provider, base_url, model)
-            api_key = entry.api_key if entry is not None else ''
+            api_key = self.providers.api_key_for(provider)
         factory, _, _ = self._resolve_provider_factory(provider, base_url)
         if factory is None:
             return [], f'No provider registered for "{provider}"'

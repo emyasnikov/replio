@@ -27,7 +27,6 @@
 
 ## Open
 
-- [ ] Provider registry - `~/.config/replio/providers.json` with one API key per provider (custom base_url optional); the engine resolves keys and a fallback base_url from it
 - [ ] Connect any OpenAI-compatible endpoint by URL - `/connect <url>` (or `/connect <name>` for a known provider) stores the connection in `~/.config/replio/providers.json` (api_key + custom base_url per active provider). `models.json` tracks only approved models; unfold is gated on active provider + approved model, with interactive ask-on-load / team-run pre-check and headless `--approve-model`. No dialect flag - all providers are OpenAI-compatible
 - [ ] `/connect` provider rework - `/connect <known-provider>` presets the provider, its default base URL, and its default model, and always lets the user re-enter the API key (missing or stale); `/connect <url>` detects a known host or creates a named custom provider entry
 - [ ] Model refs unfold, gated on active providers and approved models - `<provider>/<model>` strings resolve to provider + base_url + model in `/model`, `--model`, and `AgentType.model`; resolve only for providers with a key in `providers.json` and models already in `models.json`. New models are approved interactively (ask-on-load, `/model` confirm, `/team run` stage pre-check); headless auto-approves an explicit `--model`, otherwise denies unless `--approve-model`
@@ -110,6 +109,7 @@
 
 ## Done
 
+- [x] Provider registry - providers.json, one API key per provider, engine resolves from it
 - [x] Sequential team runs - `run_team` stage loop, per-run briefs, team memory, `/team run`
 - [x] `persona` renamed to `agent type` - types.py/TypeRegistry, /type, --type, no aliases
 - [x] Bundled web plugin renamed - replio-core-websearch -> replio-core-web

@@ -75,18 +75,22 @@ class TestEngine(unittest.TestCase):
         self.engine._tmp.cleanup()
 
     def test_reinit_provider_uses_registry_api_key(self):
-        self.engine.models.put('ollama', 'https://test.api.com',
-                               'test-model', 'reg-key')
+        self.engine.providers.put('ollama', 'https://test.api.com', 'reg-key')
         self.engine.config.apply('api_key', 'cfg-key')
         self.engine._reinit_provider()
         self.assertEqual(self.engine.provider.api_key, 'reg-key')
 
     def test_reinit_provider_no_registry_key_is_empty(self):
         self.engine.config.apply('api_key', 'cfg-key')
-        self.assertIsNone(self.engine.models.find(
-            'ollama', 'https://test.api.com', 'test-model'))
+        self.assertIsNone(self.engine.providers.find('ollama'))
         self.engine._reinit_provider()
         self.assertEqual(self.engine.provider.api_key, '')
+
+    def test_reinit_provider_uses_registry_base_url_when_config_empty(self):
+        self.engine.config.apply('base_url', '')
+        self.engine.providers.put('ollama', 'https://custom.example/v1', 'k')
+        self.engine._reinit_provider()
+        self.assertEqual(self.engine.provider.base_url, 'https://custom.example/v1')
 
     def test_chat_returns_turn_result(self):
         self.engine.provider.chat.return_value = [
