@@ -1400,7 +1400,7 @@
 <ul>
 <li><strong>Local-first</strong> - config and session logs live on your disk. All provider traffic is outbound. There is no external telemetry or logging service holding enterprise data.</li>
 <li><strong>Zero dependencies</strong> - the core is Python stdlib only, so there is no supply chain to audit and no lockfile churn. Plugins may add third-party deps, imported lazily and only when the plugin is used.</li>
-<li><strong>API keys</strong> - stored in the global model registry (<code>~/.config/replio/models.json</code>, written <code>0600</code> when it holds keys), never in config and never in a session log by hand. Keep keys out of repositories.</li>
+<li><strong>API keys</strong> - stored in the global provider registry (<code>~/.config/replio/providers.json</code>, one key per provider, written <code>0600</code> when it holds keys), never in config and never in a session log by hand. Keep keys out of repositories.</li>
 </ul>
 <h2 id="plugins">Plugins<a class="headerlink" href="#plugins" title="Permanent link">&para;</a></h2>
 <p>Plugins are arbitrary Python code that run with your user's privileges. Install only plugins you trust. A plugin's <code>register_providers</code> hook runs at load. Its tools run on demand like any built-in tool. The manifest declares <code>replio_version</code> and <code>python</code> compatibility ranges, and incompatible plugins are skipped at load. See <a href="../plugins/">plugins.md</a> for management and the security notes.</p>

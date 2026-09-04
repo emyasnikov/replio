@@ -1632,16 +1632,6 @@
 </thead>
 <tbody>
 <tr>
-<td>Provider registry - <code>~/.config/replio/providers.json</code> with one API key per provider and a custom <code>base_url</code> only when it differs from the provider default; the engine resolves keys and a fallback <code>base_url</code> from it</td>
-<td>M</td>
-<td>active connections stored separately from model history</td>
-</tr>
-<tr>
-<td><code>models.json</code> reshaped to approved-model history - entries <code>{provider, model, added_at, last_used}</code> without keys; <code>/model list</code>, the <code>/connect</code> picker, and active-model marking adapt</td>
-<td>M</td>
-<td>usage history without key duplication</td>
-</tr>
-<tr>
 <td>Model refs unfold gated on active providers and approved models - <code>&lt;provider&gt;/&lt;model&gt;</code> resolves in <code>/model</code>, <code>--model</code>, and <code>AgentType.model</code>; interactive ask-on-load / <code>/team run</code> stage pre-check approve new models, headless <code>--approve-model</code></td>
 <td>M</td>
 <td>per-type provider selection for teams</td>

@@ -1432,7 +1432,7 @@
 <tr>
 <td><code>/model</code></td>
 <td></td>
-<td>Show or switch the active model. <code>model list</code> shows configured (global) models, <code>model list --online [provider]</code> probes a provider's available models</td>
+<td>Show or switch the active model. <code>model list</code> shows the approved-model history grouped by provider (with <code>(key)</code> when the provider has a stored key), <code>model list --online [provider]</code> probes a provider's available models</td>
 </tr>
 <tr>
 <td><code>/models</code></td>
@@ -1452,7 +1452,7 @@
 <tr>
 <td><code>/connect</code></td>
 <td></td>
-<td>Interactive provider connection setup (tests the connection before saving). Appends the model to the global <code>models.json</code> registry (storing the API key there, not in config). On a fresh project with known models it offers a numbered picker (<code>#N</code>) to reuse one</td>
+<td>Interactive provider connection setup (tests the connection before saving). Stores the API key (and any custom base URL) in the global <code>providers.json</code> registry, not in config, and records the model in <code>models.json</code>. On a fresh project with approved models it offers a numbered picker (<code>#N</code>) to reuse one</td>
 </tr>
 <tr>
 <td><code>/config</code></td>

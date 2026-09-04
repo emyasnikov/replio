@@ -650,6 +650,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Model registry (not config)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#provider-registry-providersjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provider registry (providers.json)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-registry-modelsjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model registry (models.json)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1229,6 +1257,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Model registry (not config)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#provider-registry-providersjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provider registry (providers.json)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-registry-modelsjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model registry (models.json)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1254,7 +1310,7 @@
 <li><strong>Global</strong> - <code>~/.config/replio/config.json</code> (user-wide defaults, credentials).</li>
 <li><strong>Local</strong> - <code>.replio/config.json</code> in the project path (project overrides).</li>
 </ol>
-<p>Every process merges them in memory. Nothing is ever distributed to folders. Writes default to the <strong>local</strong> file and hold only the keys you actually selected - a save never re-writes the merged config. API keys are not part of the config: they live in the global model registry (<code>~/.config/replio/models.json</code>) and are managed through <code>/connect</code> (see <a href="#model-registry-keys">Models</a>).</p>
+<p>Every process merges them in memory. Nothing is ever distributed to folders. Writes default to the <strong>local</strong> file and hold only the keys you actually selected - a save never re-writes the merged config. API keys are not part of the config: they live in the global provider registry (<code>~/.config/replio/providers.json</code>) and are managed through <code>/connect</code> (see <a href="#model-registry-not-config">Models</a>).</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># inspect in the REPL (origin: default/global/local)</span>
 /config
 <span class="c1"># set a value (project-local, Git-like default)</span>
@@ -1555,13 +1611,31 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </ul>
 <p>The check runs through the per-invocation policy resolver, so it composes with modes, name-level <code>tools.deny</code>/<code>tools.allow</code>, and the worktree escalation. <code>bash_allow</code> gives a coding agent a safe default set (tests, linters, git) without opening up arbitrary shell.</p>
 <h2 id="model-registry-not-config">Model registry (not config)<a class="headerlink" href="#model-registry-not-config" title="Permanent link">&para;</a></h2>
-<p>A global catalogue of configured models lives separately from config in <code>~/.config/replio/models.json</code> (written <code>0600</code> when it holds keys). It is <strong>not</strong> part of the config merge - <code>/config</code> never lists or writes it, and it has no local scope. It is managed only through <code>/connect</code> and <code>/model</code>:</p>
+<p>Two global files live separately from config in <code>~/.config/replio/</code>. Neither is part of the config merge - <code>/config</code> never lists or writes them, and they have no local scope.</p>
+<h3 id="provider-registry-providersjson">Provider registry (<code>providers.json</code>)<a class="headerlink" href="#provider-registry-providersjson" title="Permanent link">&para;</a></h3>
+<p><code>~/.config/replio/providers.json</code> (written <code>0600</code> when it holds keys) stores the active connections, keyed by provider name:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"ollama"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"base_url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://custom.example/v1"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"api_key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"added_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"last_used"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <ul>
-<li><code>/connect</code> appends (or updates) an entry <code>{provider, base_url, model, api_key}</code> - <strong>the registry is the only place API keys live</strong>. The active model still comes from <code>config.model</code>, so a project can use any model via its local config while the registry remembers every connection.</li>
-<li><code>/model list</code> shows the configured models grouped by provider with the active one marked <code>&gt;</code>, and <code>(key)</code> for entries that have a stored key.</li>
+<li><code>api_key</code> lives here, one per provider. It is the only place API keys live.</li>
+<li><code>base_url</code> is stored only when it differs from the provider's default; otherwise the provider class default applies.</li>
+<li>Managed through <code>/connect</code> (which writes the key and any custom base URL). Re-running <code>/connect</code> lets you re-enter a missing or stale key.</li>
+<li>The engine resolves the API key for the active provider from this file (matching entry or <code>""</code>), and falls back to a stored custom <code>base_url</code> when the config has none. There is no <code>api_key</code> config key anymore, and <code>replio config set api_key</code> would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.</li>
+</ul>
+<h3 id="model-registry-modelsjson">Model registry (<code>models.json</code>)<a class="headerlink" href="#model-registry-modelsjson" title="Permanent link">&para;</a></h3>
+<p><code>~/.config/replio/models.json</code> is the history of approved models - entries <code>{provider, model, added_at, last_used}</code>, no API keys (keys and custom base URLs live in <code>providers.json</code>). It records every model you connect or switch to, so <code>/model list</code> shows what has been used per provider and <code>&gt;</code> marks the active one. The active model still comes from <code>config.model</code>.</p>
+<ul>
+<li><code>/connect</code> records the model for the connection it just saved.</li>
+<li><code>/model list</code> shows the approved models grouped by provider with the active one marked <code>&gt;</code>, and <code>(key)</code> when that provider has a stored key.</li>
 <li><code>/model list --online [provider]</code> probes a provider's advertised models live (default: current provider).</li>
 </ul>
-<p>The engine resolves the API key for the active <code>provider</code>/<code>base_url</code>/<code>model</code> from the registry (matching entry or <code>""</code>). There is no <code>api_key</code> config key anymore, and <code>replio config set api_key</code> would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.</p>
 
 
 
