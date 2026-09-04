@@ -30,7 +30,6 @@
 - [ ] Connect any OpenAI-compatible endpoint by URL - `/connect <url>` (or `/connect <name>` for a known provider) stores the connection in `~/.config/replio/providers.json` (api_key + custom base_url per active provider). `models.json` tracks only approved models; unfold is gated on active provider + approved model, with interactive ask-on-load / team-run pre-check and headless `--approve-model`. No dialect flag - all providers are OpenAI-compatible
 - [ ] `/connect` provider rework - `/connect <known-provider>` presets the provider, its default base URL, and its default model, and always lets the user re-enter the API key (missing or stale); `/connect <url>` detects a known host or creates a named custom provider entry
 - [ ] Model refs unfold, gated on active providers and approved models - `<provider>/<model>` strings resolve to provider + base_url + model in `/model`, `--model`, and `AgentType.model`; resolve only for providers with a key in `providers.json` and models already in `models.json`. New models are approved interactively (ask-on-load, `/model` confirm, `/team run` stage pre-check); headless auto-approves an explicit `--model`, otherwise denies unless `--approve-model`
-- [ ] `models.json` reshaped to approved-model history - entries `{provider, model, added_at, last_used}` without API keys (keys live in `providers.json`); `/model list`, the `/connect` picker, and active-model marking adapt. No migration - the old per-model-key shape is dropped and keys are re-entered via `/connect`
 - [ ] `ask` tool - model-facing tool that pauses the run and poses a question to the human (or the lead), so sub-agents and team stages can get decisions mid-run instead of returning open questions. Documented dependency for autonomously runnable agents; until it lands, the selfdev team works around it with leader pre-grants and open questions returned at the end of a stage
 - [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
 - [ ] Externalize bundled providers - move `opencode`/`opencode-go` (and the vendor providers) out of the core into bundled plugins, keeping `BaseProvider`/`OpenAICompatibleProvider`, the `PROVIDERS` dict + `detect_provider`, and the plugin `register_providers` hook as the core mechanisms. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in `/connect`
@@ -109,6 +108,7 @@
 
 ## Done
 
+- [x] models.json - approved-model history (provider, model, timestamps), no keys
 - [x] Provider registry - providers.json, one API key per provider, engine resolves from it
 - [x] Sequential team runs - `run_team` stage loop, per-run briefs, team memory, `/team run`
 - [x] `persona` renamed to `agent type` - types.py/TypeRegistry, /type, --type, no aliases

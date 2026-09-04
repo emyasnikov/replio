@@ -31,7 +31,7 @@ Providers are the model backends. Replio speaks OpenAI-compatible `/v1/chat/comp
 }
 ```
 
-The engine resolves the API key for the active provider from the provider registry (a `(key)` entry from `/connect`), falling back to `""` - no environment variable is consulted. A custom `base_url` stored there is used when the config leaves it empty. The configured-models catalogue (`~/.config/replio/models.json`) records every connection for `/model list`.
+The engine resolves the API key for the active provider from the provider registry (a `(key)` entry from `/connect`), falling back to `""` - no environment variable is consulted. A custom `base_url` stored there is used when the config leaves it empty. The approved-model history (`~/.config/replio/models.json`) records every model used for `/model list`.
 
 ## Auto-detection
 

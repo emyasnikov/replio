@@ -54,7 +54,6 @@ def _render_models(models, provider, base_url):
 
 def _active_model(chat, entry):
     return (entry.provider == chat.config.get('provider')
-            and entry.base_url == chat.config.get('base_url')
             and entry.model == chat.config.get('model'))
 
 
@@ -67,16 +66,18 @@ def _render_known_models(chat):
         print(group + ':')
         for e in items:
             active = '>' if _active_model(chat, e) else ' '
-            key = ' (key)' if e.api_key else ''
+            key = ' (key)' if chat.providers.api_key_for(e.provider) else ''
             print(f'  {active} {e.model}{key}')
 
 
 def _render_online_models(chat, provider_arg):
     provider = (provider_arg.strip() or chat.config.get('provider')).strip()
-    candidates = [e for e in chat.models.all() if e.provider == provider]
-    base_url = candidates[0].base_url if candidates else chat.config.get('base_url')
-    api_key = next((e.api_key for e in candidates if e.api_key), None)
-    model = candidates[0].model if candidates else chat.config.get('model')
+    entry = chat.providers.find(provider)
+    base_url = (entry.base_url if entry and entry.base_url else '') or \
+        chat.config.get('base_url') or ''
+    api_key = chat.providers.api_key_for(provider)
+    model = next((e.model for e in chat.models.all() if e.provider == provider),
+                 None) or chat.config.get('model')
     try:
         models, error = chat.list_models(provider=provider, base_url=base_url,
                                          api_key=api_key, model=model)
@@ -159,8 +160,7 @@ def register_builtins(registry):
             return
         chat.config.set('model', arg)
         chat.provider.model = chat.config.get('model')
-        chat.models.touch(chat.config.get('provider'),
-                          chat.config.get('base_url'), arg)
+        chat.models.touch(chat.config.get('provider'), arg)
         print(f'Model set to: {arg}')
 
     @registry.register('provider', description='Show or switch the active provider')
@@ -545,8 +545,8 @@ def register_builtins(registry):
         if known and fresh:
             print('Known models (global):')
             for i, e in enumerate(known, 1):
-                key = ' (key)' if e.api_key else ''
-                print(f'  {i}. [{e.provider}] {e.model} - {e.base_url}{key}')
+                key = ' (key)' if chat.providers.api_key_for(e.provider) else ''
+                print(f'  {i}. [{e.provider}] {e.model}{key}')
         print('Setting up provider connection:')
         provider = input(
             f'  Provider [{chat.config.get("provider")}]: '
@@ -564,11 +564,13 @@ def register_builtins(registry):
             except (ValueError, IndexError):
                 print(f'  Unknown model number "{model}"')
                 return
-            provider, base_url, model = picked.provider, picked.base_url, picked.model
+            provider, model = picked.provider, picked.model
+            base_url = chat.providers.base_url_for(provider) or base_url
+        stored_key = chat.providers.api_key_for(provider)
         api_key = ''
         if picked is not None:
-            print(f'  API key: stored key {picked.api_key and "(present)" or "(missing)"}')
-            api_key = input('  API key [<stored>]: ').strip() or picked.api_key
+            print(f'  API key: stored key {stored_key and "(present)" or "(missing)"}')
+            api_key = input('  API key [<stored>]: ').strip() or stored_key
         else:
             api_key = input('  API key (leave empty to skip): ').strip()
 
@@ -592,8 +594,8 @@ def register_builtins(registry):
                     print('  Connection not saved - run /connect again with corrected values')
                     return
 
-        was_known = registry.find(provider, base_url, model) is not None
-        registry.put(provider, base_url, model, api_key)
+        was_known = registry.find(provider, model) is not None
+        registry.put(provider, model)
         chat.providers.put(provider, base_url, api_key)
         chat.config.set('base_url', base_url)
         chat.config.set('provider', provider)

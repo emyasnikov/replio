@@ -13,20 +13,16 @@ def _now() -> str:
 
 @dataclass
 class ModelEntry:
-    provider: str = 'ollama'
-    base_url: str = ''
+    provider: str = ''
     model: str = ''
-    api_key: str = ''
     added_at: str = ''
     last_used: str = ''
 
     @classmethod
     def from_dict(cls, d: dict) -> 'ModelEntry':
         return cls(
-            provider=d.get('provider', 'ollama'),
-            base_url=d.get('base_url', ''),
+            provider=d.get('provider', ''),
             model=d.get('model', ''),
-            api_key=d.get('api_key', ''),
             added_at=d.get('added_at', ''),
             last_used=d.get('last_used', ''),
         )
@@ -40,8 +36,8 @@ class ModelRegistry:
         self._load()
 
     def _load(self):
+        self._entries = []
         if not self.path.exists():
-            self._entries = []
             return
         try:
             with open(self.path) as f:
@@ -55,49 +51,38 @@ class ModelRegistry:
         tmp = self.path.with_suffix('.json.tmp')
         tmp.write_text(json.dumps([asdict(e) for e in self._entries], indent=2))
         os.replace(tmp, self.path)
-        if any(e.api_key for e in self._entries):
-            try:
-                os.chmod(self.path, 0o600)
-            except OSError:
-                pass
 
     def all(self) -> list[ModelEntry]:
         return list(self._entries)
 
-    def find(self, provider: str, base_url: str, model: str) -> ModelEntry | None:
+    def find(self, provider: str, model: str) -> ModelEntry | None:
         for e in self._entries:
-            if e.provider == provider and e.base_url == base_url and e.model == model:
+            if e.provider == provider and e.model == model:
                 return e
         return None
 
-    def api_key_for(self, provider: str, base_url: str, model: str) -> str:
-        entry = self.find(provider, base_url, model)
-        return entry.api_key if entry is not None else ''
-
-    def put(self, provider: str, base_url: str, model: str, api_key: str = '') -> ModelEntry:
+    def put(self, provider: str, model: str) -> ModelEntry:
         now = _now()
-        entry = self.find(provider, base_url, model)
+        entry = self.find(provider, model)
         if entry is None:
-            entry = ModelEntry(provider=provider, base_url=base_url, model=model,
-                               added_at=now, last_used=now, api_key=api_key)
+            entry = ModelEntry(provider=provider, model=model,
+                               added_at=now, last_used=now)
             self._entries.append(entry)
         else:
             entry.last_used = now
-            if api_key:
-                entry.api_key = api_key
-        self._sink()
+        self._save()
         return entry
 
-    def touch(self, provider: str, base_url: str, model: str) -> ModelEntry | None:
-        entry = self.find(provider, base_url, model)
+    def touch(self, provider: str, model: str) -> ModelEntry | None:
+        entry = self.find(provider, model)
         if entry is None:
             return None
         entry.last_used = _now()
-        self._sink()
+        self._save()
         return entry
 
-    def remove(self, provider: str, base_url: str, model: str) -> bool:
-        entry = self.find(provider, base_url, model)
+    def remove(self, provider: str, model: str) -> bool:
+        entry = self.find(provider, model)
         if entry is None:
             return False
         self._entries.remove(entry)
@@ -107,10 +92,5 @@ class ModelRegistry:
     def grouped(self) -> list[tuple[str, list[ModelEntry]]]:
         groups: dict[str, list[ModelEntry]] = {}
         for e in self.all():
-            key = e.provider if not e.base_url else f'{e.provider} ({e.base_url})'
-            groups.setdefault(key, []).append(e)
+            groups.setdefault(e.provider, []).append(e)
         return list(groups.items())
-
-    def _sink(self):
-        self._entries.sort(key=lambda e: e.last_used, reverse=True)
-        self._save()
