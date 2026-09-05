@@ -70,7 +70,7 @@ Fields:
 
 - `name` - unique key of the type.
 - `system_prompt` - the type's system prompt, injected when it runs.
-- `model` - optional. Overrides the caller's model when the type runs. Falls back to the caller's model when empty.
+- `model` - optional. Overrides the caller's model when the type runs. Falls back to the caller's model when empty. Accepts a `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) to pin provider and model together. A type's model must be approved before it can run (`delegate`/`/team run` ask interactively, or pass `--approve-model` headlessly - see [Model refs and approval](providers.md#model-refs-and-approval)).
 - `skills` - optional list of skill names from the [skills registry](skills.md), resolved and injected into the type's sub-agent system prompt (and jobs with `--type`).
 - `tags` - optional list of job tags for grouping and filtering (`/type list <tag>`). The bundled set uses a controlled vocabulary: `research`, `writing`, `programming`, `review`.
 - `tool_permission` - optional per-agent overrides of `tool_permission` categories. This is the per-agent permission profile.

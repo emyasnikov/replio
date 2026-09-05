@@ -40,7 +40,7 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 | Key                         | Default                | Description                                                            |
 |-----------------------------|------------------------|------------------------------------------------------------------------|
 | `provider`                  | `"ollama"`             | Provider name (`ollama`, `openai`, `groq`, `anthropic`, `opencode`, `opencode-go`, `openai-compatible`) |
-| `model`                     | `"llama3.2"`           | Model name                                                             |
+| `model`                     | `"llama3.2"`           | Model name. A `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) unfolds to that provider and model; an unfolded model must be approved (see [Model refs and approval](providers.md#model-refs-and-approval)) |
 | `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
 | `temperature`               | `0.7`                  | Sampling temperature                                                   |
 | `max_tokens`                | `8192`                 | Output token cap sent to the provider. `0` = unset (provider default applies, e.g. Ollama caps at 2048). Default `8192` overrides low provider defaults |

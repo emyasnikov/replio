@@ -705,5 +705,97 @@ class TestEngineModes(unittest.TestCase):
         self.assertIn('file_write', names)
 
 
+class TestModelRefUnfold(unittest.TestCase):
+
+    def setUp(self):
+        self.engine = make_engine()
+        self.engine.models.put('opencode-go', 'deepseek-v4-flash')
+        self.engine.providers.put('opencode-go',
+                                  'https://opencode.ai/zen/go/v1', 'key')
+
+    def tearDown(self):
+        self.engine._tmp.cleanup()
+
+    def _write_type(self, name, model):
+        types_dir = self.engine.config.local_path.parent / 'types.json'
+        types_dir.write_text(json.dumps(
+            {name: {'system_prompt': 'You are a worker.', 'model': model}}))
+
+    def test_reinit_provider_unfolds_ref(self):
+        self.engine.config.apply('model', 'opencode-go/deepseek-v4-flash')
+        self.engine._reinit_provider()
+        self.assertEqual(self.engine.config.get('provider'), 'opencode-go')
+        self.assertEqual(self.engine.config.get('base_url'),
+                         'https://opencode.ai/zen/go/v1')
+        self.assertEqual(self.engine.config.get('model'), 'deepseek-v4-flash')
+        self.assertEqual(self.engine.provider.base_url,
+                         'https://opencode.ai/zen/go/v1')
+        self.assertEqual(self.engine.provider.model, 'deepseek-v4-flash')
+
+    def test_unapproved_ref_denied_headless(self):
+        self.engine.models.remove('opencode-go', 'deepseek-v4-flash')
+        self.engine.config.apply('model', 'opencode-go/deepseek-v4-flash')
+        self.engine._reinit_provider()
+        self.assertIsNotNone(self.engine._provider_error)
+        self.assertIn('not approved', self.engine._provider_error)
+
+    def test_approve_models_grant_records_model(self):
+        self.engine.models.remove('opencode-go', 'deepseek-v4-flash')
+        self.engine.approve_models = True
+        self.engine.config.apply('model', 'opencode-go/deepseek-v4-flash')
+        self.engine._reinit_provider()
+        self.assertIsNone(self.engine._provider_error)
+        self.assertIsNotNone(
+            self.engine.models.find('opencode-go', 'deepseek-v4-flash'))
+
+    def test_chat_short_circuits_on_provider_error(self):
+        self.engine.models.remove('opencode-go', 'deepseek-v4-flash')
+        self.engine.config.apply('model', 'opencode-go/deepseek-v4-flash')
+        self.engine._reinit_provider()
+        result = self.engine.chat('hi')
+        self.assertEqual(result.status, 'error')
+        self.assertTrue(result.errors)
+
+    def test_bare_model_unaffected(self):
+        self.engine.config.apply('model', 'test-model')
+        self.engine._reinit_provider()
+        self.assertEqual(self.engine.config.get('provider'), 'ollama')
+        self.assertEqual(self.engine.provider.model, 'test-model')
+
+    def test_run_subagent_unapproved_type_model_raises(self):
+        self._write_type('coder', 'opencode-go/deepseek-v4-flash')
+        self.engine.models.remove('opencode-go', 'deepseek-v4-flash')
+        with self.assertRaises(ValueError):
+            self.engine.run_subagent('coder', 'write code')
+
+    def test_run_subagent_approved_type_model_runs(self):
+        self._write_type('coder', 'opencode-go/deepseek-v4-flash')
+        sub = MagicMock()
+        sub.chat.return_value = MagicMock(status='ok', content='done',
+                                          session='sub_1')
+        with patch.object(self.engine, '_new_sub_engine', return_value=sub):
+            result = self.engine.run_subagent('coder', 'write code')
+            self.engine._new_sub_engine.assert_called_once()
+        self.assertEqual(result.content, 'done')
+
+    def test_new_sub_engine_unfolds_type_model(self):
+        self._write_type('coder', 'opencode-go/deepseek-v4-flash')
+        sub = self.engine._new_sub_engine('coder')
+        self.assertEqual(sub.config.get('provider'), 'opencode-go')
+        self.assertEqual(sub.config.get('base_url'),
+                         'https://opencode.ai/zen/go/v1')
+        self.assertEqual(sub.config.get('model'), 'deepseek-v4-flash')
+
+    def test_run_team_precheck_denies_unapproved_model(self):
+        from replio.teams import Team, TeamStage
+        self._write_type('coder', 'opencode-go/deepseek-v4-flash')
+        self.engine.models.remove('opencode-go', 'deepseek-v4-flash')
+        team = Team(name='t', stages=[TeamStage(type='coder')])
+        result = self.engine.run_team(team, 'task')
+        self.assertEqual(result.status, 'error')
+        self.assertIn('unapproved model',
+                      result.errors[0]['message'])
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -2,8 +2,47 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from replio.providers.registry import ProviderRegistry
+from replio.providers.registry import ProviderRegistry, resolve_model_ref
 from replio.config import Config
+
+
+class TestResolveModelRef(unittest.TestCase):
+
+    def _providers(self):
+        from replio.providers import PROVIDERS
+        return dict(PROVIDERS)
+
+    def test_known_provider_unfolds(self):
+        self.assertEqual(
+            resolve_model_ref('opencode-go/deepseek-v4-flash', self._providers()),
+            ('opencode-go', 'https://opencode.ai/zen/go/v1', 'deepseek-v4-flash'))
+
+    def test_known_provider_with_simple_model(self):
+        self.assertEqual(
+            resolve_model_ref('openai/gpt-4o', self._providers()),
+            ('openai', 'https://api.openai.com/v1', 'gpt-4o'))
+
+    def test_unknown_provider_returns_none(self):
+        self.assertIsNone(resolve_model_ref('nope/model', self._providers()))
+
+    def test_bare_model_returns_none(self):
+        self.assertIsNone(resolve_model_ref('gpt-4o', self._providers()))
+
+    def test_no_default_base_url_returns_none(self):
+        self.assertIsNone(resolve_model_ref('openai-compatible/x', self._providers()))
+
+    def test_empty_parts_return_none(self):
+        self.assertIsNone(resolve_model_ref('', self._providers()))
+        self.assertIsNone(resolve_model_ref('/model', self._providers()))
+        self.assertIsNone(resolve_model_ref('openai/', self._providers()))
+
+    def test_plugin_providers_resolve(self):
+        from replio.providers.registry import resolve_model_ref
+        class Fake:
+            DEFAULT_BASE_URL = 'https://fake.example/v1'
+        self.assertEqual(
+            resolve_model_ref('fake/m1', {'fake': Fake}),
+            ('fake', 'https://fake.example/v1', 'm1'))
 
 
 class TestProviderRegistry(unittest.TestCase):

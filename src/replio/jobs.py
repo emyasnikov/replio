@@ -179,6 +179,7 @@ class Job:
     backoff: float = 60.0
     timeout: int = 0
     require_approval: bool = False
+    approve_model: bool = False
     approval_pending: bool = False
     enabled: bool = True
     status: str = 'proposed'
@@ -215,6 +216,7 @@ class Job:
             'backoff': self.backoff,
             'timeout': self.timeout,
             'require_approval': self.require_approval,
+            'approve_model': self.approve_model,
             'approval_pending': self.approval_pending,
             'enabled': self.enabled,
             'status': self.status,
@@ -243,6 +245,7 @@ class Job:
             backoff=d.get('backoff', 60.0),
             timeout=d.get('timeout', 0),
             require_approval=d.get('require_approval', False),
+            approve_model=d.get('approve_model', False),
             approval_pending=d.get('approval_pending', False),
             enabled=d.get('enabled', True),
             status=d.get('status', 'proposed'),

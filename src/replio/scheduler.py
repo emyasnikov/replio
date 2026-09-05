@@ -66,7 +66,8 @@ def _build_engine(config: Config, job: Job, verbose: bool,
     ui = HeadlessUI(auto='deny', verbose=verbose, stream=stream,
                     show_thinking=sub_config.get('show_thinking', True),
                     footer_tokens=sub_config.get('footer_tokens', ['context']))
-    engine = Engine(sub_config, ui=ui)
+    engine = Engine(sub_config, ui=ui,
+                    approve_models=job.approve_model or bool(job.model))
     engine.load_or_create_session(session_name or job.session or f'job.{job.name}')
     return engine
 

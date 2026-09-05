@@ -11,6 +11,18 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec='seconds')
 
 
+def resolve_model_ref(ref: str, providers: dict) -> tuple[str, str, str] | None:
+    if not ref or '/' not in ref:
+        return None
+    name, _, model = ref.partition('/')
+    if not name or not model:
+        return None
+    factory = (providers or {}).get(name)
+    if factory is None or not getattr(factory, 'DEFAULT_BASE_URL', ''):
+        return None
+    return name, factory.DEFAULT_BASE_URL, model
+
+
 @dataclass
 class ProviderEntry:
     provider: str = ''

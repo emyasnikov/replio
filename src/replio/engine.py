@@ -11,7 +11,7 @@ from .sessions.manager import SessionManager
 from .commands.registry import CommandRegistry
 from .commands.builtins import register_builtins
 from .plugins.manager import PluginManager
-from .ui import NullUI
+from .ui import NullUI, ReplUI
 
 
 @dataclass
@@ -96,8 +96,10 @@ def _sub_session_name(ts: str, parent: str, sessions_dir: Path) -> str:
 
 class Engine:
     def __init__(self, config: Config, ui=None, plugin_manager=None,
-                 provider=None):
+                 provider=None, approve_models: bool = False):
         self.config = config
+        self.approve_models = approve_models
+        self._provider_error = None
         self._ui = ui
         if plugin_manager is None:
             self._plugin_manager = PluginManager(config)
@@ -176,6 +178,35 @@ class Engine:
                      '(detected from base_url)')
         return merged.get(detected), detected, merged
 
+    def unfold_ref(self, ref: str) -> tuple[str, str, str] | None:
+        from .providers.registry import resolve_model_ref
+        return resolve_model_ref(ref, self._merged_providers())
+
+    def _merged_providers(self) -> dict:
+        from .providers import PROVIDERS
+        merged = dict(PROVIDERS)
+        plugin_manager = getattr(self, '_plugin_manager', None)
+        if plugin_manager is not None:
+            merged.update(plugin_manager.provider_classes())
+        return merged
+
+    def _ensure_model_approved(self, provider: str, model: str) -> bool:
+        if self.models.find(provider, model) is not None:
+            return True
+        if getattr(self, 'approve_models', False):
+            self.models.put(provider, model)
+            return True
+        if isinstance(self.ui, ReplUI):
+            try:
+                ok = self.ui.confirm('model', f'Approve model "{provider}/{model}"')
+            except KeyboardInterrupt:
+                return False
+            if ok:
+                self.models.put(provider, model)
+                return True
+            return False
+        return False
+
     def _reinit_provider(self):
         provider_name = self.config.get('provider', 'ollama')
         factory, resolved, merged = self._resolve_provider_factory(
@@ -190,6 +221,34 @@ class Engine:
         if not base_url:
             base_url = self.providers.base_url_for(provider_name)
         model = self.config.get('model')
+
+        from .providers.registry import resolve_model_ref
+        unfolded = resolve_model_ref(model, self._merged_providers()) if model else None
+        if unfolded is not None:
+            provider_name, base_url, model = unfolded
+            if not self.providers.api_key_for(provider_name):
+                self.ui.info(f'Provider "{provider_name}" has no API key - '
+                             f'run /connect {provider_name}')
+            if not self._ensure_model_approved(provider_name, model):
+                self._provider_error = (
+                    f'Model "{provider_name}/{model}" is not approved. Approve it '
+                    f'with /model {provider_name}/{model}, --model, --approve-model, '
+                    f'or /connect.')
+                self.ui.info(f'[Error] {self._provider_error}')
+                self.config.apply('provider', provider_name)
+                self.config.apply('base_url', base_url)
+                self.config.apply('model', model)
+                return
+            self.config.apply('provider', provider_name)
+            self.config.apply('base_url', base_url)
+            self.config.apply('model', model)
+            factory, _, merged = self._resolve_provider_factory(provider_name, base_url)
+            if factory is None:
+                return
+        elif getattr(self, 'approve_models', False) and model:
+            self.models.put(provider_name, model)
+        self._provider_error = None
+
         if factory.DEFAULT_BASE_URL and base_url:
             for other in merged.values():
                 if other is not factory and other.DEFAULT_BASE_URL and base_url == other.DEFAULT_BASE_URL:
@@ -286,7 +345,14 @@ class Engine:
                     system_prompt = section
         sub_config.apply('system_prompt', system_prompt)
         if agent_type.model:
-            sub_config.apply('model', agent_type.model)
+            ref = self.unfold_ref(agent_type.model)
+            if ref is not None:
+                t_provider, t_base_url, t_model = ref
+                sub_config.apply('provider', t_provider)
+                sub_config.apply('base_url', t_base_url)
+                sub_config.apply('model', t_model)
+            else:
+                sub_config.apply('model', agent_type.model)
         permissions = dict(self.config.get('tool_permission') or {})
         permissions.update(agent_type.tool_permission)
         sub_config.apply('tool_permission', permissions)
@@ -302,6 +368,17 @@ class Engine:
         return sub
 
     def run_subagent(self, type_name: str, task: str, mode: str = '') -> TurnResult:
+        agent_type = self.types.find(type_name)
+        if agent_type is None:
+            raise ValueError(f'Unknown agent type: {type_name}')
+        if agent_type.model:
+            ref = self.unfold_ref(agent_type.model)
+            provider, _, model = ref if ref else (
+                self.config.get('provider'), None, agent_type.model)
+            if not self._ensure_model_approved(provider, model):
+                raise ValueError(
+                    f'Type "{type_name}" uses unapproved model "{model}" - '
+                    'approve it first (/model, --approve-model, or /connect)')
         sub = self._new_sub_engine(type_name, mode=mode)
         result = sub.chat(task, autoname=False)
         if result.session and result.session not in self.current_session.sub_sessions:
@@ -368,6 +445,19 @@ class Engine:
 
     def run_team(self, team, task: str) -> TeamRunResult:
         from .teams import read_team_memory, write_team_memory
+        for stage in team.stages:
+            agent_type = self.types.find(stage.type)
+            if agent_type is None or not agent_type.model:
+                continue
+            ref = self.unfold_ref(agent_type.model)
+            provider, _, model = ref if ref else (
+                self.config.get('provider'), None, agent_type.model)
+            if not self._ensure_model_approved(provider, model):
+                return TeamRunResult(
+                    name=team.name, status='error',
+                    errors=[{'code': '', 'message':
+                        f'Stage "{stage.type}" uses unapproved model "{model}" - '
+                        'approve it first (/model, --approve-model, or /connect)'}])
         worktree = self.config.local_path.parent.parent
         memory = read_team_memory(worktree, team.name)
         stages: list[TurnResult] = []
@@ -405,6 +495,10 @@ class Engine:
         )
 
     def chat(self, text: str, autoname: bool = True) -> TurnResult:
+        if getattr(self, '_provider_error', None):
+            return TurnResult(status='error',
+                              errors=[{'code': '', 'message': self._provider_error}],
+                              session=self.current_session.name)
         now = datetime.now(timezone.utc)
         self.current_session.add_message(
             'user', text, timestamp=now.isoformat(timespec='seconds')

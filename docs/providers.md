@@ -33,6 +33,17 @@ Providers are the model backends. Replio speaks OpenAI-compatible `/v1/chat/comp
 
 The engine resolves the API key for the active provider from the provider registry (a `(key)` entry from `/connect`), falling back to `""` - no environment variable is consulted. A custom `base_url` stored there is used when the config leaves it empty. The approved-model history (`~/.config/replio/models.json`) records every model used for `/model list`.
 
+## Model refs and approval
+
+A **model ref** `provider/model` (e.g. `opencode-go/deepseek-v4-flash`, `ollama/gpt-oss:20b-cloud`) unfolds to the provider, its default base URL, and the bare model. It is accepted wherever a model is set - `/model <ref>`, `--model <ref>`, a config `model`, and an agent type's `model` field - so a type or team can pin provider and model together. Only a known provider (core or plugin) with a default base URL unfolds; anything else is treated as a bare model id.
+
+Using an unfolded model is **gated on approval**: the model must appear in `models.json`, otherwise the engine prompts to approve it. The surfaces:
+
+- **Interactive** - the REPL asks on load for an unapproved configured ref, `/model <ref>` asks before switching, and `/team run` pre-checks the stages' type models and asks once for any unapproved ones.
+- **Headless** - an explicit `--model` auto-approves (records into `models.json`). A model referenced by an agent type or team is denied unless `--approve-model` is passed (`replio run --approve-model`, `replio jobs add --approve-model`, `replio fleet config --approve-model`). A denied run stops with a clear "model not approved" error.
+
+A ref naming a provider with no stored key still switches to it but prints `run /connect <provider>` (the request then surfaces the auth error until you connect).
+
 ## Auto-detection
 
 When the configured provider name is unknown, or when `base_url` matches a known host, the provider is detected from the URL. `detect_provider()` matches `openai.com`, `groq.com`, `anthropic.com`, `ollama.com` / `ollama.ai`, and `opencode.ai` (path `/zen/go` selects `opencode-go`, otherwise `opencode`), falling back to `openai-compatible` for anything else. `/connect` uses the same detection, so entering a base URL switches the provider automatically.

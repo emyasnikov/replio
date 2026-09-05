@@ -121,6 +121,7 @@ replio jobs daemon [--tick 15] [--quiet]        # scheduler loop, Ctrl-C to stop
 | `--backoff SECONDS` | Base backoff, doubled per retry. Default `60` |
 | `--timeout SECONDS` | Max seconds for one attempt. `0` (default) = no cap |
 | `--require-approval` | Arm only one run per approve - every run parks in `waiting_approval` until a human approves it |
+| `--approve-model` | Approve the model referenced by `--type` (or `--model`) so the headless job may use it without prompting |
 | `--approval auto` | Start `approved` instead of `proposed` |
 
 The same surface is available in the REPL as `/jobs` (list, status, show, add, approve, reject, enable, disable, stop, remove, run).

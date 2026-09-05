@@ -464,6 +464,31 @@ class TestModelCommand(unittest.TestCase):
         entry = self.chat.models.find('ollama', 'test-model')
         self.assertIsNotNone(entry)
 
+    def test_model_ref_unfolds(self):
+        self.chat.models.put('opencode-go', 'deepseek-v4-flash')
+        self.chat.providers.put('opencode-go',
+                                'https://opencode.ai/zen/go/v1', 'k')
+        output = self._dispatch('/model opencode-go/deepseek-v4-flash')
+        self.assertIn('Model set to: opencode-go/deepseek-v4-flash', output)
+        self.assertEqual(self.chat.config.get('provider'), 'opencode-go')
+        self.assertEqual(self.chat.config.get('model'), 'deepseek-v4-flash')
+        self.assertEqual(self.chat.config.get('base_url'),
+                         'https://opencode.ai/zen/go/v1')
+
+    def test_model_ref_unapproved_prompts_and_approves(self):
+        self.chat.providers.put('opencode-go',
+                                'https://opencode.ai/zen/go/v1', 'k')
+        with patch('builtins.input', return_value='y'):
+            output = self._dispatch('/model opencode-go/deepseek-v4-flash')
+        self.assertIn('Model set to: opencode-go/deepseek-v4-flash', output)
+        self.assertIsNotNone(
+            self.chat.models.find('opencode-go', 'deepseek-v4-flash'))
+
+    def test_model_ref_declined_prompt(self):
+        with patch('builtins.input', return_value='n'):
+            output = self._dispatch('/model opencode-go/deepseek-v4-flash')
+        self.assertIn('Model not approved', output)
+
     def test_model_list_shows_configured(self):
         self.chat.models.put('openai', 'gpt-4o')
         self.chat.providers.put('openai', 'https://api.openai.com/v1', 'k')

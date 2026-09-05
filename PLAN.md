@@ -59,7 +59,6 @@ Active connections and model history split into two global registries, and model
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Model refs unfold gated on active providers and approved models - `<provider>/<model>` resolves in `/model`, `--model`, and `AgentType.model`; interactive ask-on-load / `/team run` stage pre-check approve new models, headless `--approve-model` | M | per-type provider selection for teams |
 | `/connect` provider rework - `/connect <name>` presets provider defaults and re-enters the API key; `/connect <url>` detects a known host or creates a named custom provider entry | M | connect by name or URL without typing defaults |
 | Connect any OpenAI-compatible endpoint by URL - connections stored per provider in `providers.json`, no dialect flag | M | self-hosted and gateway endpoints as first-class connections |
 

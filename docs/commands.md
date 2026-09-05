@@ -9,7 +9,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/help`                 | `/h`           | Show available commands and tools (`/help <cmd|tool>` for detail) |
 | `/exit`                 | `/quit`, `/q`  | Save and exit                                                  |
 | `/version`              | `/v`           | Show the Replio version                                       |
-| `/model`                 |                | Show or switch the active model. `model list` shows the approved-model history grouped by provider (with `(key)` when the provider has a stored key), `model list --online [provider]` probes a provider's available models |
+| `/model`                 |                | Show or switch the active model. `model list` shows the approved-model history grouped by provider (with `(key)` when the provider has a stored key), `model list --online [provider]` probes a provider's available models. `model <provider>/<model>` switches provider and model together, approving the model on confirm |
 | `/models`                | `/model-list` | List models available from the connected provider              |
 | `/provider`              |                | Show or switch the active provider                             |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
@@ -49,7 +49,8 @@ One-shot headless chat.
 |----------------------|--------------------------------------------------------------|
 | `--prompt`, `-p`     | **Required.** The prompt to send                              |
 | `--provider`         | Provider override (e.g. `ollama`, `openai`, `groq`)           |
-| `--model`            | Model override                                               |
+| `--model`            | Model override (accepts a `provider/model` ref; an explicit `--model` auto-approves) |
+| `--approve-model`    | Approve the configured model ref without prompting             |
 | `--base-url`         | Base URL override                                            |
 | `--mode`             | Agent mode override (`plan`, `build`, or a custom mode)      |
 | `--output`           | `json` (default) or `text`                                   |
@@ -141,7 +142,7 @@ Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, 
 | `list`        | Table of jobs: schedule, status, next and last run                       |
 | `status`      | Runtime summary per job: fired count, last error, uptime, approval state |
 | `show`        | `replio jobs show <name>` - definition plus full run history + last output|
-| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`, `--prompt` optional when `--file` is given), plus `--mode`, `--provider`/`--model`, `--type`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approval auto` |
+| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`, `--prompt` optional when `--file` is given), plus `--mode`, `--provider`/`--model`, `--type`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approve-model`, `--approval auto` |
 | `approve`     | `approve <name>` - activate a job (or arm the next run for `--require-approval` jobs) |
 | `reject`      | `reject <name>` - send back to proposed and disable                       |
 | `enable` / `disable` / `stop` | Toggle the enabled gate (`stop` = `disable`)                     |

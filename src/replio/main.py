@@ -24,6 +24,8 @@ def _add_run_parser(sub):
     g.add_argument('--no', dest='approve', action='store_false',
                    help='Auto-deny tools that require confirmation (default)')
     p.set_defaults(approve=None)
+    p.add_argument('--approve-model', action='store_true',
+                   help='Approve the configured/agent-type model without prompting')
     p.add_argument('--path', default=argparse.SUPPRESS,
                    help='Project path (default: current directory)')
 
@@ -160,6 +162,9 @@ def _add_jobs_parser(sub):
     ga.add_argument('--require-approval', action='store_true',
                     help='Arm only one run per approve - each run parks in waiting_approval '
                          'until a human approves it')
+    ga.add_argument('--approve-model', action='store_true',
+                    help='Approve the model referenced by --type (or --model) '
+                         'without prompting')
     ga.add_argument('--approval', choices=['manual', 'auto'], default='manual',
                     help='manual starts proposed and waits for approve (default); '
                          'auto starts approved')
@@ -229,6 +234,9 @@ def _add_fleet_parser(sub):
                     help='Tool name to deny (repeatable)')
     gc.add_argument('--tool-permission', action='append', default=[],
                     help='category=action override (repeatable), e.g. bash=allow')
+    gc.add_argument('--approve-model', action='store_true',
+                    help='Approve the model referenced by --type or --model '
+                         'in the global models registry')
 
 
 def _version():

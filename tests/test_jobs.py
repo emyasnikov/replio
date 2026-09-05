@@ -205,6 +205,10 @@ class TestJobModel(unittest.TestCase):
         job = Job('a', {'interval': 60}, task_file='tasks/a.md')
         self.assertEqual(Job.from_dict(job.to_dict()).task_file, 'tasks/a.md')
 
+    def test_round_trip_carries_approve_model(self):
+        job = Job('a', {'interval': 60}, approve_model=True)
+        self.assertTrue(Job.from_dict(job.to_dict()).approve_model)
+
     def test_round_trip_with_history(self):
         job = Job(
             'nightly', {'cron': '0 2 * * *'}, prompt='summarize logs',

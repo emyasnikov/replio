@@ -26,7 +26,9 @@ def _engine_from_args(args) -> Engine:
                     show_thinking=config.get('show_thinking', True),
                     show_thought_duration=config.get('show_thought_duration', True),
                     footer_tokens=config.get('footer_tokens', ['context']))
-    return Engine(config, ui=ui)
+    approve_models = bool(getattr(args, 'model', None)) or bool(
+        getattr(args, 'approve_model', False))
+    return Engine(config, ui=ui, approve_models=approve_models)
 
 
 def cmd_run(args) -> int:
@@ -377,6 +379,7 @@ def cmd_jobs(args) -> int:
             backoff=getattr(args, 'backoff', 60.0),
             timeout=getattr(args, 'timeout', 0),
             require_approval=require_approval,
+            approve_model=bool(getattr(args, 'approve_model', False)),
             enabled=args.approval == 'auto',
             status='approved' if args.approval == 'auto' else 'proposed',
         )
@@ -659,6 +662,7 @@ def _fleet_config(controller, args) -> int:
         category, _, action = pair.partition('=')
         perms[category.strip()] = action.strip()
     type_name = getattr(args, 'type', '') or ''
+    agent_type = None
     if type_name:
         registry = TypeRegistry(local_path=agent_dir / '.replio' / 'types.json')
         agent_type = registry.find(type_name)
@@ -685,6 +689,19 @@ def _fleet_config(controller, args) -> int:
             existing = json.loads(target.read_text())
         except (OSError, ValueError):
             existing = {}
+    if getattr(args, 'approve_model', False) or getattr(args, 'model', ''):
+        from .models import ModelRegistry
+        from .providers import PROVIDERS
+        from .providers.registry import resolve_model_ref
+        model_target = getattr(args, 'model', '') or (agent_type.model if agent_type else '')
+        if model_target:
+            model_registry = ModelRegistry()
+            model_provider = patch.get('provider') or existing.get('provider') or ''
+            ref = resolve_model_ref(model_target, dict(PROVIDERS))
+            if ref:
+                model_provider, _, model_target = ref
+            if model_provider and model_target:
+                model_registry.put(model_provider, model_target)
     existing.update(patch)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(existing, indent=2))

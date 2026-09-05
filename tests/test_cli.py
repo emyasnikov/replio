@@ -52,6 +52,48 @@ class TestCliRun(unittest.TestCase):
         self.assertEqual(data['content'], 'cli answer')
         self.assertEqual(data['status'], 'ok')
 
+    def _global_dir(self):
+        from replio.config import Config
+        prev = Config.GLOBAL_DIR
+        Config.GLOBAL_DIR = Path(self.tmp.name) / 'global-home'
+        return prev
+
+    def test_run_explicit_model_auto_approves(self):
+        from replio.cli import _engine_from_args
+        from replio.config import Config
+        prev = self._global_dir()
+        try:
+            args = self._args(model='opencode-go/deepseek-v4-flash')
+            engine = _engine_from_args(args)
+            self.assertTrue(engine.approve_models)
+            self.assertEqual(engine.config.get('model'), 'deepseek-v4-flash')
+            self.assertEqual(engine.config.get('provider'), 'opencode-go')
+            from replio.models import ModelRegistry
+            reg = ModelRegistry()
+            self.assertIsNotNone(reg.find('opencode-go', 'deepseek-v4-flash'))
+        finally:
+            Config.GLOBAL_DIR = prev
+
+    def test_run_approve_model_flag_grants(self):
+        from replio.cli import _engine_from_args
+        from replio.config import Config
+        prev = self._global_dir()
+        try:
+            engine = _engine_from_args(self._args(approve_model=True))
+            self.assertTrue(engine.approve_models)
+        finally:
+            Config.GLOBAL_DIR = prev
+
+    def test_run_default_does_not_auto_approve(self):
+        from replio.cli import _engine_from_args
+        from replio.config import Config
+        prev = self._global_dir()
+        try:
+            engine = _engine_from_args(self._args())
+            self.assertFalse(engine.approve_models)
+        finally:
+            Config.GLOBAL_DIR = prev
+
     def test_run_stdout_is_pure_json(self):
         _, out = self._run([[{'type': 'token', 'content': 'answer'},
                              {'type': 'done', 'reason': 'stop'}]])

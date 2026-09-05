@@ -158,9 +158,21 @@ def register_builtins(registry):
             else:
                 print('Usage: /model list [--online [provider]]')
             return
+        ref = chat.unfold_ref(arg)
+        if ref is not None:
+            provider, base_url, model = ref
+            if chat._ensure_model_approved(provider, model):
+                chat.config.set('provider', provider)
+                chat.config.set('base_url', base_url)
+                chat.config.set('model', model)
+                chat._reinit_provider()
+                print(f'Model set to: {provider}/{model}')
+            else:
+                print(f'Model not approved: {provider}/{model}')
+            return
         chat.config.set('model', arg)
         chat.provider.model = chat.config.get('model')
-        chat.models.touch(chat.config.get('provider'), arg)
+        chat.models.put(chat.config.get('provider'), arg)
         print(f'Model set to: {arg}')
 
     @registry.register('provider', description='Show or switch the active provider')
@@ -573,6 +585,10 @@ def register_builtins(registry):
             api_key = input('  API key [<stored>]: ').strip() or stored_key
         else:
             api_key = input('  API key (leave empty to skip): ').strip()
+
+        ref = chat.unfold_ref(model)
+        if ref is not None:
+            provider, base_url, model = ref
 
         detected = detect_provider(base_url)
         if detected in providers and detected != 'openai-compatible' and detected != provider:
