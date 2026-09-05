@@ -38,6 +38,8 @@ def make_engine(config_data: dict | None = None) -> Engine:
     engine.sessions = SessionManager(sessions_dir)
     engine.current_session = engine.sessions.create()
     engine._tool_registry = None
+    engine._ask_ui = None
+    engine._lead = None
     engine._plugin_manager = PluginManager(config)
     engine._plugin_manager.load()
     engine._tmp = temp_dir
@@ -610,7 +612,7 @@ class TestEngineModes(unittest.TestCase):
     def test_schema_advertises_only_canonical_names(self):
         schema = self.engine._init_tooling()
         names = [s['function']['name'] for s in schema]
-        for expected in ('delegate', 'run_command', 'file_read', 'list_dir',
+        for expected in ('delegate', 'ask', 'run_command', 'file_read', 'list_dir',
                          'file_write', 'glob', 'grep', 'file_edit', 'git',
                          'git_commit', 'code_test', 'code_lint', 'code_format',
                          'mcp_connect', 'mcp_list', 'mcp_disconnect',

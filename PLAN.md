@@ -102,7 +102,7 @@ React to and see jobs from outside the box. Run teams on schedule.
 | Job event hooks - the scheduler emits typed transitions (`proposed`, `approved`, `will_run`, `executing`, `verified`, `failed`, `timeout`, `waiting_approval`) to registered `services`, channel-agnostic core | M | notification source |
 | Job connectors - bundled `replio-core-webhook` (stdlib JSON POST, zero deps) first, email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API | M-L | operators react in time |
 | Fleet jobs overview - `replio jobs list --root <dir>` combined agent/job table (agent, job, status, next run, task), then a web Control UI on top | M | one view of what runs next |
-| Mid-run blocking job approval - an `ask` tool inside a running job pauses the run in place (per-tool-call `waiting_approval`), notifies via a connector, and resumes the same session when the operator replies, needs resumable mid-run state, a wait loop inside the run, and the connectors/transport above | L | "decide during the task" |
+| Mid-run blocking job approval - the interactive `ask` tool landed (human/lead routing); remaining is an `ask` inside a running job pausing in place (per-tool-call `waiting_approval`), notifying via a connector, and resuming the same session when the operator replies - needs resumable mid-run state, a wait loop inside the run, and the connectors/transport above | L | "decide during the task" |
 
 ## Fleet & control plane
 

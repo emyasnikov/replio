@@ -109,6 +109,7 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 
 ```json
 {
+  "ask": "allow",
   "bash": "ask",
   "bash_allow": ["pytest", "python -m unittest", "ruff", "git"],
   "delegate": "allow",
@@ -120,7 +121,7 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 }
 ```
 
-Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the project worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)).
+Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the project worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)). The `ask` category gates the `ask` tool (default `allow` - the tool itself is the interaction; the answerer is the human or the lead agent, see [tools.md](tools.md)).
 
 ### `bash_allow` - command allowlist for `run_command`
 

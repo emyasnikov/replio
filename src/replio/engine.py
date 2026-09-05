@@ -101,6 +101,8 @@ class Engine:
         self.approve_models = approve_models
         self._provider_error = None
         self._ui = ui
+        self._ask_ui = ui if isinstance(ui, ReplUI) else None
+        self._lead = None
         if plugin_manager is None:
             self._plugin_manager = PluginManager(config)
             self._plugin_manager.load()
@@ -363,6 +365,8 @@ class Engine:
             provider = self.provider
         sub = Engine(sub_config, ui=NullUI(),
                      plugin_manager=self._plugin_manager, provider=provider)
+        sub._lead = self
+        sub._ask_ui = getattr(self, '_ask_ui', None)
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
         sub.load_or_create_session(_sub_session_name(
             ts, self.current_session.name, self.sessions.sessions_dir))
@@ -856,9 +860,11 @@ class Engine:
         from .tools.registry import ToolRegistry
         from .tools.policy import ToolPolicy
         from .tools.delegate import register_delegate_tool
+        from .tools.ask import register_ask_tool
         from .modes import merge_policy
         self._tool_registry = ToolRegistry()
         register_delegate_tool(self._tool_registry, self)
+        register_ask_tool(self._tool_registry, self)
         plugin_manager = getattr(self, '_plugin_manager', None)
         if plugin_manager is not None:
             plugin_manager.register_tools(self._tool_registry)

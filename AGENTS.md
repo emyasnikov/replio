@@ -75,7 +75,8 @@ Replio/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Tool registration + dispatch (OpenAI function calling)
 │   │   ├── policy.py        # ToolPolicy - allow/ask/deny permissions + path scoping
-│   │   └── delegate.py      # Core delegate tool - type sub-agents via per-invocation policy
+│   │   ├── delegate.py      # Core delegate tool - type sub-agents via per-invocation policy
+│   │   └── ask.py           # Core ask tool - human/lead mid-run questions
 │   ├── plugins/
 │   │   ├── __init__.py
 │   │   └── manager.py       # PluginManager - discovery, manifest/compat, install/update/uninstall
@@ -142,7 +143,7 @@ Replio/
 - Precedence: name-level `deny` / allow-whitelist > category action from `tool_permission` > per-invocation resolver (`permission_fn`, refined from the tool's current arguments - e.g. `delegate` resolves per type) > worktree escalation (read/write/list outside the worktree becomes `ask`)
 - The worktree is the directory holding the local `.replio/` - i.e. the launch directory, or `--path`. Launching from `~` makes the whole home directory the worktree, so subdirectories (including other projects) do **not** escalate. Launch inside the project or pass `--path` for project-scoped prompting
 - `bash: ask` by default - every `run_command` confirms. Set `tool_permission.bash = "allow"` to disable prompting. `delegate` defaults to `allow` (runs without a prompt), refined per type: a configured type uses its own `tool_permission` (set `delegate: "ask"` on an agent type to confirm), an agent type outside the registry is denied
-- Delegation (`run_subagent`) builds an in-process sub-`Engine` with the agent type's prompt, model override, and merged `tool_permission`, forces mode `build`, shares the caller's provider/plugin manager/worktree, and runs with `NullUI` - ask-gated tools auto-deny, so a sub-agent's effective permissions are exactly its carve. Sub-agent results echo via `delegate_echo` (default on). Each sub-agent persists its own `sub_<ts>_<parent-session>` session
+- Delegation (`run_subagent`) builds an in-process sub-`Engine` with the agent type's prompt, model override, and merged `tool_permission`, forces mode `build`, shares the caller's provider/plugin manager/worktree, and runs with `NullUI` - ask-gated tools auto-deny, so a sub-agent's effective permissions are exactly its carve. Sub-agent results echo via `delegate_echo` (default on). Each sub-agent persists its own `sub_<ts>_<parent-session>` session. The `ask` tool (core) is the explicit human-in-the-loop channel: `target='human'` routes to the operator at the terminal (via the root `ReplUI`, inherited by sub-engines as `_ask_ui`), `target='lead'` routes to the delegating engine's model (bounded `chat_nonstreaming` consultation via the sub-engine's `_lead` reference), and headless roots with neither return an error result without blocking
 - Confirm prompts and tool status are ephemeral REPL UI - never persisted to session files. The permission decision itself (granted / declined / denied) is recorded in the session `permissions` audit array
 - Full policy flow and registration metadata in `docs/tools.md`. Threat model in `docs/security.md`
 - Sandboxed exec (namespace/container isolation) is planned future work (see TODO). Per-agent permission profiles landed with types (`tool_permission` on each type)

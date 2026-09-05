@@ -43,6 +43,8 @@ def make_chat(config_data: dict | None = None) -> ChatLoop:
     chat.current_session = chat.sessions.create()
     chat._tool_registry = None
     chat._ui = ReplUI(chat)
+    chat._ask_ui = chat._ui
+    chat._lead = None
 
     chat._plugin_manager = PluginManager(config)
     chat._plugin_manager.load()

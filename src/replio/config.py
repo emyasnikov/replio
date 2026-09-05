@@ -58,6 +58,7 @@ DEFAULT_CONFIG = {
     'tools.allow': [],
     'tools.deny': [],
     'tool_permission': {
+        'ask': 'allow',
         'bash': 'ask',
         'bash_allow': [],
         'delegate': 'allow',

@@ -270,6 +270,28 @@ class ReplUI:
             raise
         return answer in ('y', 'yes')
 
+    def ask(self, question, context='', options=None, origin=''):
+        self.flush()
+        prefix = ''
+        if origin and origin != self._loop.current_session.name:
+            prefix = f'[{origin}] '
+        lines = [f'{prefix}Ask: {question}']
+        if context:
+            lines.append(context)
+        if options:
+            lines.append('Options: ' + ' / '.join(options) + ' (or type your own)')
+        sys.stdout.write('\n'.join(lines) + '\n')
+        sys.stdout.flush()
+        try:
+            answer = input('\001\033[90m\002? Answer: \001\033[0m\002')
+        except EOFError:
+            sys.stdout.write('\n')
+            return None
+        except KeyboardInterrupt:
+            sys.stdout.write('\n')
+            raise
+        return answer.strip() or None
+
 
 class NullUI:
     def token(self, text):
@@ -316,6 +338,9 @@ class NullUI:
 
     def confirm(self, name, label):
         return False
+
+    def ask(self, question, context='', options=None, origin=''):
+        return None
 
 
 class HeadlessUI:
@@ -409,3 +434,6 @@ class HeadlessUI:
 
     def confirm(self, name, label):
         return self.auto == 'allow'
+
+    def ask(self, question, context='', options=None, origin=''):
+        return None

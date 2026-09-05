@@ -21,6 +21,8 @@ The worktree is the directory holding the local `.replio/` - the launch director
 
 `bash` defaults to `ask`, so every `run_command` confirms unless `tool_permission.bash = "allow"` is set explicitly. `delegate` defaults to `allow`, refined per invocation by the target type's own permission (an agent type may set `delegate: "ask"` to confirm).
 
+The `ask` tool is the explicit human-in-the-loop channel: it pauses the run and poses a question to the operator at the terminal (`target='human'`) or to the lead agent that delegated the run (`target='lead'`, a bounded model consultation). It is the only tool that deliberately talks to a person. In headless mode there is no terminal and a root engine has no lead, so `ask` returns an error result and the run continues without pausing. Agents that must not ask can be stripped of the tool with `tools.deny: ["ask"]`. The question and answer are persisted in the asking session's log, so what was asked and decided stays on the record.
+
 ## Headless agents are confined
 
 In headless mode (`replio serve` / `replio run`), `ask`-gated tools are denied outright - the headless UI auto-answers with the configured `--yes` / `--no` policy. An agent's reachable surface is therefore exactly its `allow` tools on paths inside its worktree. This is the isolation boundary that makes one-agent-per-process fleets safe: a crash or a misbehaving agent cannot touch another agent's folder or run commands it was not given. See [fleet.md](fleet.md).
