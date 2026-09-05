@@ -1197,7 +1197,6 @@
 </ul>
 <h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] <code>ask</code> tool - model-facing tool that pauses the run and poses a question to the human (or the lead), so sub-agents and team stages can get decisions mid-run instead of returning open questions. Documented dependency for autonomously runnable agents; until it lands, the selfdev team works around it with leader pre-grants and open questions returned at the end of a stage</li>
 <li>[ ] Persistent member sessions for recurring teams - <code>job</code>-style warm sessions for recurring teams, one-off runs stay fresh <code>sub_</code> sessions (sequential run loop + briefs + team memory landed with <code>Engine.run_team</code>)</li>
 <li>[ ] Externalize bundled providers - move <code>opencode</code>/<code>opencode-go</code> (and the vendor providers) out of the core into bundled plugins, keeping <code>BaseProvider</code>/<code>OpenAICompatibleProvider</code>, the <code>PROVIDERS</code> dict + <code>detect_provider</code>, and the plugin <code>register_providers</code> hook as the core mechanisms. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in <code>/connect</code></li>
 <li>[ ] Full <code>file_*</code> namespace extension - if <code>file_glob</code>/<code>file_grep</code> prove better with most models, extend the prefix to <code>list_dir</code>/<code>glob</code>/<code>grep</code> (old names stay aliases)</li>
@@ -1279,6 +1278,7 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] <code>ask</code> tool - core: human or lead mid-run questions, sub-agent routing</li>
 <li>[x] Connect any OpenAI-compatible endpoint by URL - named custom provider entries</li>
 <li>[x] /connect provider rework - name/URL connect, preset defaults, re-enter key</li>
 <li>[x] Model refs unfold - provider/model refs resolve, gated on approved models</li>

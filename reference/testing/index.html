@@ -1235,6 +1235,10 @@
 </thead>
 <tbody>
 <tr>
+<td><code>test_ask.py</code></td>
+<td><code>ask</code> tool (core): schema/registration (<code>category ask</code>, <code>permission ask</code>, <code>key_arg question</code>, <code>tool_permission.ask</code> default allow), human answer / empty-cancelled / context+options rendering, no-channel error (headless), <code>target='lead'</code> lead-model consultation (question + delegated task in the prompt) + silent-lead fallback to human + root-fallback, sub-engine <code>_lead</code>/<code>_ask_ui</code> inheritance, full-loop ask -&gt; answer tool message -&gt; continue</td>
+</tr>
+<tr>
 <td><code>test_agent_loop.py</code></td>
 <td>Agent-loop behavior: single round trip, thinking persistence, graceful error bail, empty/truncated-stream multi-attempt retry, recovery hint after failed tool-call rounds, truncation error messages (configured cap vs provider default), auto-continue on truncation (stitch + cap + continue instruction), reasoning-only turn not flagged empty, empty-done retried, KeyboardInterrupt cancels the turn (mid-stream and after a tool call) with partial output persisted, unknown-tool results list available tools</td>
 </tr>
