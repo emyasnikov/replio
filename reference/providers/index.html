@@ -810,6 +810,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#model-refs-and-approval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model refs and approval
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#auto-detection" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1231,6 +1242,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#model-refs-and-approval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model refs and approval
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#auto-detection" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1385,6 +1407,14 @@
 <span class="p">}</span>
 </code></pre></div>
 <p>The engine resolves the API key for the active provider from the provider registry (a <code>(key)</code> entry from <code>/connect</code>), falling back to <code>""</code> - no environment variable is consulted. A custom <code>base_url</code> stored there is used when the config leaves it empty. The approved-model history (<code>~/.config/replio/models.json</code>) records every model used for <code>/model list</code>.</p>
+<h2 id="model-refs-and-approval">Model refs and approval<a class="headerlink" href="#model-refs-and-approval" title="Permanent link">&para;</a></h2>
+<p>A <strong>model ref</strong> <code>provider/model</code> (e.g. <code>opencode-go/deepseek-v4-flash</code>, <code>ollama/gpt-oss:20b-cloud</code>) unfolds to the provider, its default base URL, and the bare model. It is accepted wherever a model is set - <code>/model &lt;ref&gt;</code>, <code>--model &lt;ref&gt;</code>, a config <code>model</code>, and an agent type's <code>model</code> field - so a type or team can pin provider and model together. Only a known provider (core or plugin) with a default base URL unfolds; anything else is treated as a bare model id.</p>
+<p>Using an unfolded model is <strong>gated on approval</strong>: the model must appear in <code>models.json</code>, otherwise the engine prompts to approve it. The surfaces:</p>
+<ul>
+<li><strong>Interactive</strong> - the REPL asks on load for an unapproved configured ref, <code>/model &lt;ref&gt;</code> asks before switching, and <code>/team run</code> pre-checks the stages' type models and asks once for any unapproved ones.</li>
+<li><strong>Headless</strong> - an explicit <code>--model</code> auto-approves (records into <code>models.json</code>). A model referenced by an agent type or team is denied unless <code>--approve-model</code> is passed (<code>replio run --approve-model</code>, <code>replio jobs add --approve-model</code>, <code>replio fleet config --approve-model</code>). A denied run stops with a clear "model not approved" error.</li>
+</ul>
+<p>A ref naming a provider with no stored key still switches to it but prints <code>run /connect &lt;provider&gt;</code> (the request then surfaces the auth error until you connect).</p>
 <h2 id="auto-detection">Auto-detection<a class="headerlink" href="#auto-detection" title="Permanent link">&para;</a></h2>
 <p>When the configured provider name is unknown, or when <code>base_url</code> matches a known host, the provider is detected from the URL. <code>detect_provider()</code> matches <code>openai.com</code>, <code>groq.com</code>, <code>anthropic.com</code>, <code>ollama.com</code> / <code>ollama.ai</code>, and <code>opencode.ai</code> (path <code>/zen/go</code> selects <code>opencode-go</code>, otherwise <code>opencode</code>), falling back to <code>openai-compatible</code> for anything else. <code>/connect</code> uses the same detection, so entering a base URL switches the provider automatically.</p>
 <h2 id="setting-up">Setting up<a class="headerlink" href="#setting-up" title="Permanent link">&para;</a></h2>

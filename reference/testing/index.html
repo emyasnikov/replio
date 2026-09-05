@@ -1244,7 +1244,7 @@
 </tr>
 <tr>
 <td><code>test_cli.py</code></td>
-<td><code>replio run</code>: JSON/text output, session-id persistence, exit codes, one-shot overrides applied but never persisted. <code>replio export</code>: default/custom/stdout targets, unknown session. <code>replio models</code>: listing, error/empty, <code>main</code> dispatch</td>
+<td><code>replio run</code>: JSON/text output, session-id persistence, exit codes, one-shot overrides applied but never persisted, <code>_engine_from_args</code> approval wiring (explicit <code>--model</code> auto-approves, <code>--approve-model</code> grants, default does not). <code>replio export</code>: default/custom/stdout targets, unknown session. <code>replio models</code>: listing, error/empty, <code>main</code> dispatch</td>
 </tr>
 <tr>
 <td><code>test_config.py</code></td>
@@ -1252,7 +1252,7 @@
 </tr>
 <tr>
 <td><code>test_commands.py</code></td>
-<td>Slash-command registration and <code>/help</code> output (aliases, subcommands, tools listed under <code>/tool</code>, mode-filtered listings), <code>/connect</code> probe-before-commit (decline/reject, model-mismatch show offer, provider + model registry append, picker reuse, picker hidden when configured), <code>/model</code> list/<code>--online</code>/switch-touch (key marker sourced from providers.json), <code>/config</code> scope flags (<code>--global</code>/<code>--local</code>, <code>api_key</code> as a normal key incl. global writes, <code>-a</code>/<code>-r</code> scope), <code>/models</code> listing/error/empty, <code>/provider</code> warn</td>
+<td>Slash-command registration and <code>/help</code> output (aliases, subcommands, tools listed under <code>/tool</code>, mode-filtered listings), <code>/connect</code> probe-before-commit (decline/reject, model-mismatch show offer, provider + model registry append, picker reuse, picker hidden when configured), <code>/model</code> list/<code>--online</code>/switch-touch (key marker sourced from providers.json, provider/model ref unfold + approval prompt), <code>/config</code> scope flags (<code>--global</code>/<code>--local</code>, <code>api_key</code> as a normal key incl. global writes, <code>-a</code>/<code>-r</code> scope), <code>/models</code> listing/error/empty, <code>/provider</code> warn</td>
 </tr>
 <tr>
 <td><code>test_completion.py</code></td>
@@ -1260,7 +1260,7 @@
 </tr>
 <tr>
 <td><code>test_engine.py</code></td>
-<td><code>Engine.chat</code> turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-message <code>mode</code>, glyph param suffix gating, <code>!</code> error-line rendering and <code>show_errors</code> gating, soft-result note-line rendering and <code>show_notes</code> gating, <code>check_connection</code>/<code>list_models</code> probe resolution and overrides without state mutation, <code>_reinit_provider</code> provider-registry API key resolution (no config fallback, registry custom base_url fallback when config empty)</td>
+<td><code>Engine.chat</code> turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-message <code>mode</code>, glyph param suffix gating, <code>!</code> error-line rendering and <code>show_errors</code> gating, soft-result note-line rendering and <code>show_notes</code> gating, <code>check_connection</code>/<code>list_models</code> probe resolution and overrides without state mutation, <code>_reinit_provider</code> provider-registry API key resolution (no config fallback, registry custom base_url fallback when config empty), model-ref unfold + approval gate (unfolded provider/base_url/model, headless deny, <code>approve_models</code> grant, chat short-circuit, subagent type-model unfold + gate, team-run pre-check deny)</td>
 </tr>
 <tr>
 <td><code>test_eval.py</code></td>
@@ -1276,7 +1276,7 @@
 </tr>
 <tr>
 <td><code>test_jobs.py</code></td>
-<td>Job model + registry (round-trip incl. <code>require_approval</code>/<code>task_file</code>/<code>created_at</code>, runnable + ready-to-run gates, corrupt file tolerance), cron parser (steps/ranges/lists/dom/dow/the restrictive day rule, leap day), <code>next_run</code>/<code>compute_next_run</code>/<code>parse_dt</code>, scheduler run/tick under a mocked engine (verified/failed, retries with backoff, per-attempt history, unknown type, one-shot <code>at</code>, approval gates, per-run <code>require_approval</code> park/re-arm, run memory write + injection, per-run session naming + collision dedupe + <code>--session</code> stability, run content capture), <code>_build_engine</code> type-skill injection (present/missing), task file template/linkage/missing-file failure, status/list/show rendering, <code>replio jobs</code> CLI (add/approve/list, <code>--file</code>, edit, status output, stop, auto-approval, bad cron, duplicates, run exit codes + content printing)</td>
+<td>Job model + registry (round-trip incl. <code>require_approval</code>/<code>task_file</code>/<code>approve_model</code>/<code>created_at</code>, runnable + ready-to-run gates, corrupt file tolerance), cron parser (steps/ranges/lists/dom/dow/the restrictive day rule, leap day), <code>next_run</code>/<code>compute_next_run</code>/<code>parse_dt</code>, scheduler run/tick under a mocked engine (verified/failed, retries with backoff, per-attempt history, unknown type, one-shot <code>at</code>, approval gates, per-run <code>require_approval</code> park/re-arm, run memory write + injection, per-run session naming + collision dedupe + <code>--session</code> stability, run content capture), <code>_build_engine</code> type-skill injection (present/missing), task file template/linkage/missing-file failure, status/list/show rendering, <code>replio jobs</code> CLI (add/approve/list, <code>--file</code>, edit, status output, stop, auto-approval, bad cron, duplicates, run exit codes + content printing)</td>
 </tr>
 <tr>
 <td><code>test_models.py</code></td>
@@ -1284,7 +1284,7 @@
 </tr>
 <tr>
 <td><code>test_providers_registry.py</code></td>
-<td><code>ProviderRegistry</code> (global <code>providers.json</code>): path under <code>GLOBAL_DIR</code>, put/find/dedupe per provider, empty key keeps existing, base_url stored only when given, key/base_url lookup, touch, <code>0600</code> when keyed, reload, corrupt-file tolerance, remove, <code>GLOBAL_DIR</code> default</td>
+<td><code>ProviderRegistry</code> (global <code>providers.json</code>): path under <code>GLOBAL_DIR</code>, put/find/dedupe per provider, empty key keeps existing, base_url stored only when given, key/base_url lookup, touch, <code>0600</code> when keyed, reload, corrupt-file tolerance, remove, <code>GLOBAL_DIR</code> default. <code>resolve_model_ref</code>: known/unknown provider, bare model, no-default provider, empty parts, plugin providers</td>
 </tr>
 <tr>
 <td><code>test_modes.py</code></td>

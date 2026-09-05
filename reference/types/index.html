@@ -1425,7 +1425,7 @@
 <ul>
 <li><code>name</code> - unique key of the type.</li>
 <li><code>system_prompt</code> - the type's system prompt, injected when it runs.</li>
-<li><code>model</code> - optional. Overrides the caller's model when the type runs. Falls back to the caller's model when empty.</li>
+<li><code>model</code> - optional. Overrides the caller's model when the type runs. Falls back to the caller's model when empty. Accepts a <code>provider/model</code> ref (e.g. <code>opencode-go/deepseek-v4-flash</code>) to pin provider and model together. A type's model must be approved before it can run (<code>delegate</code>/<code>/team run</code> ask interactively, or pass <code>--approve-model</code> headlessly - see <a href="../providers/#model-refs-and-approval">Model refs and approval</a>).</li>
 <li><code>skills</code> - optional list of skill names from the <a href="../skills/">skills registry</a>, resolved and injected into the type's sub-agent system prompt (and jobs with <code>--type</code>).</li>
 <li><code>tags</code> - optional list of job tags for grouping and filtering (<code>/type list &lt;tag&gt;</code>). The bundled set uses a controlled vocabulary: <code>research</code>, <code>writing</code>, <code>programming</code>, <code>review</code>.</li>
 <li><code>tool_permission</code> - optional per-agent overrides of <code>tool_permission</code> categories. This is the per-agent permission profile.</li>

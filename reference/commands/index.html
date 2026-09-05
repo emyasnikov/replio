@@ -1432,7 +1432,7 @@
 <tr>
 <td><code>/model</code></td>
 <td></td>
-<td>Show or switch the active model. <code>model list</code> shows the approved-model history grouped by provider (with <code>(key)</code> when the provider has a stored key), <code>model list --online [provider]</code> probes a provider's available models</td>
+<td>Show or switch the active model. <code>model list</code> shows the approved-model history grouped by provider (with <code>(key)</code> when the provider has a stored key), <code>model list --online [provider]</code> probes a provider's available models. <code>model &lt;provider&gt;/&lt;model&gt;</code> switches provider and model together, approving the model on confirm</td>
 </tr>
 <tr>
 <td><code>/models</code></td>
@@ -1536,7 +1536,11 @@
 </tr>
 <tr>
 <td><code>--model</code></td>
-<td>Model override</td>
+<td>Model override (accepts a <code>provider/model</code> ref; an explicit <code>--model</code> auto-approves)</td>
+</tr>
+<tr>
+<td><code>--approve-model</code></td>
+<td>Approve the configured model ref without prompting</td>
 </tr>
 <tr>
 <td><code>--base-url</code></td>
@@ -1777,7 +1781,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </tr>
 <tr>
 <td><code>add</code></td>
-<td><code>replio jobs add &lt;name&gt; --file jobs/&lt;name&gt;.md --cron "0 2 * * *"</code> (or <code>--interval N</code> / <code>--at ISO</code>, <code>--prompt</code> optional when <code>--file</code> is given), plus <code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--type</code>, <code>--system-prompt</code>, <code>--tools-deny</code>, <code>--tool-permission</code>, <code>--retries</code>, <code>--backoff</code>, <code>--timeout</code>, <code>--require-approval</code>, <code>--approval auto</code></td>
+<td><code>replio jobs add &lt;name&gt; --file jobs/&lt;name&gt;.md --cron "0 2 * * *"</code> (or <code>--interval N</code> / <code>--at ISO</code>, <code>--prompt</code> optional when <code>--file</code> is given), plus <code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--type</code>, <code>--system-prompt</code>, <code>--tools-deny</code>, <code>--tool-permission</code>, <code>--retries</code>, <code>--backoff</code>, <code>--timeout</code>, <code>--require-approval</code>, <code>--approve-model</code>, <code>--approval auto</code></td>
 </tr>
 <tr>
 <td><code>approve</code></td>
