@@ -1625,7 +1625,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </code></pre></div>
 <ul>
 <li><code>api_key</code> lives here, one per provider. It is the only place API keys live.</li>
-<li><code>base_url</code> is stored only when it differs from the provider's default; otherwise the provider class default applies.</li>
+<li><code>base_url</code> is the effective base URL of the connection - the preset provider default (e.g. <code>/connect ollama</code>) or a custom URL (<code>/connect &lt;url&gt;</code>); the engine falls back to it when the config leaves <code>base_url</code> empty.</li>
 <li>Managed through <code>/connect</code> (which writes the key and any custom base URL). Re-running <code>/connect</code> lets you re-enter a missing or stale key.</li>
 <li>The engine resolves the API key for the active provider from this file (matching entry or <code>""</code>), and falls back to a stored custom <code>base_url</code> when the config has none. There is no <code>api_key</code> config key anymore, and <code>replio config set api_key</code> would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.</li>
 </ul>

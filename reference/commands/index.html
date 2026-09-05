@@ -1452,7 +1452,7 @@
 <tr>
 <td><code>/connect</code></td>
 <td></td>
-<td>Interactive provider connection setup (tests the connection before saving). Stores the API key (and any custom base URL) in the global <code>providers.json</code> registry, not in config, and records the model in <code>models.json</code>. On a fresh project with approved models it offers a numbered picker (<code>#N</code>) to reuse one</td>
+<td>Connect a provider. <code>/connect</code> picks from the known providers interactively; <code>/connect &lt;name&gt;</code> presets a known provider's defaults and (re)enters its API key; <code>/connect &lt;url&gt;</code> detects a known host or creates a named custom provider (derived from the host, or <code>/connect &lt;url&gt; &lt;name&gt;</code> to name it). Tests the connection before saving, stores the API key + base URL in the global <code>providers.json</code>, and writes <code>provider</code>/<code>base_url</code> into config - the model is picked separately with <code>/model</code></td>
 </tr>
 <tr>
 <td><code>/config</code></td>

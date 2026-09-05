@@ -422,17 +422,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#provider-connections-and-model-refs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Provider connections and model refs
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#tool-engineering-for-agents" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1406,17 +1395,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#provider-connections-and-model-refs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Provider connections and model refs
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#tool-engineering-for-agents" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1620,29 +1598,6 @@
 <li><strong>Return</strong> - results come back to the operator: the delegate result or job summary today, the jobs operator API + webhook/email/Telegram connectors when the jobs layer lands. The fleet supervisor restarts crashed processes underneath. The jobs layer restarts failed work - two kinds of restart, both compose</li>
 </ol>
 <p>Fleet is the substrate that stays up, not the conductor of the work.</p>
-<h2 id="provider-connections-and-model-refs">Provider connections and model refs<a class="headerlink" href="#provider-connections-and-model-refs" title="Permanent link">&para;</a></h2>
-<p>Active connections and model history split into two global registries, and model refs unfold to them. One provider key shared across every model on that provider; a model ref (<code>&lt;provider&gt;/&lt;model&gt;</code>) resolves only for active providers and approved models. All providers are OpenAI-compatible, so a custom endpoint is just a named connection, not a dialect.</p>
-<table>
-<thead>
-<tr>
-<th>Task</th>
-<th>Effort</th>
-<th>Provides</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>/connect</code> provider rework - <code>/connect &lt;name&gt;</code> presets provider defaults and re-enters the API key; <code>/connect &lt;url&gt;</code> detects a known host or creates a named custom provider entry</td>
-<td>M</td>
-<td>connect by name or URL without typing defaults</td>
-</tr>
-<tr>
-<td>Connect any OpenAI-compatible endpoint by URL - connections stored per provider in <code>providers.json</code>, no dialect flag</td>
-<td>M</td>
-<td>self-hosted and gateway endpoints as first-class connections</td>
-</tr>
-</tbody>
-</table>
 <h2 id="tool-engineering-for-agents">Tool engineering for agents<a class="headerlink" href="#tool-engineering-for-agents" title="Permanent link">&para;</a></h2>
 <p>Tools are the provider-facing surface - one OpenAI-compatible contract, registry metadata drives the loop. Hardening it for any provider (weak OpenAI-compatible backends especially), from the Anthropic tool-writing principles (choosing the right tools, namespacing, meaningful context, token efficiency, description prompt-engineering) and the tool-use evaluation methodology.</p>
 <table>

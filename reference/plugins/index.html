@@ -805,6 +805,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#services" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1332,6 +1343,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#services" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1603,6 +1625,8 @@
 </code></pre></div>
 <p>Plugin tools automatically inherit the tool permission policy, <code>/tool</code>, <code>/help</code>, query refinement, <code>noise_tools</code>, and session logging. The loop never special-cases plugin names.</p>
 <p>A tool handler may declare a <code>_config</code> keyword argument to receive the engine's <code>Config</code> (e.g. to read a config key like <code>tool_max_result_chars</code>). The registry passes it only when the handler's signature accepts it, and it is never exposed to the model. See <a href="../tools/">tools.md</a>.</p>
+<h3 id="providers">Providers<a class="headerlink" href="#providers" title="Permanent link">&para;</a></h3>
+<p><code>register_providers</code> contributes to the same provider set as the core <code>PROVIDERS</code> dict: the plugin provider appears in the <code>/connect</code> picker, and passing its <code>DEFAULT_BASE_URL</code> as a <code>/connect &lt;url&gt;</code> argument selects it automatically (see <a href="../providers/">providers.md</a>). A plugin provider's <code>DEFAULT_BASE_URL</code> also makes it a model-ref target (<code>&lt;name&gt;/&lt;model&gt;</code>).</p>
 <h3 id="services">Services<a class="headerlink" href="#services" title="Permanent link">&para;</a></h3>
 <p><code>register_services</code> lets a plugin power a core feature that is not tool-calling. Today the only service is the web search-then-answer mode (<code>web_search: true</code>). The bundled <code>replio-core-web</code> registers <code>services['search']</code> with <code>search(query, num)</code>, <code>display(query, results)</code>, and <code>context(query, results)</code> methods. If no plugin registers the service, that mode reports that it is unavailable instead of erroring.</p>
 <h3 id="agent-types-teams-and-skills">Agent types, teams, and skills<a class="headerlink" href="#agent-types-teams-and-skills" title="Permanent link">&para;</a></h3>

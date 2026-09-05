@@ -1197,8 +1197,6 @@
 </ul>
 <h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] Connect any OpenAI-compatible endpoint by URL - <code>/connect &lt;url&gt;</code> (or <code>/connect &lt;name&gt;</code> for a known provider) stores the connection in <code>~/.config/replio/providers.json</code> (api_key + custom base_url per active provider). <code>models.json</code> tracks only approved models; unfold is gated on active provider + approved model, with interactive ask-on-load / team-run pre-check and headless <code>--approve-model</code>. No dialect flag - all providers are OpenAI-compatible</li>
-<li>[ ] <code>/connect</code> provider rework - <code>/connect &lt;known-provider&gt;</code> presets the provider, its default base URL, and its default model, and always lets the user re-enter the API key (missing or stale); <code>/connect &lt;url&gt;</code> detects a known host or creates a named custom provider entry</li>
 <li>[ ] <code>ask</code> tool - model-facing tool that pauses the run and poses a question to the human (or the lead), so sub-agents and team stages can get decisions mid-run instead of returning open questions. Documented dependency for autonomously runnable agents; until it lands, the selfdev team works around it with leader pre-grants and open questions returned at the end of a stage</li>
 <li>[ ] Persistent member sessions for recurring teams - <code>job</code>-style warm sessions for recurring teams, one-off runs stay fresh <code>sub_</code> sessions (sequential run loop + briefs + team memory landed with <code>Engine.run_team</code>)</li>
 <li>[ ] Externalize bundled providers - move <code>opencode</code>/<code>opencode-go</code> (and the vendor providers) out of the core into bundled plugins, keeping <code>BaseProvider</code>/<code>OpenAICompatibleProvider</code>, the <code>PROVIDERS</code> dict + <code>detect_provider</code>, and the plugin <code>register_providers</code> hook as the core mechanisms. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in <code>/connect</code></li>
@@ -1281,6 +1279,8 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] Connect any OpenAI-compatible endpoint by URL - named custom provider entries</li>
+<li>[x] /connect provider rework - name/URL connect, preset defaults, re-enter key</li>
 <li>[x] Model refs unfold - provider/model refs resolve, gated on approved models</li>
 <li>[x] models.json - approved-model history (provider, model, timestamps), no keys</li>
 <li>[x] Provider registry - providers.json, one API key per provider, engine resolves from it</li>

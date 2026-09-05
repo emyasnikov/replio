@@ -1579,7 +1579,7 @@ docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </
 <blockquote>
 <p>Tip: use a different model for the reviewer than the implementer, with a fresh session, so a flawed plan is not rubber-stamped by the same model and context.</p>
 </blockquote>
-<p>The API key is registered once via <code>/connect</code> for the provider/base_url/model in the global model registry (<code>~/.config/replio/models.json</code>) - it is not a config value and never appears in <code>.replio/config.json</code>. Never commit a key to git.</p>
+<p>The API key is registered once per provider via <code>/connect</code> in the global provider registry (<code>~/.config/replio/providers.json</code>) - it is not a config value and never appears in <code>.replio/config.json</code>. Never commit a key to git.</p>
 <h2 id="step-3-clone-the-repo-and-create-the-worktrees">Step 3 - Clone the repo and create the worktrees<a class="headerlink" href="#step-3-clone-the-repo-and-create-the-worktrees" title="Permanent link">&para;</a></h2>
 <blockquote>
 <p>Creates a directory tree under your home directory. Nothing destructive.</p>
