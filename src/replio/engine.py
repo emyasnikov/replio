@@ -166,6 +166,7 @@ class Engine:
 
     def _resolve_provider_factory(self, provider: str, base_url: str):
         from .providers import PROVIDERS, detect_provider
+        from .providers.base import OpenAICompatibleProvider
         merged = dict(PROVIDERS)
         plugin_manager = getattr(self, '_plugin_manager', None)
         if plugin_manager is not None:
@@ -173,6 +174,8 @@ class Engine:
         factory = merged.get(provider)
         if factory is not None:
             return factory, provider, merged
+        if provider and self.providers.find(provider) is not None:
+            return OpenAICompatibleProvider, provider, merged
         detected = detect_provider(base_url)
         self.ui.info(f'Unknown provider "{provider}" - using "{detected}" '
                      '(detected from base_url)')
@@ -232,8 +235,7 @@ class Engine:
             if not self._ensure_model_approved(provider_name, model):
                 self._provider_error = (
                     f'Model "{provider_name}/{model}" is not approved. Approve it '
-                    f'with /model {provider_name}/{model}, --model, --approve-model, '
-                    f'or /connect.')
+                    f'with /model {provider_name}/{model}, --model, or --approve-model.')
                 self.ui.info(f'[Error] {self._provider_error}')
                 self.config.apply('provider', provider_name)
                 self.config.apply('base_url', base_url)

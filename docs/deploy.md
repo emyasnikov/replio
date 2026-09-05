@@ -35,7 +35,7 @@ docker run -d --name docs-agent -p 127.0.0.1:8781:8781 \
   replio
 ```
 
-The mounted `agents/docs` directory holds the agent's `.replio/config.json` (model and permissions) and its sessions. The API key is resolved from the global model registry (`~/.config/replio/models.json`), so mount that file into the container (or register the connection with `/connect` inside it) for keyed providers. The container runs as root, so agent-written session files are root-owned on the host, add `--user "$(id -u):$(id -g)"` if you want them owned by your uid.
+The mounted `agents/docs` directory holds the agent's `.replio/config.json` (model and permissions) and its sessions. The API key is resolved from the global provider registry (`~/.config/replio/providers.json`), so mount that file into the container (or register the connection with `/connect` inside it) for keyed providers. The container runs as root, so agent-written session files are root-owned on the host, add `--user "$(id -u):$(id -g)"` if you want them owned by your uid.
 
 ### Fleet with Docker Compose
 

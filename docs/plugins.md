@@ -75,6 +75,10 @@ Plugin tools automatically inherit the tool permission policy, `/tool`, `/help`,
 
 A tool handler may declare a `_config` keyword argument to receive the engine's `Config` (e.g. to read a config key like `tool_max_result_chars`). The registry passes it only when the handler's signature accepts it, and it is never exposed to the model. See [tools.md](tools.md).
 
+### Providers
+
+`register_providers` contributes to the same provider set as the core `PROVIDERS` dict: the plugin provider appears in the `/connect` picker, and passing its `DEFAULT_BASE_URL` as a `/connect <url>` argument selects it automatically (see [providers.md](providers.md)). A plugin provider's `DEFAULT_BASE_URL` also makes it a model-ref target (`<name>/<model>`).
+
 ### Services
 
 `register_services` lets a plugin power a core feature that is not tool-calling. Today the only service is the web search-then-answer mode (`web_search: true`). The bundled `replio-core-web` registers `services['search']` with `search(query, num)`, `display(query, results)`, and `context(query, results)` methods. If no plugin registers the service, that mode reports that it is unavailable instead of erroring.

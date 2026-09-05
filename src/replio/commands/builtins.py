@@ -112,6 +112,146 @@ def _render_tool_detail(chat, name):
             print(f'    {p} ({req}): {spec.get("description", "")}')
 
 
+def _normalize_url(url):
+    if '://' not in url:
+        url = 'https://' + url
+    return url
+
+
+def _derive_provider_name(url):
+    import re
+    from urllib.parse import urlparse
+    host = [label for label in (urlparse(url).hostname or '').lower().split('.') if label]
+    if host[:1] == ['www']:
+        host = host[1:]
+    name = '-'.join(host[-2:]) if len(host) > 1 else (host[0] if host else '')
+    name = re.sub(r'[^a-z0-9-]', '-', name)
+    return name or 'custom'
+
+
+def _render_provider_list(chat, providers):
+    extras = [e.provider for e in chat.providers.all()
+              if e.provider not in providers]
+    for i, name in enumerate(list(providers) + extras, 1):
+        key = ' (key)' if chat.providers.api_key_for(name) else ''
+        print(f'  {i}. {name}{key}')
+
+
+def _connect_key_prompt(chat, provider):
+    stored = chat.providers.api_key_for(provider)
+    if stored:
+        return input('  API key [<stored>]: ').strip() or stored
+    return input('  API key (leave empty to skip): ').strip()
+
+
+def _connect_save(chat, providers, provider, base_url, api_key):
+    from ..providers import detect_provider
+    detected = detect_provider(base_url)
+    if detected in providers and detected != 'openai-compatible' and detected != provider:
+        print(f'  Detected provider "{detected}" from base URL - switching')
+        provider = detected
+    was_known = chat.providers.find(provider) is not None
+    checkout = chat.config.get('connect_check', True)
+    if checkout:
+        ok, msg, _models = chat.check_connection(
+            base_url=base_url, api_key=api_key, provider=provider)
+        if not ok:
+            print(f'  [Error] Connection test failed: {msg}')
+            try:
+                answer = input('  Save anyway? [y/N] ').strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                print()
+                return
+            if answer not in ('y', 'yes'):
+                print('  Connection not saved - run /connect again with corrected values')
+                return
+    chat.providers.put(provider, base_url, api_key)
+    chat.config.set('provider', provider)
+    if base_url:
+        chat.config.set('base_url', base_url)
+    chat._reinit_provider()
+    verb = 'Updated' if was_known else 'Added'
+    if checkout:
+        print(f'Connected to {provider} ({base_url}) - {msg}')
+    else:
+        print(f'Connected to {provider} ({base_url})')
+    print(f'  {verb} provider "{provider}"')
+    print(f'  Pick a model with /model list --online {provider} or /model {provider}/<model>')
+
+
+def _connect_named(chat, providers, factory, name, base_url=None):
+    if base_url is None:
+        base_url = factory.DEFAULT_BASE_URL
+    if not base_url:
+        try:
+            base_url = input(
+                f'  Base URL [{chat.config.get("base_url")}]: '
+            ).strip() or chat.config.get('base_url')
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return
+    api_key = _connect_key_prompt(chat, name)
+    _connect_save(chat, providers, name, base_url, api_key)
+
+
+def _connect_url(chat, providers, url, name):
+    from ..providers import detect_provider
+    url = _normalize_url(url)
+    provider = None
+    detected = detect_provider(url)
+    if detected != 'openai-compatible' and detected in providers:
+        provider = detected
+    else:
+        for pname, factory in providers.items():
+            default = getattr(factory, 'DEFAULT_BASE_URL', '')
+            if default and url.rstrip('/') == default.rstrip('/'):
+                provider = pname
+                break
+    if provider is not None:
+        print(f'  Detected provider "{provider}" from base URL')
+        _connect_named(chat, providers, providers[provider], provider, base_url=url)
+    else:
+        pname = name or _derive_provider_name(url)
+        if not name:
+            print(f'  New provider name: {pname}')
+        api_key = _connect_key_prompt(chat, pname)
+        _connect_save(chat, providers, pname, url, api_key)
+
+
+def _connect_pick(chat, providers):
+    from ..providers.base import OpenAICompatibleProvider
+    extras = {e.provider: e for e in chat.providers.all()
+              if e.provider not in providers}
+    names = list(providers) + list(extras)
+    current = chat.config.get('provider')
+    for i, name in enumerate(names, 1):
+        key = ' (key)' if chat.providers.api_key_for(name) else ''
+        print(f'  {i}. {name}{key}')
+    try:
+        sel = input(f'  Provider [{current}]: ').strip() or current
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return
+    if not sel:
+        return
+    if sel.isdigit():
+        try:
+            sel = names[int(sel) - 1]
+        except IndexError:
+            print(f'  Unknown provider number "{sel}"')
+            return
+    if sel in providers:
+        _connect_named(chat, providers, providers[sel], sel)
+    elif sel in extras:
+        entry = extras[sel]
+        _connect_named(chat, providers, OpenAICompatibleProvider, sel,
+                       base_url=entry.base_url or chat.config.get('base_url'))
+    elif '.' in sel or '://' in sel:
+        _connect_url(chat, providers, sel, None)
+    else:
+        print(f'  Unknown provider "{sel}" - pass a name, a number, or a URL')
+
+
 def register_builtins(registry):
     chat = registry.chat_loop
 
@@ -542,97 +682,28 @@ def register_builtins(registry):
             return
         print('Usage: /skill [list|show <name>|new <name>|remove <name>]')
 
-    @registry.register('connect', description='Set up provider connection interactively')
-    def connect_cmd(_=None):
-        from ..providers import PROVIDERS, detect_provider
+    @registry.register('connect', description='Connect a provider - /connect <name|url> [name]')
+    def connect_cmd(arg=''):
+        from ..providers import PROVIDERS
         providers = dict(PROVIDERS)
         pm = getattr(chat, '_plugin_manager', None)
         if pm is not None:
             providers.update(pm.provider_classes())
-        registry = chat.models
-        known = registry.all()
-        fresh = (chat.config.get('provider') == 'ollama'
-                 and chat.config.get('base_url') == 'https://api.ollama.com'
-                 and chat.config.get('model') == 'llama3.2')
-        if known and fresh:
-            print('Known models (global):')
-            for i, e in enumerate(known, 1):
-                key = ' (key)' if chat.providers.api_key_for(e.provider) else ''
-                print(f'  {i}. [{e.provider}] {e.model}{key}')
-        print('Setting up provider connection:')
-        provider = input(
-            f'  Provider [{chat.config.get("provider")}]: '
-        ).strip() or chat.config.get('provider')
-        base_url = input(
-            f'  Base URL [{chat.config.get("base_url")}]: '
-        ).strip() or chat.config.get('base_url')
-        model = input(
-            f'  Model [{chat.config.get("model")}]: '
-        ).strip() or chat.config.get('model')
-        picked = None
-        if model.startswith('#'):
-            try:
-                picked = known[int(model[1:]) - 1]
-            except (ValueError, IndexError):
-                print(f'  Unknown model number "{model}"')
-                return
-            provider, model = picked.provider, picked.model
-            base_url = chat.providers.base_url_for(provider) or base_url
-        stored_key = chat.providers.api_key_for(provider)
-        api_key = ''
-        if picked is not None:
-            print(f'  API key: stored key {stored_key and "(present)" or "(missing)"}')
-            api_key = input('  API key [<stored>]: ').strip() or stored_key
+        text = arg.strip()
+        if not text:
+            _connect_pick(chat, providers)
+        elif text in providers:
+            _connect_named(chat, providers, providers[text], text)
         else:
-            api_key = input('  API key (leave empty to skip): ').strip()
-
-        ref = chat.unfold_ref(model)
-        if ref is not None:
-            provider, base_url, model = ref
-
-        detected = detect_provider(base_url)
-        if detected in providers and detected != 'openai-compatible' and detected != provider:
-            print(f'  Detected provider "{detected}" from base URL - switching')
-            provider = detected
-
-        checkout = chat.config.get('connect_check', True)
-        if checkout:
-            ok, msg, models = chat.check_connection(
-                base_url=base_url, api_key=api_key, model=model, provider=provider)
-            if not ok:
-                print(f'  [Error] Connection test failed: {msg}')
-                try:
-                    answer = input('  Save anyway? [y/N] ').strip().lower()
-                except (EOFError, KeyboardInterrupt):
-                    print()
-                    return
-                if answer not in ('y', 'yes'):
-                    print('  Connection not saved - run /connect again with corrected values')
-                    return
-
-        was_known = registry.find(provider, model) is not None
-        registry.put(provider, model)
-        chat.providers.put(provider, base_url, api_key)
-        chat.config.set('base_url', base_url)
-        chat.config.set('provider', provider)
-        chat.config.set('model', model)
-
-        chat._reinit_provider()
-        verb = 'Updated' if was_known else 'Added'
-        if checkout:
-            print(f'Connected to {provider} ({base_url}) - {msg}')
-        else:
-            print(f'Connected to {provider} ({base_url})')
-        print(f'  {verb} to global model list: {provider} ({base_url}) - {model}')
-        if checkout:
-            if model and models and model not in models:
-                try:
-                    answer = input('  Show available models? [y/N] ').strip().lower()
-                except (EOFError, KeyboardInterrupt):
-                    print()
-                    return
-                if answer in ('y', 'yes'):
-                    _render_models(models, provider, base_url)
+            url, _, name = text.partition(' ')
+            url = url.strip()
+            name = name.strip()
+            if url and ('.' in url or '://' in url):
+                _connect_url(chat, providers, url, name or None)
+            else:
+                print(f'Unknown provider "{text}" - pass a provider name or a URL '
+                      '(e.g. /connect ollama or /connect https://...):')
+                _render_provider_list(chat, providers)
 
     @registry.register('config', description='Show, get, set, or unset config values (--global for the global config)')
     def config_cmd(arg=''):

@@ -152,7 +152,7 @@ Two global files live separately from config in `~/.config/replio/`. Neither is 
 ```
 
 - `api_key` lives here, one per provider. It is the only place API keys live.
-- `base_url` is stored only when it differs from the provider's default; otherwise the provider class default applies.
+- `base_url` is the effective base URL of the connection - the preset provider default (e.g. `/connect ollama`) or a custom URL (`/connect <url>`); the engine falls back to it when the config leaves `base_url` empty.
 - Managed through `/connect` (which writes the key and any custom base URL). Re-running `/connect` lets you re-enter a missing or stale key.
 - The engine resolves the API key for the active provider from this file (matching entry or `""`), and falls back to a stored custom `base_url` when the config has none. There is no `api_key` config key anymore, and `replio config set api_key` would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.
 

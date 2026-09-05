@@ -84,7 +84,7 @@ The examples use the **cloud Ollama** provider with **`gpt-oss:20b-cloud`**, a 2
 
 > Tip: use a different model for the reviewer than the implementer, with a fresh session, so a flawed plan is not rubber-stamped by the same model and context.
 
-The API key is registered once via `/connect` for the provider/base_url/model in the global model registry (`~/.config/replio/models.json`) - it is not a config value and never appears in `.replio/config.json`. Never commit a key to git.
+The API key is registered once per provider via `/connect` in the global provider registry (`~/.config/replio/providers.json`) - it is not a config value and never appears in `.replio/config.json`. Never commit a key to git.
 
 ## Step 3 - Clone the repo and create the worktrees
 

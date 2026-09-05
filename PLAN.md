@@ -53,15 +53,6 @@ One round hands off in three steps:
 
 Fleet is the substrate that stays up, not the conductor of the work.
 
-## Provider connections and model refs
-
-Active connections and model history split into two global registries, and model refs unfold to them. One provider key shared across every model on that provider; a model ref (`<provider>/<model>`) resolves only for active providers and approved models. All providers are OpenAI-compatible, so a custom endpoint is just a named connection, not a dialect.
-
-| Task | Effort | Provides |
-|------|--------|----------|
-| `/connect` provider rework - `/connect <name>` presets provider defaults and re-enters the API key; `/connect <url>` detects a known host or creates a named custom provider entry | M | connect by name or URL without typing defaults |
-| Connect any OpenAI-compatible endpoint by URL - connections stored per provider in `providers.json`, no dialect flag | M | self-hosted and gateway endpoints as first-class connections |
-
 ## Tool engineering for agents
 
 Tools are the provider-facing surface - one OpenAI-compatible contract, registry metadata drives the loop. Hardening it for any provider (weak OpenAI-compatible backends especially), from the Anthropic tool-writing principles (choosing the right tools, namespacing, meaningful context, token efficiency, description prompt-engineering) and the tool-use evaluation methodology.

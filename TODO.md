@@ -27,8 +27,6 @@
 
 ## Open
 
-- [ ] Connect any OpenAI-compatible endpoint by URL - `/connect <url>` (or `/connect <name>` for a known provider) stores the connection in `~/.config/replio/providers.json` (api_key + custom base_url per active provider). `models.json` tracks only approved models; unfold is gated on active provider + approved model, with interactive ask-on-load / team-run pre-check and headless `--approve-model`. No dialect flag - all providers are OpenAI-compatible
-- [ ] `/connect` provider rework - `/connect <known-provider>` presets the provider, its default base URL, and its default model, and always lets the user re-enter the API key (missing or stale); `/connect <url>` detects a known host or creates a named custom provider entry
 - [ ] `ask` tool - model-facing tool that pauses the run and poses a question to the human (or the lead), so sub-agents and team stages can get decisions mid-run instead of returning open questions. Documented dependency for autonomously runnable agents; until it lands, the selfdev team works around it with leader pre-grants and open questions returned at the end of a stage
 - [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
 - [ ] Externalize bundled providers - move `opencode`/`opencode-go` (and the vendor providers) out of the core into bundled plugins, keeping `BaseProvider`/`OpenAICompatibleProvider`, the `PROVIDERS` dict + `detect_provider`, and the plugin `register_providers` hook as the core mechanisms. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in `/connect`
@@ -107,6 +105,8 @@
 
 ## Done
 
+- [x] Connect any OpenAI-compatible endpoint by URL - named custom provider entries
+- [x] /connect provider rework - name/URL connect, preset defaults, re-enter key
 - [x] Model refs unfold - provider/model refs resolve, gated on approved models
 - [x] models.json - approved-model history (provider, model, timestamps), no keys
 - [x] Provider registry - providers.json, one API key per provider, engine resolves from it

@@ -46,15 +46,20 @@ A ref naming a provider with no stored key still switches to it but prints `run 
 
 ## Auto-detection
 
-When the configured provider name is unknown, or when `base_url` matches a known host, the provider is detected from the URL. `detect_provider()` matches `openai.com`, `groq.com`, `anthropic.com`, `ollama.com` / `ollama.ai`, and `opencode.ai` (path `/zen/go` selects `opencode-go`, otherwise `opencode`), falling back to `openai-compatible` for anything else. `/connect` uses the same detection, so entering a base URL switches the provider automatically.
+When the configured provider name is unknown, or when `base_url` matches a known host, the provider is detected from the URL. `detect_provider()` matches `openai.com`, `groq.com`, `anthropic.com`, `ollama.com` / `ollama.ai`, and `opencode.ai` (path `/zen/go` selects `opencode-go`, otherwise `opencode`), falling back to `openai-compatible` for anything else. `/connect` uses the same detection, so passing a base URL switches the provider automatically. A URL that equals a plugin provider's default base URL selects that plugin provider (see [plugins.md](plugins.md)); a registry-named custom provider (one created by `/connect <url>`) resolves as an OpenAI-compatible connection.
 
 ## Setting up
 
-- `/connect` - interactive setup: provider, base URL, API key, model. Detects the provider from the entered base URL, then **tests the connection** (a `GET <base_url>/v1/models` probe) before saving: broken values are rejected unless you confirm `Save anyway?`. When the configured model is missing from the list, it offers `Show available models?` so you can pick the right name.
-- `/model <name>` - show or switch the active model.
-- `/models` (alias `/model-list`) - list the models the connected provider advertises. `replio models` does the same headlessly and exits `1` on a failed probe.
-- `/provider <name>` - show or switch the active provider. After switching, the connection is probed and a warning is shown on failure (`/connect` is the fix).
-- `replio run --provider ... --model ... --base-url ...` - headless overrides.
+`/connect` connects a provider and stores its API key (and any custom base URL) in the global `providers.json` registry - it never touches the model, which is picked separately with `/model`:
+
+- `/connect` - interactive picker: a numbered list of known providers (core + plugins) with a `(key)` marker when a key is stored. The prompt accepts a number, a provider name, or a URL.
+- `/connect <name>` - connect a known provider by name (e.g. `ollama`, `openai`, `groq`, `anthropic`, `opencode`, `opencode-go`). The provider's default base URL is preset; you only enter the API key. A stored key is shown as the default - press Enter to keep it or type to replace it (re-enter a missing or stale key).
+- `/connect <url>` - connect by URL. A known host (or a plugin provider's default URL) selects that provider with the URL as its base URL; anything else creates a named custom provider, with the name derived from the host (e.g. `https://llm.acme.example/v1` -> `acme-example`).
+- `/connect <url> <name>` - custom provider with an explicit name instead of the derived one.
+
+All forms **test the connection** (a `GET <base_url>/v1/models` probe) before saving: broken values are rejected unless you confirm `Save anyway?`. A successful connect prints `Connected to <provider> (<base_url>)`, records the entry in `providers.json`, writes `provider`/`base_url` into the config, and points you at `/model list --online <provider>` to pick a model.
+
+Related surfaces: `/model <name>` shows or switches the active model (a `provider/model` ref switches provider and model together, approving the model), `/models` (alias `/model-list`) lists the models the connected provider advertises, `/provider <name>` shows or switches the active provider, and `replio run --provider ... --model ... --base-url ...` provides headless overrides.
 
 Connection probing is gated by the `connect_check` config (default `true`). Set it to `false` to skip the probes (e.g. offline or flaky networks). `OpenAICompatibleProvider.check_connection()` returns `(ok, message)` by reusing `_fetch_models()` - the shared `GET /v1/models` helper that `list_models()` also uses.
 
