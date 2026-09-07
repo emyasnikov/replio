@@ -30,7 +30,7 @@ The agentic core has three layers:
 
 3. **Commands** (`commands/`) - user-facing affordances. A command either wraps a tool or performs a local action (`/model`, `/session`).
 
-Providers (`providers/`) are OpenAI-compatible `/v1/chat/completions` backends that implement the event-generator `chat()` contract. A fuller treatment of the core, UI sinks, and front-ends is in `docs/architecture.md`.
+Providers (`providers/`) keep the base classes and registry in the core (`BaseProvider`, `OpenAICompatibleProvider`, the `PROVIDERS` dict, host-pattern `detect_provider`). The vendor providers ship as bundled plugins that register through the `register_providers` hook. A fuller treatment of the core, UI sinks, and front-ends is in `docs/architecture.md`.
 
 ### Project Structure
 
@@ -61,9 +61,9 @@ Replio/
 │   ├── eval.py              # Tool-use eval harness - fixtures, runner, metrics (replio eval)
 │   ├── server.py            # stdlib HTTP JSON API (POST /chat, GET /sessions, GET /health, GET /version)
 │   ├── providers/
-│   │   ├── __init__.py
-│   │   ├── base.py          # Abstract provider (OpenAI-compatible)
-│   │   └── ollama.py        # Ollama cloud via /v1/chat/completions
+│   │   ├── __init__.py      # PROVIDERS registry + detect_provider (host-pattern) + merged_providers
+│   │   ├── base.py          # BaseProvider + OpenAICompatibleProvider (HOST_PATTERNS)
+│   │   └── registry.py      # ProviderRegistry - providers.json (keys + custom base URLs)
 │   ├── sessions/
 │   │   ├── __init__.py
 │   │   └── manager.py       # Session CRUD (JSON files)
@@ -85,11 +85,16 @@ Replio/
 │       └── http.py          # urllib-based SSE streaming
 └── plugins/                 # bundled plugins (shipped as replio.plugins.bundled), each is {src/, tests/}
 ├── replio-core-edit/        # file_edit
-    ├── replio-core-git/         # git, git_commit
+    ├── replio-core-anthropic/   # AnthropicProvider
     ├── replio-core-dev/         # code_test, code_lint, code_format
     ├── replio-core-eval/        # eval fixture catalog for replio eval
     ├── replio-core-exec/        # run_command
     ├── replio-core-fs/          # file_read, list_dir, file_write, glob, grep
+    ├── replio-core-git/         # git, git_commit
+    ├── replio-core-groq/        # GroqProvider
+    ├── replio-core-ollama/      # OllamaProvider
+    ├── replio-core-openai/      # OpenAIProvider
+    ├── replio-core-opencode/    # OpenCodeProvider + OpenCodeGoProvider (session-id base)
     └── replio-core-web/         # web_search, web_fetch + search service
 ```
 
@@ -149,10 +154,9 @@ Replio/
 - Sandboxed exec (namespace/container isolation) is planned future work (see TODO). Per-agent permission profiles landed with types (`tool_permission` on each type)
 
 ### Adding a Provider
-1. Create `src/replio/providers/<name>.py`
-2. Subclass `OpenAICompatibleProvider`, set `DEFAULT_BASE_URL` / `DEFAULT_MODEL` (override `_headers()`/`_payload()` only for non-standard auth or bodies)
-3. Add the class to the `PROVIDERS` dict in `providers/__init__.py`
-4. Add a hostname match in `detect_provider()` so `/connect` auto-selects it
+1. Subclass `OpenAICompatibleProvider` (core, in `src/replio/providers/base.py`) and set `DEFAULT_BASE_URL` / `DEFAULT_MODEL` (override `_headers()`/`_payload()` only for non-standard auth or bodies)
+2. Declare `HOST_PATTERNS` - URL substrings that identify the provider - so `/connect <url>` auto-detects it (longest pattern wins for shared hosts, e.g. `opencode.ai/zen` vs `opencode.ai/zen/go`)
+3. Register it via a plugin's `register_providers(providers)` hook (`providers[name] = ProviderClass`) and list the name in the manifest's `provides.providers`. Vendor providers ship as bundled plugins in `plugins/`. The core `PROVIDERS` registry stays `openai-compatible` only and wins on name conflicts with plugin registrations
 
 The chat() event contract and full provider reference are in `docs/providers.md`.
 

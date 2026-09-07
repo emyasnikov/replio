@@ -39,7 +39,7 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 
 | Key                         | Default                | Description                                                            |
 |-----------------------------|------------------------|------------------------------------------------------------------------|
-| `provider`                  | `"ollama"`             | Provider name (`ollama`, `openai`, `groq`, `anthropic`, `opencode`, `opencode-go`, `openai-compatible`) |
+| `provider`                  | `"ollama"`             | Provider name. The bundled provider plugins (`replio-core-ollama`, `-openai`, `-groq`, `-anthropic`, `-opencode`) register `ollama`, `openai`, `groq`, `anthropic`, `opencode`, and `opencode-go`. `openai-compatible` is the generic fallback. External plugins can register more |
 | `model`                     | `"llama3.2"`           | Model name. A `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) unfolds to that provider and model. An unfolded model must be approved (see [Model refs and approval](providers.md#model-refs-and-approval)) |
 | `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
 | `temperature`               | `0.7`                  | Sampling temperature                                                   |

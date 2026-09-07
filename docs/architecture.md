@@ -74,7 +74,7 @@ src/replio/
 ├── chat.py              # ChatLoop(Engine) - REPL shell with readline
 ├── ui.py                # UISink - ReplUI / HeadlessUI / NullUI
 ├── server.py            # stdlib HTTP JSON API
-├── providers/           # OpenAI-compatible chat providers
+├── providers/           # core substrate: base classes, PROVIDERS registry, detect_provider
 ├── sessions/            # session CRUD (JSON files)
 ├── commands/            # command registry + builtins
 ├── tools/               # tool registry + tool policy

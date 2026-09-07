@@ -690,14 +690,16 @@ def _fleet_config(controller, args) -> int:
         except (OSError, ValueError):
             existing = {}
     if getattr(args, 'approve_model', False) or getattr(args, 'model', ''):
+        from .config import Config
         from .models import ModelRegistry
-        from .providers import PROVIDERS
+        from .providers import merged_providers
         from .providers.registry import resolve_model_ref
         model_target = getattr(args, 'model', '') or (agent_type.model if agent_type else '')
         if model_target:
             model_registry = ModelRegistry()
             model_provider = patch.get('provider') or existing.get('provider') or ''
-            ref = resolve_model_ref(model_target, dict(PROVIDERS))
+            ref = resolve_model_ref(
+                model_target, merged_providers(Config(path=str(agent_dir))))
             if ref:
                 model_provider, _, model_target = ref
             if model_provider and model_target:

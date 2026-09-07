@@ -37,6 +37,7 @@ class BaseProvider:
 class OpenAICompatibleProvider(BaseProvider):
     DEFAULT_BASE_URL = ''
     DEFAULT_MODEL = ''
+    HOST_PATTERNS: tuple[str, ...] = ()
 
     def __init__(self, **kwargs):
         if not kwargs.get('base_url'):

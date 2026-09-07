@@ -8,7 +8,10 @@ from replio.tools.registry import ToolRegistry
 
 BUNDLED = {'replio-core-web', 'replio-core-fs', 'replio-core-edit',
            'replio-core-git', 'replio-core-dev', 'replio-core-exec',
-           'replio-core-mcp', 'replio-core-eval'}
+           'replio-core-mcp', 'replio-core-eval',
+           'replio-core-opencode', 'replio-core-ollama',
+           'replio-core-openai', 'replio-core-groq',
+           'replio-core-anthropic'}
 
 
 class TestBundledPlugins(unittest.TestCase):
@@ -89,13 +92,14 @@ class TestBundledPlugins(unittest.TestCase):
 
     def test_bundled_in_default_config(self):
         from replio.config import DEFAULT_CONFIG
-        self.assertIn('replio-core-web', DEFAULT_CONFIG['plugins'])
-        self.assertIn('replio-core-fs', DEFAULT_CONFIG['plugins'])
-        self.assertIn('replio-core-edit', DEFAULT_CONFIG['plugins'])
-        self.assertIn('replio-core-git', DEFAULT_CONFIG['plugins'])
-        self.assertIn('replio-core-dev', DEFAULT_CONFIG['plugins'])
-        self.assertIn('replio-core-exec', DEFAULT_CONFIG['plugins'])
-        self.assertIn('replio-core-mcp', DEFAULT_CONFIG['plugins'])
+        for name in BUNDLED:
+            self.assertIn(name, DEFAULT_CONFIG['plugins'])
+
+    def test_bundled_providers_registered(self):
+        self.pm.load()
+        providers = set(self.pm.provider_classes())
+        self.assertTrue({'ollama', 'openai', 'groq', 'anthropic',
+                         'opencode', 'opencode-go'} <= providers)
 
 
 if __name__ == '__main__':

@@ -129,10 +129,19 @@ def _derive_provider_name(url):
     return name or 'custom'
 
 
+def _ordered_provider_names(providers):
+    names = [n for n in sorted(providers) if n != 'openai-compatible']
+    if 'ollama' in names:
+        names.remove('ollama')
+        names.insert(0, 'ollama')
+    names.append('openai-compatible')
+    return names
+
+
 def _render_provider_list(chat, providers):
     extras = [e.provider for e in chat.providers.all()
               if e.provider not in providers]
-    for i, name in enumerate(list(providers) + extras, 1):
+    for i, name in enumerate(_ordered_provider_names(providers) + extras, 1):
         key = ' (key)' if chat.providers.api_key_for(name) else ''
         print(f'  {i}. {name}{key}')
 
@@ -146,7 +155,7 @@ def _connect_key_prompt(chat, provider):
 
 def _connect_save(chat, providers, provider, base_url, api_key):
     from ..providers import detect_provider
-    detected = detect_provider(base_url)
+    detected = detect_provider(base_url, providers)
     if detected in providers and detected != 'openai-compatible' and detected != provider:
         print(f'  Detected provider "{detected}" from base URL - switching')
         provider = detected
@@ -198,8 +207,8 @@ def _connect_url(chat, providers, url, name):
     from ..providers import detect_provider
     url = _normalize_url(url)
     provider = None
-    detected = detect_provider(url)
-    if detected != 'openai-compatible' and detected in providers:
+    detected = detect_provider(url, providers)
+    if detected != 'openai-compatible':
         provider = detected
     else:
         for pname, factory in providers.items():
@@ -222,7 +231,7 @@ def _connect_pick(chat, providers):
     from ..providers.base import OpenAICompatibleProvider
     extras = {e.provider: e for e in chat.providers.all()
               if e.provider not in providers}
-    names = list(providers) + list(extras)
+    names = _ordered_provider_names(providers) + sorted(extras)
     current = chat.config.get('provider')
     for i, name in enumerate(names, 1):
         key = ' (key)' if chat.providers.api_key_for(name) else ''

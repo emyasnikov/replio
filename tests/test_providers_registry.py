@@ -8,9 +8,17 @@ from replio.config import Config
 
 class TestResolveModelRef(unittest.TestCase):
 
+    _providers_cache = None
+
     def _providers(self):
-        from replio.providers import PROVIDERS
-        return dict(PROVIDERS)
+        if TestResolveModelRef._providers_cache is None:
+            import tempfile
+            from replio.config import Config
+            from replio.providers import merged_providers
+            tmp = tempfile.TemporaryDirectory()
+            TestResolveModelRef._providers_cache = merged_providers(
+                Config(path=tmp.name))
+        return TestResolveModelRef._providers_cache
 
     def test_known_provider_unfolds(self):
         self.assertEqual(

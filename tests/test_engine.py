@@ -478,6 +478,7 @@ class TestEngineCheckConnection(unittest.TestCase):
 
     def test_check_connection_detects_from_base_url(self):
         factory = self._factory(['g1'])
+        factory.HOST_PATTERNS = ('groq.com',)
         with patch('replio.providers.PROVIDERS', {'groq': factory}):
             ok, msg, _ = self.engine.check_connection(
                 provider='nope', base_url='https://api.groq.com/openai/v1')

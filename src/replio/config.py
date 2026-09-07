@@ -72,8 +72,15 @@ DEFAULT_CONFIG = {
     'mcp_server.allow_ask': True,
 'plugins': ['replio-core-web', 'replio-core-fs', 'replio-core-edit',
                 'replio-core-git', 'replio-core-dev', 'replio-core-exec',
-                'replio-core-mcp', 'replio-core-eval'],
+                'replio-core-mcp', 'replio-core-eval',
+                'replio-core-opencode', 'replio-core-ollama',
+                'replio-core-openai', 'replio-core-groq',
+                'replio-core-anthropic'],
 }
+
+_NEW_PROVIDER_PLUGINS = ['replio-core-opencode', 'replio-core-ollama',
+                         'replio-core-openai', 'replio-core-groq',
+                         'replio-core-anthropic']
 
 _MISSING = object()
 
@@ -102,6 +109,24 @@ class Config:
             with open(self.local_path) as f:
                 self._local_raw = json.load(f)
             self.data.update(self._local_raw)
+        self._migrate_plugins()
+
+    def _migrate_plugins(self):
+        plugins = self.data.get('plugins')
+        if not isinstance(plugins, list) or not plugins:
+            return
+        missing = [n for n in DEFAULT_CONFIG['plugins']
+                   if n in _NEW_PROVIDER_PLUGINS and n not in plugins]
+        if not missing:
+            return
+        plugins = plugins + missing
+        self.data['plugins'] = plugins
+        if 'plugins' in self._global_raw:
+            self._global_raw['plugins'] = plugins
+            self._write_global({})
+        else:
+            self._local_raw['plugins'] = plugins
+            self._save_local()
 
     def reload(self):
         self.data = copy.deepcopy(DEFAULT_CONFIG)

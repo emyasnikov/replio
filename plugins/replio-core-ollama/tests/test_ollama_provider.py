@@ -1,7 +1,24 @@
+import importlib.util
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
-from replio.providers.ollama import OllamaProvider
+SRC = Path(__file__).resolve().parents[1] / 'src'
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+
+def _load_plugin():
+    name = 'replio_ollama_provider_plugin'
+    spec = importlib.util.spec_from_file_location(name, str(SRC / 'plugin.py'))
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+OllamaProvider = _load_plugin().OllamaProvider
 
 
 def _sse(chunks):
@@ -10,6 +27,18 @@ def _sse(chunks):
             yield c
         else:
             yield {'choices': [c]}
+
+
+class TestOllamaDefaults(unittest.TestCase):
+
+    def test_defaults(self):
+        p = OllamaProvider()
+        self.assertEqual(p.base_url, 'https://api.ollama.com')
+        self.assertEqual(p.model, 'llama3.2')
+        self.assertEqual(p._endpoint(), 'https://api.ollama.com/v1/chat/completions')
+
+    def test_host_patterns(self):
+        self.assertIn('ollama.com', OllamaProvider.HOST_PATTERNS)
 
 
 class TestOllamaStreaming(unittest.TestCase):

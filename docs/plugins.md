@@ -10,7 +10,7 @@ Plugins extend Replio with **tools**, **providers**, **slash commands**, and **s
 | `~/.config/replio/plugins/` | global, all projects | middle |
 | `.replio/plugins/` | local to a project | highest (wins on name collision) |
 
-First-party plugins ship with replio and are listed in the default `plugins` config, so they are active out of the box. `replio-core-web` provides `web_search` and `web_fetch`. `replio-core-fs` provides `file_read`, `list_dir`, `file_write`, `glob`, and `grep`. `replio-core-exec` provides `run_command`. `replio-core-mcp` provides the MCP client (`mcp_connect`/`mcp_list`/`mcp_disconnect`) and server (`replio mcp` and `POST /mcp`) - see [mcp.md](mcp.md). `replio-core-eval` provides the eval fixture catalog for `replio eval` - see [eval.md](eval.md). They behave like any other plugin. Remove a name from `plugins` (or use `/plugins disable`) to stop it loading, but they cannot be uninstalled or updated, since they version with replio. A global or local plugin with the same name overrides the bundled one.
+First-party plugins ship with replio and are listed in the default `plugins` config, so they are active out of the box. `replio-core-web` provides `web_search` and `web_fetch`. `replio-core-fs` provides `file_read`, `list_dir`, `file_write`, `glob`, and `grep`. `replio-core-exec` provides `run_command`. `replio-core-mcp` provides the MCP client (`mcp_connect`/`mcp_list`/`mcp_disconnect`) and server (`replio mcp` and `POST /mcp`) - see [mcp.md](mcp.md). `replio-core-eval` provides the eval fixture catalog for `replio eval` - see [eval.md](eval.md). The vendor providers ship as bundled plugins too (`replio-core-ollama`, `replio-core-openai`, `replio-core-groq`, `replio-core-anthropic`, `replio-core-opencode`) - see [providers.md](providers.md). They behave like any other plugin. Remove a name from `plugins` (or use `/plugins disable`) to stop it loading, but they cannot be uninstalled or updated, since they version with replio. A global or local plugin with the same name overrides the bundled one.
 
 ## Plugin layout
 
@@ -78,6 +78,8 @@ A tool handler may declare a `_config` keyword argument to receive the engine's 
 ### Providers
 
 `register_providers` contributes to the same provider set as the core `PROVIDERS` dict: the plugin provider appears in the `/connect` picker, and passing its `DEFAULT_BASE_URL` as a `/connect <url>` argument selects it automatically (see [providers.md](providers.md)). A plugin provider's `DEFAULT_BASE_URL` also makes it a model-ref target (`<name>/<model>`).
+
+A provider class may declare `HOST_PATTERNS` - a tuple of URL substrings - so `/connect <url>` auto-detects it from the host (see [Auto-detection](providers.md#auto-detection)). The core `detect_provider()` scans the merged set and prefers the longest matching pattern. The bundled vendor providers (`replio-core-ollama`, `-openai`, `-groq`, `-anthropic`, `replio-core-opencode`) are plugins themselves, so an external plugin registering a provider with the same name as a bundled one does not override it - the core `PROVIDERS` registry wins on name conflicts.
 
 ### Services
 

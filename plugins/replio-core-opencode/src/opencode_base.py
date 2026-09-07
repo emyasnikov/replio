@@ -1,7 +1,7 @@
 import uuid
 
-from .. import get_version
-from .base import OpenAICompatibleProvider
+from replio import get_version
+from replio.providers.base import OpenAICompatibleProvider
 
 
 class OpenCodeProviderBase(OpenAICompatibleProvider):

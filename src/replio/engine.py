@@ -172,13 +172,14 @@ class Engine:
         merged = dict(PROVIDERS)
         plugin_manager = getattr(self, '_plugin_manager', None)
         if plugin_manager is not None:
-            merged.update(plugin_manager.provider_classes())
+            for name, factory in plugin_manager.provider_classes().items():
+                merged.setdefault(name, factory)
         factory = merged.get(provider)
         if factory is not None:
             return factory, provider, merged
         if provider and self.providers.find(provider) is not None:
             return OpenAICompatibleProvider, provider, merged
-        detected = detect_provider(base_url)
+        detected = detect_provider(base_url, merged)
         self.ui.info(f'Unknown provider "{provider}" - using "{detected}" '
                      '(detected from base_url)')
         return merged.get(detected), detected, merged
@@ -192,7 +193,8 @@ class Engine:
         merged = dict(PROVIDERS)
         plugin_manager = getattr(self, '_plugin_manager', None)
         if plugin_manager is not None:
-            merged.update(plugin_manager.provider_classes())
+            for name, factory in plugin_manager.provider_classes().items():
+                merged.setdefault(name, factory)
         return merged
 
     def _ensure_model_approved(self, provider: str, model: str) -> bool:

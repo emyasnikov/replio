@@ -1,5 +1,6 @@
 # TODO
 
+- Remove the legacy provider-plugin backfill migration (`Config._migrate_plugins`) once a stable replio release has shipped with the externalized providers - existing `plugins` lists no longer need the automatic append, and the migration code is dead weight
 - Human-in-the-loop channels - job events outbound (`proposed`, `will_run`, `failed`, `waiting_approval`) plus inbound actions (`approve`/`reject`/`run`/`disable`) over configurable connectors (webhook first, then email, then Telegram), so a job can reach an operator who is not on the box
 - Global jobs overview across agents - `replio jobs list --root <dir>` fleet scan, a `GET /jobs` + `POST /jobs/<name>/approve|reject|run|disable` operator API on `replio serve`, then a web Control UI, so one view shows which agents run next and with which task
 - Edge / offline store-and-forward buffering - offline-capable agents with local buffering for unreliable connectivity (enterprise use case)
@@ -28,7 +29,6 @@
 ## Open
 
 - [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
-- [ ] Externalize bundled providers - move `opencode`/`opencode-go` (and the vendor providers) out of the core into bundled plugins, keeping `BaseProvider`/`OpenAICompatibleProvider`, the `PROVIDERS` dict + `detect_provider`, and the plugin `register_providers` hook as the core mechanisms. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in `/connect`
 - [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
 - [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`web_fetch` guidance to tool descriptions
 - [ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc types/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)
@@ -104,6 +104,7 @@
 
 ## Done
 
+- [x] Externalize bundled providers - vendor providers to bundled plugins, base + host hints stay core
 - [x] `ask` tool - core: human or lead mid-run questions, sub-agent routing
 - [x] Connect any OpenAI-compatible endpoint by URL - named custom provider entries
 - [x] /connect provider rework - name/URL connect, preset defaults, re-enter key

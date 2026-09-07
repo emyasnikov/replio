@@ -2,21 +2,22 @@
 
 Providers are the model backends. Replio speaks OpenAI-compatible `/v1/chat/completions` to every provider. Providers only differ in base URL, default model, and occasionally auth or payload details. Each provider implements the event-generator `chat()` contract the agent loop consumes.
 
-## Built-in providers
+## Bundled provider plugins
 
-| Provider | Default base URL | Default model |
-|----------|------------------|----------------|
-| `ollama` | `https://api.ollama.com` | `llama3.2` |
-| `openai` | `https://api.openai.com/v1` | `gpt-4o-mini` |
-| `groq` | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
-| `anthropic` | `https://api.anthropic.com/v1` | `claude-sonnet-4-20250514` |
-| `opencode` | `https://opencode.ai/zen/v1` | `kimi-k3` |
-| `opencode-go` | `https://opencode.ai/zen/go/v1` | `deepseek-v4-flash` |
-| `openai-compatible` | *(none)* | *(none)* |
+The vendor providers ship as bundled plugins. The core keeps the base classes (`BaseProvider`, `OpenAICompatibleProvider`), the generic `openai-compatible` fallback, and the detection/registry mechanisms, so any external plugin can add providers through the same `register_providers` hook. The bundled plugins are in the default `plugins` config and load like any other plugin, so a disabled or removed one simply drops that provider.
 
-`openai-compatible` is the generic fallback for any other OpenAI-compatible endpoint - local models, gateways, or self-hosted servers.
+| Plugin | Provider | Default base URL | Default model |
+|--------|----------|------------------|----------------|
+| `replio-core-ollama` | `ollama` | `https://api.ollama.com` | `llama3.2` |
+| `replio-core-openai` | `openai` | `https://api.openai.com/v1` | `gpt-4o-mini` |
+| `replio-core-groq` | `groq` | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
+| `replio-core-anthropic` | `anthropic` | `https://api.anthropic.com/v1` | `claude-sonnet-4-20250514` |
+| `replio-core-opencode` | `opencode` | `https://opencode.ai/zen/v1` | `kimi-k3` |
+| `replio-core-opencode` | `opencode-go` | `https://opencode.ai/zen/go/v1` | `deepseek-v4-flash` |
 
-`opencode` (Zen) and `opencode-go` (Go) are the two hosted catalogs at `opencode.ai`. Both use the same OpenCode API key (`OPENCODE_API_KEY`, resolved from the model registry like any other provider) but are separate paid subscriptions. Zen is the curated multi-model gateway. Go is the low-cost subscription for open coding models. Model refs accept the `opencode/<model-id>` and `opencode-go/<model-id>` conventions as well as bare model ids - the prefix is stripped before the request. A successful model listing is an inventory, not an entitlement check: inference still requires the matching subscription. Fetch the current lineup from `https://opencode.ai/zen/v1/models` and `https://opencode.ai/zen/go/v1/models`. These endpoints sit behind Cloudflare bot protection, which rejects urllib's default `Python-urllib/<ver>` user agent with `HTTP 403: error code: 1010`. Provider requests send an identifying `replio/<version>` `User-Agent` and a stable per-conversation `x-opencode-session` header (OpenCode uses it for routing and prompt caching; Go rejects requests without it), so `/connect`, `/model list --online`, and chat all work.
+`openai-compatible` is the generic fallback in the core for any other OpenAI-compatible endpoint - local models, gateways, or self-hosted servers.
+
+`opencode` (Zen) and `opencode-go` (Go) are the two hosted catalogs at `opencode.ai`. Both use the same OpenCode API key (`OPENCODE_API_KEY`, resolved from the provider registry like any other provider) but are separate paid subscriptions. Zen is the curated multi-model gateway. Go is the low-cost subscription for open coding models. Model refs accept the `opencode/<model-id>` and `opencode-go/<model-id>` conventions as well as bare model ids - the prefix is stripped before the request. A successful model listing is an inventory, not an entitlement check: inference still requires the matching subscription. Fetch the current lineup from `https://opencode.ai/zen/v1/models` and `https://opencode.ai/zen/go/v1/models`. These endpoints sit behind Cloudflare bot protection, which rejects urllib's default `Python-urllib/<ver>` user agent with `HTTP 403: error code: 1010`. Provider requests send an identifying `replio/<version>` `User-Agent` and a stable per-conversation `x-opencode-session` header (OpenCode uses it for routing and prompt caching. Go rejects requests without it), so `/connect`, `/model list --online`, and chat all work.
 
 ## Configuration
 
@@ -46,7 +47,7 @@ A ref naming a provider with no stored key still switches to it but prints `run 
 
 ## Auto-detection
 
-When the configured provider name is unknown, or when `base_url` matches a known host, the provider is detected from the URL. `detect_provider()` matches `openai.com`, `groq.com`, `anthropic.com`, `ollama.com` / `ollama.ai`, and `opencode.ai` (path `/zen/go` selects `opencode-go`, otherwise `opencode`), falling back to `openai-compatible` for anything else. `/connect` uses the same detection, so passing a base URL switches the provider automatically. A URL that equals a plugin provider's default base URL selects that plugin provider (see [plugins.md](plugins.md)). A registry-named custom provider (one created by `/connect <url>`) resolves as an OpenAI-compatible connection.
+When the configured provider name is unknown, or when `base_url` matches a known host, the provider is detected from the URL. Each provider class declares `HOST_PATTERNS` - substrings of the base URL that identify it (e.g. `openai.com`, `groq.com`, `anthropic.com`, `ollama.com` / `ollama.ai`, and `opencode.ai/zen` for Zen, `opencode.ai/zen/go` for Go). `detect_provider()` scans the merged provider set (core `PROVIDERS` plus plugin providers) and returns the provider whose pattern matches, preferring the longest match so path-distinguishing hosts like Zen vs Go resolve correctly. It falls back to `openai-compatible` for anything else. `/connect` uses the same detection, so passing a base URL switches the provider automatically. A URL that equals a plugin provider's default base URL selects that plugin provider even without a host pattern (see [plugins.md](plugins.md)). A registry-named custom provider (one created by `/connect <url>`) resolves as an OpenAI-compatible connection.
 
 ## Setting up
 
@@ -98,12 +99,14 @@ The `reasoning` config (default `"auto"`) tells the model reasoning is desired a
 
 ## Adding a provider
 
-1. Create `src/replio/providers/<name>.py`.
-2. Subclass `OpenAICompatibleProvider` and set `DEFAULT_BASE_URL` / `DEFAULT_MODEL`. Override `_headers()` / `_payload()` only for non-standard auth or request bodies.
-3. Add the class to the `PROVIDERS` dict in `providers/__init__.py`.
-4. Add a hostname match in `detect_provider()` so `/connect` auto-selects it.
+The core substrate (`BaseProvider`, `OpenAICompatibleProvider`, the `PROVIDERS` registry, and `detect_provider`) stays in `src/replio/providers/`. Vendor providers ship as bundled plugins under `plugins/`, and any external plugin can register providers too:
 
-Plugins can also register providers via their `register_providers(providers)` hook - `/connect` offers plugin providers automatically (see [plugins.md](plugins.md)).
+1. Subclass `OpenAICompatibleProvider` and set `DEFAULT_BASE_URL` / `DEFAULT_MODEL`. Override `_headers()` / `_payload()` only for non-standard auth or request bodies.
+2. Declare `HOST_PATTERNS` - URL substrings that identify the provider - so `/connect <url>` auto-selects it. Make patterns specific enough to disambiguate providers sharing a host (e.g. `opencode.ai/zen` vs `opencode.ai/zen/go`).
+3. Implement `register_providers(providers)` in the plugin entry module, adding `providers[name] = ProviderClass`.
+4. Declare the provider names in the manifest's `provides.providers` list for `/plugins` display.
+
+An external plugin registering a provider with the same name as a bundled one does not override it - the core `PROVIDERS` registry wins on name conflicts. Plugins that want a different default can use their own provider name. Full plugin layout and manifest fields in [plugins.md](plugins.md).
 
 ## Streaming contract
 

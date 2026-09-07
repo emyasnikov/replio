@@ -1,4 +1,5 @@
 import unittest
+import unittest.mock
 import tempfile
 import json
 import io
@@ -8,47 +9,37 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from replio.config import Config
 from replio.chat import ChatLoop
+from replio.plugins.manager import PluginManager
 from replio.providers import (
-    PROVIDERS, detect_provider,
-    OpenAICompatibleProvider, OllamaProvider, OpenAIProvider,
-    GroqProvider, AnthropicProvider, OpenCodeProvider, OpenCodeGoProvider,
+    PROVIDERS, detect_provider, merged_providers, OpenAICompatibleProvider,
 )
+
+VENDOR_NAMES = ('ollama', 'openai', 'groq', 'anthropic',
+                'opencode', 'opencode-go')
+KNOWN_HOST_URLS = (
+    'https://api.openai.com/v1',
+    'https://api.groq.com/openai/v1',
+    'https://api.anthropic.com/v1',
+    'https://api.ollama.com',
+    'https://opencode.ai/zen/v1',
+    'https://opencode.ai/zen/go/v1',
+)
+
+
+def _bundled_providers():
+    tmp = tempfile.TemporaryDirectory()
+    pm = PluginManager(Config(path=tmp.name))
+    pm.load()
+    merged = dict(PROVIDERS)
+    merged.update(pm.provider_classes())
+    return merged
 
 
 class TestProviderDefaults(unittest.TestCase):
 
-    def test_ollama_defaults(self):
-        p = OllamaProvider()
-        self.assertEqual(p.base_url, 'https://api.ollama.com')
-        self.assertEqual(p.model, 'llama3.2')
-
-    def test_openai_defaults(self):
-        p = OpenAIProvider()
-        self.assertEqual(p.base_url, 'https://api.openai.com/v1')
-        self.assertEqual(p.model, 'gpt-4o-mini')
-
-    def test_groq_defaults(self):
-        p = GroqProvider()
-        self.assertEqual(p.base_url, 'https://api.groq.com/openai/v1')
-        self.assertEqual(p.model, 'llama-3.3-70b-versatile')
-
-    def test_anthropic_defaults(self):
-        p = AnthropicProvider()
-        self.assertEqual(p.base_url, 'https://api.anthropic.com/v1')
-        self.assertEqual(p.model, 'claude-sonnet-4-20250514')
-
-    def test_opencode_defaults(self):
-        p = OpenCodeProvider()
-        self.assertEqual(p.base_url, 'https://opencode.ai/zen/v1')
-        self.assertEqual(p.model, 'kimi-k3')
-
-    def test_opencode_go_defaults(self):
-        p = OpenCodeGoProvider()
-        self.assertEqual(p.base_url, 'https://opencode.ai/zen/go/v1')
-        self.assertEqual(p.model, 'deepseek-v4-flash')
-
     def test_explicit_values_override_defaults(self):
-        p = OpenAIProvider(base_url='https://custom.example.com', model='my-model')
+        p = OpenAICompatibleProvider(base_url='https://custom.example.com',
+                                     model='my-model')
         self.assertEqual(p.base_url, 'https://custom.example.com')
         self.assertEqual(p.model, 'my-model')
 
@@ -60,46 +51,29 @@ class TestProviderDefaults(unittest.TestCase):
 class TestProviderHeaders(unittest.TestCase):
 
     def test_no_auth_header_without_key(self):
-        p = OpenAIProvider(api_key='')
+        p = OpenAICompatibleProvider(api_key='')
         headers = p._headers()
         self.assertEqual(headers['Content-Type'], 'application/json')
         self.assertNotIn('Authorization', headers)
 
     def test_bearer_auth_with_key(self):
-        p = OpenAIProvider(api_key='sk-test')
+        p = OpenAICompatibleProvider(api_key='sk-test')
         self.assertEqual(p._headers()['Authorization'], 'Bearer sk-test')
 
     def test_browser_user_agent(self):
-        p = OpenAIProvider()
+        p = OpenAICompatibleProvider()
         self.assertEqual(p._headers()['User-Agent'],
                          ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
                           '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'))
 
-
-class TestOpenCodeHeaders(unittest.TestCase):
-
-    def _cases(self):
-        return (OpenCodeProvider(), OpenCodeGoProvider())
-
-    def test_session_header_present_and_stable(self):
-        for p in self._cases():
-            first = p._headers()['x-opencode-session']
-            second = p._headers()['x-opencode-session']
-            self.assertTrue(first)
-            self.assertEqual(first, second)
-
-    def test_session_id_override(self):
-        p = OpenCodeGoProvider(session_id='my-conversation-1')
-        self.assertEqual(p._headers()['x-opencode-session'], 'my-conversation-1')
-
-    def test_identifying_user_agent(self):
-        for p in self._cases():
-            self.assertTrue(p._headers()['User-Agent'].startswith('replio/'))
+    def test_no_host_patterns_on_generic(self):
+        self.assertEqual(OpenAICompatibleProvider.HOST_PATTERNS, ())
 
 
 class TestDetectProvider(unittest.TestCase):
 
-    def test_detects_known_hosts(self):
+    def test_detects_known_hosts_from_merged_map(self):
+        merged = _bundled_providers()
         cases = {
             'https://api.openai.com/v1': 'openai',
             'https://api.groq.com/openai/v1': 'groq',
@@ -110,28 +84,49 @@ class TestDetectProvider(unittest.TestCase):
             'http://localhost:11434': 'openai-compatible',
         }
         for url, expected in cases.items():
-            self.assertEqual(detect_provider(url), expected, url)
+            self.assertEqual(detect_provider(url, merged), expected, url)
+
+    def test_longest_pattern_wins_for_shared_host(self):
+        merged = _bundled_providers()
+        self.assertEqual(detect_provider('https://opencode.ai/zen/go/v1', merged),
+                         'opencode-go')
+        self.assertEqual(detect_provider('https://opencode.ai/zen/v1/models', merged),
+                         'opencode')
 
     def test_detects_empty(self):
         self.assertEqual(detect_provider(''), 'openai-compatible')
+        self.assertEqual(detect_provider('', {}), 'openai-compatible')
+
+    def test_honors_provider_map_param(self):
+        class _Fake(OpenAICompatibleProvider):
+            HOST_PATTERNS = ('fake.example',)
+        providers = {'fake': _Fake, 'openai-compatible': OpenAICompatibleProvider}
+        self.assertEqual(detect_provider('https://fake.example/v1', providers), 'fake')
+        self.assertEqual(detect_provider('https://other.example/v1', providers),
+                         'openai-compatible')
 
 
 class TestProviderRegistry(unittest.TestCase):
 
-    def test_all_names_registered(self):
-        for name in ('ollama', 'openai', 'groq', 'anthropic', 'opencode',
-                     'opencode-go', 'openai-compatible'):
-            self.assertIn(name, PROVIDERS)
+    def test_core_registry_is_generic_fallback_only(self):
+        self.assertEqual(set(PROVIDERS), {'openai-compatible'})
 
-    def test_all_classes_are_compatible_subclasses(self):
-        for factory in PROVIDERS.values():
-            self.assertTrue(issubclass(factory, OpenAICompatibleProvider))
+    def test_merged_includes_bundled_providers(self):
+        merged = _bundled_providers()
+        for name in VENDOR_NAMES:
+            self.assertIn(name, merged)
+            self.assertTrue(issubclass(merged[name], OpenAICompatibleProvider),
+                            name)
 
     def test_detected_provider_is_registered(self):
-        for url in ('https://api.openai.com/v1', 'https://api.groq.com/openai/v1',
-                    'https://api.anthropic.com/v1', 'https://api.ollama.com',
-                    'https://opencode.ai/zen/v1', 'https://opencode.ai/zen/go/v1'):
-            self.assertIn(detect_provider(url), PROVIDERS)
+        merged = _bundled_providers()
+        for url in KNOWN_HOST_URLS:
+            self.assertIn(detect_provider(url, merged), merged)
+
+    def test_merged_providers_helper(self):
+        merged = merged_providers()
+        for name in VENDOR_NAMES:
+            self.assertIn(name, merged)
 
 
 class TestProviderSwitching(unittest.TestCase):
@@ -146,6 +141,9 @@ class TestProviderSwitching(unittest.TestCase):
         chat.config = Config(path=tmp.name)
         chat.provider = None
         chat._tmp = tmp
+        pm = PluginManager(chat.config)
+        pm.load()
+        chat._plugin_manager = pm
         return chat
 
     def test_switch_resets_default_base_url_and_model(self):
@@ -155,10 +153,13 @@ class TestProviderSwitching(unittest.TestCase):
             'model': 'llama3.2',
         })
         chat._reinit_provider()
-        self.assertEqual(type(chat.provider), OllamaProvider)
+        from replio.providers.base import OpenAICompatibleProvider
+        factory = chat._plugin_manager.provider_classes()['ollama']
+        self.assertEqual(type(chat.provider), factory)
         chat.config.set('provider', 'openai')
         chat._reinit_provider()
-        self.assertEqual(type(chat.provider), OpenAIProvider)
+        openai_factory = chat._plugin_manager.provider_classes()['openai']
+        self.assertEqual(type(chat.provider), openai_factory)
         self.assertEqual(chat.provider.base_url, 'https://api.openai.com/v1')
         self.assertEqual(chat.provider.model, 'gpt-4o-mini')
         self.assertEqual(chat.config.get('base_url'), 'https://api.openai.com/v1')
@@ -173,7 +174,8 @@ class TestProviderSwitching(unittest.TestCase):
         chat._reinit_provider()
         chat.config.set('provider', 'anthropic')
         chat._reinit_provider()
-        self.assertEqual(type(chat.provider), AnthropicProvider)
+        factory = chat._plugin_manager.provider_classes()['anthropic']
+        self.assertEqual(type(chat.provider), factory)
         self.assertEqual(chat.provider.base_url, 'https://proxy.example.com')
         self.assertEqual(chat.provider.model, 'llama3.3')
         chat._tmp.cleanup()
@@ -185,7 +187,8 @@ class TestProviderSwitching(unittest.TestCase):
             'model': 'test',
         })
         chat._reinit_provider()
-        self.assertEqual(type(chat.provider), GroqProvider)
+        factory = chat._plugin_manager.provider_classes()['groq']
+        self.assertEqual(type(chat.provider), factory)
         self.assertEqual(chat.config.get('provider'), 'groq')
         chat._tmp.cleanup()
 
@@ -234,7 +237,7 @@ class TestPostRedirect(unittest.TestCase):
         thread.start()
         try:
             base = f'http://127.0.0.1:{server.server_port}'
-            p = OpenAIProvider(base_url=base, model='test-model')
+            p = OpenAICompatibleProvider(base_url=base, model='test-model')
             result = p.chat_nonstreaming([{'role': 'user', 'content': 'hi'}])
         finally:
             server.shutdown()
@@ -246,18 +249,6 @@ class TestPostRedirect(unittest.TestCase):
 
 class TestProviderEndpoints(unittest.TestCase):
 
-    def test_default_endpoints_no_double_v1(self):
-        cases = {
-            OllamaProvider: 'https://api.ollama.com/v1/chat/completions',
-            OpenAIProvider: 'https://api.openai.com/v1/chat/completions',
-            GroqProvider: 'https://api.groq.com/openai/v1/chat/completions',
-            AnthropicProvider: 'https://api.anthropic.com/v1/chat/completions',
-            OpenCodeProvider: 'https://opencode.ai/zen/v1/chat/completions',
-            OpenCodeGoProvider: 'https://opencode.ai/zen/go/v1/chat/completions',
-        }
-        for factory, expected in cases.items():
-            self.assertEqual(factory()._endpoint(), expected, factory.__name__)
-
     def test_custom_base_without_v1_appends_v1(self):
         p = OpenAICompatibleProvider(base_url='https://x.example')
         self.assertEqual(p._endpoint(), 'https://x.example/v1/chat/completions')
@@ -266,11 +257,23 @@ class TestProviderEndpoints(unittest.TestCase):
         p = OpenAICompatibleProvider(base_url='https://x.example/v1')
         self.assertEqual(p._endpoint(), 'https://x.example/v1/chat/completions')
 
+    def test_bundled_default_endpoints(self):
+        merged = _bundled_providers()
+        cases = {
+            'ollama': 'https://api.ollama.com/v1/chat/completions',
+            'openai': 'https://api.openai.com/v1/chat/completions',
+            'groq': 'https://api.groq.com/openai/v1/chat/completions',
+            'anthropic': 'https://api.anthropic.com/v1/chat/completions',
+            'opencode': 'https://opencode.ai/zen/v1/chat/completions',
+            'opencode-go': 'https://opencode.ai/zen/go/v1/chat/completions',
+        }
+        for name, expected in cases.items():
+            self.assertEqual(merged[name]()._endpoint(), expected, name)
+
     def test_list_models_url_normalized(self):
         import urllib.request
-        p = OpenAIProvider()
+        p = OpenAICompatibleProvider(base_url='https://api.openai.com/v1')
         captured = {}
-        real_urlopen = urllib.request.urlopen
 
         def _fake_urlopen(req, *args, **kwargs):
             captured['url'] = req.full_url
@@ -285,7 +288,7 @@ class TestProviderEndpoints(unittest.TestCase):
 class TestCheckConnection(unittest.TestCase):
 
     def _provider(self, base_url, model=''):
-        return OpenAIProvider(base_url=base_url, model=model)
+        return OpenAICompatibleProvider(base_url=base_url, model=model)
 
     def _run_server(self, handler):
         server = ThreadingHTTPServer(('127.0.0.1', 0), handler)
@@ -382,7 +385,7 @@ class TestCheckConnection(unittest.TestCase):
 
     def test_check_connection_network_error(self):
         import urllib.error
-        p = OpenAIProvider(base_url='http://192.0.2.1:9', model='m')
+        p = OpenAICompatibleProvider(base_url='http://192.0.2.1:9', model='m')
 
         def _raise(req, *args, **kwargs):
             raise urllib.error.URLError('connection refused')
@@ -396,7 +399,7 @@ class TestCheckConnection(unittest.TestCase):
 
         def _raise(req, *args, **kwargs):
             raise urllib.error.URLError('boom')
-        p = OpenAIProvider(base_url='http://192.0.2.1:9')
+        p = OpenAICompatibleProvider(base_url='http://192.0.2.1:9')
         with unittest.mock.patch('urllib.request.urlopen', _raise):
             self.assertEqual(p.list_models(), [])
 
@@ -405,7 +408,7 @@ class TestCheckConnection(unittest.TestCase):
 
         def _raise(req, *args, **kwargs):
             raise urllib.error.URLError('boom')
-        p = OpenAIProvider(base_url='http://192.0.2.1:9')
+        p = OpenAICompatibleProvider(base_url='http://192.0.2.1:9')
         out = io.StringIO()
         with unittest.mock.patch('urllib.request.urlopen', _raise):
             with unittest.mock.patch('sys.stdout', new=out):
@@ -430,58 +433,6 @@ class TestReasoningPayload(unittest.TestCase):
     def test_base_passes_effort_through(self):
         payload = self._payload(OpenAICompatibleProvider, 'high')
         self.assertEqual(payload['reasoning_effort'], 'high')
-
-    def test_openai_effort(self):
-        self.assertEqual(self._payload(OpenAIProvider, 'low')['reasoning_effort'], 'low')
-        self.assertEqual(self._payload(OpenAIProvider, 'medium')['reasoning_effort'], 'medium')
-        self.assertEqual(self._payload(OpenAIProvider, 'high')['reasoning_effort'], 'high')
-
-    def test_openai_auto_maps_to_medium(self):
-        self.assertEqual(self._payload(OpenAIProvider, 'auto')['reasoning_effort'], 'medium')
-
-    def test_openai_off_sends_nothing(self):
-        self.assertNotIn('reasoning_effort', self._payload(OpenAIProvider, 'off'))
-
-    def test_anthropic_off_disables_thinking(self):
-        payload = self._payload(AnthropicProvider, 'off')
-        self.assertEqual(payload['thinking'], {'type': 'disabled'})
-
-    def test_anthropic_effort_budget(self):
-        self.assertEqual(self._payload(AnthropicProvider, 'low')['thinking']['budget_tokens'], 1024)
-        self.assertEqual(self._payload(AnthropicProvider, 'medium')['thinking']['budget_tokens'], 2048)
-        self.assertEqual(self._payload(AnthropicProvider, 'high')['thinking']['budget_tokens'], 4096)
-
-    def test_anthropic_auto_budget(self):
-        self.assertEqual(self._payload(AnthropicProvider, 'auto')['thinking']['budget_tokens'], 2048)
-
-    def test_ollama_enable_thinking_on(self):
-        self.assertTrue(self._payload(OllamaProvider, 'auto')['enable_thinking'])
-
-    def test_ollama_off_disables_thinking(self):
-        self.assertFalse(self._payload(OllamaProvider, 'off')['enable_thinking'])
-
-
-class TestOpenCodeModelRefs(unittest.TestCase):
-
-    def test_opencode_strips_ref_prefix(self):
-        p = OpenCodeProvider(model='opencode/kimi-k3')
-        payload = p._payload([{'role': 'user', 'content': 'hi'}])
-        self.assertEqual(payload['model'], 'kimi-k3')
-
-    def test_opencode_keeps_bare_model(self):
-        p = OpenCodeProvider(model='kimi-k3')
-        payload = p._payload([{'role': 'user', 'content': 'hi'}])
-        self.assertEqual(payload['model'], 'kimi-k3')
-
-    def test_opencode_go_strips_ref_prefix(self):
-        p = OpenCodeGoProvider(model='opencode-go/deepseek-v4-flash')
-        payload = p._payload([{'role': 'user', 'content': 'hi'}])
-        self.assertEqual(payload['model'], 'deepseek-v4-flash')
-
-    def test_opencode_go_keeps_bare_model(self):
-        p = OpenCodeGoProvider(model='deepseek-v4-flash')
-        payload = p._payload([{'role': 'user', 'content': 'hi'}])
-        self.assertEqual(payload['model'], 'deepseek-v4-flash')
 
 
 if __name__ == '__main__':
