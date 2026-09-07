@@ -99,8 +99,11 @@ class OpenAICompatibleProvider(BaseProvider):
         result = self._post(payload)
         if 'error' in result:
             return result
-        choice = result['choices'][0]
-        message = choice['message']
+        choices = result.get('choices') or []
+        if not choices:
+            return {'error': {'code': 0, 'message': 'No choices in response'}}
+        choice = choices[0] or {}
+        message = choice.get('message') or {}
         return {
             'role': message.get('role', 'assistant'),
             'content': message.get('content'),
@@ -117,7 +120,12 @@ class OpenAICompatibleProvider(BaseProvider):
             if 'error' in result:
                 yield {'type': 'error', 'code': result['error']['code'], 'message': result['error']['message']}
                 return
-            content = result['choices'][0]['message']['content']
+            choices = result.get('choices') or []
+            if not choices:
+                yield {'type': 'error', 'code': 0, 'message': 'No choices in response'}
+                return
+            content = (choices[0] or {}).get('message') or {}
+            content = content.get('content')
             yield {'type': 'token', 'content': content}
             yield {'type': 'done'}
             return
@@ -135,15 +143,16 @@ class OpenAICompatibleProvider(BaseProvider):
                 break
             if event.get('usage'):
                 usage = event.get('usage')
-            choices = event.get('choices', [])
+            choices = event.get('choices') or []
             if not choices:
                 continue
-            delta = choices[0].get('delta', {})
-            reasoning = delta.get('reasoning_content', '') or delta.get('reasoning', '')
+            choice = choices[0] or {}
+            delta = choice.get('delta') or {}
+            reasoning = (delta.get('reasoning_content') or '') or (delta.get('reasoning') or '')
             if reasoning:
                 yield {'type': 'thinking', 'content': reasoning}
                 continue
-            for tc in delta.get('tool_calls', []):
+            for tc in delta.get('tool_calls') or []:
                 idx = tc.get('index', 0)
                 entry = tool_calls_acc.setdefault(idx, {
                     'id': '', 'type': 'function',
@@ -151,15 +160,15 @@ class OpenAICompatibleProvider(BaseProvider):
                 })
                 if tc.get('id'):
                     entry['id'] = tc['id']
-                fn = tc.get('function', {})
+                fn = tc.get('function') or {}
                 if fn.get('name'):
                     entry['function']['name'] = fn['name']
                 if fn.get('arguments'):
                     entry['function']['arguments'] += fn['arguments']
-            content = delta.get('content', '')
+            content = delta.get('content') or ''
             if content:
                 yield {'type': 'token', 'content': content}
-            finish = choices[0].get('finish_reason')
+            finish = choice.get('finish_reason')
             if finish:
                 finished_reason = finish
         if tool_calls_acc:

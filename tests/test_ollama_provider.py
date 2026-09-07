@@ -47,6 +47,17 @@ class TestOllamaStreaming(unittest.TestCase):
             {'type': 'done', 'reason': 'stop'},
         ])
 
+    def test_null_fields_in_delta_are_ignored(self):
+        events = self._chat([
+            {'delta': {'role': 'assistant', 'content': None, 'tool_calls': None}},
+            {'delta': {'content': 'Hello', 'reasoning_content': None}},
+            {'delta': {'content': None, 'tool_calls': None}, 'finish_reason': 'stop'},
+        ])
+        self.assertEqual(events, [
+            {'type': 'token', 'content': 'Hello'},
+            {'type': 'done', 'reason': 'stop'},
+        ])
+
     def test_thinking_event(self):
         events = self._chat([
             {'delta': {'reasoning_content': 'think...'}},
