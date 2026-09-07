@@ -1170,6 +1170,7 @@
 
 <h1 id="todo">TODO<a class="headerlink" href="#todo" title="Permanent link">&para;</a></h1>
 <ul>
+<li>Remove the legacy provider-plugin backfill migration (<code>Config._migrate_plugins</code>) once a stable replio release has shipped with the externalized providers - existing <code>plugins</code> lists no longer need the automatic append, and the migration code is dead weight</li>
 <li>Human-in-the-loop channels - job events outbound (<code>proposed</code>, <code>will_run</code>, <code>failed</code>, <code>waiting_approval</code>) plus inbound actions (<code>approve</code>/<code>reject</code>/<code>run</code>/<code>disable</code>) over configurable connectors (webhook first, then email, then Telegram), so a job can reach an operator who is not on the box</li>
 <li>Global jobs overview across agents - <code>replio jobs list --root &lt;dir&gt;</code> fleet scan, a <code>GET /jobs</code> + <code>POST /jobs/&lt;name&gt;/approve|reject|run|disable</code> operator API on <code>replio serve</code>, then a web Control UI, so one view shows which agents run next and with which task</li>
 <li>Edge / offline store-and-forward buffering - offline-capable agents with local buffering for unreliable connectivity (enterprise use case)</li>
@@ -1198,7 +1199,6 @@
 <h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[ ] Persistent member sessions for recurring teams - <code>job</code>-style warm sessions for recurring teams, one-off runs stay fresh <code>sub_</code> sessions (sequential run loop + briefs + team memory landed with <code>Engine.run_team</code>)</li>
-<li>[ ] Externalize bundled providers - move <code>opencode</code>/<code>opencode-go</code> (and the vendor providers) out of the core into bundled plugins, keeping <code>BaseProvider</code>/<code>OpenAICompatibleProvider</code>, the <code>PROVIDERS</code> dict + <code>detect_provider</code>, and the plugin <code>register_providers</code> hook as the core mechanisms. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in <code>/connect</code></li>
 <li>[ ] Full <code>file_*</code> namespace extension - if <code>file_glob</code>/<code>file_grep</code> prove better with most models, extend the prefix to <code>list_dir</code>/<code>glob</code>/<code>grep</code> (old names stay aliases)</li>
 <li>[ ] Tool spec polish - rename <code>grep.glob</code> -&gt; <code>include</code> (alias <code>glob</code>), add examples and prefer-<code>web_fetch</code> guidance to tool descriptions</li>
 <li>[ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc types/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)</li>
@@ -1278,6 +1278,7 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] Externalize bundled providers - vendor providers to bundled plugins, base + host hints stay core</li>
 <li>[x] <code>ask</code> tool - core: human or lead mid-run questions, sub-agent routing</li>
 <li>[x] Connect any OpenAI-compatible endpoint by URL - named custom provider entries</li>
 <li>[x] /connect provider rework - name/URL connect, preset defaults, re-enter key</li>

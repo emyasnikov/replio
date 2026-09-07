@@ -1967,11 +1967,6 @@
 <td>versioned repos, bundled copies stay the default</td>
 </tr>
 <tr>
-<td>Externalize bundled providers - <code>opencode</code>/<code>opencode-go</code> (then the vendor providers) move to bundled plugins via the existing <code>register_providers</code> hook. <code>BaseProvider</code>/<code>OpenAICompatibleProvider</code>, the <code>PROVIDERS</code> dict, <code>detect_provider</code>, and engine resolution stay core. Needs a base_url hostname-hint mechanism so plugin providers auto-detect in <code>/connect</code></td>
-<td>M</td>
-<td>core stays the substrate, gateway/vendor providers version independently</td>
-</tr>
-<tr>
 <td>Plugin test harness</td>
 <td>S-M</td>
 <td>plugins ship a test suite, <code>replio plugins test &lt;name&gt;</code> runs it</td>

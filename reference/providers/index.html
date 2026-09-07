@@ -788,10 +788,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#built-in-providers" class="md-nav__link">
+  <a href="#bundled-provider-plugins" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-in providers
+        Bundled provider plugins
       
     </span>
   </a>
@@ -1220,10 +1220,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#built-in-providers" class="md-nav__link">
+  <a href="#bundled-provider-plugins" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-in providers
+        Bundled provider plugins
       
     </span>
   </a>
@@ -1348,10 +1348,12 @@
 
 <h1 id="providers">Providers<a class="headerlink" href="#providers" title="Permanent link">&para;</a></h1>
 <p>Providers are the model backends. Replio speaks OpenAI-compatible <code>/v1/chat/completions</code> to every provider. Providers only differ in base URL, default model, and occasionally auth or payload details. Each provider implements the event-generator <code>chat()</code> contract the agent loop consumes.</p>
-<h2 id="built-in-providers">Built-in providers<a class="headerlink" href="#built-in-providers" title="Permanent link">&para;</a></h2>
+<h2 id="bundled-provider-plugins">Bundled provider plugins<a class="headerlink" href="#bundled-provider-plugins" title="Permanent link">&para;</a></h2>
+<p>The vendor providers ship as bundled plugins. The core keeps the base classes (<code>BaseProvider</code>, <code>OpenAICompatibleProvider</code>), the generic <code>openai-compatible</code> fallback, and the detection/registry mechanisms, so any external plugin can add providers through the same <code>register_providers</code> hook. The bundled plugins are in the default <code>plugins</code> config and load like any other plugin, so a disabled or removed one simply drops that provider.</p>
 <table>
 <thead>
 <tr>
+<th>Plugin</th>
 <th>Provider</th>
 <th>Default base URL</th>
 <th>Default model</th>
@@ -1359,44 +1361,45 @@
 </thead>
 <tbody>
 <tr>
+<td><code>replio-core-ollama</code></td>
 <td><code>ollama</code></td>
 <td><code>https://api.ollama.com</code></td>
 <td><code>llama3.2</code></td>
 </tr>
 <tr>
+<td><code>replio-core-openai</code></td>
 <td><code>openai</code></td>
 <td><code>https://api.openai.com/v1</code></td>
 <td><code>gpt-4o-mini</code></td>
 </tr>
 <tr>
+<td><code>replio-core-groq</code></td>
 <td><code>groq</code></td>
 <td><code>https://api.groq.com/openai/v1</code></td>
 <td><code>llama-3.3-70b-versatile</code></td>
 </tr>
 <tr>
+<td><code>replio-core-anthropic</code></td>
 <td><code>anthropic</code></td>
 <td><code>https://api.anthropic.com/v1</code></td>
 <td><code>claude-sonnet-4-20250514</code></td>
 </tr>
 <tr>
+<td><code>replio-core-opencode</code></td>
 <td><code>opencode</code></td>
 <td><code>https://opencode.ai/zen/v1</code></td>
 <td><code>kimi-k3</code></td>
 </tr>
 <tr>
+<td><code>replio-core-opencode</code></td>
 <td><code>opencode-go</code></td>
 <td><code>https://opencode.ai/zen/go/v1</code></td>
 <td><code>deepseek-v4-flash</code></td>
 </tr>
-<tr>
-<td><code>openai-compatible</code></td>
-<td><em>(none)</em></td>
-<td><em>(none)</em></td>
-</tr>
 </tbody>
 </table>
-<p><code>openai-compatible</code> is the generic fallback for any other OpenAI-compatible endpoint - local models, gateways, or self-hosted servers.</p>
-<p><code>opencode</code> (Zen) and <code>opencode-go</code> (Go) are the two hosted catalogs at <code>opencode.ai</code>. Both use the same OpenCode API key (<code>OPENCODE_API_KEY</code>, resolved from the model registry like any other provider) but are separate paid subscriptions. Zen is the curated multi-model gateway. Go is the low-cost subscription for open coding models. Model refs accept the <code>opencode/&lt;model-id&gt;</code> and <code>opencode-go/&lt;model-id&gt;</code> conventions as well as bare model ids - the prefix is stripped before the request. A successful model listing is an inventory, not an entitlement check: inference still requires the matching subscription. Fetch the current lineup from <code>https://opencode.ai/zen/v1/models</code> and <code>https://opencode.ai/zen/go/v1/models</code>. These endpoints sit behind Cloudflare bot protection, which rejects urllib's default <code>Python-urllib/&lt;ver&gt;</code> user agent with <code>HTTP 403: error code: 1010</code>. Provider requests send an identifying <code>replio/&lt;version&gt;</code> <code>User-Agent</code> and a stable per-conversation <code>x-opencode-session</code> header (OpenCode uses it for routing and prompt caching; Go rejects requests without it), so <code>/connect</code>, <code>/model list --online</code>, and chat all work.</p>
+<p><code>openai-compatible</code> is the generic fallback in the core for any other OpenAI-compatible endpoint - local models, gateways, or self-hosted servers.</p>
+<p><code>opencode</code> (Zen) and <code>opencode-go</code> (Go) are the two hosted catalogs at <code>opencode.ai</code>. Both use the same OpenCode API key (<code>OPENCODE_API_KEY</code>, resolved from the provider registry like any other provider) but are separate paid subscriptions. Zen is the curated multi-model gateway. Go is the low-cost subscription for open coding models. Model refs accept the <code>opencode/&lt;model-id&gt;</code> and <code>opencode-go/&lt;model-id&gt;</code> conventions as well as bare model ids - the prefix is stripped before the request. A successful model listing is an inventory, not an entitlement check: inference still requires the matching subscription. Fetch the current lineup from <code>https://opencode.ai/zen/v1/models</code> and <code>https://opencode.ai/zen/go/v1/models</code>. These endpoints sit behind Cloudflare bot protection, which rejects urllib's default <code>Python-urllib/&lt;ver&gt;</code> user agent with <code>HTTP 403: error code: 1010</code>. Provider requests send an identifying <code>replio/&lt;version&gt;</code> <code>User-Agent</code> and a stable per-conversation <code>x-opencode-session</code> header (OpenCode uses it for routing and prompt caching. Go rejects requests without it), so <code>/connect</code>, <code>/model list --online</code>, and chat all work.</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <p><code>provider</code>, <code>base_url</code>, <code>model</code>, <code>temperature</code>, and <code>max_tokens</code> are configured in the global or local config (see <a href="../config/">config.md</a>). The API key is <strong>not</strong> a config value - it lives in the global provider registry (<code>~/.config/replio/providers.json</code>, one key per provider) and is managed through <code>/connect</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1416,7 +1419,7 @@
 </ul>
 <p>A ref naming a provider with no stored key still switches to it but prints <code>run /connect &lt;provider&gt;</code> (the request then surfaces the auth error until you connect).</p>
 <h2 id="auto-detection">Auto-detection<a class="headerlink" href="#auto-detection" title="Permanent link">&para;</a></h2>
-<p>When the configured provider name is unknown, or when <code>base_url</code> matches a known host, the provider is detected from the URL. <code>detect_provider()</code> matches <code>openai.com</code>, <code>groq.com</code>, <code>anthropic.com</code>, <code>ollama.com</code> / <code>ollama.ai</code>, and <code>opencode.ai</code> (path <code>/zen/go</code> selects <code>opencode-go</code>, otherwise <code>opencode</code>), falling back to <code>openai-compatible</code> for anything else. <code>/connect</code> uses the same detection, so passing a base URL switches the provider automatically. A URL that equals a plugin provider's default base URL selects that plugin provider (see <a href="../plugins/">plugins.md</a>). A registry-named custom provider (one created by <code>/connect &lt;url&gt;</code>) resolves as an OpenAI-compatible connection.</p>
+<p>When the configured provider name is unknown, or when <code>base_url</code> matches a known host, the provider is detected from the URL. Each provider class declares <code>HOST_PATTERNS</code> - substrings of the base URL that identify it (e.g. <code>openai.com</code>, <code>groq.com</code>, <code>anthropic.com</code>, <code>ollama.com</code> / <code>ollama.ai</code>, and <code>opencode.ai/zen</code> for Zen, <code>opencode.ai/zen/go</code> for Go). <code>detect_provider()</code> scans the merged provider set (core <code>PROVIDERS</code> plus plugin providers) and returns the provider whose pattern matches, preferring the longest match so path-distinguishing hosts like Zen vs Go resolve correctly. It falls back to <code>openai-compatible</code> for anything else. <code>/connect</code> uses the same detection, so passing a base URL switches the provider automatically. A URL that equals a plugin provider's default base URL selects that plugin provider even without a host pattern (see <a href="../plugins/">plugins.md</a>). A registry-named custom provider (one created by <code>/connect &lt;url&gt;</code>) resolves as an OpenAI-compatible connection.</p>
 <h2 id="setting-up">Setting up<a class="headerlink" href="#setting-up" title="Permanent link">&para;</a></h2>
 <p><code>/connect</code> connects a provider and stores its API key (and any custom base URL) in the global <code>providers.json</code> registry - it never touches the model, which is picked separately with <code>/model</code>:</p>
 <ul>
@@ -1510,13 +1513,14 @@
 </tbody>
 </table>
 <h2 id="adding-a-provider">Adding a provider<a class="headerlink" href="#adding-a-provider" title="Permanent link">&para;</a></h2>
+<p>The core substrate (<code>BaseProvider</code>, <code>OpenAICompatibleProvider</code>, the <code>PROVIDERS</code> registry, and <code>detect_provider</code>) stays in <code>src/replio/providers/</code>. Vendor providers ship as bundled plugins under <code>plugins/</code>, and any external plugin can register providers too:</p>
 <ol>
-<li>Create <code>src/replio/providers/&lt;name&gt;.py</code>.</li>
 <li>Subclass <code>OpenAICompatibleProvider</code> and set <code>DEFAULT_BASE_URL</code> / <code>DEFAULT_MODEL</code>. Override <code>_headers()</code> / <code>_payload()</code> only for non-standard auth or request bodies.</li>
-<li>Add the class to the <code>PROVIDERS</code> dict in <code>providers/__init__.py</code>.</li>
-<li>Add a hostname match in <code>detect_provider()</code> so <code>/connect</code> auto-selects it.</li>
+<li>Declare <code>HOST_PATTERNS</code> - URL substrings that identify the provider - so <code>/connect &lt;url&gt;</code> auto-selects it. Make patterns specific enough to disambiguate providers sharing a host (e.g. <code>opencode.ai/zen</code> vs <code>opencode.ai/zen/go</code>).</li>
+<li>Implement <code>register_providers(providers)</code> in the plugin entry module, adding <code>providers[name] = ProviderClass</code>.</li>
+<li>Declare the provider names in the manifest's <code>provides.providers</code> list for <code>/plugins</code> display.</li>
 </ol>
-<p>Plugins can also register providers via their <code>register_providers(providers)</code> hook - <code>/connect</code> offers plugin providers automatically (see <a href="../plugins/">plugins.md</a>).</p>
+<p>An external plugin registering a provider with the same name as a bundled one does not override it - the core <code>PROVIDERS</code> registry wins on name conflicts. Plugins that want a different default can use their own provider name. Full plugin layout and manifest fields in <a href="../plugins/">plugins.md</a>.</p>
 <h2 id="streaming-contract">Streaming contract<a class="headerlink" href="#streaming-contract" title="Permanent link">&para;</a></h2>
 <p>The underlying SSE utility (<code>src/replio/utils/http.py</code>) reads the stream line by line with byte-buffered decoding, so multi-byte UTF-8 split across read chunks is handled correctly. Keep-alive and mid-stream errors surface as <code>error</code> events. A stream that ends without a completion event and with no streamed content is re-requested up to <code>1 + stream_retries</code> times (default 3 total attempts) with <code>stream_retry_delay</code> seconds between attempts before the "Stream ended before a completion event" error is reported. When tool calls have already run in the turn, the warning notes that the tool results are saved and the answer can be retried with a follow-up message.</p>
 

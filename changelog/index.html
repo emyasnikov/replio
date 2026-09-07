@@ -404,10 +404,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0280" class="md-nav__link">
+  <a href="#v0280-2026-09-07" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.28.0
+        v0.28.0 - 2026-09-07
       
     </span>
   </a>
@@ -1416,10 +1416,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0280" class="md-nav__link">
+  <a href="#v0280-2026-09-07" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.28.0
+        v0.28.0 - 2026-09-07
       
     </span>
   </a>
@@ -1741,10 +1741,11 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<h2 id="v0280">v0.28.0<a class="headerlink" href="#v0280" title="Permanent link">&para;</a></h2>
+<h2 id="v0280-2026-09-07">v0.28.0 - 2026-09-07<a class="headerlink" href="#v0280-2026-09-07" title="Permanent link">&para;</a></h2>
 <ul>
+<li>Externalized the vendor providers to bundled plugins - <code>ollama</code>, <code>openai</code>, <code>groq</code>, <code>anthropic</code> (single-provider plugins <code>replio-core-ollama</code>/<code>-openai</code>/<code>-groq</code>/<code>-anthropic</code>) and <code>opencode</code>/<code>opencode-go</code> (shared <code>replio-core-opencode</code>, keeps the <code>x-opencode-session</code> + <code>replio/&lt;ver&gt;</code> UA base). Core keeps <code>BaseProvider</code>/<code>OpenAICompatibleProvider</code> (<code>providers/base.py</code>), the <code>PROVIDERS</code> registry (now only the <code>openai-compatible</code> fallback), <code>detect_provider</code>, <code>merged_providers(config)</code> (loads plugin providers for standalone paths like fleet model-ref unfolding), and engine resolution. New <code>HOST_PATTERNS</code> class attribute replaces the hardcoded <code>detect_provider</code> host list - plugin providers auto-detect in <code>/connect &lt;url&gt;</code>, with the longest pattern winning (so <code>opencode.ai/zen/go</code> beats <code>opencode.ai/zen</code>). Core <code>PROVIDERS</code> wins on name conflicts with plugin registrations, which also keeps the mock-provider test pattern (<code>patch('replio.providers.PROVIDERS', ...)</code>) working. Default <code>plugins</code> config gains the 5 provider plugins, and a backfill migration (<code>Config._migrate_plugins</code>) appends them to existing non-empty <code>plugins</code> lists so vendor providers stay available after the upgrade - the migration is marked for removal in a future version (TODO). Vendor unit tests moved into the plugin suites (defaults, headers, endpoints, reasoning payloads, opencode session/UA, ollama streaming). Core <code>test_providers.py</code> now covers the substrate (host-pattern detection, merged registry). Docs synced (<code>providers.md</code> bundled table + auto-detection + adding-a-provider, <code>plugins.md</code> HOST_PATTERNS + name-conflict precedence, <code>config.md</code> provider list, <code>testing.md</code> coverage map, <code>AGENTS.md</code>, <code>architecture.md</code>). Tests: <code>test_providers.py</code> rewritten, <code>test_providers_registry.py</code> resolves through merged providers, <code>test_bundled_plugins.py</code> includes the provider plugins, plugin suites for the 5 provider plugins</li>
 <li>Streaming delta null-safety - opencode-go (DeepSeek-style) chunks carry explicit <code>null</code>s (<code>content</code>, <code>reasoning_content</code>, <code>tool_calls</code>), and the base provider iterated <code>delta.get('tool_calls', [])</code>, raising <code>'NoneType' object is not iterable</code> on the first turn. Streaming and non-streaming paths now treat null fields as absent (<code>delta</code>/<code>choice</code> fallbacks, <code>tool_calls or []</code>, <code>content or ''</code>), and a missing <code>choices</code> array returns an error event instead of crashing. Regression test in <code>tests/test_ollama_provider.py</code> (<code>test_null_fields_in_delta_are_ignored</code>)</li>
-<li>OpenCode providers send <code>x-opencode-session</code> - Go rejects chat requests without it (<code>MissingSessionID</code>). New shared <code>OpenCodeProviderBase</code> (<code>providers/opencode_base.py</code>) generates a stable per-conversation session id (a UUID per provider instance, overridable via a <code>session_id</code> kwarg) and adds it to every request header, and switches the opencode providers' <code>User-Agent</code> to an identifying <code>replio/&lt;version&gt;</code> per the OpenCode docs (passes the Cloudflare edge check, unlike <code>Python-urllib/*</code>). Zen and Go both use the header; other providers keep the browser-like user agent. Docs in <code>docs/providers.md</code>. Tests in <code>tests/test_providers.py</code> (<code>TestOpenCodeHeaders</code>: present/stability, override, identifying UA)</li>
+<li>OpenCode providers send <code>x-opencode-session</code> - Go rejects chat requests without it (<code>MissingSessionID</code>). New shared <code>OpenCodeProviderBase</code> (<code>providers/opencode_base.py</code>) generates a stable per-conversation session id (a UUID per provider instance, overridable via a <code>session_id</code> kwarg) and adds it to every request header, and switches the opencode providers' <code>User-Agent</code> to an identifying <code>replio/&lt;version&gt;</code> per the OpenCode docs (passes the Cloudflare edge check, unlike <code>Python-urllib/*</code>). Zen and Go both use the header. Other providers keep the browser-like user agent. Docs in <code>docs/providers.md</code>. Tests in <code>tests/test_providers.py</code> (<code>TestOpenCodeHeaders</code>: present/stability, override, identifying UA)</li>
 <li>Browser-like <code>User-Agent</code> on provider requests - <code>_headers()</code> now sends <code>Mozilla/5.0 (...)</code> instead of urllib's default <code>Python-urllib/&lt;ver&gt;</code>, which Cloudflare bot protection rejects with <code>HTTP 403: error code: 1010</code>. This fixes <code>/connect</code> (the <code>GET /v1/models</code> probe) and <code>/model list --online</code> for the Cloudflare-fronted <code>opencode.ai</code> endpoints, and prevents the same block on chat streaming/non-streaming. One header covers the model probe, <code>_post</code>, and <code>stream_sse</code> since they all go through <code>_headers()</code>. Docs in <code>docs/providers.md</code>. Test in <code>tests/test_providers.py</code> (<code>TestProviderHeaders.test_browser_user_agent</code>)</li>
 </ul>
 <h2 id="v0270-2026-09-05">v0.27.0 - 2026-09-05<a class="headerlink" href="#v0270-2026-09-05" title="Permanent link">&para;</a></h2>

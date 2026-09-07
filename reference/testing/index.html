@@ -1244,7 +1244,7 @@
 </tr>
 <tr>
 <td><code>test_bundled_plugins.py</code></td>
-<td>Bundled plugin discovery, tool registration, search service, bundled update/uninstall blocking</td>
+<td>Bundled plugin discovery, tool registration, search service, bundled update/uninstall blocking, default-config plugin set, provider registration via the hook</td>
 </tr>
 <tr>
 <td><code>test_cli.py</code></td>
@@ -1296,7 +1296,7 @@
 </tr>
 <tr>
 <td><code>test_ollama_provider.py</code></td>
-<td>Streaming provider: fragmented tool-call reassembly, thinking events (<code>reasoning_content</code> and <code>reasoning</code> keys), payload construction</td>
+<td>Streaming provider: fragmented tool-call reassembly, thinking events (<code>reasoning_content</code> and <code>reasoning</code> keys), payload construction. Lives in the <code>replio-core-ollama</code> plugin suite (see the bundled-plugin suites note below)</td>
 </tr>
 <tr>
 <td><code>test_plugins.py</code></td>
@@ -1328,7 +1328,7 @@
 </tr>
 <tr>
 <td><code>test_providers.py</code></td>
-<td>Provider defaults, override behavior, <code>detect_provider</code>, endpoint normalization, POST-preserving redirects, <code>check_connection</code> probe (success/empty/model note/HTTP/network), <code>list_models</code> silent-on-error</td>
+<td>Core provider substrate: <code>OpenAICompatibleProvider</code> defaults/headers/endpoints, POST-preserving redirects, <code>check_connection</code> probe (success/empty/model note/HTTP/network), <code>list_models</code> silent-on-error, base reasoning payload, host-pattern <code>detect_provider</code> (known hosts, longest-pattern precedence, empty/unknown fallback), core <code>PROVIDERS</code> registry (generic fallback only) and <code>merged_providers</code> (bundled providers included). Vendor provider defaults/endpoints/reasoning/headers live in the per-plugin suites (<code>replio-core-ollama</code>, <code>-openai</code>, <code>-groq</code>, <code>-anthropic</code>, <code>-opencode</code>)</td>
 </tr>
 <tr>
 <td><code>test_repl_input.py</code></td>
