@@ -69,6 +69,12 @@ class TestProviderHeaders(unittest.TestCase):
         p = OpenAIProvider(api_key='sk-test')
         self.assertEqual(p._headers()['Authorization'], 'Bearer sk-test')
 
+    def test_browser_user_agent(self):
+        p = OpenAIProvider()
+        self.assertEqual(p._headers()['User-Agent'],
+                         ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+                          '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'))
+
 
 class TestDetectProvider(unittest.TestCase):
 

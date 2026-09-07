@@ -16,7 +16,7 @@ Providers are the model backends. Replio speaks OpenAI-compatible `/v1/chat/comp
 
 `openai-compatible` is the generic fallback for any other OpenAI-compatible endpoint - local models, gateways, or self-hosted servers.
 
-`opencode` (Zen) and `opencode-go` (Go) are the two hosted catalogs at `opencode.ai`. Both use the same OpenCode API key (`OPENCODE_API_KEY`, resolved from the model registry like any other provider) but are separate paid subscriptions. Zen is the curated multi-model gateway. Go is the low-cost subscription for open coding models. Model refs accept the `opencode/<model-id>` and `opencode-go/<model-id>` conventions as well as bare model ids - the prefix is stripped before the request. A successful model listing is an inventory, not an entitlement check: inference still requires the matching subscription. Fetch the current lineup from `https://opencode.ai/zen/v1/models` and `https://opencode.ai/zen/go/v1/models`.
+`opencode` (Zen) and `opencode-go` (Go) are the two hosted catalogs at `opencode.ai`. Both use the same OpenCode API key (`OPENCODE_API_KEY`, resolved from the model registry like any other provider) but are separate paid subscriptions. Zen is the curated multi-model gateway. Go is the low-cost subscription for open coding models. Model refs accept the `opencode/<model-id>` and `opencode-go/<model-id>` conventions as well as bare model ids - the prefix is stripped before the request. A successful model listing is an inventory, not an entitlement check: inference still requires the matching subscription. Fetch the current lineup from `https://opencode.ai/zen/v1/models` and `https://opencode.ai/zen/go/v1/models`. These endpoints sit behind Cloudflare bot protection, which rejects urllib's default `Python-urllib/<ver>` user agent with `HTTP 403: error code: 1010`. Provider requests send a browser-like `User-Agent`, so `/connect`, `/model list --online`, and chat all work.
 
 ## Configuration
 
@@ -35,7 +35,7 @@ The engine resolves the API key for the active provider from the provider regist
 
 ## Model refs and approval
 
-A **model ref** `provider/model` (e.g. `opencode-go/deepseek-v4-flash`, `ollama/gpt-oss:20b-cloud`) unfolds to the provider, its default base URL, and the bare model. It is accepted wherever a model is set - `/model <ref>`, `--model <ref>`, a config `model`, and an agent type's `model` field - so a type or team can pin provider and model together. Only a known provider (core or plugin) with a default base URL unfolds; anything else is treated as a bare model id.
+A **model ref** `provider/model` (e.g. `opencode-go/deepseek-v4-flash`, `ollama/gpt-oss:20b-cloud`) unfolds to the provider, its default base URL, and the bare model. It is accepted wherever a model is set - `/model <ref>`, `--model <ref>`, a config `model`, and an agent type's `model` field - so a type or team can pin provider and model together. Only a known provider (core or plugin) with a default base URL unfolds. Anything else is treated as a bare model id.
 
 Using an unfolded model is **gated on approval**: the model must appear in `models.json`, otherwise the engine prompts to approve it. The surfaces:
 
@@ -46,15 +46,15 @@ A ref naming a provider with no stored key still switches to it but prints `run 
 
 ## Auto-detection
 
-When the configured provider name is unknown, or when `base_url` matches a known host, the provider is detected from the URL. `detect_provider()` matches `openai.com`, `groq.com`, `anthropic.com`, `ollama.com` / `ollama.ai`, and `opencode.ai` (path `/zen/go` selects `opencode-go`, otherwise `opencode`), falling back to `openai-compatible` for anything else. `/connect` uses the same detection, so passing a base URL switches the provider automatically. A URL that equals a plugin provider's default base URL selects that plugin provider (see [plugins.md](plugins.md)); a registry-named custom provider (one created by `/connect <url>`) resolves as an OpenAI-compatible connection.
+When the configured provider name is unknown, or when `base_url` matches a known host, the provider is detected from the URL. `detect_provider()` matches `openai.com`, `groq.com`, `anthropic.com`, `ollama.com` / `ollama.ai`, and `opencode.ai` (path `/zen/go` selects `opencode-go`, otherwise `opencode`), falling back to `openai-compatible` for anything else. `/connect` uses the same detection, so passing a base URL switches the provider automatically. A URL that equals a plugin provider's default base URL selects that plugin provider (see [plugins.md](plugins.md)). A registry-named custom provider (one created by `/connect <url>`) resolves as an OpenAI-compatible connection.
 
 ## Setting up
 
 `/connect` connects a provider and stores its API key (and any custom base URL) in the global `providers.json` registry - it never touches the model, which is picked separately with `/model`:
 
 - `/connect` - interactive picker: a numbered list of known providers (core + plugins) with a `(key)` marker when a key is stored. The prompt accepts a number, a provider name, or a URL.
-- `/connect <name>` - connect a known provider by name (e.g. `ollama`, `openai`, `groq`, `anthropic`, `opencode`, `opencode-go`). The provider's default base URL is preset; you only enter the API key. A stored key is shown as the default - press Enter to keep it or type to replace it (re-enter a missing or stale key).
-- `/connect <url>` - connect by URL. A known host (or a plugin provider's default URL) selects that provider with the URL as its base URL; anything else creates a named custom provider, with the name derived from the host (e.g. `https://llm.acme.example/v1` -> `acme-example`).
+- `/connect <name>` - connect a known provider by name (e.g. `ollama`, `openai`, `groq`, `anthropic`, `opencode`, `opencode-go`). The provider's default base URL is preset. You only enter the API key. A stored key is shown as the default - press Enter to keep it or type to replace it (re-enter a missing or stale key).
+- `/connect <url>` - connect by URL. A known host (or a plugin provider's default URL) selects that provider with the URL as its base URL. Anything else creates a named custom provider, with the name derived from the host (e.g. `https://llm.acme.example/v1` -> `acme-example`).
 - `/connect <url> <name>` - custom provider with an explicit name instead of the derived one.
 
 All forms **test the connection** (a `GET <base_url>/v1/models` probe) before saving: broken values are rejected unless you confirm `Save anyway?`. A successful connect prints `Connected to <provider> (<base_url>)`, records the entry in `providers.json`, writes `provider`/`base_url` into the config, and points you at `/model list --online <provider>` to pick a model.

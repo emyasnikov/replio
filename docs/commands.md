@@ -13,7 +13,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/models`                | `/model-list` | List models available from the connected provider              |
 | `/provider`              |                | Show or switch the active provider                             |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
-| `/connect`              |                | Connect a provider. `/connect` picks from the known providers interactively; `/connect <name>` presets a known provider's defaults and (re)enters its API key; `/connect <url>` detects a known host or creates a named custom provider (derived from the host, or `/connect <url> <name>` to name it). Tests the connection before saving, stores the API key + base URL in the global `providers.json`, and writes `provider`/`base_url` into config - the model is picked separately with `/model` |
+| `/connect`              |                | Connect a provider. `/connect` picks from the known providers interactively. `/connect <name>` presets a known provider's defaults and (re)enters its API key. `/connect <url>` detects a known host or creates a named custom provider (derived from the host, or `/connect <url> <name>` to name it). Tests the connection before saving, stores the API key + base URL in the global `providers.json`, and writes `provider`/`base_url` into config - the model is picked separately with `/model` |
 | `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)` |
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
@@ -49,7 +49,7 @@ One-shot headless chat.
 |----------------------|--------------------------------------------------------------|
 | `--prompt`, `-p`     | **Required.** The prompt to send                              |
 | `--provider`         | Provider override (e.g. `ollama`, `openai`, `groq`)           |
-| `--model`            | Model override (accepts a `provider/model` ref; an explicit `--model` auto-approves) |
+| `--model`            | Model override (accepts a `provider/model` ref. An explicit `--model` auto-approves) |
 | `--approve-model`    | Approve the configured model ref without prompting             |
 | `--base-url`         | Base URL override                                            |
 | `--mode`             | Agent mode override (`plan`, `build`, or a custom mode)      |

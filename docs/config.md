@@ -40,7 +40,7 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 | Key                         | Default                | Description                                                            |
 |-----------------------------|------------------------|------------------------------------------------------------------------|
 | `provider`                  | `"ollama"`             | Provider name (`ollama`, `openai`, `groq`, `anthropic`, `opencode`, `opencode-go`, `openai-compatible`) |
-| `model`                     | `"llama3.2"`           | Model name. A `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) unfolds to that provider and model; an unfolded model must be approved (see [Model refs and approval](providers.md#model-refs-and-approval)) |
+| `model`                     | `"llama3.2"`           | Model name. A `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) unfolds to that provider and model. An unfolded model must be approved (see [Model refs and approval](providers.md#model-refs-and-approval)) |
 | `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
 | `temperature`               | `0.7`                  | Sampling temperature                                                   |
 | `max_tokens`                | `8192`                 | Output token cap sent to the provider. `0` = unset (provider default applies, e.g. Ollama caps at 2048). Default `8192` overrides low provider defaults |
@@ -121,7 +121,7 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 }
 ```
 
-Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the project worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)). The `ask` category gates the `ask` tool (default `allow` - the tool itself is the interaction; the answerer is the human or the lead agent, see [tools.md](tools.md)).
+Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the project worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)). The `ask` category gates the `ask` tool (default `allow` - the tool itself is the interaction. The answerer is the human or the lead agent, see [tools.md](tools.md)).
 
 ### `bash_allow` - command allowlist for `run_command`
 
@@ -153,7 +153,7 @@ Two global files live separately from config in `~/.config/replio/`. Neither is 
 ```
 
 - `api_key` lives here, one per provider. It is the only place API keys live.
-- `base_url` is the effective base URL of the connection - the preset provider default (e.g. `/connect ollama`) or a custom URL (`/connect <url>`); the engine falls back to it when the config leaves `base_url` empty.
+- `base_url` is the effective base URL of the connection - the preset provider default (e.g. `/connect ollama`) or a custom URL (`/connect <url>`). The engine falls back to it when the config leaves `base_url` empty.
 - Managed through `/connect` (which writes the key and any custom base URL). Re-running `/connect` lets you re-enter a missing or stale key.
 - The engine resolves the API key for the active provider from this file (matching entry or `""`), and falls back to a stored custom `base_url` when the config has none. There is no `api_key` config key anymore, and `replio config set api_key` would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.
 
