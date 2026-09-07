@@ -1,7 +1,7 @@
-from .base import OpenAICompatibleProvider
+from .opencode_base import OpenCodeProviderBase
 
 
-class OpenCodeGoProvider(OpenAICompatibleProvider):
+class OpenCodeGoProvider(OpenCodeProviderBase):
     DEFAULT_BASE_URL = 'https://opencode.ai/zen/go/v1'
     DEFAULT_MODEL = 'deepseek-v4-flash'
 

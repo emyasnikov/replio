@@ -2,6 +2,7 @@
 
 ## v0.28.0
 
+- OpenCode providers send `x-opencode-session` - Go rejects chat requests without it (`MissingSessionID`). New shared `OpenCodeProviderBase` (`providers/opencode_base.py`) generates a stable per-conversation session id (a UUID per provider instance, overridable via a `session_id` kwarg) and adds it to every request header, and switches the opencode providers' `User-Agent` to an identifying `replio/<version>` per the OpenCode docs (passes the Cloudflare edge check, unlike `Python-urllib/*`). Zen and Go both use the header; other providers keep the browser-like user agent. Docs in `docs/providers.md`. Tests in `tests/test_providers.py` (`TestOpenCodeHeaders`: present/stability, override, identifying UA)
 - Browser-like `User-Agent` on provider requests - `_headers()` now sends `Mozilla/5.0 (...)` instead of urllib's default `Python-urllib/<ver>`, which Cloudflare bot protection rejects with `HTTP 403: error code: 1010`. This fixes `/connect` (the `GET /v1/models` probe) and `/model list --online` for the Cloudflare-fronted `opencode.ai` endpoints, and prevents the same block on chat streaming/non-streaming. One header covers the model probe, `_post`, and `stream_sse` since they all go through `_headers()`. Docs in `docs/providers.md`. Test in `tests/test_providers.py` (`TestProviderHeaders.test_browser_user_agent`)
 
 ## v0.27.0 - 2026-09-05

@@ -1,7 +1,7 @@
-from .base import OpenAICompatibleProvider
+from .opencode_base import OpenCodeProviderBase
 
 
-class OpenCodeProvider(OpenAICompatibleProvider):
+class OpenCodeProvider(OpenCodeProviderBase):
     DEFAULT_BASE_URL = 'https://opencode.ai/zen/v1'
     DEFAULT_MODEL = 'kimi-k3'
 

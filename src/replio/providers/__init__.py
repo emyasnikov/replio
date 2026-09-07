@@ -5,6 +5,7 @@ from .groq import GroqProvider
 from .anthropic import AnthropicProvider
 from .opencode import OpenCodeProvider
 from .opencode_go import OpenCodeGoProvider
+from .opencode_base import OpenCodeProviderBase
 
 PROVIDERS = {
     'ollama': OllamaProvider,
@@ -34,4 +35,4 @@ def detect_provider(base_url: str = '') -> str:
 
 __all__ = ['PROVIDERS', 'detect_provider', 'OpenAICompatibleProvider',
            'OllamaProvider', 'OpenAIProvider', 'GroqProvider', 'AnthropicProvider',
-           'OpenCodeProvider', 'OpenCodeGoProvider']
+           'OpenCodeProvider', 'OpenCodeGoProvider', 'OpenCodeProviderBase']

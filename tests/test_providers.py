@@ -76,6 +76,27 @@ class TestProviderHeaders(unittest.TestCase):
                           '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'))
 
 
+class TestOpenCodeHeaders(unittest.TestCase):
+
+    def _cases(self):
+        return (OpenCodeProvider(), OpenCodeGoProvider())
+
+    def test_session_header_present_and_stable(self):
+        for p in self._cases():
+            first = p._headers()['x-opencode-session']
+            second = p._headers()['x-opencode-session']
+            self.assertTrue(first)
+            self.assertEqual(first, second)
+
+    def test_session_id_override(self):
+        p = OpenCodeGoProvider(session_id='my-conversation-1')
+        self.assertEqual(p._headers()['x-opencode-session'], 'my-conversation-1')
+
+    def test_identifying_user_agent(self):
+        for p in self._cases():
+            self.assertTrue(p._headers()['User-Agent'].startswith('replio/'))
+
+
 class TestDetectProvider(unittest.TestCase):
 
     def test_detects_known_hosts(self):
