@@ -27,7 +27,8 @@ class ToolRegistry:
                  aliases: list[str] | None = None,
                  param_aliases: dict | None = None,
                  note: Callable[[str], bool] | None = None,
-                 permission_fn: Callable[[dict], str] | None = None):
+                 permission_fn: Callable[[dict], str] | None = None,
+                 loop: bool = False):
         def wrapper(fn):
             def build_schema(tool_name: str) -> dict:
                 return {
@@ -55,6 +56,7 @@ class ToolRegistry:
                 'param_aliases': dict(param_aliases or {}),
                 'note': note,
                 'permission_fn': permission_fn,
+                'loop': loop,
                 'schema': build_schema(name),
             }
             self._tools[name] = entry
@@ -155,6 +157,10 @@ class ToolRegistry:
     def key_arg_for(self, name: str) -> str | None:
         canon, tool = self._canonical(name)
         return tool['key_arg'] if tool else None
+
+    def loop_for(self, name: str) -> bool:
+        canon, tool = self._canonical(name)
+        return bool(tool and tool.get('loop'))
 
     def params_str(self, name: str, arguments: dict,
                    exclude: tuple[str, ...] = ()) -> str:

@@ -168,6 +168,8 @@ class TestDelegateTool(unittest.TestCase):
         self.chat.provider.chat.side_effect = [
             [{'type': 'token', 'content': 'Sub result.'},
              {'type': 'done', 'reason': 'stop'}],
+            [{'type': 'token', 'content': 'Root summary.'},
+             {'type': 'done', 'reason': 'stop'}],
         ]
         with patch('sys.stdout', new=io.StringIO()) as buf:
             self.chat.registry.dispatch(
@@ -175,6 +177,26 @@ class TestDelegateTool(unittest.TestCase):
         out = buf.getvalue()
         self.assertEqual(out.count('[delegate writer] Sub result.'), 1)
         self.assertTrue(self._delegate_logs('writer'))
+
+    def test_tool_command_delegate_runs_loop_turn(self):
+        self._allow_delegate()
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'token', 'content': 'Sub result.'},
+             {'type': 'done', 'reason': 'stop'}],
+            [{'type': 'token', 'content': 'Root summary.'},
+             {'type': 'done', 'reason': 'stop'}],
+        ]
+        with patch('sys.stdout', new=io.StringIO()):
+            self.chat.registry.dispatch(
+                '/tool delegate {"type": "writer", "task": "write"}')
+        roles = [m['role'] for m in self.chat.current_session.messages]
+        self.assertIn('assistant', roles)
+        self.assertIn('tool', roles)
+        self.assertEqual(self.chat.provider.chat.call_count, 2)
+        final = [m for m in self.chat.current_session.messages
+                 if m['role'] == 'assistant' and m.get('content')]
+        self.assertTrue(final)
+        self.assertEqual(final[-1]['content'], 'Root summary.')
 
     def test_resolver_actions(self):
         self._allow_delegate()

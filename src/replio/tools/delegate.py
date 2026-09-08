@@ -102,6 +102,7 @@ def register_delegate_tool(registry, engine) -> Callable:
         short='Run a task with an agent type',
         glyph='↳',
         verb='Delegate',
+        loop=True,
         permission_fn=lambda args: _delegate_action(engine, args),
     )
     def delegate(type: str, task: str, _config=None, _echo: bool = True) -> str:

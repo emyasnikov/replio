@@ -138,7 +138,7 @@ Replio/
 ### Adding a Tool
 1. Use the `@registry.register(name, description, parameters)` decorator in the plugin/module where the tool belongs
 2. `parameters` follow the OpenAI function calling JSON schema format. The handler receives keyword arguments matching the schema and returns a string (the tool result injected into the conversation)
-3. Add optional metadata for loop behavior and permissions: `refine`, `category`, `permission`, `path_arg`, `key_arg`, `glyph`/`verb`, `status`, `echo`, `permission_fn`, `aliases`, `param_aliases`, `note` - full reference in `docs/tools.md`
+3. Add optional metadata for loop behavior and permissions: `refine`, `category`, `permission`, `path_arg`, `key_arg`, `glyph`/`verb`, `status`, `echo`, `permission_fn`, `aliases`, `param_aliases`, `note`, `loop` - full reference in `docs/tools.md`. `loop=True` makes `/tool <name>` run a persisted agent-loop turn (`Engine.chat_tool`) instead of a one-shot direct call - used by `delegate` so the plan/result/answer land in the session
 4. `ToolRegistry.execute()` passes only args declared in the tool's schema - undeclared and `null`-valued args (e.g. a hallucinated `recursive`, or `depth: null`) are dropped, never forwarded to the handler
 5. `aliases` (extra tool names resolving to this tool, e.g. `read`/`view` for `file_read`, `open`/`fetch_page` for `web_fetch`) and `param_aliases` (caller-side param synonyms mapped onto declared params, e.g. `{'cursor': 'offset'}`) let the registry absorb model-dialect tool and argument names without advertising them in the schema. `/tool`, `/help`, policy, confirm, and glyphs work through aliases unchanged
 

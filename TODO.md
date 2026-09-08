@@ -104,6 +104,7 @@
 
 ## Done
 
+- [x] Loop tools - `/tool delegate` runs a persisted loop turn, sub-agent ask reaches the operator
 - [x] Externalize bundled providers - vendor providers to bundled plugins, base + host hints stay core
 - [x] `ask` tool - core: human or lead mid-run questions, sub-agent routing
 - [x] Connect any OpenAI-compatible endpoint by URL - named custom provider entries

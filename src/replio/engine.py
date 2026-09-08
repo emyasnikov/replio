@@ -527,6 +527,26 @@ class Engine:
                 return TurnResult(status='empty', session=self.current_session.name)
         return self._agent_loop()
 
+    def chat_tool(self, name: str, arguments: dict) -> TurnResult:
+        if getattr(self, '_provider_error', None):
+            return TurnResult(status='error',
+                              errors=[{'code': '', 'message': self._provider_error}],
+                              session=self.current_session.name)
+        if not self.config.get('tool_calling'):
+            return TurnResult(status='error',
+                              errors=[{'code': '', 'message': 'Tool calling is disabled'}],
+                              session=self.current_session.name)
+        self._init_tooling()
+        if not self._tool_registry or not self._tool_policy:
+            return TurnResult(status='error',
+                              errors=[{'code': '', 'message': 'Tool calling is disabled'}],
+                              session=self.current_session.name)
+        if not self._tool_registry.is_registered(name):
+            return TurnResult(status='error',
+                              errors=[{'code': '', 'message': f'Unknown tool "{name}"'}],
+                              session=self.current_session.name)
+        return self._agent_loop(seed_tool=(name, arguments))
+
     def _auto_name_session(self, content: str):
         user_msgs = [m for m in self.current_session.messages if m['role'] == 'user']
         if len(user_msgs) != 1:
@@ -548,7 +568,7 @@ class Engine:
             old.rename(new)
             self.session_auto_save()
 
-    def _agent_loop(self) -> TurnResult:
+    def _agent_loop(self, seed_tool: tuple[str, dict] | None = None) -> TurnResult:
         tools_schema = self._init_tooling()
         turn_start = datetime.now(timezone.utc)
         usage = None
@@ -559,6 +579,11 @@ class Engine:
         err_base = len(self.current_session.errors)
 
         try:
+            if seed_tool is not None:
+                name, args = seed_tool
+                executed_tool_calls += self._execute_tool_calls(
+                    [{'function': {'name': name, 'arguments': json.dumps(args)},
+                      'id': 'call_seed'}])
             while True:
                 think_start: datetime | None = None
 

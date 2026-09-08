@@ -924,6 +924,9 @@ def register_builtins(registry):
         except json.JSONDecodeError:
             print('Usage: /tool <name> {"key": "value"}')
             return
+        if chat._tool_registry.loop_for(name):
+            chat.chat_tool(name, arguments)
+            return
         print(chat._run_tool(name, arguments, echo=False))
 
     @registry.register('plugins', aliases=['plugin'],

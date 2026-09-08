@@ -73,6 +73,7 @@ Tools are registered with `@registry.register(name, description, parameters)` pl
 | `short` | Short label for `/help` listing (defaults to the description truncated) |
 | `aliases` | Extra tool names resolving to this tool (e.g. `read`/`view` for `file_read`, `open`/`fetch_page` for `web_fetch`) - absorbed at call time, never advertised to the provider |
 | `param_aliases` | Caller-side parameter synonyms mapped onto declared parameters (e.g. `cursor` -> `offset`, `query` -> `pattern`) |
+| `loop` | When true, `/tool <name>` runs the tool as a real agent-loop turn (`Engine.chat_tool`) - the tool call and result persist, then the model streams its final answer. Used by `delegate` so a `/tool delegate` plan, results, and answer land in the session and a later prompt can continue the work. Direct `ToolRegistry.execute()` calls are unaffected |
 
 `ToolRegistry.execute()` passes only arguments declared in the tool's schema - undeclared and `null`-valued arguments (e.g. a hallucinated `recursive`, or `depth: null`) are dropped, not forwarded to the handler. It also passes the engine `Config` to handlers that declare a `_config` keyword argument (e.g. `def file_read(path, offset=1, limit=500, _config=None)`), so a tool can read config keys like `tool_max_result_chars` without exposing them to the model.
 

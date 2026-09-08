@@ -111,6 +111,16 @@ class TestAskTool(unittest.TestCase):
             out = self.chat._run_tool('ask', {'question': 'q', 'target': 'lead'})
         self.assertEqual(out, 'operator decision')
 
+    def test_subagent_human_ask_reaches_operator(self):
+        self.chat.types.put(
+            AgentType(name='w', system_prompt='Writer agent'), scope='local')
+        sub = self.chat._new_sub_engine('w')
+        self.assertIs(sub._ask_ui, self.chat._ask_ui)
+        sub._init_tooling()
+        with patch('builtins.input', return_value='use port 1234'):
+            out = sub._run_tool('ask', {'question': 'which port?'})
+        self.assertEqual(out, 'use port 1234')
+
     def test_full_loop_persists_answer_and_continues(self):
         self.chat.provider.chat.side_effect = [
             [{'type': 'tool_calls', 'tool_calls': self._ask_call()}],
