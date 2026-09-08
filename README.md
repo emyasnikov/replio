@@ -28,7 +28,7 @@ Replio is a deliberately small, auditable, zero-dependency agentic core built on
 - **Permissions** - every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmation outside your worktree and an audit trail in session logs
 - **Modes** - named postures with their own instructions and permissions: `plan` (read-only) vs `build`, or custom modes, switchable live with `/mode` or via `--mode`
 - **Sessions** - complete append-only conversation logs that capture every tool call, result, and error, plus `/compact` and Markdown export
-- **Plugins** - external repositories register tools, providers, slash commands, and services. The core stays zero-dependency, and plugin deps are imported lazily
+- **Plugins** - external repositories register tools, providers, slash commands, services, agent types, teams, skills, and eval fixtures. The core stays zero-dependency, and plugin deps are imported lazily
 - **Headless** - `replio run` for scripting and `replio serve` for an HTTP JSON API over the same agent loop
 
 ### Orchestration
@@ -64,11 +64,10 @@ First-time setup with `/connect`, then type any message. Tab-complete `/` comman
 Open a `"""` or `'''` block to type a multi-line prompt. The block's framing quotes are stripped, and the whole message is sent as one turn. Ctrl-C exits the REPL from anywhere, including inside an open block.
 
 ```
->>> /connect
-  Provider [ollama]:
-  Base URL [https://ollama.com]:
-  API key: ...
-  Model [gpt-oss:20b-cloud]:
+>>> /connect ollama
+  API key [stored]: 
+Connected to ollama (https://api.ollama.com)
+>>> /model gpt-oss:20b-cloud
 >>> Hi
 <<< Hello! How can I help you today?
 >>> /exit
@@ -89,7 +88,7 @@ replio run --prompt "Hi"
   "usage": null,
   "model": "gpt-oss:20b-cloud",
   "provider": "ollama",
-  "session": "20260814_192251_hi",
+  "session": "ses_20260814_192251_hi",
   "status": "ok"
 }
 ```
@@ -101,7 +100,7 @@ replio run --prompt "Hi"
 ```bash
 replio serve &
 curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
-{"content": "Hello! How can I help you today?", "thinking": null, "tool_calls": [], "errors": [], "duration": 7.0, "usage": null, "model": "gpt-oss:20b-cloud", "provider": "ollama", "session": "20260814_192711_hi", "status": "ok"}
+{"content": "Hello! How can I help you today?", "thinking": null, "tool_calls": [], "errors": [], "duration": 7.0, "usage": null, "model": "gpt-oss:20b-cloud", "provider": "ollama", "session": "ses_20260814_192711_hi", "status": "ok"}
 ```
 
 ### Swarm - delegation by type
@@ -157,7 +156,7 @@ On `replio serve` the same is available at `POST /mcp`. See [docs/mcp.md](docs/m
 
 ## Roadmap
 
-Fleet orchestration (v0.22), scheduled and durable jobs (v0.21), and the swarm foundations - bundled types, in-process sub-agents, and the `delegate` tool (v0.20) - are live. Building next: auditor agents with generate > check > correct, the interactive `/agent` command and delegation focus, named team and job configs, the jobs operator API with webhook/email/Telegram connectors, a web Control UI over the JSON API, `/spawn` from the REPL, and remote channels. See [docs/fleet.md](docs/fleet.md), [docs/jobs.md](docs/jobs.md), [docs/swarm.md](docs/swarm.md), and the open tasks in [TODO.md](TODO.md).
+Fleet orchestration, scheduled and durable jobs, and the swarm foundations - bundled types, in-process sub-agents, the `delegate` tool, team pipelines (`/team run`), and the `ask` tool - are live. Building next: the governance track (the assistant introduces itself on first run, a one-window status over sessions, running agents, and jobs, agent health monitoring, and per-agent todo lists), report-back connectors (webhook/email), the jobs operator API, non-blocking delegation with progress, the interactive `/agent` command, and remote channels. See [docs/swarm.md](docs/swarm.md), [docs/jobs.md](docs/jobs.md), and the open tasks in [TODO.md](TODO.md).
 
 ## Contributing
 

@@ -25,7 +25,7 @@ Providers (`src/replio/providers/`) are OpenAI-compatible `/v1/chat/completions`
  model, provider, session, status}
 ```
 
-`status` is `ok`, `error`, `empty`, or `truncated`. Sessions are addressed from any front-end via `Engine.load_or_create_session(name)`.
+`status` is `ok`, `error`, `empty`, `truncated`, or `cancelled`. Sessions are addressed from any front-end via `Engine.load_or_create_session(name)`. `Engine.chat_tool(name, args)` runs a `loop`-registered tool (e.g. `delegate`) as a persisted agent-loop turn: the tool call and result land in the session, then the model streams its final answer.
 
 ## One stream, one round trip
 
@@ -66,18 +66,29 @@ Plugins extend the core with tools, providers, commands, and services without ch
 ```
 src/replio/
 ├── __main__.py          # python -m replio
-├── main.py              # CLI arg parsing + bootstrap (REPL, run, serve, plugins)
+├── main.py              # CLI arg parsing + bootstrap (REPL, run, serve, ...)
 ├── cli.py               # headless entry points
 ├── config.py            # JSON config (global + local merge)
-├── models.py            # global model registry (models.json - connections + keys)
-├── engine.py            # headless agent core - Engine + TurnResult
+├── models.py            # global approved-model registry (models.json)
+├── providers/
+│   ├── __init__.py      # PROVIDERS registry + detect_provider (host patterns)
+│   ├── base.py          # BaseProvider + OpenAICompatibleProvider
+│   └── registry.py      # ProviderRegistry (providers.json - keys + base URLs)
+├── engine.py            # headless agent core - Engine, TurnResult, chat_tool, run_subagent, run_team
 ├── chat.py              # ChatLoop(Engine) - REPL shell with readline
+├── modes.py             # named modes (plan/build/custom) merged into tool policy
 ├── ui.py                # UISink - ReplUI / HeadlessUI / NullUI
+├── types.py             # TypeRegistry (agent types, bundled/plugin/global/local)
+├── teams.py             # TeamRegistry (named team pipelines) + team memory helpers
+├── skills.py            # SkillRegistry (per-type instructions)
+├── jobs.py              # Job/JobRun model + registry
+├── scheduler.py         # JobScheduler - durable job daemon
+├── fleet.py             # FleetController - supervised serve agents
+├── eval.py              # tool-use eval harness (replio eval)
 ├── server.py            # stdlib HTTP JSON API
-├── providers/           # core substrate: base classes, PROVIDERS registry, detect_provider
-├── sessions/            # session CRUD (JSON files)
+├── sessions/            # session CRUD + markdown render
 ├── commands/            # command registry + builtins
-├── tools/               # tool registry + tool policy
+├── tools/               # tool registry, tool policy, delegate, ask
 ├── plugins/             # plugin manager
 └── utils/               # urllib-based SSE streaming
 ```

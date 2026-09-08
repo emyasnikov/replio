@@ -4,7 +4,7 @@
 
 ```bash
 replio serve
-# replio serve - http://127.0.0.1:8787 (POST /chat, GET /sessions, GET /health, GET /version)
+# replio serve - http://127.0.0.1:8787 (POST /chat, POST /mcp, GET /sessions, GET /health, GET /version)
 ```
 
 All responses are JSON with `Content-Type: application/json`.
@@ -55,7 +55,7 @@ Returns the installed version.
 
 ```bash
 curl localhost:8787/version
-# {"version": "0.12.0"}
+# {"version": "0.29.0"}
 ```
 
 Unknown routes return `404 {"error": "not found"}`.

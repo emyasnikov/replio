@@ -28,6 +28,7 @@
 
 ## Open
 
+- [ ] Consolidate model commands - `/models` (alias `model-list`) only probes the connected provider's live list, duplicating `/model list --online [provider]`, while `/model list` alone shows the approved `models.json` history. The overlap confuses users (which one lists what). Unify under `/model` subcommands (`/model list` = approved history, `/model list --online [provider]` = live probe), fold `/models`/`model-list` into the same command or keep it as a thin alias for `--online`, then update `/help`, `docs/commands.md`, and the command tests
 - [ ] Autonomous supervisor track - compose the delegate loop turn + ask routing + jobs daemon + report-back so a supervisor task started once runs unattended and reports back (milestone M4 in PLAN.md)
 - [ ] Supervisor report-back - finished/failed supervisor runs surface a per-run summary (interactive session result footer + `replio jobs status`), delivered out-of-band via the job event hooks + connectors when the terminal is closed
 - [ ] Pending-ask inbox - an unattended run's `ask target='human'` parks as a pending request (persisted, listed in the REPL + serve API) instead of failing, and answering resumes the run from its session (resumable mid-run state shared with the mid-run blocking job approval item)

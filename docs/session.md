@@ -47,7 +47,7 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 
 ```json
 {
-  "name": "20260817_120000_what_is_oee",
+  "name": "ses_20260817_120000_what_is_oee",
   "created_at": "2026-08-17T12:00:00+00:00",
   "updated_at": "2026-08-17T12:05:15+00:00",
   "messages": [],
@@ -117,7 +117,7 @@ A command and a compaction record:
 {"role": "command", "content": "/compact", "timestamp": "2026-08-17T12:03:00+00:00", "result": "Summary of the earlier conversation...", "compact_from": 8}
 ```
 
-A `command` message with a `result` is a compaction record: `result` holds the summary and `compact_from` is the index into `messages` where the kept portion starts. The system prompt set at REPL start and search contexts injected by `web_search: true` mode are recorded as `system` role messages.
+A `command` message with a `result` is a compaction record: `result` holds the summary and `compact_from` is the index into `messages` where the kept portion starts. A search context injected by the `web_search: true` auto-search mode is recorded as a `system` message. The configured `system_prompt` and mode instruction are injected at request time, never stored in the log.
 
 ## Errors
 
