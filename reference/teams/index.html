@@ -1264,9 +1264,9 @@
 <ul>
 <li><code>/team</code> - list teams, marking each one's origin (<code>bundled</code> / <code>plugin</code> / <code>local</code> / <code>global</code> / <code>merged</code>) and tags, with the stage chain on the next line.</li>
 <li><code>/team list &lt;tag&gt;</code> - list only teams carrying the tag (e.g. <code>/team list programming</code>).</li>
-<li><code>/team show &lt;name&gt;</code> - show a team's full definition (stages, task hints, handoff notes).</li>
 <li><code>/team new &lt;name&gt; [description]</code> - create a team in the local catalog (edit the JSON for stages, tags, and per-stage fields). Using an existing name overrides that team.</li>
 <li><code>/team remove &lt;name&gt;</code> - remove a team from the local catalog. Bundled teams cannot be removed (override them instead).</li>
+<li><code>/team show &lt;name&gt;</code> - show a team's full definition (stages, task hints, handoff notes).</li>
 </ul>
 <p>Plugins contribute teams through the same <code>register_teams</code> entry hook that the kit machine (templates, recipes) uses - see <a href="../plugins/">plugins.md</a>.</p>
 <h2 id="running-a-team">Running a team<a class="headerlink" href="#running-a-team" title="Permanent link">&para;</a></h2>

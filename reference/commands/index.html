@@ -1415,9 +1415,19 @@
 </thead>
 <tbody>
 <tr>
-<td><code>/help</code></td>
-<td><code>/h</code></td>
-<td>Show available commands and tools (<code>/help &lt;cmd|tool&gt;</code> for detail)</td>
+<td><code>/compact</code></td>
+<td><code>/c</code></td>
+<td>Summarize the conversation and trim the provider context</td>
+</tr>
+<tr>
+<td><code>/config</code></td>
+<td></td>
+<td>Show, get, set, or unset config values (<code>/config &lt;key&gt; &lt;value&gt;</code>, <code>/config unset &lt;key&gt;</code>, <code>/config --global &lt;key&gt; &lt;value&gt;</code> for a global line). The listing appends each key's origin: <code>(default)</code>, <code>(global)</code>, or <code>(local)</code></td>
+</tr>
+<tr>
+<td><code>/connect</code></td>
+<td></td>
+<td>Connect a provider. <code>/connect</code> picks from the known providers interactively. <code>/connect &lt;name&gt;</code> presets a known provider's defaults and (re)enters its API key. <code>/connect &lt;url&gt;</code> detects a known host or creates a named custom provider (derived from the host, or <code>/connect &lt;url&gt; &lt;name&gt;</code> to name it). Tests the connection before saving, stores the API key + base URL in the global <code>providers.json</code>, and writes <code>provider</code>/<code>base_url</code> into config - the model is picked separately with <code>/model</code></td>
 </tr>
 <tr>
 <td><code>/exit</code></td>
@@ -1425,9 +1435,19 @@
 <td>Save and exit</td>
 </tr>
 <tr>
-<td><code>/version</code></td>
-<td><code>/v</code></td>
-<td>Show the Replio version</td>
+<td><code>/help</code></td>
+<td><code>/h</code></td>
+<td>Show available commands and tools (<code>/help &lt;cmd|tool&gt;</code> for detail)</td>
+</tr>
+<tr>
+<td><code>/jobs</code></td>
+<td></td>
+<td>Manage scheduled and durable jobs: <code>list</code>, <code>status</code>, <code>show</code>, <code>add</code>, <code>approve</code>, <code>reject</code>, <code>enable</code>, <code>disable</code>, <code>stop</code>, <code>remove</code>, <code>run</code>. See <a href="../jobs/">jobs.md</a></td>
+</tr>
+<tr>
+<td><code>/mode</code></td>
+<td></td>
+<td>Show or switch the agent mode (<code>/mode plan</code> = read-only, <code>/mode build</code>, or a custom mode)</td>
 </tr>
 <tr>
 <td><code>/model</code></td>
@@ -1440,29 +1460,14 @@
 <td>List models available from the connected provider</td>
 </tr>
 <tr>
+<td><code>/plugins</code></td>
+<td><code>/plugin</code></td>
+<td>Manage plugins: <code>list</code>, <code>enable</code>, <code>disable</code>, <code>install</code>, <code>update</code>, <code>uninstall</code></td>
+</tr>
+<tr>
 <td><code>/provider</code></td>
 <td></td>
 <td>Show or switch the active provider</td>
-</tr>
-<tr>
-<td><code>/mode</code></td>
-<td></td>
-<td>Show or switch the agent mode (<code>/mode plan</code> = read-only, <code>/mode build</code>, or a custom mode)</td>
-</tr>
-<tr>
-<td><code>/thinking</code></td>
-<td><code>/reasoning</code></td>
-<td>Show or switch reasoning display and request (<code>/thinking on</code> streams reasoning dimmed, <code>off</code> shows only a spinner)</td>
-</tr>
-<tr>
-<td><code>/connect</code></td>
-<td></td>
-<td>Connect a provider. <code>/connect</code> picks from the known providers interactively. <code>/connect &lt;name&gt;</code> presets a known provider's defaults and (re)enters its API key. <code>/connect &lt;url&gt;</code> detects a known host or creates a named custom provider (derived from the host, or <code>/connect &lt;url&gt; &lt;name&gt;</code> to name it). Tests the connection before saving, stores the API key + base URL in the global <code>providers.json</code>, and writes <code>provider</code>/<code>base_url</code> into config - the model is picked separately with <code>/model</code></td>
-</tr>
-<tr>
-<td><code>/config</code></td>
-<td></td>
-<td>Show, get, set, or unset config values (<code>/config &lt;key&gt; &lt;value&gt;</code>, <code>/config unset &lt;key&gt;</code>, <code>/config --global &lt;key&gt; &lt;value&gt;</code> for a global line). The listing appends each key's origin: <code>(default)</code>, <code>(global)</code>, or <code>(local)</code></td>
 </tr>
 <tr>
 <td><code>/session</code></td>
@@ -1470,14 +1475,9 @@
 <td>Manage sessions: <code>new</code>, <code>list</code>, <code>preview</code>, <code>load</code>, <code>delete</code>, <code>save</code>, <code>export</code></td>
 </tr>
 <tr>
-<td><code>/compact</code></td>
-<td><code>/c</code></td>
-<td>Summarize the conversation and trim the provider context</td>
-</tr>
-<tr>
-<td><code>/type</code></td>
+<td><code>/skill</code></td>
 <td></td>
-<td>Manage types: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [prompt]</code>, <code>remove &lt;name&gt;</code>. See <a href="../types/">types.md</a></td>
+<td>Manage skills: <code>list</code>, <code>show &lt;name&gt;</code>, <code>new &lt;name&gt;</code>, <code>remove &lt;name&gt;</code>. See <a href="../skills/">skills.md</a></td>
 </tr>
 <tr>
 <td><code>/team</code></td>
@@ -1485,9 +1485,9 @@
 <td>Manage teams: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [description]</code>, <code>remove &lt;name&gt;</code>, <code>run &lt;name&gt; &lt;task&gt;</code>. See <a href="../teams/">teams.md</a></td>
 </tr>
 <tr>
-<td><code>/skill</code></td>
-<td></td>
-<td>Manage skills: <code>list</code>, <code>show &lt;name&gt;</code>, <code>new &lt;name&gt;</code>, <code>remove &lt;name&gt;</code>. See <a href="../skills/">skills.md</a></td>
+<td><code>/thinking</code></td>
+<td><code>/reasoning</code></td>
+<td>Show or switch reasoning display and request (<code>/thinking on</code> streams reasoning dimmed, <code>off</code> shows only a spinner)</td>
 </tr>
 <tr>
 <td><code>/tool</code></td>
@@ -1495,14 +1495,14 @@
 <td>Run a tool directly (<code>/tool &lt;name&gt; {"key": "value"}</code>)</td>
 </tr>
 <tr>
-<td><code>/jobs</code></td>
+<td><code>/type</code></td>
 <td></td>
-<td>Manage scheduled and durable jobs: <code>list</code>, <code>status</code>, <code>show</code>, <code>add</code>, <code>approve</code>, <code>reject</code>, <code>enable</code>, <code>disable</code>, <code>stop</code>, <code>remove</code>, <code>run</code>. See <a href="../jobs/">jobs.md</a></td>
+<td>Manage types: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [prompt]</code>, <code>remove &lt;name&gt;</code>. See <a href="../types/">types.md</a></td>
 </tr>
 <tr>
-<td><code>/plugins</code></td>
-<td><code>/plugin</code></td>
-<td>Manage plugins: <code>list</code>, <code>enable</code>, <code>disable</code>, <code>install</code>, <code>update</code>, <code>uninstall</code></td>
+<td><code>/version</code></td>
+<td><code>/v</code></td>
+<td>Show the Replio version</td>
 </tr>
 </tbody>
 </table>
@@ -1510,7 +1510,7 @@
 <p><code>/session export &lt;name&gt; [out]</code> renders a saved session as Markdown (see <a href="../session/">session.md</a>).</p>
 <p>Delegation is a normal tool: the lead agent proposes it, or you run it directly - <code>/tool delegate {"type": "researcher", "task": "..."}</code> routes through the same tool policy. A configured type delegates without prompting (<code>delegate</code> category defaults to <code>allow</code>, set an agent type's <code>delegate</code> to <code>ask</code> to confirm), and an agent type outside the registry is denied. See <a href="../types/">types.md</a> and <a href="../swarm/">swarm.md</a>.</p>
 <h2 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>usage: replio [-h] [--path PATH] [-v] {run,export,models,eval,serve,mcp,config,plugins,jobs,fleet} ...
+<div class="highlight"><pre><span></span><code>usage: replio [-h] [--path PATH] [-v] {config,eval,export,fleet,jobs,mcp,models,plugins,run,serve} ...
 </code></pre></div>
 <p>Global:</p>
 <table>
@@ -1783,18 +1783,6 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </thead>
 <tbody>
 <tr>
-<td><code>list</code></td>
-<td>Table of jobs: schedule, status, next and last run</td>
-</tr>
-<tr>
-<td><code>status</code></td>
-<td>Runtime summary per job: fired count, last error, uptime, approval state</td>
-</tr>
-<tr>
-<td><code>show</code></td>
-<td><code>replio jobs show &lt;name&gt;</code> - definition plus full run history + last output</td>
-</tr>
-<tr>
 <td><code>add</code></td>
 <td><code>replio jobs add &lt;name&gt; --file jobs/&lt;name&gt;.md --cron "0 2 * * *"</code> (or <code>--interval N</code> / <code>--at ISO</code>, <code>--prompt</code> optional when <code>--file</code> is given), plus <code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--type</code>, <code>--system-prompt</code>, <code>--tools-deny</code>, <code>--tool-permission</code>, <code>--retries</code>, <code>--backoff</code>, <code>--timeout</code>, <code>--require-approval</code>, <code>--approve-model</code>, <code>--approval auto</code></td>
 </tr>
@@ -1803,16 +1791,24 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td><code>approve &lt;name&gt;</code> - activate a job (or arm the next run for <code>--require-approval</code> jobs)</td>
 </tr>
 <tr>
-<td><code>reject</code></td>
-<td><code>reject &lt;name&gt;</code> - send back to proposed and disable</td>
+<td><code>daemon</code></td>
+<td><code>daemon [--tick 15] [--quiet]</code> - scheduler loop, Ctrl-C to stop</td>
+</tr>
+<tr>
+<td><code>edit</code></td>
+<td><code>edit &lt;name&gt;</code> - open the job's linked task file in <code>$EDITOR</code> (creates the template first)</td>
 </tr>
 <tr>
 <td><code>enable</code> / <code>disable</code> / <code>stop</code></td>
 <td>Toggle the enabled gate (<code>stop</code> = <code>disable</code>)</td>
 </tr>
 <tr>
-<td><code>edit</code></td>
-<td><code>edit &lt;name&gt;</code> - open the job's linked task file in <code>$EDITOR</code> (creates the template first)</td>
+<td><code>list</code></td>
+<td>Table of jobs: schedule, status, next and last run</td>
+</tr>
+<tr>
+<td><code>reject</code></td>
+<td><code>reject &lt;name&gt;</code> - send back to proposed and disable</td>
 </tr>
 <tr>
 <td><code>remove</code></td>
@@ -1823,8 +1819,12 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td><code>run &lt;name&gt; [--no-retry] [--verbose]</code> - run now, apply retries, print the answer. <code>--verbose</code> streams the live turn. Exit <code>0</code> verified / <code>1</code> failed</td>
 </tr>
 <tr>
-<td><code>daemon</code></td>
-<td><code>daemon [--tick 15] [--quiet]</code> - scheduler loop, Ctrl-C to stop</td>
+<td><code>show</code></td>
+<td><code>replio jobs show &lt;name&gt;</code> - definition plus full run history + last output</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>Runtime summary per job: fired count, last error, uptime, approval state</td>
 </tr>
 </tbody>
 </table>
@@ -1839,40 +1839,40 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </thead>
 <tbody>
 <tr>
-<td><code>init</code></td>
-<td>Scan immediate subdirectories holding <code>.replio/config.json</code> into the manifest</td>
-</tr>
-<tr>
 <td><code>add</code></td>
 <td><code>add &lt;name&gt; [--dir] [--port N] [--max-restarts N]</code> - add an agent</td>
 </tr>
 <tr>
-<td><code>remove</code></td>
-<td><code>remove &lt;name&gt;</code> - remove an agent (stops it if running)</td>
-</tr>
-<tr>
-<td><code>up</code></td>
-<td><code>up [--detach]</code> - start agents. Ctrl-C = graceful down, <code>--detach</code> = background daemon</td>
+<td><code>config</code></td>
+<td><code>config &lt;name&gt; --provider/--model/--type/--system-prompt/--mode/--tools-deny/--tool-permission</code> - write only those keys into <code>&lt;dir&gt;/.replio/config.json</code></td>
 </tr>
 <tr>
 <td><code>down</code></td>
 <td>Stop the supervised agents and the daemon if running</td>
 </tr>
 <tr>
-<td><code>status</code></td>
-<td>Live table: agent, enabled, port, pid, state, restarts, last error</td>
-</tr>
-<tr>
-<td><code>restart</code></td>
-<td><code>restart [name|all]</code> - stop, reset restart backoff, relaunch (default: all)</td>
+<td><code>init</code></td>
+<td>Scan immediate subdirectories holding <code>.replio/config.json</code> into the manifest</td>
 </tr>
 <tr>
 <td><code>logs</code></td>
 <td><code>logs &lt;name&gt; [n] [--follow]</code> - tail an agent's <code>.replio/logs/&lt;name&gt;.log</code></td>
 </tr>
 <tr>
-<td><code>config</code></td>
-<td><code>config &lt;name&gt; --provider/--model/--type/--system-prompt/--mode/--tools-deny/--tool-permission</code> - write only those keys into <code>&lt;dir&gt;/.replio/config.json</code></td>
+<td><code>remove</code></td>
+<td><code>remove &lt;name&gt;</code> - remove an agent (stops it if running)</td>
+</tr>
+<tr>
+<td><code>restart</code></td>
+<td><code>restart [name|all]</code> - stop, reset restart backoff, relaunch (default: all)</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>Live table: agent, enabled, port, pid, state, restarts, last error</td>
+</tr>
+<tr>
+<td><code>up</code></td>
+<td><code>up [--detach]</code> - start agents. Ctrl-C = graceful down, <code>--detach</code> = background daemon</td>
 </tr>
 </tbody>
 </table>
@@ -1888,20 +1888,20 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </thead>
 <tbody>
 <tr>
-<td><code>list</code></td>
-<td>List installed plugins and their load status</td>
-</tr>
-<tr>
 <td><code>install</code></td>
 <td><code>replio plugins install &lt;git-url|path&gt; [--global] [--deps]</code> - install a plugin</td>
 </tr>
 <tr>
-<td><code>update</code></td>
-<td><code>replio plugins update &lt;name&gt;</code> - re-fetch from the recorded source</td>
+<td><code>list</code></td>
+<td>List installed plugins and their load status</td>
 </tr>
 <tr>
 <td><code>uninstall</code></td>
 <td><code>replio plugins uninstall &lt;name&gt;</code> - remove a plugin</td>
+</tr>
+<tr>
+<td><code>update</code></td>
+<td><code>replio plugins update &lt;name&gt;</code> - re-fetch from the recorded source</td>
 </tr>
 </tbody>
 </table>

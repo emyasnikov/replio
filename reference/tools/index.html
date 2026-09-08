@@ -1398,18 +1398,46 @@
 </thead>
 <tbody>
 <tr>
-<td><code>web_search</code></td>
-<td>replio-core-web</td>
-<td><code>search</code></td>
-<td><code>web</code></td>
-<td>Web search (aliases <code>search</code>, <code>web</code>)</td>
+<td><code>ask</code></td>
+<td>core</td>
+<td><code>ask</code></td>
+<td><code>ask</code></td>
+<td>Ask the human or the lead agent for a decision, pausing until it is answered</td>
 </tr>
 <tr>
-<td><code>web_fetch</code></td>
-<td>replio-core-web</td>
-<td><code>read</code></td>
-<td><code>read</code></td>
-<td>Fetch a page by URL or by <code>web_search</code> result <code>id</code> (aliases <code>open</code>, <code>fetch_page</code>)</td>
+<td><code>code_format</code></td>
+<td>replio-core-dev</td>
+<td><code>exec</code></td>
+<td><code>bash</code></td>
+<td>Run the project formatter (<code>dev.format_cmd</code>, default <code>ruff format .</code>)</td>
+</tr>
+<tr>
+<td><code>code_lint</code></td>
+<td>replio-core-dev</td>
+<td><code>exec</code></td>
+<td><code>bash</code></td>
+<td>Run the project linter (<code>dev.lint_cmd</code>, default <code>ruff check .</code>)</td>
+</tr>
+<tr>
+<td><code>code_test</code></td>
+<td>replio-core-dev</td>
+<td><code>exec</code></td>
+<td><code>bash</code></td>
+<td>Run the project test suite (<code>dev.test_cmd</code>, default <code>python -m unittest discover</code>, resolved to the current interpreter)</td>
+</tr>
+<tr>
+<td><code>delegate</code></td>
+<td>core</td>
+<td><code>delegate</code></td>
+<td><code>delegate</code></td>
+<td>Run a task under an agent type as a sub-agent</td>
+</tr>
+<tr>
+<td><code>file_edit</code></td>
+<td>replio-core-edit</td>
+<td><code>write</code></td>
+<td><code>edit</code></td>
+<td>Targeted search-and-replace in a file with a diff preview (<code>count</code> occurrences, <code>0</code> = all, alias <code>edit</code>)</td>
 </tr>
 <tr>
 <td><code>file_read</code></td>
@@ -1419,39 +1447,11 @@
 <td>Read a file with numbered lines (aliases <code>read_file</code>, <code>read</code>, <code>view</code>)</td>
 </tr>
 <tr>
-<td><code>list_dir</code></td>
-<td>replio-core-fs</td>
-<td><code>read</code></td>
-<td><code>list</code></td>
-<td>List a directory (<code>depth</code> for trees, alias <code>ls</code>)</td>
-</tr>
-<tr>
 <td><code>file_write</code></td>
 <td>replio-core-fs</td>
 <td><code>write</code></td>
 <td><code>edit</code></td>
 <td>Create/overwrite/append a file (aliases <code>write_file</code>, <code>write</code>)</td>
-</tr>
-<tr>
-<td><code>glob</code></td>
-<td>replio-core-fs</td>
-<td><code>search</code></td>
-<td><code>read</code></td>
-<td>Recursive pattern lookup</td>
-</tr>
-<tr>
-<td><code>grep</code></td>
-<td>replio-core-fs</td>
-<td><code>search</code></td>
-<td><code>read</code></td>
-<td>Regex content search (<code>file:line:</code> results, alias <code>find</code>)</td>
-</tr>
-<tr>
-<td><code>file_edit</code></td>
-<td>replio-core-edit</td>
-<td><code>write</code></td>
-<td><code>edit</code></td>
-<td>Targeted search-and-replace in a file with a diff preview (<code>count</code> occurrences, <code>0</code> = all, alias <code>edit</code>)</td>
 </tr>
 <tr>
 <td><code>git</code></td>
@@ -1468,25 +1468,25 @@
 <td>Stage/commit git changes, always confirm-gated (alias <code>commit</code>)</td>
 </tr>
 <tr>
-<td><code>code_test</code></td>
-<td>replio-core-dev</td>
-<td><code>exec</code></td>
-<td><code>bash</code></td>
-<td>Run the project test suite (<code>dev.test_cmd</code>, default <code>python -m unittest discover</code>, resolved to the current interpreter)</td>
+<td><code>glob</code></td>
+<td>replio-core-fs</td>
+<td><code>search</code></td>
+<td><code>read</code></td>
+<td>Recursive pattern lookup</td>
 </tr>
 <tr>
-<td><code>code_lint</code></td>
-<td>replio-core-dev</td>
-<td><code>exec</code></td>
-<td><code>bash</code></td>
-<td>Run the project linter (<code>dev.lint_cmd</code>, default <code>ruff check .</code>)</td>
+<td><code>grep</code></td>
+<td>replio-core-fs</td>
+<td><code>search</code></td>
+<td><code>read</code></td>
+<td>Regex content search (<code>file:line:</code> results, alias <code>find</code>)</td>
 </tr>
 <tr>
-<td><code>code_format</code></td>
-<td>replio-core-dev</td>
-<td><code>exec</code></td>
-<td><code>bash</code></td>
-<td>Run the project formatter (<code>dev.format_cmd</code>, default <code>ruff format .</code>)</td>
+<td><code>list_dir</code></td>
+<td>replio-core-fs</td>
+<td><code>read</code></td>
+<td><code>list</code></td>
+<td>List a directory (<code>depth</code> for trees, alias <code>ls</code>)</td>
 </tr>
 <tr>
 <td><code>run_command</code></td>
@@ -1496,18 +1496,18 @@
 <td>Run a shell command with timeout (aliases <code>bash</code>, <code>exec</code>). Restricted by <code>tool_permission.bash_allow</code></td>
 </tr>
 <tr>
-<td><code>delegate</code></td>
-<td>core</td>
-<td><code>delegate</code></td>
-<td><code>delegate</code></td>
-<td>Run a task under an agent type as a sub-agent</td>
+<td><code>web_fetch</code></td>
+<td>replio-core-web</td>
+<td><code>read</code></td>
+<td><code>read</code></td>
+<td>Fetch a page by URL or by <code>web_search</code> result <code>id</code> (aliases <code>open</code>, <code>fetch_page</code>)</td>
 </tr>
 <tr>
-<td><code>ask</code></td>
-<td>core</td>
-<td><code>ask</code></td>
-<td><code>ask</code></td>
-<td>Ask the human or the lead agent for a decision, pausing until it is answered</td>
+<td><code>web_search</code></td>
+<td>replio-core-web</td>
+<td><code>search</code></td>
+<td><code>web</code></td>
+<td>Web search (aliases <code>search</code>, <code>web</code>)</td>
 </tr>
 </tbody>
 </table>

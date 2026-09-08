@@ -1318,29 +1318,11 @@
 </thead>
 <tbody>
 <tr>
-<td><code>researcher</code></td>
-<td>gathers and evaluates web sources, returns findings</td>
-<td>research, writing</td>
-<td>deny</td>
-<td>deny</td>
-<td>allow</td>
-<td>allow</td>
-</tr>
-<tr>
-<td><code>writer</code></td>
-<td>turns a findings brief into a document, returns file path</td>
-<td>writing</td>
-<td>allow</td>
-<td>deny</td>
+<td><code>code-reviewer</code></td>
+<td>auditor: reviews a change, returns findings</td>
+<td>programming, review</td>
 <td>deny</td>
 <td>allow</td>
-</tr>
-<tr>
-<td><code>referencer</code></td>
-<td>resolves citations into a <code>.bib</code> file</td>
-<td>writing</td>
-<td>allow</td>
-<td>deny</td>
 <td>deny</td>
 <td>allow</td>
 </tr>
@@ -1372,6 +1354,24 @@
 <td>allow</td>
 </tr>
 <tr>
+<td><code>referencer</code></td>
+<td>resolves citations into a <code>.bib</code> file</td>
+<td>writing</td>
+<td>allow</td>
+<td>deny</td>
+<td>deny</td>
+<td>allow</td>
+</tr>
+<tr>
+<td><code>researcher</code></td>
+<td>gathers and evaluates web sources, returns findings</td>
+<td>research, writing</td>
+<td>deny</td>
+<td>deny</td>
+<td>allow</td>
+<td>allow</td>
+</tr>
+<tr>
 <td><code>tester</code></td>
 <td>writes and runs tests, reports failures</td>
 <td>programming</td>
@@ -1381,11 +1381,11 @@
 <td>allow</td>
 </tr>
 <tr>
-<td><code>code-reviewer</code></td>
-<td>auditor: reviews a change, returns findings</td>
-<td>programming, review</td>
-<td>deny</td>
+<td><code>writer</code></td>
+<td>turns a findings brief into a document, returns file path</td>
+<td>writing</td>
 <td>allow</td>
+<td>deny</td>
 <td>deny</td>
 <td>allow</td>
 </tr>
@@ -1435,9 +1435,9 @@
 <ul>
 <li><code>/type</code> - list agent types, marking each one's origin (<code>bundled</code> / <code>plugin</code> / <code>local</code> / <code>global</code> / <code>merged</code>) and tags.</li>
 <li><code>/type list &lt;tag&gt;</code> - list only types carrying the tag (e.g. <code>/type list programming</code>). Unknown tags print the known tags.</li>
-<li><code>/type show &lt;name&gt;</code> - show a type's full definition.</li>
 <li><code>/type new &lt;name&gt; [system prompt]</code> - create a type in the local catalog (edit the JSON for full fields, including tags). Using an existing name overrides that type.</li>
 <li><code>/type remove &lt;name&gt;</code> - remove a type from the local catalog. Bundled types cannot be removed (override them instead).</li>
+<li><code>/type show &lt;name&gt;</code> - show a type's full definition.</li>
 </ul>
 <h2 id="delegation-and-permissions">Delegation and permissions<a class="headerlink" href="#delegation-and-permissions" title="Permanent link">&para;</a></h2>
 <p><code>delegate</code> resolves its permission from the target type rather than from a single tool-level default:</p>

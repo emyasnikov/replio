@@ -1344,41 +1344,6 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </thead>
 <tbody>
 <tr>
-<td><code>provider</code></td>
-<td><code>"ollama"</code></td>
-<td>Provider name. The bundled provider plugins (<code>replio-core-ollama</code>, <code>-openai</code>, <code>-groq</code>, <code>-anthropic</code>, <code>-opencode</code>) register <code>ollama</code>, <code>openai</code>, <code>groq</code>, <code>anthropic</code>, <code>opencode</code>, and <code>opencode-go</code>. <code>openai-compatible</code> is the generic fallback. External plugins can register more</td>
-</tr>
-<tr>
-<td><code>model</code></td>
-<td><code>"llama3.2"</code></td>
-<td>Model name. A <code>provider/model</code> ref (e.g. <code>opencode-go/deepseek-v4-flash</code>) unfolds to that provider and model. An unfolded model must be approved (see <a href="../providers/#model-refs-and-approval">Model refs and approval</a>)</td>
-</tr>
-<tr>
-<td><code>base_url</code></td>
-<td><code>"https://api.ollama.com"</code></td>
-<td>Provider endpoint</td>
-</tr>
-<tr>
-<td><code>temperature</code></td>
-<td><code>0.7</code></td>
-<td>Sampling temperature</td>
-</tr>
-<tr>
-<td><code>max_tokens</code></td>
-<td><code>8192</code></td>
-<td>Output token cap sent to the provider. <code>0</code> = unset (provider default applies, e.g. Ollama caps at 2048). Default <code>8192</code> overrides low provider defaults</td>
-</tr>
-<tr>
-<td><code>stream_retries</code></td>
-<td><code>2</code></td>
-<td>Extra attempts (after the first) when a provider stream ends before a completion event with no content</td>
-</tr>
-<tr>
-<td><code>stream_retry_delay</code></td>
-<td><code>0.5</code></td>
-<td>Seconds to wait between stream retries</td>
-</tr>
-<tr>
 <td><code>auto_continue</code></td>
 <td><code>true</code></td>
 <td>On truncation (<code>finish_reason=length</code>) with a partial answer, re-request the turn with a "continue" instruction and stitch the parts into one message</td>
@@ -1389,29 +1354,34 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td>Max continuation rounds per turn before the truncation is reported</td>
 </tr>
 <tr>
+<td><code>base_url</code></td>
+<td><code>"https://api.ollama.com"</code></td>
+<td>Provider endpoint</td>
+</tr>
+<tr>
+<td><code>clear_screen</code></td>
+<td><code>true</code></td>
+<td>Clear the screen before the REPL banner</td>
+</tr>
+<tr>
+<td><code>compact_keep</code></td>
+<td><code>4</code></td>
+<td>Messages to keep when compacting the provider context</td>
+</tr>
+<tr>
 <td><code>connect_check</code></td>
 <td><code>true</code></td>
 <td>Test the provider connection when config changes: <code>/connect</code> probes before saving (broken values are rejected unless confirmed), <code>/provider</code> warns on a failed probe. <code>false</code> skips all probes</td>
 </tr>
 <tr>
-<td><code>system_prompt</code></td>
-<td><code>""</code></td>
-<td>Optional system prompt, injected for every front-end (REPL, <code>run</code>, <code>serve</code>)</td>
-</tr>
-<tr>
-<td><code>mode</code></td>
-<td><code>"build"</code></td>
-<td>Active agent mode (<code>build</code>, <code>plan</code>, or a custom mode from <code>modes</code>)</td>
-</tr>
-<tr>
-<td><code>tool_calling</code></td>
+<td><code>delegate_echo</code></td>
 <td><code>true</code></td>
-<td>Enable OpenAI-compatible function calling</td>
+<td>When the <code>delegate</code> tool runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result. The sub footer is emitted alongside the sub-agent's own rendered output only when on</td>
 </tr>
 <tr>
-<td><code>tool_status_visible</code></td>
-<td><code>true</code></td>
-<td>Show dimmed tool status in the REPL</td>
+<td><code>footer_tokens</code></td>
+<td><code>["context"]</code></td>
+<td>Which token counts the footer shows, in order, joined by <code>/</code>. <code>context</code> = <code>&lt;n&gt; tokens</code> (context/input size, chars/4 fallback), <code>in</code>/<code>out</code>/<code>thinking</code> = <code>&lt;n&gt;t</code> from provider usage (unavailable counts are skipped). Empty list hides the token section entirely</td>
 </tr>
 <tr>
 <td><code>glyph_lines</code></td>
@@ -1424,69 +1394,9 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td>Append the tool call parameters to glyph status lines and confirm prompts (e.g. <code>← Read engine.py [offset=299, limit=85]</code>). Off for bare <code>&lt;glyph&gt; &lt;verb&gt; &lt;arg&gt;</code></td>
 </tr>
 <tr>
-<td><code>show_errors</code></td>
-<td><code>true</code></td>
-<td>Show a dimmed <code>! Error: ...</code> line (first line of the result) when a tool call fails. Off hides the line</td>
-</tr>
-<tr>
-<td><code>show_notes</code></td>
-<td><code>true</code></td>
-<td>Show a dimmed info line for soft tool results (e.g. <code>(empty file)</code>, <code>(no matches for "x")</code>). Off hides the line</td>
-</tr>
-<tr>
-<td><code>tool_analysis</code></td>
-<td><code>false</code></td>
-<td>Model-generated one-line analysis of each tool result (log-only)</td>
-</tr>
-<tr>
-<td><code>delegate_echo</code></td>
-<td><code>true</code></td>
-<td>When the <code>delegate</code> tool runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result. The sub footer is emitted alongside the sub-agent's own rendered output only when on</td>
-</tr>
-<tr>
-<td><code>session_tool_max_chars</code></td>
-<td><code>0</code></td>
-<td><code>0</code> = unlimited. Caps persisted tool-result content</td>
-</tr>
-<tr>
-<td><code>tool_max_result_chars</code></td>
-<td><code>100000</code></td>
-<td>Caps tool-result content returned to the model (<code>... (truncated)</code> appended). <code>0</code> = unlimited. With the default, the model sizes files via the <code>file_read</code> header and pages with <code>offset</code>/<code>limit</code></td>
-</tr>
-<tr>
 <td><code>list_dir_max_entries</code></td>
 <td><code>200</code></td>
 <td>Cap the number of entries <code>list_dir</code> returns (<code>... (showing first N of M entries)</code> appended). <code>0</code> = unlimited</td>
-</tr>
-<tr>
-<td><code>query_refine</code></td>
-<td><code>false</code></td>
-<td>Auto-refine short web-search queries via a lightweight model call</td>
-</tr>
-<tr>
-<td><code>query_refine_min_words</code></td>
-<td><code>3</code></td>
-<td>Minimum query length before refinement applies</td>
-</tr>
-<tr>
-<td><code>query_refine_context</code></td>
-<td><code>4</code></td>
-<td>Recent-message context to inject into refinement</td>
-</tr>
-<tr>
-<td><code>show_thinking</code></td>
-<td><code>false</code></td>
-<td>Stream thinking/reasoning tokens dimmed. When off, thinking is shown only as an animated spinner plus a <code>+ Thought N.Ns</code> summary (display only - does not change what is sent to the model)</td>
-</tr>
-<tr>
-<td><code>show_thought_duration</code></td>
-<td><code>true</code></td>
-<td>When thinking is streamed (<code>show_thinking</code> on), print a dimmed <code>(Thought N.Ns)</code> line after each thinking block. Off hides it</td>
-</tr>
-<tr>
-<td><code>reasoning</code></td>
-<td><code>"auto"</code></td>
-<td>Request reasoning from the model and control its token budget: <code>false</code>/<code>"off"</code> = do not request, <code>true</code>/<code>"on"</code>/<code>"auto"</code> = request with provider default, <code>"low"</code>/<code>"medium"</code>/<code>"high"</code> = explicit budget hint. Mapping is provider-specific (OpenAI <code>reasoning_effort</code>, Claude <code>thinking.budget_tokens</code>, Qwen <code>enable_thinking</code>)</td>
 </tr>
 <tr>
 <td><code>markdown_streaming</code></td>
@@ -1494,69 +1404,9 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td>Basic markdown-aware streaming</td>
 </tr>
 <tr>
-<td><code>word_streaming</code></td>
-<td><code>true</code></td>
-<td>Buffer REPL output to word boundaries so words render fully formed (no mid-word pauses). <code>false</code> streams character-by-character</td>
-</tr>
-<tr>
-<td><code>show_context_size</code></td>
-<td><code>true</code></td>
-<td>Dimmed context-size line after each response</td>
-</tr>
-<tr>
-<td><code>footer_tokens</code></td>
-<td><code>["context"]</code></td>
-<td>Which token counts the footer shows, in order, joined by <code>/</code>. <code>context</code> = <code>&lt;n&gt; tokens</code> (context/input size, chars/4 fallback), <code>in</code>/<code>out</code>/<code>thinking</code> = <code>&lt;n&gt;t</code> from provider usage (unavailable counts are skipped). Empty list hides the token section entirely</td>
-</tr>
-<tr>
-<td><code>clear_screen</code></td>
-<td><code>true</code></td>
-<td>Clear the screen before the REPL banner</td>
-</tr>
-<tr>
-<td><code>show_version</code></td>
-<td><code>true</code></td>
-<td>Show the version in the REPL banner</td>
-</tr>
-<tr>
-<td><code>compact_keep</code></td>
-<td><code>4</code></td>
-<td>Messages to keep when compacting the provider context</td>
-</tr>
-<tr>
-<td><code>project_instructions</code></td>
-<td><code>"AGENTS.md"</code></td>
-<td>Per-worktree instructions file auto-loaded into the system prompt (e.g. <code>AGENTS.md</code>, <code>CLAUDE.md</code>). <code>""</code> disables. Absent files are skipped. Content is capped at 20000 chars</td>
-</tr>
-<tr>
-<td><code>noise_tools</code></td>
-<td><code>["web_fetch", "open", "fetch_page"]</code></td>
-<td>Tool results replaced by a marker in persisted sessions</td>
-</tr>
-<tr>
-<td><code>web_search</code></td>
-<td><code>false</code></td>
-<td>Auto-search mode: search the web before answering</td>
-</tr>
-<tr>
-<td><code>search_results</code></td>
-<td><code>5</code></td>
-<td>Number of search results to fetch</td>
-</tr>
-<tr>
-<td><code>tools.allow</code></td>
-<td><code>[]</code></td>
-<td>Name-level allowlist. Empty means no restriction</td>
-</tr>
-<tr>
-<td><code>tools.deny</code></td>
-<td><code>[]</code></td>
-<td>Name-level deny list (takes precedence over allow)</td>
-</tr>
-<tr>
-<td><code>tool_permission</code></td>
-<td><em>(see below)</em></td>
-<td>Category permission actions</td>
+<td><code>max_tokens</code></td>
+<td><code>8192</code></td>
+<td>Output token cap sent to the provider. <code>0</code> = unset (provider default applies, e.g. Ollama caps at 2048). Default <code>8192</code> overrides low provider defaults</td>
 </tr>
 <tr>
 <td><code>mcp.servers</code></td>
@@ -1569,9 +1419,159 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td>When serving MCP, run <code>ask</code>-policy tools (deferred to the client) vs refuse them</td>
 </tr>
 <tr>
+<td><code>mode</code></td>
+<td><code>"build"</code></td>
+<td>Active agent mode (<code>build</code>, <code>plan</code>, or a custom mode from <code>modes</code>)</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td><code>"llama3.2"</code></td>
+<td>Model name. A <code>provider/model</code> ref (e.g. <code>opencode-go/deepseek-v4-flash</code>) unfolds to that provider and model. An unfolded model must be approved (see <a href="../providers/#model-refs-and-approval">Model refs and approval</a>)</td>
+</tr>
+<tr>
+<td><code>noise_tools</code></td>
+<td><code>["web_fetch", "open", "fetch_page"]</code></td>
+<td>Tool results replaced by a marker in persisted sessions</td>
+</tr>
+<tr>
 <td><code>plugins</code></td>
 <td><em>(bundled)</em></td>
 <td>Plugins to load. Empty = all discovered plugins load</td>
+</tr>
+<tr>
+<td><code>project_instructions</code></td>
+<td><code>"AGENTS.md"</code></td>
+<td>Per-worktree instructions file auto-loaded into the system prompt (e.g. <code>AGENTS.md</code>, <code>CLAUDE.md</code>). <code>""</code> disables. Absent files are skipped. Content is capped at 20000 chars</td>
+</tr>
+<tr>
+<td><code>provider</code></td>
+<td><code>"ollama"</code></td>
+<td>Provider name. The bundled provider plugins (<code>replio-core-ollama</code>, <code>-openai</code>, <code>-groq</code>, <code>-anthropic</code>, <code>-opencode</code>) register <code>ollama</code>, <code>openai</code>, <code>groq</code>, <code>anthropic</code>, <code>opencode</code>, and <code>opencode-go</code>. <code>openai-compatible</code> is the generic fallback. External plugins can register more</td>
+</tr>
+<tr>
+<td><code>query_refine</code></td>
+<td><code>false</code></td>
+<td>Auto-refine short web-search queries via a lightweight model call</td>
+</tr>
+<tr>
+<td><code>query_refine_context</code></td>
+<td><code>4</code></td>
+<td>Recent-message context to inject into refinement</td>
+</tr>
+<tr>
+<td><code>query_refine_min_words</code></td>
+<td><code>3</code></td>
+<td>Minimum query length before refinement applies</td>
+</tr>
+<tr>
+<td><code>reasoning</code></td>
+<td><code>"auto"</code></td>
+<td>Request reasoning from the model and control its token budget: <code>false</code>/<code>"off"</code> = do not request, <code>true</code>/<code>"on"</code>/<code>"auto"</code> = request with provider default, <code>"low"</code>/<code>"medium"</code>/<code>"high"</code> = explicit budget hint. Mapping is provider-specific (OpenAI <code>reasoning_effort</code>, Claude <code>thinking.budget_tokens</code>, Qwen <code>enable_thinking</code>)</td>
+</tr>
+<tr>
+<td><code>search_results</code></td>
+<td><code>5</code></td>
+<td>Number of search results to fetch</td>
+</tr>
+<tr>
+<td><code>session_tool_max_chars</code></td>
+<td><code>0</code></td>
+<td><code>0</code> = unlimited. Caps persisted tool-result content</td>
+</tr>
+<tr>
+<td><code>show_context_size</code></td>
+<td><code>true</code></td>
+<td>Dimmed context-size line after each response</td>
+</tr>
+<tr>
+<td><code>show_errors</code></td>
+<td><code>true</code></td>
+<td>Show a dimmed <code>! Error: ...</code> line (first line of the result) when a tool call fails. Off hides the line</td>
+</tr>
+<tr>
+<td><code>show_notes</code></td>
+<td><code>true</code></td>
+<td>Show a dimmed info line for soft tool results (e.g. <code>(empty file)</code>, <code>(no matches for "x")</code>). Off hides the line</td>
+</tr>
+<tr>
+<td><code>show_thinking</code></td>
+<td><code>false</code></td>
+<td>Stream thinking/reasoning tokens dimmed. When off, thinking is shown only as an animated spinner plus a <code>+ Thought N.Ns</code> summary (display only - does not change what is sent to the model)</td>
+</tr>
+<tr>
+<td><code>show_thought_duration</code></td>
+<td><code>true</code></td>
+<td>When thinking is streamed (<code>show_thinking</code> on), print a dimmed <code>(Thought N.Ns)</code> line after each thinking block. Off hides it</td>
+</tr>
+<tr>
+<td><code>show_version</code></td>
+<td><code>true</code></td>
+<td>Show the version in the REPL banner</td>
+</tr>
+<tr>
+<td><code>stream_retries</code></td>
+<td><code>2</code></td>
+<td>Extra attempts (after the first) when a provider stream ends before a completion event with no content</td>
+</tr>
+<tr>
+<td><code>stream_retry_delay</code></td>
+<td><code>0.5</code></td>
+<td>Seconds to wait between stream retries</td>
+</tr>
+<tr>
+<td><code>system_prompt</code></td>
+<td><code>""</code></td>
+<td>Optional system prompt, injected for every front-end (REPL, <code>run</code>, <code>serve</code>)</td>
+</tr>
+<tr>
+<td><code>temperature</code></td>
+<td><code>0.7</code></td>
+<td>Sampling temperature</td>
+</tr>
+<tr>
+<td><code>tool_analysis</code></td>
+<td><code>false</code></td>
+<td>Model-generated one-line analysis of each tool result (log-only)</td>
+</tr>
+<tr>
+<td><code>tool_calling</code></td>
+<td><code>true</code></td>
+<td>Enable OpenAI-compatible function calling</td>
+</tr>
+<tr>
+<td><code>tool_max_result_chars</code></td>
+<td><code>100000</code></td>
+<td>Caps tool-result content returned to the model (<code>... (truncated)</code> appended). <code>0</code> = unlimited. With the default, the model sizes files via the <code>file_read</code> header and pages with <code>offset</code>/<code>limit</code></td>
+</tr>
+<tr>
+<td><code>tool_permission</code></td>
+<td><em>(see below)</em></td>
+<td>Category permission actions</td>
+</tr>
+<tr>
+<td><code>tool_status_visible</code></td>
+<td><code>true</code></td>
+<td>Show dimmed tool status in the REPL</td>
+</tr>
+<tr>
+<td><code>tools.allow</code></td>
+<td><code>[]</code></td>
+<td>Name-level allowlist. Empty means no restriction</td>
+</tr>
+<tr>
+<td><code>tools.deny</code></td>
+<td><code>[]</code></td>
+<td>Name-level deny list (takes precedence over allow)</td>
+</tr>
+<tr>
+<td><code>web_search</code></td>
+<td><code>false</code></td>
+<td>Auto-search mode: search the web before answering</td>
+</tr>
+<tr>
+<td><code>word_streaming</code></td>
+<td><code>true</code></td>
+<td>Buffer REPL output to word boundaries so words render fully formed (no mid-word pauses). <code>false</code> streams character-by-character</td>
 </tr>
 </tbody>
 </table>
