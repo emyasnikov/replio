@@ -1450,6 +1450,11 @@
 <td>Show or switch the agent mode (<code>/mode plan</code> = read-only, <code>/mode build</code>, or a custom mode)</td>
 </tr>
 <tr>
+<td><code>/thinking</code></td>
+<td><code>/reasoning</code></td>
+<td>Show or switch reasoning display and request (<code>/thinking on</code> streams reasoning dimmed, <code>off</code> shows only a spinner)</td>
+</tr>
+<tr>
 <td><code>/connect</code></td>
 <td></td>
 <td>Connect a provider. <code>/connect</code> picks from the known providers interactively. <code>/connect &lt;name&gt;</code> presets a known provider's defaults and (re)enters its API key. <code>/connect &lt;url&gt;</code> detects a known host or creates a named custom provider (derived from the host, or <code>/connect &lt;url&gt; &lt;name&gt;</code> to name it). Tests the connection before saving, stores the API key + base URL in the global <code>providers.json</code>, and writes <code>provider</code>/<code>base_url</code> into config - the model is picked separately with <code>/model</code></td>
@@ -1473,6 +1478,16 @@
 <td><code>/type</code></td>
 <td></td>
 <td>Manage types: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [prompt]</code>, <code>remove &lt;name&gt;</code>. See <a href="../types/">types.md</a></td>
+</tr>
+<tr>
+<td><code>/team</code></td>
+<td></td>
+<td>Manage teams: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [description]</code>, <code>remove &lt;name&gt;</code>, <code>run &lt;name&gt; &lt;task&gt;</code>. See <a href="../teams/">teams.md</a></td>
+</tr>
+<tr>
+<td><code>/skill</code></td>
+<td></td>
+<td>Manage skills: <code>list</code>, <code>show &lt;name&gt;</code>, <code>new &lt;name&gt;</code>, <code>remove &lt;name&gt;</code>. See <a href="../skills/">skills.md</a></td>
 </tr>
 <tr>
 <td><code>/tool</code></td>

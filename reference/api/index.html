@@ -1217,7 +1217,7 @@
 <h1 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h1>
 <p><code>replio serve</code> runs an HTTP JSON API on <code>127.0.0.1:8787</code> by default (override with <code>--host</code> / <code>--port</code>).</p>
 <div class="highlight"><pre><span></span><code>replio<span class="w"> </span>serve
-<span class="c1"># replio serve - http://127.0.0.1:8787 (POST /chat, GET /sessions, GET /health, GET /version)</span>
+<span class="c1"># replio serve - http://127.0.0.1:8787 (POST /chat, POST /mcp, GET /sessions, GET /health, GET /version)</span>
 </code></pre></div>
 <p>All responses are JSON with <code>Content-Type: application/json</code>.</p>
 <h2 id="post-chat">POST /chat<a class="headerlink" href="#post-chat" title="Permanent link">&para;</a></h2>
@@ -1263,7 +1263,7 @@
 <h2 id="get-version">GET /version<a class="headerlink" href="#get-version" title="Permanent link">&para;</a></h2>
 <p>Returns the installed version.</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>localhost:8787/version
-<span class="c1"># {"version": "0.12.0"}</span>
+<span class="c1"># {"version": "0.29.0"}</span>
 </code></pre></div>
 <p>Unknown routes return <code>404 {"error": "not found"}</code>.</p>
 
