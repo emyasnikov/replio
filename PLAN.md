@@ -10,7 +10,7 @@ Sourced from the use-case gap (`docs/use-cases/`), competitor parity (`docs/vs/`
 
 - Effort: S < M < L
 - Provides: the capability the task delivers
-- Milestones: the swarm/team track (M1-M3) groups its tasks into verifiable phases
+- Milestones: the swarm/team track (M1-M4) groups its tasks into verifiable phases
 
 ## Milestones - swarm and team track
 
@@ -42,6 +42,28 @@ Verified: one command composes a new project's team. A second project reuses sto
 - [ ] Kit moved out per the `docs/teamkit.md` checklist - own/per-customer repo, `plugins install --global`, bundled copy removed from the default plugin set
 
 Verified: full workflow with the kit installed externally.
+
+### M4 - Autonomous supervisor
+
+"Start it once, it works on its own." The operator starts a task on the supervisor type from
+the REPL or as a scheduled job; the supervisor decomposes the task, delegates to member types,
+asks only when it truly needs a decision, keeps working while the terminal is idle or closed,
+and reports back. Landed: interactive `ask` human/lead routing, the persisted `loop` delegate
+turn (`Engine.chat_tool`), and the supervisor auto-decide prompt (`ask: deny` + decide-from-task
+instructions). A supervisor already runs headless on schedule (`replio jobs add --type
+supervisor`). Remaining is the unattended ask channel and the report-back, composing the
+existing jobs-layer items (operator API, job event hooks, connectors, mid-run blocking job
+approval) and the delegation-progress/focus items in the swarm package below.
+
+- [ ] Pending-ask inbox - an unattended run's `ask target='human'` parks as a pending request (persisted, listed in the REPL + serve API) instead of failing; answering resumes the run from its session. Shares the resumable mid-run state with the mid-run blocking job approval item (jobs layer below)
+- [ ] Supervisor report-back - finished/failed supervisor runs surface a per-run summary (interactive session result footer + `replio jobs status`) and are delivered out-of-band via the job event hooks + connectors when the terminal is closed
+- [ ] End-to-end verification - an overnight supervisor job delegates, parks one ask (answered from the terminal), and delivers its report without the REPL being watched
+
+Verified: a supervisor task started once runs unattended, asks only when truly needed
+(answered from the terminal or a connector), and reports back; the terminal can stay closed.
+In-process threaded concurrency (a non-blocking background delegate from the live REPL) stays
+out of scope here - it is the VISION out-of-scope threaded milestone, building on the
+delegation-progress and interactive-focus items.
 
 ## How the layers compose
 

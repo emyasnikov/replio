@@ -77,13 +77,21 @@ The task mapping lives in `PLAN.md` (work packages + milestone checkboxes). The 
   `jobs add --team`, reuse verified across two projects, kit moved out per the documented
   checklist (own/per-customer repo, `plugins install --global`), bundled copy removed from the
   default plugin set. Verified: full workflow with the kit installed externally.
+- **M4 - Autonomous supervisor**: start once, it works on its own - the supervisor delegates
+  under its type, asks only when it truly needs a decision (an unanswered ask parks and the run
+  resumes on reply), keeps working while the terminal is idle or closed (jobs daemon), and
+  reports back (session result + job events over connectors). In-process threaded concurrency
+  (a non-blocking background delegate from the live REPL) stays out of scope here, as below.
 
 ## TODO.md placement
 
 The swarm/team track is tracked as open tasks at the top of `TODO.md` `## Open` (team kit
 plugin, template-based composition, team kit library, sequential team runs, skills registry,
 plugin contribution hooks). The skills-registry entry supersedes the earlier draft of the same
-name. The teams concept supersedes the earlier "jobs registry" TODO item (see `PLAN.md`).
+name. The teams concept supersedes the earlier "jobs registry" TODO item (see `PLAN.md`). The
+autonomous supervisor track (start once, ask only when needed, report back) is milestone M4 in
+`PLAN.md`, composing the ask routing, the persisted delegate loop turn, and the jobs
+report/approval layer.
 
 ## Out of scope (later milestones, listed not planned)
 
