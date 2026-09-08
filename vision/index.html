@@ -1330,12 +1330,20 @@ the core, so internal know-how leaves the repo as one documented unit whenever n
   <code>jobs add --team</code>, reuse verified across two projects, kit moved out per the documented
   checklist (own/per-customer repo, <code>plugins install --global</code>), bundled copy removed from the
   default plugin set. Verified: full workflow with the kit installed externally.</li>
+<li><strong>M4 - Autonomous supervisor</strong>: start once, it works on its own - the supervisor delegates
+  under its type, asks only when it truly needs a decision (an unanswered ask parks and the run
+  resumes on reply), keeps working while the terminal is idle or closed (jobs daemon), and
+  reports back (session result + job events over connectors). In-process threaded concurrency
+  (a non-blocking background delegate from the live REPL) stays out of scope here, as below.</li>
 </ul>
 <h2 id="todomd-placement">TODO.md placement<a class="headerlink" href="#todomd-placement" title="Permanent link">&para;</a></h2>
 <p>The swarm/team track is tracked as open tasks at the top of <code>TODO.md</code> <code>## Open</code> (team kit
 plugin, template-based composition, team kit library, sequential team runs, skills registry,
 plugin contribution hooks). The skills-registry entry supersedes the earlier draft of the same
-name. The teams concept supersedes the earlier "jobs registry" TODO item (see <code>PLAN.md</code>).</p>
+name. The teams concept supersedes the earlier "jobs registry" TODO item (see <code>PLAN.md</code>). The
+autonomous supervisor track (start once, ask only when needed, report back) is milestone M4 in
+<code>PLAN.md</code>, composing the ask routing, the persisted delegate loop turn, and the jobs
+report/approval layer.</p>
 <h2 id="out-of-scope-later-milestones-listed-not-planned">Out of scope (later milestones, listed not planned)<a class="headerlink" href="#out-of-scope-later-milestones-listed-not-planned" title="Permanent link">&para;</a></h2>
 <p>In-process threaded team concurrency and live progress channel, war-room focus view, lead-grant
 approvals, generate &gt; check &gt; correct loop, fleet-backed teams, and a plugin download service

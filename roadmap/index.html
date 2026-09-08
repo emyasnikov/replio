@@ -405,6 +405,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#m4-autonomous-supervisor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M4 - Autonomous supervisor
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1378,6 +1389,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#m4-autonomous-supervisor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M4 - Autonomous supervisor
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1562,7 +1584,7 @@
 <ul>
 <li>Effort: S &lt; M &lt; L</li>
 <li>Provides: the capability the task delivers</li>
-<li>Milestones: the swarm/team track (M1-M3) groups its tasks into verifiable phases</li>
+<li>Milestones: the swarm/team track (M1-M4) groups its tasks into verifiable phases</li>
 </ul>
 <h2 id="milestones-swarm-and-team-track">Milestones - swarm and team track<a class="headerlink" href="#milestones-swarm-and-team-track" title="Permanent link">&para;</a></h2>
 <p>The current priority: one terminal, whole teams (<code>VISION.md</code>). Stages run sequentially via <code>run_subagent</code>. The composition machinery (templates, recipes, generator, library) lives in a movable private plugin, never in the core.</p>
@@ -1590,6 +1612,26 @@
 <li>[ ] Kit moved out per the <code>docs/teamkit.md</code> checklist - own/per-customer repo, <code>plugins install --global</code>, bundled copy removed from the default plugin set</li>
 </ul>
 <p>Verified: full workflow with the kit installed externally.</p>
+<h3 id="m4-autonomous-supervisor">M4 - Autonomous supervisor<a class="headerlink" href="#m4-autonomous-supervisor" title="Permanent link">&para;</a></h3>
+<p>"Start it once, it works on its own." The operator starts a task on the supervisor type from
+the REPL or as a scheduled job; the supervisor decomposes the task, delegates to member types,
+asks only when it truly needs a decision, keeps working while the terminal is idle or closed,
+and reports back. Landed: interactive <code>ask</code> human/lead routing, the persisted <code>loop</code> delegate
+turn (<code>Engine.chat_tool</code>), and the supervisor auto-decide prompt (<code>ask: deny</code> + decide-from-task
+instructions). A supervisor already runs headless on schedule (<code>replio jobs add --type
+supervisor</code>). Remaining is the unattended ask channel and the report-back, composing the
+existing jobs-layer items (operator API, job event hooks, connectors, mid-run blocking job
+approval) and the delegation-progress/focus items in the swarm package below.</p>
+<ul>
+<li>[ ] Pending-ask inbox - an unattended run's <code>ask target='human'</code> parks as a pending request (persisted, listed in the REPL + serve API) instead of failing; answering resumes the run from its session. Shares the resumable mid-run state with the mid-run blocking job approval item (jobs layer below)</li>
+<li>[ ] Supervisor report-back - finished/failed supervisor runs surface a per-run summary (interactive session result footer + <code>replio jobs status</code>) and are delivered out-of-band via the job event hooks + connectors when the terminal is closed</li>
+<li>[ ] End-to-end verification - an overnight supervisor job delegates, parks one ask (answered from the terminal), and delivers its report without the REPL being watched</li>
+</ul>
+<p>Verified: a supervisor task started once runs unattended, asks only when truly needed
+(answered from the terminal or a connector), and reports back; the terminal can stay closed.
+In-process threaded concurrency (a non-blocking background delegate from the live REPL) stays
+out of scope here - it is the VISION out-of-scope threaded milestone, building on the
+delegation-progress and interactive-focus items.</p>
 <h2 id="how-the-layers-compose">How the layers compose<a class="headerlink" href="#how-the-layers-compose" title="Permanent link">&para;</a></h2>
 <p>One round hands off in three steps:</p>
 <ol>

@@ -1589,6 +1589,10 @@
 <td><code>param_aliases</code></td>
 <td>Caller-side parameter synonyms mapped onto declared parameters (e.g. <code>cursor</code> -&gt; <code>offset</code>, <code>query</code> -&gt; <code>pattern</code>)</td>
 </tr>
+<tr>
+<td><code>loop</code></td>
+<td>When true, <code>/tool &lt;name&gt;</code> runs the tool as a real agent-loop turn (<code>Engine.chat_tool</code>) - the tool call and result persist, then the model streams its final answer. Used by <code>delegate</code> so a <code>/tool delegate</code> plan, results, and answer land in the session and a later prompt can continue the work. Direct <code>ToolRegistry.execute()</code> calls are unaffected</td>
+</tr>
 </tbody>
 </table>
 <p><code>ToolRegistry.execute()</code> passes only arguments declared in the tool's schema - undeclared and <code>null</code>-valued arguments (e.g. a hallucinated <code>recursive</code>, or <code>depth: null</code>) are dropped, not forwarded to the handler. It also passes the engine <code>Config</code> to handlers that declare a <code>_config</code> keyword argument (e.g. <code>def file_read(path, offset=1, limit=500, _config=None)</code>), so a tool can read config keys like <code>tool_max_result_chars</code> without exposing them to the model.</p>
