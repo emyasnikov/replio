@@ -19,14 +19,14 @@ The bundled catalog ships two pre-carved teams, useful as delegation targets and
 
 | type | function | tags | edit | bash | web | read |
 |---|---|---|---|---|---|---|
-| `researcher` | gathers and evaluates web sources, returns findings | research, writing | deny | deny | allow | allow |
-| `writer` | turns a findings brief into a document, returns file path | writing | allow | deny | deny | allow |
-| `referencer` | resolves citations into a `.bib` file | writing | allow | deny | deny | allow |
+| `code-reviewer` | auditor: reviews a change, returns findings | programming, review | deny | allow | deny | allow |
 | `editor` | auditor: checks a document against the prompt and sources | writing, review | deny | deny | deny | allow |
 | `planner` | decomposes a task into an ordered, verifiable plan | programming | deny | deny | allow | allow |
 | `programmer` | implements a change and runs the tests until green | programming | allow | allow | deny | allow |
+| `referencer` | resolves citations into a `.bib` file | writing | allow | deny | deny | allow |
+| `researcher` | gathers and evaluates web sources, returns findings | research, writing | deny | deny | allow | allow |
 | `tester` | writes and runs tests, reports failures | programming | allow | allow | deny | allow |
-| `code-reviewer` | auditor: reviews a change, returns findings | programming, review | deny | allow | deny | allow |
+| `writer` | turns a findings brief into a document, returns file path | writing | allow | deny | deny | allow |
 
 "allow" echoes the caller's category default, "deny" is explicit. Override any type by creating a local (or global) entry with the same `name`.
 
@@ -81,9 +81,9 @@ Fields:
 
 - `/type` - list agent types, marking each one's origin (`bundled` / `plugin` / `local` / `global` / `merged`) and tags.
 - `/type list <tag>` - list only types carrying the tag (e.g. `/type list programming`). Unknown tags print the known tags.
-- `/type show <name>` - show a type's full definition.
 - `/type new <name> [system prompt]` - create a type in the local catalog (edit the JSON for full fields, including tags). Using an existing name overrides that type.
 - `/type remove <name>` - remove a type from the local catalog. Bundled types cannot be removed (override them instead).
+- `/type show <name>` - show a type's full definition.
 
 ## Delegation and permissions
 

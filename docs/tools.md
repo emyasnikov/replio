@@ -12,22 +12,22 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 
 | Tool | Plugin | Category | Permission | Purpose |
 |------|--------|----------|------------|---------|
-| `web_search` | replio-core-web | `search` | `web` | Web search (aliases `search`, `web`) |
-| `web_fetch` | replio-core-web | `read` | `read` | Fetch a page by URL or by `web_search` result `id` (aliases `open`, `fetch_page`) |
-| `file_read` | replio-core-fs | `read` | `read` | Read a file with numbered lines (aliases `read_file`, `read`, `view`) |
-| `list_dir` | replio-core-fs | `read` | `list` | List a directory (`depth` for trees, alias `ls`) |
-| `file_write` | replio-core-fs | `write` | `edit` | Create/overwrite/append a file (aliases `write_file`, `write`) |
-| `glob` | replio-core-fs | `search` | `read` | Recursive pattern lookup |
-| `grep` | replio-core-fs | `search` | `read` | Regex content search (`file:line:` results, alias `find`) |
+| `ask` | core | `ask` | `ask` | Ask the human or the lead agent for a decision, pausing until it is answered |
+| `code_format` | replio-core-dev | `exec` | `bash` | Run the project formatter (`dev.format_cmd`, default `ruff format .`) |
+| `code_lint` | replio-core-dev | `exec` | `bash` | Run the project linter (`dev.lint_cmd`, default `ruff check .`) |
+| `code_test` | replio-core-dev | `exec` | `bash` | Run the project test suite (`dev.test_cmd`, default `python -m unittest discover`, resolved to the current interpreter) |
+| `delegate` | core | `delegate` | `delegate` | Run a task under an agent type as a sub-agent |
 | `file_edit` | replio-core-edit | `write` | `edit` | Targeted search-and-replace in a file with a diff preview (`count` occurrences, `0` = all, alias `edit`) |
+| `file_read` | replio-core-fs | `read` | `read` | Read a file with numbered lines (aliases `read_file`, `read`, `view`) |
+| `file_write` | replio-core-fs | `write` | `edit` | Create/overwrite/append a file (aliases `write_file`, `write`) |
 | `git` | replio-core-git | `read` | `read` | Read-only git: status/diff/log/branch/show/rev_parse (aliases `git_status`, `git_diff`, `git_log`, ...) |
 | `git_commit` | replio-core-git | `write` | `edit` | Stage/commit git changes, always confirm-gated (alias `commit`) |
-| `code_test` | replio-core-dev | `exec` | `bash` | Run the project test suite (`dev.test_cmd`, default `python -m unittest discover`, resolved to the current interpreter) |
-| `code_lint` | replio-core-dev | `exec` | `bash` | Run the project linter (`dev.lint_cmd`, default `ruff check .`) |
-| `code_format` | replio-core-dev | `exec` | `bash` | Run the project formatter (`dev.format_cmd`, default `ruff format .`) |
+| `glob` | replio-core-fs | `search` | `read` | Recursive pattern lookup |
+| `grep` | replio-core-fs | `search` | `read` | Regex content search (`file:line:` results, alias `find`) |
+| `list_dir` | replio-core-fs | `read` | `list` | List a directory (`depth` for trees, alias `ls`) |
 | `run_command` | replio-core-exec | `exec` | `bash` | Run a shell command with timeout (aliases `bash`, `exec`). Restricted by `tool_permission.bash_allow` |
-| `delegate` | core | `delegate` | `delegate` | Run a task under an agent type as a sub-agent |
-| `ask` | core | `ask` | `ask` | Ask the human or the lead agent for a decision, pausing until it is answered |
+| `web_fetch` | replio-core-web | `read` | `read` | Fetch a page by URL or by `web_search` result `id` (aliases `open`, `fetch_page`) |
+| `web_search` | replio-core-web | `search` | `web` | Web search (aliases `search`, `web`) |
 
 Plugins register additional tools the same way. They automatically inherit tool policy, `/tool`, `/help`, query refinement, `noise_tools`, and session logging. See [plugins.md](plugins.md).
 

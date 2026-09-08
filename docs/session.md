@@ -12,8 +12,8 @@ Session files carry a type prefix so the three kinds stay distinguishable at a g
 
 | Prefix | Kind | Example |
 |--------|------|---------|
-| `ses_` | Interactive/auto sessions | `ses_20260817_120000_what_is_oee.json` |
 | `job_` | Jobs - one fresh file per run | `job_20260826_110230_nightly_report.json` |
+| `ses_` | Interactive/auto sessions | `ses_20260817_120000_what_is_oee.json` |
 | `sub_` | Delegation sub-agents (parent session id as suffix) | `sub_20260817_120100_ses_20260817_120000_what_is_oee.json` |
 
 Delegation writes each sub-agent's log as its own session: `sub_<ts>_<parent-session>`, where the suffix is the calling (parent) session id (`sub_20260817_120100_ses_20260817_120000_what_is_oee`). These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/session list` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.

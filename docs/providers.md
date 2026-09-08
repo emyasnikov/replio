@@ -8,10 +8,10 @@ The vendor providers ship as bundled plugins. The core keeps the base classes (`
 
 | Plugin | Provider | Default base URL | Default model |
 |--------|----------|------------------|----------------|
+| `replio-core-anthropic` | `anthropic` | `https://api.anthropic.com/v1` | `claude-sonnet-4-20250514` |
+| `replio-core-groq` | `groq` | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
 | `replio-core-ollama` | `ollama` | `https://api.ollama.com` | `llama3.2` |
 | `replio-core-openai` | `openai` | `https://api.openai.com/v1` | `gpt-4o-mini` |
-| `replio-core-groq` | `groq` | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
-| `replio-core-anthropic` | `anthropic` | `https://api.anthropic.com/v1` | `claude-sonnet-4-20250514` |
 | `replio-core-opencode` | `opencode` | `https://opencode.ai/zen/v1` | `kimi-k3` |
 | `replio-core-opencode` | `opencode-go` | `https://opencode.ai/zen/go/v1` | `deepseek-v4-flash` |
 

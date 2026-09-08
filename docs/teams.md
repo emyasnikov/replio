@@ -55,9 +55,9 @@ Stage fields:
 
 - `/team` - list teams, marking each one's origin (`bundled` / `plugin` / `local` / `global` / `merged`) and tags, with the stage chain on the next line.
 - `/team list <tag>` - list only teams carrying the tag (e.g. `/team list programming`).
-- `/team show <name>` - show a team's full definition (stages, task hints, handoff notes).
 - `/team new <name> [description]` - create a team in the local catalog (edit the JSON for stages, tags, and per-stage fields). Using an existing name overrides that team.
 - `/team remove <name>` - remove a team from the local catalog. Bundled teams cannot be removed (override them instead).
+- `/team show <name>` - show a team's full definition (stages, task hints, handoff notes).
 
 Plugins contribute teams through the same `register_teams` entry hook that the kit machine (templates, recipes) uses - see [plugins.md](plugins.md).
 

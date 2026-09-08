@@ -124,7 +124,7 @@ replio jobs daemon [--tick 15] [--quiet]        # scheduler loop, Ctrl-C to stop
 | `--approve-model` | Approve the model referenced by `--type` (or `--model`) so the headless job may use it without prompting |
 | `--approval auto` | Start `approved` instead of `proposed` |
 
-The same surface is available in the REPL as `/jobs` (list, status, show, add, approve, reject, enable, disable, stop, remove, run).
+The same surface is available in the REPL as `/jobs` (add, approve, disable, enable, list, reject, remove, run, show, status, stop).
 
 ## Human in the loop
 

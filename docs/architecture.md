@@ -66,30 +66,30 @@ Plugins extend the core with tools, providers, commands, and services without ch
 ```
 src/replio/
 ├── __main__.py          # python -m replio
-├── main.py              # CLI arg parsing + bootstrap (REPL, run, serve, ...)
+├── chat.py              # ChatLoop(Engine) - REPL shell with readline
 ├── cli.py               # headless entry points
+├── commands/            # command registry + builtins
 ├── config.py            # JSON config (global + local merge)
+├── engine.py            # headless agent core - Engine, TurnResult, chat_tool, run_subagent, run_team
+├── eval.py              # tool-use eval harness (replio eval)
+├── fleet.py             # FleetController - supervised serve agents
+├── jobs.py              # Job/JobRun model + registry
+├── main.py              # CLI arg parsing + bootstrap (REPL, run, serve, ...)
+├── modes.py             # named modes (plan/build/custom) merged into tool policy
 ├── models.py            # global approved-model registry (models.json)
+├── plugins/             # plugin manager
 ├── providers/
 │   ├── __init__.py      # PROVIDERS registry + detect_provider (host patterns)
 │   ├── base.py          # BaseProvider + OpenAICompatibleProvider
 │   └── registry.py      # ProviderRegistry (providers.json - keys + base URLs)
-├── engine.py            # headless agent core - Engine, TurnResult, chat_tool, run_subagent, run_team
-├── chat.py              # ChatLoop(Engine) - REPL shell with readline
-├── modes.py             # named modes (plan/build/custom) merged into tool policy
-├── ui.py                # UISink - ReplUI / HeadlessUI / NullUI
-├── types.py             # TypeRegistry (agent types, bundled/plugin/global/local)
-├── teams.py             # TeamRegistry (named team pipelines) + team memory helpers
-├── skills.py            # SkillRegistry (per-type instructions)
-├── jobs.py              # Job/JobRun model + registry
 ├── scheduler.py         # JobScheduler - durable job daemon
-├── fleet.py             # FleetController - supervised serve agents
-├── eval.py              # tool-use eval harness (replio eval)
 ├── server.py            # stdlib HTTP JSON API
 ├── sessions/            # session CRUD + markdown render
-├── commands/            # command registry + builtins
+├── skills.py            # SkillRegistry (per-type instructions)
+├── teams.py             # TeamRegistry (named team pipelines) + team memory helpers
 ├── tools/               # tool registry, tool policy, delegate, ask
-├── plugins/             # plugin manager
+├── types.py             # TypeRegistry (agent types, bundled/plugin/global/local)
+├── ui.py                # UISink - ReplUI / HeadlessUI / NullUI
 └── utils/               # urllib-based SSE streaming
 ```
 

@@ -6,24 +6,24 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 
 | Command                 | Aliases        | Description                                                    |
 |-------------------------|----------------|----------------------------------------------------------------|
-| `/help`                 | `/h`           | Show available commands and tools (`/help <cmd|tool>` for detail) |
+| `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
+| `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)` |
+| `/connect`              |                | Connect a provider. `/connect` picks from the known providers interactively. `/connect <name>` presets a known provider's defaults and (re)enters its API key. `/connect <url>` detects a known host or creates a named custom provider (derived from the host, or `/connect <url> <name>` to name it). Tests the connection before saving, stores the API key + base URL in the global `providers.json`, and writes `provider`/`base_url` into config - the model is picked separately with `/model` |
 | `/exit`                 | `/quit`, `/q`  | Save and exit                                                  |
-| `/version`              | `/v`           | Show the Replio version                                       |
+| `/help`                 | `/h`           | Show available commands and tools (`/help <cmd|tool>` for detail) |
+| `/jobs`                 |                | Manage scheduled and durable jobs: `list`, `status`, `show`, `add`, `approve`, `reject`, `enable`, `disable`, `stop`, `remove`, `run`. See [jobs.md](jobs.md) |
+| `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
 | `/model`                 |                | Show or switch the active model. `model list` shows the approved-model history grouped by provider (with `(key)` when the provider has a stored key), `model list --online [provider]` probes a provider's available models. `model <provider>/<model>` switches provider and model together, approving the model on confirm |
 | `/models`                | `/model-list` | List models available from the connected provider              |
-| `/provider`              |                | Show or switch the active provider                             |
-| `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
-| `/thinking`             | `/reasoning`   | Show or switch reasoning display and request (`/thinking on` streams reasoning dimmed, `off` shows only a spinner) |
-| `/connect`              |                | Connect a provider. `/connect` picks from the known providers interactively. `/connect <name>` presets a known provider's defaults and (re)enters its API key. `/connect <url>` detects a known host or creates a named custom provider (derived from the host, or `/connect <url> <name>` to name it). Tests the connection before saving, stores the API key + base URL in the global `providers.json`, and writes `provider`/`base_url` into config - the model is picked separately with `/model` |
-| `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)` |
-| `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
-| `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
-| `/type`              |                | Manage types: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [types.md](types.md) |
-| `/team`                 |                | Manage teams: `list` (`list <tag>` filters), `show <name>`, `new <name> [description]`, `remove <name>`, `run <name> <task>`. See [teams.md](teams.md) |
-| `/skill`                |                | Manage skills: `list`, `show <name>`, `new <name>`, `remove <name>`. See [skills.md](skills.md) |
-| `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
-| `/jobs`                 |                | Manage scheduled and durable jobs: `list`, `status`, `show`, `add`, `approve`, `reject`, `enable`, `disable`, `stop`, `remove`, `run`. See [jobs.md](jobs.md) |
 | `/plugins`              | `/plugin`      | Manage plugins: `list`, `enable`, `disable`, `install`, `update`, `uninstall` |
+| `/provider`              |                | Show or switch the active provider                             |
+| `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |
+| `/skill`                |                | Manage skills: `list`, `show <name>`, `new <name>`, `remove <name>`. See [skills.md](skills.md) |
+| `/team`                 |                | Manage teams: `list` (`list <tag>` filters), `show <name>`, `new <name> [description]`, `remove <name>`, `run <name> <task>`. See [teams.md](teams.md) |
+| `/thinking`             | `/reasoning`   | Show or switch reasoning display and request (`/thinking on` streams reasoning dimmed, `off` shows only a spinner) |
+| `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
+| `/type`              |                | Manage types: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [types.md](types.md) |
+| `/version`              | `/v`           | Show the Replio version                                       |
 
 `/help` renders commands with their subcommands indented below, and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.
 
@@ -34,7 +34,7 @@ Delegation is a normal tool: the lead agent proposes it, or you run it directly 
 ## CLI
 
 ```
-usage: replio [-h] [--path PATH] [-v] {run,export,models,eval,serve,mcp,config,plugins,jobs,fleet} ...
+usage: replio [-h] [--path PATH] [-v] {config,eval,export,fleet,jobs,mcp,models,plugins,run,serve} ...
 ```
 
 Global:
@@ -142,17 +142,17 @@ Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, 
 
 | Subcommand    | Description                                                              |
 |---------------|--------------------------------------------------------------------------|
-| `list`        | Table of jobs: schedule, status, next and last run                       |
-| `status`      | Runtime summary per job: fired count, last error, uptime, approval state |
-| `show`        | `replio jobs show <name>` - definition plus full run history + last output|
 | `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`, `--prompt` optional when `--file` is given), plus `--mode`, `--provider`/`--model`, `--type`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approve-model`, `--approval auto` |
 | `approve`     | `approve <name>` - activate a job (or arm the next run for `--require-approval` jobs) |
-| `reject`      | `reject <name>` - send back to proposed and disable                       |
-| `enable` / `disable` / `stop` | Toggle the enabled gate (`stop` = `disable`)                     |
+| `daemon`      | `daemon [--tick 15] [--quiet]` - scheduler loop, Ctrl-C to stop           |
 | `edit`        | `edit <name>` - open the job's linked task file in `$EDITOR` (creates the template first) |
+| `enable` / `disable` / `stop` | Toggle the enabled gate (`stop` = `disable`)                     |
+| `list`        | Table of jobs: schedule, status, next and last run                       |
+| `reject`      | `reject <name>` - send back to proposed and disable                       |
 | `remove`      | `remove <name>` - drop the definition (sessions are kept)                 |
 | `run`         | `run <name> [--no-retry] [--verbose]` - run now, apply retries, print the answer. `--verbose` streams the live turn. Exit `0` verified / `1` failed |
-| `daemon`      | `daemon [--tick 15] [--quiet]` - scheduler loop, Ctrl-C to stop           |
+| `show`        | `replio jobs show <name>` - definition plus full run history + last output|
+| `status`      | Runtime summary per job: fired count, last error, uptime, approval state |
 
 ### `replio fleet`
 
@@ -160,15 +160,15 @@ Supervise a fleet of scoped `replio serve` agents: ports, health checks, restart
 
 | Subcommand    | Description                                                                     |
 |---------------|---------------------------------------------------------------------------------|
-| `init`        | Scan immediate subdirectories holding `.replio/config.json` into the manifest    |
 | `add`         | `add <name> [--dir] [--port N] [--max-restarts N]` - add an agent                |
-| `remove`      | `remove <name>` - remove an agent (stops it if running)                          |
-| `up`          | `up [--detach]` - start agents. Ctrl-C = graceful down, `--detach` = background daemon |
-| `down`        | Stop the supervised agents and the daemon if running                             |
-| `status`      | Live table: agent, enabled, port, pid, state, restarts, last error               |
-| `restart`     | `restart [name|all]` - stop, reset restart backoff, relaunch (default: all)     |
-| `logs`        | `logs <name> [n] [--follow]` - tail an agent's `.replio/logs/<name>.log`         |
 | `config`      | `config <name> --provider/--model/--type/--system-prompt/--mode/--tools-deny/--tool-permission` - write only those keys into `<dir>/.replio/config.json` |
+| `down`        | Stop the supervised agents and the daemon if running                             |
+| `init`        | Scan immediate subdirectories holding `.replio/config.json` into the manifest    |
+| `logs`        | `logs <name> [n] [--follow]` - tail an agent's `.replio/logs/<name>.log`         |
+| `remove`      | `remove <name>` - remove an agent (stops it if running)                          |
+| `restart`     | `restart [name|all]` - stop, reset restart backoff, relaunch (default: all)     |
+| `status`      | Live table: agent, enabled, port, pid, state, restarts, last error               |
+| `up`          | `up [--detach]` - start agents. Ctrl-C = graceful down, `--detach` = background daemon |
 
 `--path` may be given either before the subcommand (`replio --path X fleet status`) or after it (`replio fleet --path X status`).
 
@@ -178,9 +178,9 @@ Manage plugins headlessly. See [plugins.md](plugins.md).
 
 | Subcommand    | Description                                                     |
 |---------------|-----------------------------------------------------------------|
-| `list`        | List installed plugins and their load status                    |
 | `install`     | `replio plugins install <git-url|path> [--global] [--deps]` - install a plugin |
-| `update`      | `replio plugins update <name>` - re-fetch from the recorded source |
+| `list`        | List installed plugins and their load status                    |
 | `uninstall`   | `replio plugins uninstall <name>` - remove a plugin             |
+| `update`      | `replio plugins update <name>` - re-fetch from the recorded source |
 
 `--path` may be given either before the subcommand (`replio --path X plugins list`) or after it (`replio plugins --path X list`).

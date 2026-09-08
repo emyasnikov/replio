@@ -39,52 +39,52 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 
 | Key                         | Default                | Description                                                            |
 |-----------------------------|------------------------|------------------------------------------------------------------------|
-| `provider`                  | `"ollama"`             | Provider name. The bundled provider plugins (`replio-core-ollama`, `-openai`, `-groq`, `-anthropic`, `-opencode`) register `ollama`, `openai`, `groq`, `anthropic`, `opencode`, and `opencode-go`. `openai-compatible` is the generic fallback. External plugins can register more |
-| `model`                     | `"llama3.2"`           | Model name. A `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) unfolds to that provider and model. An unfolded model must be approved (see [Model refs and approval](providers.md#model-refs-and-approval)) |
-| `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
-| `temperature`               | `0.7`                  | Sampling temperature                                                   |
-| `max_tokens`                | `8192`                 | Output token cap sent to the provider. `0` = unset (provider default applies, e.g. Ollama caps at 2048). Default `8192` overrides low provider defaults |
-| `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event with no content |
-| `stream_retry_delay`        | `0.5`                  | Seconds to wait between stream retries                                  |
 | `auto_continue`             | `true`                 | On truncation (`finish_reason=length`) with a partial answer, re-request the turn with a "continue" instruction and stitch the parts into one message |
 | `auto_continue_max`         | `2`                    | Max continuation rounds per turn before the truncation is reported     |
+| `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
+| `clear_screen`              | `true`                 | Clear the screen before the REPL banner                                |
+| `compact_keep`              | `4`                    | Messages to keep when compacting the provider context                  |
 | `connect_check`             | `true`                 | Test the provider connection when config changes: `/connect` probes before saving (broken values are rejected unless confirmed), `/provider` warns on a failed probe. `false` skips all probes |
-| `system_prompt`             | `""`                   | Optional system prompt, injected for every front-end (REPL, `run`, `serve`) |
-| `mode`                      | `"build"`              | Active agent mode (`build`, `plan`, or a custom mode from `modes`) |
-| `tool_calling`              | `true`                 | Enable OpenAI-compatible function calling                              |
-| `tool_status_visible`       | `true`                 | Show dimmed tool status in the REPL                                    |
+| `delegate_echo`             | `true`                 | When the `delegate` tool runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result. The sub footer is emitted alongside the sub-agent's own rendered output only when on |
+| `footer_tokens`             | `["context"]`          | Which token counts the footer shows, in order, joined by `/`. `context` = `<n> tokens` (context/input size, chars/4 fallback), `in`/`out`/`thinking` = `<n>t` from provider usage (unavailable counts are skipped). Empty list hides the token section entirely |
 | `glyph_lines`               | `true`                 | Typed `<glyph> <verb> <arg>` status lines for mapped categories. When off, or for unmapped categories, the `[tool: arg]` oneliner is used |
 | `glyph_params`              | `true`                 | Append the tool call parameters to glyph status lines and confirm prompts (e.g. `← Read engine.py [offset=299, limit=85]`). Off for bare `<glyph> <verb> <arg>` |
-| `show_errors`               | `true`                 | Show a dimmed `! Error: ...` line (first line of the result) when a tool call fails. Off hides the line |
-| `show_notes`                | `true`                 | Show a dimmed info line for soft tool results (e.g. `(empty file)`, `(no matches for "x")`). Off hides the line |
-| `tool_analysis`             | `false`                | Model-generated one-line analysis of each tool result (log-only)      |
-| `delegate_echo`             | `true`                 | When the `delegate` tool runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result. The sub footer is emitted alongside the sub-agent's own rendered output only when on |
-| `session_tool_max_chars`    | `0`                    | `0` = unlimited. Caps persisted tool-result content                    |
-| `tool_max_result_chars`     | `100000`               | Caps tool-result content returned to the model (`... (truncated)` appended). `0` = unlimited. With the default, the model sizes files via the `file_read` header and pages with `offset`/`limit` |
 | `list_dir_max_entries`      | `200`                  | Cap the number of entries `list_dir` returns (`... (showing first N of M entries)` appended). `0` = unlimited |
-| `query_refine`              | `false`                | Auto-refine short web-search queries via a lightweight model call      |
-| `query_refine_min_words`    | `3`                    | Minimum query length before refinement applies                         |
-| `query_refine_context`      | `4`                    | Recent-message context to inject into refinement                       |
-| `show_thinking`             | `false`                | Stream thinking/reasoning tokens dimmed. When off, thinking is shown only as an animated spinner plus a `+ Thought N.Ns` summary (display only - does not change what is sent to the model) |
-| `show_thought_duration`     | `true`                 | When thinking is streamed (`show_thinking` on), print a dimmed `(Thought N.Ns)` line after each thinking block. Off hides it |
-| `reasoning`                 | `"auto"`               | Request reasoning from the model and control its token budget: `false`/`"off"` = do not request, `true`/`"on"`/`"auto"` = request with provider default, `"low"`/`"medium"`/`"high"` = explicit budget hint. Mapping is provider-specific (OpenAI `reasoning_effort`, Claude `thinking.budget_tokens`, Qwen `enable_thinking`) |
 | `markdown_streaming`        | `false`                | Basic markdown-aware streaming                                         |
-| `word_streaming`            | `true`                 | Buffer REPL output to word boundaries so words render fully formed (no mid-word pauses). `false` streams character-by-character |
-| `show_context_size`         | `true`                 | Dimmed context-size line after each response                           |
-| `footer_tokens`             | `["context"]`          | Which token counts the footer shows, in order, joined by `/`. `context` = `<n> tokens` (context/input size, chars/4 fallback), `in`/`out`/`thinking` = `<n>t` from provider usage (unavailable counts are skipped). Empty list hides the token section entirely |
-| `clear_screen`              | `true`                 | Clear the screen before the REPL banner                                |
-| `show_version`              | `true`                 | Show the version in the REPL banner                                    |
-| `compact_keep`              | `4`                    | Messages to keep when compacting the provider context                  |
-| `project_instructions`     | `"AGENTS.md"`          | Per-worktree instructions file auto-loaded into the system prompt (e.g. `AGENTS.md`, `CLAUDE.md`). `""` disables. Absent files are skipped. Content is capped at 20000 chars |
-| `noise_tools`               | `["web_fetch", "open", "fetch_page"]` | Tool results replaced by a marker in persisted sessions                |
-| `web_search`                | `false`                | Auto-search mode: search the web before answering                       |
-| `search_results`            | `5`                    | Number of search results to fetch                                      |
-| `tools.allow`               | `[]`                   | Name-level allowlist. Empty means no restriction                       |
-| `tools.deny`                | `[]`                   | Name-level deny list (takes precedence over allow)                     |
-| `tool_permission`           | *(see below)*          | Category permission actions                                            |
+| `max_tokens`                | `8192`                 | Output token cap sent to the provider. `0` = unset (provider default applies, e.g. Ollama caps at 2048). Default `8192` overrides low provider defaults |
 | `mcp.servers`               | `[]`                   | MCP client server definitions (see [mcp.md](mcp.md) for the schema)     |
 | `mcp_server.allow_ask`      | `true`                 | When serving MCP, run `ask`-policy tools (deferred to the client) vs refuse them |
+| `mode`                      | `"build"`              | Active agent mode (`build`, `plan`, or a custom mode from `modes`) |
+| `model`                     | `"llama3.2"`           | Model name. A `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) unfolds to that provider and model. An unfolded model must be approved (see [Model refs and approval](providers.md#model-refs-and-approval)) |
+| `noise_tools`               | `["web_fetch", "open", "fetch_page"]` | Tool results replaced by a marker in persisted sessions                |
 | `plugins`                   | *(bundled)*            | Plugins to load. Empty = all discovered plugins load                   |
+| `project_instructions`     | `"AGENTS.md"`          | Per-worktree instructions file auto-loaded into the system prompt (e.g. `AGENTS.md`, `CLAUDE.md`). `""` disables. Absent files are skipped. Content is capped at 20000 chars |
+| `provider`                  | `"ollama"`             | Provider name. The bundled provider plugins (`replio-core-ollama`, `-openai`, `-groq`, `-anthropic`, `-opencode`) register `ollama`, `openai`, `groq`, `anthropic`, `opencode`, and `opencode-go`. `openai-compatible` is the generic fallback. External plugins can register more |
+| `query_refine`              | `false`                | Auto-refine short web-search queries via a lightweight model call      |
+| `query_refine_context`      | `4`                    | Recent-message context to inject into refinement                       |
+| `query_refine_min_words`    | `3`                    | Minimum query length before refinement applies                         |
+| `reasoning`                 | `"auto"`               | Request reasoning from the model and control its token budget: `false`/`"off"` = do not request, `true`/`"on"`/`"auto"` = request with provider default, `"low"`/`"medium"`/`"high"` = explicit budget hint. Mapping is provider-specific (OpenAI `reasoning_effort`, Claude `thinking.budget_tokens`, Qwen `enable_thinking`) |
+| `search_results`            | `5`                    | Number of search results to fetch                                      |
+| `session_tool_max_chars`    | `0`                    | `0` = unlimited. Caps persisted tool-result content                    |
+| `show_context_size`         | `true`                 | Dimmed context-size line after each response                           |
+| `show_errors`               | `true`                 | Show a dimmed `! Error: ...` line (first line of the result) when a tool call fails. Off hides the line |
+| `show_notes`                | `true`                 | Show a dimmed info line for soft tool results (e.g. `(empty file)`, `(no matches for "x")`). Off hides the line |
+| `show_thinking`             | `false`                | Stream thinking/reasoning tokens dimmed. When off, thinking is shown only as an animated spinner plus a `+ Thought N.Ns` summary (display only - does not change what is sent to the model) |
+| `show_thought_duration`     | `true`                 | When thinking is streamed (`show_thinking` on), print a dimmed `(Thought N.Ns)` line after each thinking block. Off hides it |
+| `show_version`              | `true`                 | Show the version in the REPL banner                                    |
+| `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event with no content |
+| `stream_retry_delay`        | `0.5`                  | Seconds to wait between stream retries                                  |
+| `system_prompt`             | `""`                   | Optional system prompt, injected for every front-end (REPL, `run`, `serve`) |
+| `temperature`               | `0.7`                  | Sampling temperature                                                   |
+| `tool_analysis`             | `false`                | Model-generated one-line analysis of each tool result (log-only)      |
+| `tool_calling`              | `true`                 | Enable OpenAI-compatible function calling                              |
+| `tool_max_result_chars`     | `100000`               | Caps tool-result content returned to the model (`... (truncated)` appended). `0` = unlimited. With the default, the model sizes files via the `file_read` header and pages with `offset`/`limit` |
+| `tool_permission`           | *(see below)*          | Category permission actions                                            |
+| `tool_status_visible`       | `true`                 | Show dimmed tool status in the REPL                                    |
+| `tools.allow`               | `[]`                   | Name-level allowlist. Empty means no restriction                       |
+| `tools.deny`                | `[]`                   | Name-level deny list (takes precedence over allow)                     |
+| `web_search`                | `false`                | Auto-search mode: search the web before answering                       |
+| `word_streaming`            | `true`                 | Buffer REPL output to word boundaries so words render fully formed (no mid-word pauses). `false` streams character-by-character |
 
 ### `modes`
 

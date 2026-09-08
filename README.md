@@ -65,7 +65,7 @@ Open a `"""` or `'''` block to type a multi-line prompt. The block's framing quo
 
 ```
 >>> /connect ollama
-  API key [stored]: 
+  API key [stored]:
 Connected to ollama (https://api.ollama.com)
 >>> /model gpt-oss:20b-cloud
 >>> Hi
@@ -81,15 +81,15 @@ Stream plain text with `--output text` or return the results as JSON, log tool s
 replio run --prompt "Hi"
 {
   "content": "Hello! How can I help you today?",
-  "thinking": null,
-  "tool_calls": [],
-  "errors": [],
   "duration": 7.0,
-  "usage": null,
+  "errors": [],
   "model": "gpt-oss:20b-cloud",
   "provider": "ollama",
   "session": "ses_20260814_192251_hi",
   "status": "ok"
+  "thinking": null,
+  "tool_calls": [],
+  "usage": null,
 }
 ```
 
