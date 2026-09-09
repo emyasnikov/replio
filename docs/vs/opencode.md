@@ -1,92 +1,93 @@
 # Replio vs. OpenCode
 
-This document compares two open-source AI coding-agent / personal assistant projects: **Replio** (github.com/emyasnikov/replio) and **OpenCode** (github.com/anomalyco/opencode). They share the goal of a tool-calling agent loop, but differ in language, architecture, deployment model, tooling, and community focus.
+This document compares two open-source AI coding-agent projects: **Replio** (github.com/emyasnikov/replio) and **OpenCode** (github.com/anomalyco/opencode). Both run a tool-calling agent loop, but they differ in language, runtime model, tooling, and surface area.
 
 ## Project Overview
 
 | Project | Primary Language | Repo | License | Core Focus |
 |---------|------------------|------|---------|------------|
-| Replio | Python | https://github.com/emyasnikov/replio | MIT | Lightweight REPL + CLI + HTTP API with zero external dependencies |
-| OpenCode | TypeScript / JavaScript (Node / Bun) | https://github.com/anomalyco/opencode | MIT | Full-stack AI coding agent with terminal UI, desktop app, and multi-agent workflow |
+| Replio | Python (stdlib only) | https://github.com/emyasnikov/replio | MIT | Zero-dependency agentic core: REPL, CLI, HTTP API, types/teams delegation, jobs, fleet, MCP |
+| OpenCode | TypeScript / JavaScript (Node + Bun) | https://github.com/anomalyco/opencode | MIT | Open-source AI coding agent for the terminal, desktop, and IDE |
 
-## Architecture & Runtime Model
+## Runtime & Architecture
 
 | Feature | Replio | OpenCode |
-|---------|---------|----------|
-| Core runtime | Single Python process with a streaming agent loop | Node.js + Bun CLI that launches an agent core and a web/desktop UI in separate processes |
-| Entry point | `replio` | `opencode` (CLI) or `opencode-ai` (npm) |
-| Runtime dependencies | None beyond stdlib | Node.js + Bun, npm, optional desktop bundler |
-| Deployment | Python package installed via `pipx`, no daemon | CLI plus optional desktop app, Docker, Homebrew, Scoop, or Chocolatey |
-| Multi-process | No | Yes (CLI + UI + optional desktop) |
+|---------|--------|----------|
+| Core runtime | Single Python process with a streaming agent loop (one SSE stream per turn) | Node.js/Bun server plus TUI, desktop app, and IDE front-ends |
+| Entry points | `replio` (REPL), `replio run`, `replio serve` (HTTP JSON API), `replio jobs`, `replio fleet`, `replio mcp` | `opencode` (TUI/CLI), desktop app (beta), IDE extension, `opencode-ai` npm package |
+| Runtime dependencies | None beyond the Python >= 3.10 stdlib | Node.js + Bun, npm packages |
+| Deployment | Python package via pip/pipx, local process, no daemon required | Homebrew tap, npm, Docker, desktop installers (macOS/Windows/Linux) |
+| Multi-process | In-process sub-engines for delegation, no separate services | Server + TUI/desktop + IDE clients |
 
-## Tooling & Function Calling
+## Tools & Function Calling
 
 | Aspect | Replio | OpenCode |
-|--------|---------|----------|
-| Built-in tools | web search, fetch page, file I/O, shell, permission gating | web search, fetch page, file I/O, shell, Git, Docker, npm, and more (rich toolset) |
-| Permission model | Path-scoped `allow`/`ask`/`deny` with runtime prompts | Plan mode is read-only, build mode makes changes, permissions requested at runtime |
-| Function-calling scheme | OpenAI-compatible JSON schema | OpenAI-compatible JSON schema |
-| Extensibility | Python plugins via a simple registry | npm packages and a plugin SDK (`opencode-plugin`) for custom tools, agents, and UI extensions |
+|--------|--------|----------|
+| Built-in tools | Web search/fetch, file read/write/list/glob/grep, file edit, git, shell, test/lint/format wrappers, ask, delegate | Web search/fetch, file I/O, edit, bash, glob/grep, plus MCP-connected tools and a rich built-in set |
+| Function-calling scheme | OpenAI-compatible JSON schema | OpenAI-compatible JSON schema via the Vercel AI SDK |
+| Permission model | Path-scoped `allow`/`ask`/`deny` with confirm prompts, per-type tool permissions | Plan mode is read-only, build mode makes changes, runtime permission requests, auto-approve options |
+| Extensibility | Python plugins register tools, providers, commands, services, types, teams, skills | Plugin SDK (`opencode-plugin`) for custom tools, agents, and UI extensions, npm packages |
 
 ## Channels & UI
 
 | Feature | Replio | OpenCode |
-|---------|---------|----------|
-| Built-in UI | Terminal REPL only | Terminal UI, optional desktop app, and IDE extension |
-| Messaging channels | None | None (CLI/desktop/IDE only) |
-| Web UI | None | None (web/desktop wrappers exist) |
-| TUI | Basic REPL | Advanced TUI with panel layout, code preview, and diff view |
+|---------|--------|----------|
+| Built-in UI | Terminal REPL (readline, tab completion, ANSI, markdown-aware streaming) | Advanced TUI with panels, code preview, diff view, multi-session |
+| Desktop / IDE | None | Desktop app (beta), IDE extensions, multi-session parallel agents |
+| Messaging channels | None | None (terminal/desktop/IDE only) |
+| Web | `replio serve` HTTP JSON API | SDK server, share links for sessions |
 
-## Provider & Model Support
+## Providers & Models
 
 | Aspect | Replio | OpenCode |
-|--------|---------|----------|
-| LLM providers | Ollama (default), OpenAI, Groq, Anthropic, and any OpenAI-compatible endpoint | OpenAI, Anthropic, Gemini, local via Ollama, and any configured provider |
-| Local model support | Built-in via Ollama | Built-in via the provider abstraction |
+|--------|--------|----------|
+| LLM providers | Ollama (default), OpenAI, Groq, Anthropic, OpenCode Zen/Go, any OpenAI-compatible endpoint, auto-detected from URL | 75+ providers via Models.dev, OpenCode Zen, GitHub Copilot, ChatGPT Plus/Pro login, local models |
+| Local model support | Built-in via Ollama | Built-in via provider abstraction |
 
-## Persistence & Telemetry
+## Persistence & Memory
 
 | Feature | Replio | OpenCode |
-|---------|---------|----------|
-| Session persistence | Append-only JSON session logs, compaction | Logs under `~/.opencode/logs`, telemetry contracts |
-| State management | Simple conversation context | Agent context stack, multi-agent workflow (build, plan) |
-| Telemetry | None | Vendor-neutral telemetry contracts, optional integration with external backends |
+|---------|--------|----------|
+| Session persistence | Append-only JSON session logs (`ses_`/`sub_`/`job_`), compaction, Markdown export | Structured session files with typed parts, resumable turns, JSON export |
+| Cross-session memory | None (per-session context), job run memory files | None by default (privacy-first, does not store code or context) |
+| Telemetry | None | Vendor-neutral telemetry contracts, optional OpenTelemetry |
 
 ## Security & Isolation
 
 | Project | Default isolation | Sandbox options | Notes |
 |---------|-------------------|----------------|-------|
-| Replio | Runs with user permissions | None (relies on permission prompts) | Path-scoped `allow`/`ask`/`deny` gates every tool |
-| OpenCode | Runs with user permissions, plan mode is read-only | Docker, optional policy-based sandboxing | Desktop app runs sandboxed |
+| Replio | Runs with user permissions | None (relies on permission prompts) | Path-scoped `allow`/`ask`/`deny` gates every tool, worktree escalation, audit trail |
+| OpenCode | Runs with user permissions, plan mode read-only | Docker, policy-based sandboxing options | Desktop app runs sandboxed |
 
-## Community & Ecosystem
+## Plugins & Docs
 
-| Project | License | Community | Plugin Ecosystem | Docs |
-|---------|---------|-----------|-----------------|------|
-| Replio | MIT | Small, GitHub-centric | Python plugins | Docs in repo, minimal |
-| OpenCode | MIT | Active on GitHub and Discord | npm packages, plugin SDK | Docs on opencode.ai, extensive developer guide |
+| Project | Plugin Ecosystem | Docs |
+|---------|------------------|------|
+| Replio | Directory plugins (tools, providers, commands, services, types, teams, skills, eval fixtures), bundled `replio-core-*` plugins, `/plugins` + `replio plugins` | Docs in repo (`docs/`), README |
+| OpenCode | npm packages, plugin SDK, custom agents and UI extensions | opencode.ai docs, extensive developer guide |
 
 ## When to Choose Which
 
 | Scenario | Recommended Project | Why |
 |----------|---------------------|-----|
-| You need a lightweight REPL with zero external dependencies you can embed or expose via a tiny HTTP API | Replio | Minimal Python runtime, no OS dependencies |
-| You want a full-featured AI coding agent with a rich terminal UI and optional desktop app, and you are comfortable with Node.js | OpenCode | Rich toolset, multi-agent workflow, desktop app, advanced UI |
+| You want a zero-dependency Python agent core to embed, script, or expose via a tiny HTTP API | Replio | Stdlib-only runtime, no install footprint, REPL + CLI + API |
+| You want a full-featured coding agent with a rich TUI, desktop app, and IDE support, comfortable with Node.js | OpenCode | Large toolset, parallel sessions, desktop/IDE surfaces |
 | You want stronger isolation out of the box | OpenCode | Docker and policy-based sandboxing |
+| You want built-in job scheduling, fleet supervision, and agent delegation in one tool | Replio | Jobs daemon, fleet supervisor, types/teams/delegate built in |
 
 ## Summary Table
 
 | Feature | Replio | OpenCode |
-|---------|---------|----------|
-| Language | Python | TypeScript/JS + Bun |
-| Runtime | Single process | CLI + UI + optional desktop |
+|---------|--------|----------|
+| Language | Python (stdlib) | TypeScript/JS + Bun |
+| Runtime | Single process | Server + TUI/desktop/IDE |
 | Extensibility | Python plugins | npm plugin SDK |
-| Channels | None | None (CLI/desktop/IDE only) |
-| LLM providers | Ollama (default), OpenAI, Groq, Anthropic, OpenAI-compatible | OpenAI, Anthropic, Gemini, local via Ollama |
-| UI | Terminal REPL | Terminal UI + desktop app |
-| Persistence | JSON session logs | Telemetry contracts and logs |
+| Channels | Terminal, HTTP API | Terminal, desktop, IDE |
+| LLM providers | Ollama, OpenAI, Groq, Anthropic, OpenAI-compatible | 75+ via Models.dev, Zen, Copilot/ChatGPT login |
+| UI | Terminal REPL | TUI + desktop app |
+| Persistence | JSON session logs | Structured session files |
 | Isolation | Permission prompts | Docker / policy sandbox |
-| Use case | Lightweight REPL + HTTP API | Full-featured coding agent with UI |
+| Use case | Embeddable agent core with orchestration | Full-featured coding agent with UI |
 
 ## References
 

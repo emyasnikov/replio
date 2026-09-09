@@ -1,98 +1,95 @@
 # Replio vs. OpenClaw
 
-This document compares two open-source personal AI assistant projects: **Replio** (github.com/emyasnikov/replio) and **OpenClaw** (github.com/openclaw/openclaw). Both are single-operator assistants that act through tool calling, but they differ in language, runtime model, and how they reach the user.
+This document compares two personal AI assistant projects: **Replio** (github.com/emyasnikov/replio) and **OpenClaw** (github.com/openclaw/openclaw). Both act through tool calling, but they differ in language, runtime model, and how they reach the user.
 
 ## Project Overview
 
 | Project | Primary Language | Repo | License | Core Focus |
 |---------|------------------|------|---------|------------|
-| Replio | Python | https://github.com/emyasnikov/replio | MIT | Lightweight REPL + CLI + HTTP API with zero external dependencies |
-| OpenClaw | TypeScript/JavaScript (Node.js) | https://github.com/openclaw/openclaw | MIT | Multi-channel personal assistant that runs on your devices and meets you in the channels you already use |
+| Replio | Python (stdlib only) | https://github.com/emyasnikov/replio | MIT | Zero-dependency agentic core: REPL, CLI, HTTP API, types/teams delegation, jobs, fleet, MCP |
+| OpenClaw | TypeScript / JavaScript (Node.js) | https://github.com/openclaw/openclaw | MIT | Multi-channel personal assistant that runs on your devices and meets you in the channels you already use |
 
-## Architecture & Runtime Model
+## Runtime & Architecture
 
 | Feature | Replio | OpenClaw |
-|---------|---------|----------|
-| Core runtime | Single Python process with a streaming agent loop | Gateway daemon (control plane) that manages sessions, tools, events, and channel connections |
-| Entry point | `replio` | `openclaw onboard --install-daemon`, `openclaw gateway status`, `openclaw dashboard` |
-| Runtime dependencies | None beyond stdlib | Node.js 22.22.3+ (or 24.15+, 25.9+) |
-| Deployment | Python package installed via `pipx`, no daemon | Gateway daemon plus optional Control UI, TUI, or CLI, Docker and Nix supported |
-| Front-ends | Terminal REPL, `replio run` (CLI), `replio serve` (HTTP API) | Control UI (web), TUI, and CLI - all front-ends talk to the gateway |
+|---------|--------|----------|
+| Core runtime | Single Python process with a streaming agent loop | Gateway daemon (control plane) managing sessions, tools, events, and channel connections |
+| Entry points | `replio` (REPL), `replio run`, `replio serve`, `replio jobs`, `replio fleet`, `replio mcp` | `openclaw onboard --install-daemon`, `openclaw gateway`, `openclaw dashboard`, CLI and TUI |
+| Runtime dependencies | None beyond the Python >= 3.10 stdlib | Node.js (22.22.3+, 24.15+, or 25.9+, Node 26 recommended). Installer available |
+| Deployment | Python package via pip/pipx, local process | Gateway daemon (launchd/systemd), Control UI, CLI, TUI, Docker and Nix supported |
 | Configuration | JSON: global `~/.config/replio/config.json` merged with local `.replio/config.json` | Workspace directory with configuration, logs, and plugin storage |
-| Extensibility | Python plugins register tools, providers, and commands, core stays dependency-free | npm plugin SDK (`@tool`, `@skill`, `@channel`), plugins shared via ClawHub |
+| Multi-agent | In-process sub-engines via types/teams/delegate | Multi-agent routing across workspaces and per-agent sessions |
 
-The two projects make different trade-offs. Replio bundles everything into a single Python process with a minimal footprint, while OpenClaw splits the control plane from its front-ends and leans on the Node ecosystem for extensibility.
-
-## Tooling & Function Calling
+## Tools & Function Calling
 
 | Aspect | Replio | OpenClaw |
-|--------|---------|----------|
-| Built-in tools | web search, fetch page, file read/write/search, shell execution | web search, fetch page, file I/O, shell, voice, canvas, camera, screen capture, and more |
-| Tool delivery | Ship as bundled plugins (`replio-core-web`, `replio-core-fs`, `replio-core-exec`) | Built into the gateway and extensible via plugins |
-| Permission model | Path-scoped `allow`/`ask`/`deny` with confirmation prompts | Tools run on the host by default, sandboxing is configurable |
-| Function calling | OpenAI-compatible JSON schema | OpenAI-compatible function calling |
-| Extensibility | Plugins register tools via a simple Python registry | Plugins expose `@tool`, `@skill`, `@channel` decorators, SDK enforces the API contract |
+|--------|--------|----------|
+| Built-in tools | Web search/fetch, file read/write/list/glob/grep, file edit, git, shell, test/lint/format wrappers, ask, delegate | Browser, canvas, nodes, cron, sessions, skills, plus voice, camera, screen capture, and more |
+| Function-calling scheme | OpenAI-compatible JSON schema | OpenAI-compatible function calling |
+| Permission model | Path-scoped `allow`/`ask`/`deny` with confirm prompts, per-type tool permissions | Tools run on the host by default, sandboxing is configurable |
+| Extensibility | Python plugins register tools, providers, commands, services, types, teams, skills | npm plugin SDK (`@tool`, `@skill`, `@channel`), plugins shared via ClawHub |
 
 ## Channels & UI
 
 | Feature | Replio | OpenClaw |
-|---------|---------|----------|
+|---------|--------|----------|
 | Built-in UI | Terminal REPL | CLI, TUI, and a web Control UI |
-| Messaging channels | None | WhatsApp, Telegram, Slack, Discord, Google Chat, Signal, iMessage, and other messaging services |
-| Companion apps | None | Optional apps and nodes add voice, canvas, camera, screen, and device-local actions |
+| Messaging channels | None | WhatsApp, Telegram, Slack, Discord, Google Chat, Signal, iMessage, Matrix, Microsoft Teams, Zalo, and more (29 channels) |
+| Companion apps | None | Voice, Canvas, camera, screen, and device-local actions on supported platforms |
 
-## Provider & Model Support
+## Providers & Models
 
 | Aspect | Replio | OpenClaw |
-|--------|---------|----------|
-| LLM providers | Ollama (default), OpenAI, Groq, Anthropic, and any OpenAI-compatible endpoint | Hosted and local model providers via a provider abstraction |
+|--------|--------|----------|
+| LLM providers | Ollama (default), OpenAI, Groq, Anthropic, OpenCode Zen/Go, any OpenAI-compatible endpoint | Hosted, subscription-backed, gateway, and local models via a provider abstraction |
 | Local model support | Built-in via Ollama | Built-in via local providers |
 
-## Persistence & Telemetry
+## Persistence & Memory
 
 | Feature | Replio | OpenClaw |
-|---------|---------|----------|
+|---------|--------|----------|
 | Session persistence | Append-only JSON session logs with compaction | Gateway sessions persisted in the workspace directory |
-| State management | Simple conversation context per session | Sessions, tools, events, and channel connections managed by the gateway |
+| State management | Per-session context, job run memory | Sessions, tools, events, and channel connections managed by the gateway |
+| Automation | Scheduled jobs (cron/interval/one-shot) with retries and approval | Cron via first-class tools and heartbeat checklists |
 
 ## Security & Isolation
 
 | Project | Default isolation | Sandbox options | Notes |
 |---------|-------------------|----------------|-------|
-| Replio | Runs with user permissions | None (relies on permission prompts) | Path-scoped `allow`/`ask`/`deny` gates every tool |
-| OpenClaw | Tools run on the host for the main session | Sandboxing can be configured | DM-capable channels pair unknown senders by default |
+| Replio | Runs with user permissions | None (relies on permission prompts) | Path-scoped `allow`/`ask`/`deny` gates every tool, audit trail |
+| OpenClaw | Tools run on the host for the main session | Sandboxing can be configured | DM-capable channels pair unknown senders by default, deterministic policy |
 
-## Community & Ecosystem
+## Plugins & Docs
 
-| Project | License | Community | Plugin Ecosystem | Docs |
-|---------|---------|-----------|-----------------|------|
-| Replio | MIT | Small, GitHub-centric | Python plugins | Docs in repo, minimal |
-| OpenClaw | MIT | Developed in the open by the OpenClaw Foundation, active on GitHub, Discord, and ClawHub | npm plugin SDK, plugins shared via ClawHub | docs.openclaw.ai, extensive |
+| Project | Plugin Ecosystem | Docs |
+|---------|------------------|------|
+| Replio | Directory plugins, bundled `replio-core-*` plugins, `/plugins` + `replio plugins` | Docs in repo (`docs/`), README |
+| OpenClaw | npm plugin SDK, plugins shared via ClawHub, skills and channel plugins | docs.openclaw.ai, extensive |
 
 ## When to Choose Which
 
 | Scenario | Recommended Project | Why |
 |----------|---------------------|-----|
-| You need a lightweight, zero-dependency REPL you can embed in scripts or expose via a tiny HTTP API | Replio | Minimal Python runtime, no external deps, no daemon |
-| You want a full-featured assistant that connects to messaging platforms and has a web UI, and you are comfortable with Node.js | OpenClaw | Multi-channel support, Control UI, and companion apps |
-| You want to quickly prototype a tool-calling assistant without boilerplate | Replio | One streaming loop, one round trip, simple tool registry |
-| You need a background daemon that manages long-running sessions across channels | OpenClaw | Gateway architecture built for that |
+| You want a zero-dependency Python agent core to embed, script, or expose via a tiny HTTP API | Replio | Stdlib-only runtime, no daemon, no external deps |
+| You want an always-on assistant reachable from your messaging apps with a web UI, comfortable with Node.js | OpenClaw | Multi-channel gateway, Control UI, companion apps |
+| You want to quickly prototype a tool-calling assistant without boilerplate | Replio | One streaming loop, simple tool registry |
+| You need a background daemon managing long-running sessions across channels | OpenClaw | Gateway architecture built for that |
 
 ## Summary Table
 
 | Feature | Replio | OpenClaw |
-|---------|---------|----------|
-| Language | Python | TypeScript/JavaScript |
+|---------|--------|----------|
+| Language | Python (stdlib) | TypeScript/JavaScript |
 | Runtime | Single process | Gateway daemon + front-ends |
 | Extensibility | Python plugins | Node plugin SDK |
-| Channels | None built-in | Many built-in |
-| LLM providers | Ollama (default), OpenAI, Groq, Anthropic, OpenAI-compatible | Hosted and local providers |
+| Channels | Terminal, HTTP API | Many built-in |
+| LLM providers | Ollama, OpenAI, Groq, Anthropic, OpenAI-compatible | Hosted, subscription, gateway, local |
 | UI | Terminal REPL | CLI, TUI, Web Control UI |
 | Persistence | JSON session logs | Gateway workspace |
 | Isolation | Permission prompts | Configurable sandboxing |
-| Use case | Lightweight REPL, CLI, and HTTP API | Multi-channel personal assistant |
+| Use case | Embeddable agent core with orchestration | Multi-channel personal assistant |
 
-Both projects share a common goal: a personal AI assistant that acts through tool calling. They differ mainly in language, runtime model, and ecosystem. Pick the stack that aligns with your tech stack and operational requirements.
+Both share the goal of a personal AI assistant that acts through tool calling. They differ mainly in language, runtime model, and ecosystem. Pick the stack that aligns with your tech stack and operational requirements.
 
 ## References
 

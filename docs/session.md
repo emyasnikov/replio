@@ -20,7 +20,7 @@ Delegation writes each sub-agent's log as its own session: `sub_<ts>_<parent-ses
 
 ## Managing sessions
 
-The active session is handled by `/session` (like `/model` for the active model); the catalog of saved sessions lives under `/sessions` (like `/models`).
+The active session is handled by `/session` (like `/model` for the active model). The catalog of saved sessions lives under `/sessions` (like `/models`).
 
 | Command | Purpose |
 |---------|---------|
