@@ -13,7 +13,7 @@
 
 Replio is a deliberately small, auditable, zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability.
 
-<p align="center"><img src="replio.svg" width="540" alt="Replio terminal session"></p>
+<p align="center"><img src="replio.svg" alt="Replio terminal session"></p>
 
 ## Features
 
