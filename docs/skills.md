@@ -57,4 +57,4 @@ Missing or empty skills are skipped silently, and an agent type without skills g
 - `/skills remove <name>` - remove a local skill. Plugin skills cannot be removed (override them locally instead).
 - `/skills show <name>` - print the full skill content.
 
-The team kit (see [swarm.md](swarm.md)) generates skills as part of its templates and persists them to the local skills dir.
+Skills are plain Markdown files. The assistant can save a reusable procedure as a local skill (for example when composing a recurring task), and the delegation flow injects a type's skills into the sub-agent prompt.

@@ -1,100 +1,50 @@
 # Vision
 
-**One terminal, whole teams**
+**One window to access and control all agents**
 
-One REPL. One prompt. The lead agent composes a specialized team - types and skills
-instantiated from a private template library matching the project description and request -
-runs the team stage-by-stage (sequentially first), each member working under its own type,
-skills, and permissions, with generated briefs, handoff, and shared memory. Teams are stored,
-reused, extended per customer, and scheduled. The composition machinery (templates, generator,
-library, authoring commands) lives in a **movable private plugin** (`replio-teamkit`), never in
-the core, so internal know-how leaves the repo as one documented unit whenever needed.
+Replio is the single window to your agents. The main agent, **assistant**, is the point of contact: it greets you on first run and asks what you want to do, answers small tasks inline in the current run, delegates bigger tasks to sub-agents or whole teams instead of blocking, runs recurring work in the background, watches your other agents for health, and reports back. Everything you need to see - sessions, running agents, and configured jobs on the machine - is reachable from one place. Users never see the machinery. They feel supported and do less work.
+
+## How the assistant works
+
+- **Onboarding** - on first run the assistant introduces itself, explains what it can do, and asks what the user wants to do. No system-level configuration is required of simple users.
+- **Small tasks inline** - a question or a small task is answered in the current run, through the existing one-stream agent loop.
+- **Bigger tasks delegated, never blocking** - for work that does not end after one task, the assistant starts sub-agents or whole teams, then reports their status. The user can check status with commands, jump into a session, ask for the current state, or view and mark items done on a per-agent todo list.
+- **Recurring tasks carry their own role** - each job carries its own type and skills, so behavior is encoded once instead of re-prompted. A recurring task that maintains docs "per AGENTS.md" keeps that convention in its own skill, not in every prompt.
+- **Health monitoring** - the assistant can watch endpoints (for example the `/health` of agents running as web APIs) and warn when an agent stops responding.
+- **One-window status** - sessions, running agents, and configured jobs on the current machine are visible with commands, without a separate CLI. Logs are reachable from the same surface.
+- **Report-back** - finished or failed runs surface a summary, and are delivered out-of-band over connectors (email first, an idea, not yet built) when the terminal is closed.
+- **Governance mode** - when needed, the full control surface is available. For small tasks the assistant simply responds in the current run. The user does not see the complexity of the whole, only the reduced workload.
 
 ## Decisions
 
-- **Sequential-first**: team stages run one member after another via `run_subagent` (existing,
-  battle-tested). No concurrency in the first iteration. In-process threaded concurrency is a
-  later milestone (cuts wall-clock, not tokens).
-- **No pre-saved run prompts**: briefs, handoff, and memory are generated per run. Stored
-  artifacts are templates and proven specializations - reusable by design, never regenerated.
-- **Cache model**: stored types/skills (never regenerated), generated briefs carrying facts,
-  shared team memory file, and persistent member sessions for recurring teams (`job`-style warm
-  sessions). One-off runs get fresh `sub_` sessions.
-- **Kit layout**: flat `library/` with tags (stack, customer, project-type). Matching by tags +
-  request + project description. Generation only of deltas.
-- **Core stays thin and publishable**: registries + sequential runner + three plugin hooks.
-  Everything customer-specific lives in the kit.
+- **Assistant is the single point of contact** - the main agent is named `assistant`. Delegation and team composition are assistant-driven, using the types, teams, and skills registries (bundled, global, local, and plugin layers).
+- **Sequential-first** - team stages run one member after another via `run_subagent` (existing, battle-tested). No concurrency in the first iteration. In-process threaded concurrency is a later milestone (cuts wall-clock, not tokens).
+- **No pre-saved run prompts** - briefs, handoff, and memory are generated per run. Stored artifacts are types, teams, and skills in the registries.
+- **Cache model** - persistent member sessions for recurring teams (`job`-style warm sessions), shared team memory file, and per-run briefs carrying facts. One-off runs get fresh `sub_` sessions.
+- **Core stays thin and publishable** - registries plus the sequential runner plus plugin hooks. Everything customer-specific lives in local `types.json`, `teams.json`, `skills/`, or plugins.
 
 ## Context economics (why this costs what it costs)
 
-- Sub-engines are separate `Engine`s - no in-memory context sharing exists. The persistence
-  channel is session + memory files.
-- Cold starts cost: file re-reads by multiple members, brief duplication. Mitigations:
-  facts-in-briefs (not just paths), research stage summarizing into team memory
-  (`.replio/teams/<name>/memory.md`), recurring teams keep member sessions warm, one-off teams
-  stay fresh and clean.
+- Sub-engines are separate `Engine`s - no in-memory context sharing exists. The persistence channel is session + memory files.
+- Cold starts cost: file re-reads by multiple members, brief duplication. Mitigations: facts-in-briefs (not just paths), research stages summarizing into team memory (`.replio/teams/<name>/memory.md`), recurring teams keep member sessions warm, one-off teams stay fresh and clean.
 - Honest limit: per-run redundancy will not go to zero. Sequential wall-clock is accepted.
 
-## Architecture
+## Phases
 
-**Core (thin):**
+The task mapping lives in `PLAN.md` (work packages). The phases below name the verifiable stages of the assistant track, ordered by dependency:
 
-- `TypeRegistry.reload()`. Plugin hooks `register_types` / `register_teams` /
-  `register_skills` in `plugins/manager.py` (mirroring `register_tools`).
-- `teams.py` - `Team` (name, description, stages: type, mode, task-hint, handoff-note),
-  `TeamRegistry` (`.replio/teams.json` + plugin contributions).
-- `skills.py` - `SkillRegistry` (`.replio/skills/*.md` + plugin contributions). AgentType `skills`
-  resolved and injected into the sub-agent system prompt.
-- `Engine.run_team(team, task)` - sequential stage loop: brief builder (task + prior results +
-  memory + stage handoff), `run_subagent`, result collection, memory write. `job.team` field so
-  `replio jobs` runs teams on schedule.
-
-**Kit plugin `replio-teamkit` (bundled `plugins/`, movable):**
-
-- `src/plugin.py` registering types/teams/skills templates, tools, commands.
-- `templates/` - instantiable type + skill template specs. `recipes/` - example teams (incl.
-  the two carved teams as team definitions). `library/` - flat tagged store of proven
-  teams/types/skills. `tests/`.
-- Generator: stack signature from project description/request (README, manifests) -> tags ->
-  matching templates -> AI-generated deltas only (via `engine.chat_nonstreaming`), persisted to
-  local `types.json` + `skills/` + `teams.json` (with `reload`).
-- Authoring commands (`/teamkit`): init, list, new, match, export, import, and per-customer
-  export/splitting.
-- Core's `/teams` stays registry + run only.
-
-## Work packages and milestones
-
-The task mapping lives in `PLAN.md` (work packages + milestone checkboxes). The milestones below name the verifiable phases of the swarm/team track.
-
-- **M1 - Skeleton and core hooks**: `PLAN.md` mapping, TODO items under `## Open`, `docs/teamkit.md`
-  draft (full authoring + move-out guide), core hooks (reload, teams/skills registries, plugin
-  hooks, `run_team` sequential + memory + handoff), kit skeleton (manifest, entry, one template,
-  one recipe, tests). Verified: `/teams run` end-to-end + unit tests.
-- **M2 - Authoring and template matching**: generator, library store with tags,
-  `/teamkit new|match`, project-description matching, generate-deltas-only flow, docs completed.
-  Verified: one command composes a new project's team. A second project reuses stored artifacts.
-- **M3 - Reuse, scheduling, move-out**: persistent member sessions for recurring teams,
-  `jobs add --team`, reuse verified across two projects, kit moved out per the documented
-  checklist (own/per-customer repo, `plugins install --global`), bundled copy removed from the
-  default plugin set. Verified: full workflow with the kit installed externally.
-- **M4 - Autonomous supervisor**: start once, it works on its own - the supervisor delegates
-  under its type, asks only when it truly needs a decision (an unanswered ask parks and the run
-  resumes on reply), keeps working while the terminal is idle or closed (jobs daemon), and
-  reports back (session result + job events over connectors). In-process threaded concurrency
-  (a non-blocking background delegate from the live REPL) stays out of scope here, as below.
+- **Onboarding** - the assistant introduces itself on first run and asks what to do. Defaults and docs for simple users.
+- **One-window status** - `/status` shows sessions, running agents, and configured jobs on the machine. Logs are reachable from the same surface.
+- **Non-blocking delegation** - the assistant delegates big tasks to sub-agents or teams without blocking, with progress reporting, jump-into-session, and per-agent todo lists that can be marked done.
+- **Recurring tasks with roles** - jobs carry their own type and skills, so recurring behavior is encoded per task.
+- **Health monitoring** - the assistant watches agent endpoints and warns on failures.
+- **Report-back connectors** - job summaries delivered out-of-band (email first).
+- **Governance mode** - the full control surface when needed, invisible otherwise.
 
 ## TODO.md placement
 
-The swarm/team track is tracked as open tasks at the top of `TODO.md` `## Open` (team kit
-plugin, template-based composition, team kit library, sequential team runs, skills registry,
-plugin contribution hooks). The skills-registry entry supersedes the earlier draft of the same
-name. The teams concept supersedes the earlier "jobs registry" TODO item (see `PLAN.md`). The
-autonomous supervisor track (start once, ask only when needed, report back) is milestone M4 in
-`PLAN.md`, composing the ask routing, the persisted delegate loop turn, and the jobs
-report/approval layer.
+The assistant track is tracked as open tasks at the top of `TODO.md` (onboarding, one-window status, health monitoring, per-agent todo lists, non-blocking delegation, recurring tasks with roles, report-back connectors) and as work packages in `PLAN.md` (Control & governance, Delegation & swarm, Jobs operations + report-back).
 
 ## Out of scope (later milestones, listed not planned)
 
-In-process threaded team concurrency and live progress channel, war-room focus view, lead-grant
-approvals, generate > check > correct loop, fleet-backed teams, and a plugin download service
-for battle-tested kits.
+In-process threaded team concurrency and a live progress channel, war-room focus view, lead-grant approvals, generate > check > correct loop, fleet-backed teams, and report-back connectors beyond email.

@@ -1,5 +1,12 @@
 # TODO
 
+- First-run onboarding - the assistant introduces itself, explains what it can do, and asks what to do. No system-level configuration for simple users
+- One-window status - `/status` shows sessions, running agents, and configured jobs on the current machine, with logs reachable from the same place (the journalctl-style alternative)
+- Agent health monitoring - the assistant watches endpoints (e.g. the `/health` of agents running as web APIs) and warns when an agent stops responding
+- Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style)
+- Non-blocking delegation - the assistant starts sub-agents or whole teams for bigger tasks and reports their status instead of blocking the current run
+- Recurring tasks carry their own role - each job carries its own type and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time
+- Report-back connectors - job summaries delivered out-of-band (email first, idea only) when the terminal is closed
 - Remove the legacy provider-plugin backfill migration (`Config._migrate_plugins`) once a stable replio release has shipped with the externalized providers - existing `plugins` lists no longer need the automatic append, and the migration code is dead weight
 - Human-in-the-loop channels - job events outbound (`proposed`, `will_run`, `failed`, `waiting_approval`) plus inbound actions (`approve`/`reject`/`run`/`disable`) over configurable connectors (webhook first, then email, then Telegram), so a job can reach an operator who is not on the box
 - Global jobs overview across agents - `replio jobs list --root <dir>` fleet scan, a `GET /jobs` + `POST /jobs/<name>/approve|reject|run|disable` operator API on `replio serve`, then a web Control UI, so one view shows which agents run next and with which task
@@ -28,16 +35,12 @@
 
 ## Open
 
-- [ ] Autonomous supervisor track - compose the delegate loop turn + ask routing + jobs daemon + report-back so a supervisor task started once runs unattended and reports back (milestone M4 in PLAN.md)
+- [ ] Autonomous supervisor track - compose the delegate loop turn + ask routing + jobs daemon + report-back so a supervisor task started once runs unattended and reports back (supervisor track in PLAN.md)
 - [ ] Supervisor report-back - finished/failed supervisor runs surface a per-run summary (interactive session result footer + `replio jobs status`), delivered out-of-band via the job event hooks + connectors when the terminal is closed
 - [ ] Pending-ask inbox - an unattended run's `ask target='human'` parks as a pending request (persisted, listed in the REPL + serve API) instead of failing, and answering resumes the run from its session (resumable mid-run state shared with the mid-run blocking job approval item)
 - [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
 - [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
 - [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`web_fetch` guidance to tool descriptions
-- [ ] Team kit plugin (movable, private) - templates, recipes, and generator for ad hoc types/skills/teams, kept out of the core. Bundled during development, moved out to its own per-customer repo once documented (docs/teamkit.md)
-- [ ] Template-based team composition - match type/skill templates from the kit library against the request + project description, generate only the deltas, reuse proven artifacts across projects
-- [ ] Team kit library - tag/store proven teams, types, and skills per stack and customer, importable into new projects without publishing internal know-how
-- [ ] Plugin contribution hooks - `register_types` / `register_teams` / `register_skills` plugin entry hooks + `TypeRegistry.reload()`, so the kit ships templates without forking the core
 - [ ] Mid-run blocking job approval - an `ask` tool inside a running job pauses the run in place (per-tool-call `waiting_approval`), notifies via a connector, and resumes the same session when the operator replies. Needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run `--require-approval` gate)
 - [ ] Job event hooks - the scheduler emits typed transitions (`proposed`, `approved`, `will_run`, `executing`, `verified`, `failed`, `timeout`, `waiting_approval`) to registered `services`. Channel-agnostic core, first consumers are the connectors and the operator API
 - [ ] Job connectors - bundled `replio-core-webhook` (stdlib JSON POST, zero deps, works with n8n/IFTTT/any URL) first. External email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API so operators can react in time
@@ -46,7 +49,7 @@
 - [ ] Interactive delegation focus - REPL jumps in/out of the active sub-agent (request or automatic on delegate), arrows switch between concurrent `delegate_*` session logs rendered from their own saved logs (opencode-style sub-agent views)
 - [ ] Agent type directory scan for export/import - read `.replio/types/*.md` (front-matter types) to import and export types to Markdown, paralleling the sessions Markdown export/import
 - [ ] Delegation progress in the REPL - live status of which sub-agent is working and its progress mid-run. `delegate` already surfaces the task and the final result (plus a sub footer via `delegate_echo`). The next step is a progress channel read out of the sub-engine loop, which the single blocking `Engine.chat()` does not expose today
-- [ ] Auto team selection - the lead agent picks types from the registry for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor, landing with the team kit composition flow)
+- [ ] Auto team selection - the assistant picks types, teams, and skills from the registries for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor)
 - [ ] Session log full-restructuring (deferred) - restructure `messages` from flat role-attribute dicts into a typed `parts` model, borrowing OpenCode's session file structure (`.opencode/sessions/ses_*.json`). Deferred: the current flat format already reconstructs every conversation element, so this is architectural polish / ecosystem alignment, not a correctness fix. See the detailed spec below. Do NOT migrate existing `.replio/sessions/*.json` - they are historical and remain readable as-is
   - Reference - OpenCode stores each turn as `{role, messageId, timestamp, parts[]}` where `parts` are typed objects:
     - `{"type": "text", "text": ...}` - assistant/user content
