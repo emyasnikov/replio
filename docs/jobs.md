@@ -156,4 +156,4 @@ The daemon (`replio jobs daemon`) wakes on the `--tick` interval (default 15s), 
 
 ## Session logs
 
-Each run writes a complete append-only log at `.replio/sessions/job_<ts>_<name>.json` (or the `--session` override): user prompts, assistant answers, tool calls and results, thinking, errors, and the `permissions` audit array. That is the durable record a `verified` or `failed` status points to. `replio jobs show <name>` prints the run history and each run's session file plus the last output. `/session export job_<ts>_<name>` renders one run's transcript to Markdown.
+Each run writes a complete append-only log at `.replio/sessions/job_<ts>_<name>.json` (or the `--session` override): user prompts, assistant answers, tool calls and results, thinking, errors, and the `permissions` audit array. That is the durable record a `verified` or `failed` status points to. `replio jobs show <name>` prints the run history and each run's session file plus the last output. `/sessions export job_<ts>_<name>` renders one run's transcript to Markdown.

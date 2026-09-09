@@ -46,7 +46,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_repl_input.py` | REPL input: multi-line `"""`/`'''` block detection, framing strip (pure, lead-in, indentation preserved), EOF exit during an open block, slash commands single-line |
 | `test_server.py` | `replio serve` HTTP API: `/chat`, `/sessions`, `/health`, `/version` |
 | `test_session_log.py` | Session model: append-only serialization, `tool_max_chars` truncation, metadata |
-| `test_session_render.py` | Session Markdown export: renderer output per role, error section, `/session export` dispatch and file/stdout targets |
+| `test_session_render.py` | Session Markdown export: renderer output per role, error section, `/sessions export` dispatch and file/stdout targets |
 | `test_skills.py` | `SkillRegistry`: local/global dir scans, plugin/global/local merge and precedence, origins, put/remove round-trip, reload (disk re-read + plugin-manager re-apply), `skills_section`, `/skill` command (list/show/new override/remove, plugin remove rejected) |
 | `test_subagent.py` | In-process sub-engine: provider/plugin/worktree inheritance, type prompt/mode/tool_permission application, type-skill system-prompt injection (present/missing/empty/no-skills), model override, `NullUI`, unknown type, full `run_subagent` flow + persisted `sub_*` session with `parent_id`, ask-gated tool cancellation, parent `sub_sessions` linkage |
 | `test_subagent.py` | In-process sub-engine: provider/plugin/worktree inheritance, type prompt/mode/tool_permission application, model override, `NullUI`, unknown type, full `run_subagent` flow + persisted `sub_*` session with `parent_id`, ask-gated tool cancellation, parent `sub_sessions` linkage |

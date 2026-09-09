@@ -28,7 +28,7 @@ The agentic core has three layers:
 
 2. **ToolRegistry** (`tools/registry.py`) - the **single dispatch point**. The model invokes tools via OpenAI function calling, slash commands are thin wrappers that call the same `execute()`. The loop never special-cases tool names - per-tool behavior comes from registration metadata (`refine`, `permission_fn`, `note`, later `confirm`). The `delegate` tool (`tools/delegate.py`) is a core tool that runs a task under an agent type by spawning an in-process sub-`Engine` (`Engine.run_subagent`) - the same agent loop, its own `sub_<ts>_<parent-session>` session, a quiet `NullUI`. Its permission is a per-invocation `permission_fn` resolved per type.
 
-3. **Commands** (`commands/`) - user-facing affordances. A command either wraps a tool or performs a local action (`/model`, `/session`).
+3. **Commands** (`commands/`) - user-facing affordances. A command either wraps a tool or performs a local action (`/model`, `/session`, `/sessions`).
 
 Providers (`providers/`) keep the base classes and registry in the core (`BaseProvider`, `OpenAICompatibleProvider`, the `PROVIDERS` dict, host-pattern `detect_provider`). The vendor providers ship as bundled plugins that register through the `register_providers` hook. A fuller treatment of the core, UI sinks, and front-ends is in `docs/architecture.md`.
 
@@ -70,7 +70,7 @@ Replio/
 │   ├── commands/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Command registration + dispatch
-│   │   └── builtins.py      # /help, /connect, /model, /session, /plugins, etc.
+│   │   └── builtins.py      # /help, /connect, /model, /session, /sessions, /plugins, etc.
 │   ├── tools/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Tool registration + dispatch (OpenAI function calling)

@@ -16,28 +16,31 @@ Session files carry a type prefix so the three kinds stay distinguishable at a g
 | `ses_` | Interactive/auto sessions | `ses_20260817_120000_what_is_oee.json` |
 | `sub_` | Delegation sub-agents (parent session id as suffix) | `sub_20260817_120100_ses_20260817_120000_what_is_oee.json` |
 
-Delegation writes each sub-agent's log as its own session: `sub_<ts>_<parent-session>`, where the suffix is the calling (parent) session id (`sub_20260817_120100_ses_20260817_120000_what_is_oee`). These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/session list` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.
+Delegation writes each sub-agent's log as its own session: `sub_<ts>_<parent-session>`, where the suffix is the calling (parent) session id (`sub_20260817_120100_ses_20260817_120000_what_is_oee`). These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/sessions list` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.
 
 ## Managing sessions
 
+The active session is handled by `/session` (like `/model` for the active model); the catalog of saved sessions lives under `/sessions` (like `/models`).
+
 | Command | Purpose |
 |---------|---------|
+| `/session` | Show the active session (name, message count, context) |
 | `/session new <name>` | Create and switch to a new session |
-| `/session list` | List saved sessions |
-| `/session preview <name>` | Structural preview (roles, tool names) without switching |
 | `/session load <name>` | Load a session (with compaction offer if it has a summary) |
-| `/session delete <name>` | Delete a session |
 | `/session save` | Save the current session |
-| `/session export <name> [out]` | Export a session to Markdown |
+| `/sessions` | List saved sessions |
+| `/sessions preview <name>` | Structural preview (roles, tool names) without switching |
+| `/sessions delete <name>` | Delete a session |
+| `/sessions export <name> [out]` | Export a session to Markdown |
 | `replio run --session-id <name>` | Load or create a session from headless mode |
 
 The current session is auto-saved after every message and command, so nothing is lost on exit.
 
 ## Exporting to Markdown
 
-`/session export <name>` renders any saved session as a Markdown transcript. It reads the persisted log directly (`read()`, not `load()`), so the current session is never switched and the source file is left untouched.
+`/sessions export <name>` renders any saved session as a Markdown transcript. It reads the persisted log directly (`read()`, not `load()`), so the current session is never switched and the source file is left untouched.
 
-The default output is `.replio/exports/<name>.md`, next to the `sessions/` directory. A second argument overrides the path (`/session export <name> out.md`), and `-` prints the transcript to stdout instead of writing a file. The command tab-completes session names.
+The default output is `.replio/exports/<name>.md`, next to the `sessions/` directory. A second argument overrides the path (`/sessions export <name> out.md`), and `-` prints the transcript to stdout instead of writing a file. The command tab-completes session names.
 
 The export is the full, auditable log: each message becomes a `### <Role>` section with its timestamp, assistant meta (provider/model/duration) and thinking, tool calls and results as fenced code blocks (with tool `analysis`), `command` records, compaction summaries (with the trimmed context boundary), and a final `## Errors` section. Because it renders the persisted form, serialization-time transforms (`noise_tools` markers, `session_tool_max_chars` truncation) carry through as they appear in the file.
 
@@ -69,7 +72,7 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 | `parent_id` | string | Name of the session this one was spawned from (sub-agent sessions set it, empty otherwise) |
 | `sub_sessions` | array | Names of sessions spawned from this one (delegations. The delegate sets a sub-agent's `parent_id` here) |
 
-`/session preview` prints the `parent` and `sub-sessions` links. `/session list` annotates `sub_*` children with their parent.
+`/sessions preview` prints the `parent` and `sub-sessions` links. `/sessions list` annotates `sub_*` children with their parent.
 
 ## Message schema
 

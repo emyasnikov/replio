@@ -12,7 +12,7 @@ Replio is a terminal-based agentic REPL core: the model is the planner, the tool
 
 2. **ToolRegistry** (`src/replio/tools/registry.py`) - the single dispatch point. The model invokes tools via OpenAI function calling. Slash commands are thin wrappers calling the same `execute()`. The loop never special-cases tool names - per-tool behavior comes from registration metadata. See [tools.md](tools.md).
 
-3. **Commands** (`src/replio/commands/`) - user-facing affordances. A command either wraps a tool or performs a local action (`/model`, `/session`).
+3. **Commands** (`src/replio/commands/`) - user-facing affordances. A command either wraps a tool or performs a local action (`/model`, `/session`, `/sessions`).
 
 Providers (`src/replio/providers/`) are OpenAI-compatible `/v1/chat/completions` backends implementing the event-generator `chat()` contract. See [providers.md](providers.md).
 

@@ -105,7 +105,7 @@ class TestReplInput(unittest.TestCase):
         self.chat.chat.assert_not_called()
 
     def test_slash_command_stays_single_line(self):
-        output = self._run(['/session list', EOFError])
+        output = self._run(['/sessions list', EOFError])
         self.chat.chat.assert_not_called()
         self.assertIn('No sessions found', output)
 

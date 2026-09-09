@@ -95,10 +95,17 @@ class TestToolCommand(unittest.TestCase):
         self.assertIn('Use /help <tool> for details', output)
         self.assertNotIn(', web_search', output)
 
-    def test_session_no_args_shows_subcommands(self):
+    def test_session_no_args_shows_current(self):
         output = self._dispatch('/session')
-        self.assertIn('Start a new session', output)
-        self.assertIn('Delete a session', output)
+        self.assertIn('Current session:', output)
+        self.assertIn('context', output)
+
+    def test_sessions_no_args_lists(self):
+        s = self.chat.sessions.create('saved1')
+        s.add_message('user', 'x')
+        self.chat.sessions.save(s)
+        output = self._dispatch('/sessions')
+        self.assertIn('saved1', output)
 
     def test_session_new_switches_current_session(self):
         old = self.chat.current_session
@@ -157,13 +164,13 @@ class TestToolCommand(unittest.TestCase):
             'function': {'name': 'web_search', 'arguments': '{}'},
         }])
         self.chat.sessions.save(s)
-        output = self._dispatch('/session preview pv1')
+        output = self._dispatch('/sessions preview pv1')
         self.assertIs(self.chat.current_session, old)
         self.assertIn('2 messages', output)
         self.assertIn('web_search', output)
 
     def test_session_preview_not_found(self):
-        output = self._dispatch('/session preview nosuch')
+        output = self._dispatch('/sessions preview nosuch')
         self.assertIn('Session not found: nosuch', output)
 
     def test_compact_dispatch_calls_compaction(self):
@@ -677,7 +684,7 @@ class TestReadlineCompleter(unittest.TestCase):
 
     def test_session_delete_completes_names(self):
         self._make_sessions('alpha_01')
-        with self._buffer('/session delete alpha_'):
+        with self._buffer('/sessions delete alpha_'):
             self.assertEqual(self.chat._completer('alpha_', 0), 'alpha_01 ')
             self.assertIsNone(self.chat._completer('alpha_', 1))
 

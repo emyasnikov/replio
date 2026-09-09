@@ -144,7 +144,7 @@ class TestExportCommand(unittest.TestCase):
 
     def test_export_writes_default_file(self):
         self._make_session('alpha')
-        output = self._dispatch('/session export alpha')
+        output = self._dispatch('/sessions export alpha')
         path = self._export_dir() / 'alpha.md'
         self.assertTrue(path.exists())
         body = path.read_text()
@@ -157,29 +157,29 @@ class TestExportCommand(unittest.TestCase):
         self._make_session('alpha')
         tmp = self.chat._tmp.name
         target = Path(tmp) / 'custom' / 'out.md'
-        self._dispatch(f'/session export alpha {target}')
+        self._dispatch(f'/sessions export alpha {target}')
         self.assertTrue(target.exists())
         self.assertIn('# Session: alpha', target.read_text())
 
     def test_export_stdout(self):
         self._make_session('alpha')
-        output = self._dispatch('/session export alpha -')
+        output = self._dispatch('/sessions export alpha -')
         self.assertIn('# Session: alpha', output)
         self.assertIn('hello', output)
 
     def test_export_not_found(self):
-        output = self._dispatch('/session export nosuch')
+        output = self._dispatch('/sessions export nosuch')
         self.assertIn('Session not found: nosuch', output)
 
     def test_export_usage_without_name(self):
-        output = self._dispatch('/session export')
-        self.assertIn('Usage: /session export <name> [out]', output)
+        output = self._dispatch('/sessions export')
+        self.assertIn('Usage: /sessions export <name> [out]', output)
 
     def test_export_read_does_not_switch_current(self):
         self._make_session('alpha')
         self.chat.sessions.create('current')
         before = self.chat.sessions.current
-        self._dispatch('/session export alpha')
+        self._dispatch('/sessions export alpha')
         self.assertIs(self.chat.sessions.current, before)
         self.assertEqual(self.chat.sessions.current.name, 'current')
 
@@ -194,7 +194,7 @@ class TestExportCommand(unittest.TestCase):
         s.add_error(0, 'boom')
         self.chat.sessions.save(s)
         path = self._export_dir() / 'alpha.md'
-        self._dispatch('/session export alpha')
+        self._dispatch('/sessions export alpha')
         body = path.read_text()
         self.assertIn('**Tool call: web_search**', body)
         self.assertIn('### Tool: web_search - ', body)

@@ -778,48 +778,24 @@ def register_builtins(registry):
         chat.config.set(key, value, scope=scope)
         print(f'Config {key} = {value} ({scope})')
 
-    @registry.register('session', description='Manage saved sessions', subcommands=[
+    @registry.register('session', description='Show or switch the active session', subcommands=[
         ('new', 'Start a new session'),
-        ('list', 'List saved sessions'),
-        ('preview', 'Show a structural preview of a session'),
         ('load', 'Load a session'),
-        ('delete', 'Delete a session'),
         ('save', 'Save the current session'),
-        ('export', 'Export a session to Markdown'),
     ])
     def session_cmd(arg=''):
         parts = arg.strip().split(maxsplit=2)
         action = parts[0] if parts else ''
 
         if not action:
-            _render_commands(registry, ['session'])
+            n, chars = chat._context_size()
+            print(f'Current session: {chat.current_session.name} '
+                  f'({n} messages · {chat._human_chars(chars)} context)')
             return
 
         if action == 'new':
             chat.current_session = chat.sessions.create()
             print(f'New session: {chat.current_session.name}')
-        elif action == 'list':
-            sessions = chat.sessions.list()
-            if sessions:
-                current = chat.sessions.current.name if chat.sessions.current else ''
-                for s in sessions:
-                    marker = '  <-- current' if s == current else ''
-                    child = ''
-                    if s.startswith('sub_'):
-                        data = chat.sessions.read(s)
-                        if data and getattr(data, 'parent_id', ''):
-                            child = f'  (child of {data.parent_id})'
-                    print(f'  {s}{marker}{child}')
-            else:
-                print('  No sessions found')
-        elif action == 'preview':
-            name = parts[1] if len(parts) > 1 else ''
-            if not name:
-                print('Usage: /session preview <name>')
-                return
-            s = chat.preview_session(name)
-            if s is None:
-                print(f'Session not found: {name}')
         elif action == 'load':
             name = parts[1] if len(parts) > 1 else ''
             if not name:
@@ -844,23 +820,59 @@ def register_builtins(registry):
                     chat.compact_session()
             else:
                 print(f'Session not found: {name}')
+        elif action == 'save':
+            chat.session_auto_save()
+            print('Session saved')
+        else:
+            _render_commands(registry, ['session'])
+
+    @registry.register('sessions', description='List or manage saved sessions', subcommands=[
+        ('list', 'List saved sessions'),
+        ('preview', 'Show a structural preview of a session'),
+        ('delete', 'Delete a session'),
+        ('export', 'Export a session to Markdown'),
+    ])
+    def sessions_cmd(arg=''):
+        parts = arg.strip().split(maxsplit=2)
+        action = parts[0] if parts else ''
+
+        if not action or action == 'list':
+            sessions = chat.sessions.list()
+            if sessions:
+                current = chat.sessions.current.name if chat.sessions.current else ''
+                for s in sessions:
+                    marker = '  <-- current' if s == current else ''
+                    child = ''
+                    if s.startswith('sub_'):
+                        data = chat.sessions.read(s)
+                        if data and getattr(data, 'parent_id', ''):
+                            child = f'  (child of {data.parent_id})'
+                    print(f'  {s}{marker}{child}')
+            else:
+                print('  No sessions found')
+            return
+        if action == 'preview':
+            name = parts[1] if len(parts) > 1 else ''
+            if not name:
+                print('Usage: /sessions preview <name>')
+                return
+            s = chat.preview_session(name)
+            if s is None:
+                print(f'Session not found: {name}')
         elif action == 'delete':
             name = parts[1] if len(parts) > 1 else ''
             if not name:
-                print('Usage: /session delete <name>')
+                print('Usage: /sessions delete <name>')
                 return
             if chat.sessions.delete(name):
                 print(f'Deleted session: {name}')
             else:
                 print(f'Session not found: {name}')
-        elif action == 'save':
-            chat.session_auto_save()
-            print('Session saved')
         elif action == 'export':
             name = parts[1] if len(parts) > 1 else ''
             out = parts[2] if len(parts) > 2 else ''
             if not name:
-                print('Usage: /session export <name> [out]')
+                print('Usage: /sessions export <name> [out]')
                 return
             s = chat.sessions.read(name)
             if s is None:
@@ -877,6 +889,8 @@ def register_builtins(registry):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(markdown)
             print(f'Exported session: {name} -> {path}')
+        else:
+            _render_commands(registry, ['sessions'])
 
     @registry.register('compact', aliases=['c'],
                        description='Summarize the conversation and trim the context')

@@ -107,6 +107,7 @@
 
 ## Done
 
+- [x] `/session` split - active session vs `/sessions` catalog (mirrors /model vs /models)
 - [x] Model commands - /model show/switch, /models configured, /models list [provider] live
 - [x] Loop tools - `/tool delegate` runs a persisted loop turn, sub-agent ask reaches the operator
 - [x] Externalize bundled providers - vendor providers to bundled plugins, base + host hints stay core

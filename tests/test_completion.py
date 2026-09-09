@@ -39,6 +39,7 @@ class TestCompletion(unittest.TestCase):
 
     def test_subcommand_completion(self):
         self.assertEqual(self._complete('/session lo', 'lo'), 'load ')
+        self.assertEqual(self._complete('/sessions de', 'de'), 'delete ')
         self.assertEqual(self._complete('/plugins dis', 'dis'), 'disable ')
 
     def test_subcommand_completion_exhausts(self):
