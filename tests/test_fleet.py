@@ -201,13 +201,22 @@ class TestControllerLifecycle(unittest.TestCase):
         self._ctrl().manifest.add(agent)
         return agent
 
+    def _wait_healthy(self, ctrl, name, timeout=8.0):
+        st = ctrl.state.agents[name]
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if st.status == 'healthy':
+                return st
+            time.sleep(0.4)
+            ctrl.sweep()
+            st = ctrl.state.agents[name]
+        return st
+
     def _healthy(self):
         ctrl = self._ctrl()
         self._add('alpha')
         ctrl.sweep()
-        time.sleep(0.6)
-        ctrl.sweep()
-        st = ctrl.state.agents['alpha']
+        st = self._wait_healthy(ctrl, 'alpha')
         self.assertEqual(st.status, 'healthy')
         self.assertGreater(st.pid, 0)
         self.assertGreater(st.port, 0)
@@ -233,9 +242,7 @@ class TestControllerLifecycle(unittest.TestCase):
         st.next_restart_at = ''
         ctrl.state.save()
         ctrl.sweep()
-        time.sleep(0.6)
-        ctrl.sweep()
-        st = ctrl.state.agents['alpha']
+        st = self._wait_healthy(ctrl, 'alpha')
         self.assertEqual(st.status, 'healthy')
         self.assertGreater(st.pid, 0)
 
@@ -274,20 +281,14 @@ class TestControllerLifecycle(unittest.TestCase):
         st = ctrl.state.agents['alpha']
         self.assertEqual(st.status, 'stopped')
         self.assertEqual(st.restarts, 0)
-        time.sleep(0.3)
-        ctrl.sweep()
-        time.sleep(0.6)
-        ctrl.sweep()
-        st = ctrl.state.agents['alpha']
+        st = self._wait_healthy(ctrl, 'alpha')
         self.assertEqual(st.status, 'healthy')
 
     def test_disabled_agent_not_supervised(self):
         ctrl = self._ctrl()
         self._add('alpha')
         ctrl.sweep()
-        time.sleep(0.6)
-        ctrl.sweep()
-        st = ctrl.state.agents['alpha']
+        st = self._wait_healthy(ctrl, 'alpha')
         self.assertEqual(st.status, 'healthy')
         ctrl.manifest.find('alpha').enabled = False
         ctrl.manifest.save()

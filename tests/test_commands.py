@@ -532,33 +532,10 @@ class TestModelCommand(unittest.TestCase):
             output = self._dispatch('/model opencode-go/deepseek-v4-flash')
         self.assertIn('Model not approved', output)
 
-    def test_model_list_shows_configured(self):
-        self.chat.models.put('openai', 'gpt-4o')
-        self.chat.providers.put('openai', 'https://api.openai.com/v1', 'k')
-        output = self._dispatch('/model list')
-        self.assertIn('openai:', output)
-        self.assertIn('gpt-4o', output)
-        self.assertIn('(key)', output)
-
-    def test_model_list_empty(self):
-        output = self._dispatch('/model list')
-        self.assertIn('No models configured yet', output)
-
-    def test_model_list_online_probes_provider(self):
-        self.chat.models.put('openai', 'gpt-4o')
-        self.chat.providers.put('openai', 'https://api.openai.com/v1', 'oak')
-        with patch.object(self.chat, 'list_models',
-                          return_value=(['gpt-4o', 'gpt-5'], None)) as lm:
-            output = self._dispatch('/model list --online openai')
-        lm.assert_called_once_with(
-            provider='openai', base_url='https://api.openai.com/v1',
-            api_key='oak', model='gpt-4o')
-        self.assertIn('gpt-4o', output)
-        self.assertIn('gpt-5', output)
-
-    def test_model_list_online_usage(self):
-        output = self._dispatch('/model list extra')
-        self.assertIn('Usage: /model list', output)
+    def test_model_bare_shows_current(self):
+        output = self._dispatch('/model')
+        self.assertIn('Current model: test-model', output)
+        self.assertIn('(ollama @ https://test.api.com)', output)
 
 
 class TestModelsCommand(unittest.TestCase):
@@ -575,30 +552,65 @@ class TestModelsCommand(unittest.TestCase):
             self.chat.registry.dispatch(line)
         return out.getvalue()
 
-    def test_models_lists_available(self):
-        with patch.object(self.chat, 'list_models',
-                          return_value=(['m1', 'm2'], None)):
-            output = self._dispatch('/models')
-        self.assertIn('2 models available from ollama (https://test.api.com)', output)
-        self.assertIn('- m1', output)
-        self.assertIn('- m2', output)
+    def test_models_shows_configured(self):
+        self.chat.models.put('openai', 'gpt-4o')
+        self.chat.providers.put('openai', 'https://api.openai.com/v1', 'k')
+        output = self._dispatch('/models')
+        self.assertIn('openai:', output)
+        self.assertIn('gpt-4o', output)
+        self.assertIn('(key)', output)
 
-    def test_models_error(self):
+    def test_models_marks_active(self):
+        self.chat.models.put('ollama', 'test-model')
+        self.chat.models.put('ollama', 'other')
+        output = self._dispatch('/models')
+        self.assertIn('> test-model', output)
+
+    def test_models_empty(self):
+        output = self._dispatch('/models')
+        self.assertIn('No models configured yet', output)
+
+    def test_models_usage(self):
+        output = self._dispatch('/models bogus')
+        self.assertIn('Usage: /models', output)
+
+    def test_models_list_probes_provider(self):
+        self.chat.models.put('openai', 'gpt-4o')
+        self.chat.providers.put('openai', 'https://api.openai.com/v1', 'oak')
+        with patch.object(self.chat, 'list_models',
+                          return_value=(['gpt-4o', 'gpt-5'], None)) as lm:
+            output = self._dispatch('/models list openai')
+        lm.assert_called_once_with(
+            provider='openai', base_url='https://api.openai.com/v1',
+            api_key='oak', model='gpt-4o')
+        self.assertIn('gpt-4o', output)
+        self.assertIn('gpt-5', output)
+
+    def test_models_list_defaults_to_current_provider(self):
+        with patch.object(self.chat, 'list_models',
+                          return_value=(['m1', 'm2'], None)) as lm:
+            output = self._dispatch('/models list')
+        lm.assert_called_once_with(
+            provider='ollama', base_url='https://test.api.com',
+            api_key='', model='test-model')
+        self.assertIn('2 models available from ollama (https://test.api.com)', output)
+
+    def test_models_list_error(self):
         with patch.object(self.chat, 'list_models',
                           return_value=([], 'HTTP 401: bad key')):
-            output = self._dispatch('/models')
+            output = self._dispatch('/models list')
         self.assertIn('[Error] Failed to list models: HTTP 401: bad key', output)
         self.assertIn('run /connect to fix', output)
 
-    def test_models_empty(self):
+    def test_models_list_empty(self):
         with patch.object(self.chat, 'list_models', return_value=([], None)):
-            output = self._dispatch('/models')
+            output = self._dispatch('/models list')
         self.assertIn('No models listed from ollama (https://test.api.com)', output)
 
-    def test_models_notes_missing_configured_model(self):
+    def test_models_list_notes_missing_configured_model(self):
         with patch.object(self.chat, 'list_models',
                           return_value=(['a', 'b'], None)):
-            output = self._dispatch('/models')
+            output = self._dispatch('/models list')
         self.assertIn('(configured model "test-model" not in the model list)', output)
 
 

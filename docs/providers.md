@@ -17,7 +17,7 @@ The vendor providers ship as bundled plugins. The core keeps the base classes (`
 
 `openai-compatible` is the generic fallback in the core for any other OpenAI-compatible endpoint - local models, gateways, or self-hosted servers.
 
-`opencode` (Zen) and `opencode-go` (Go) are the two hosted catalogs at `opencode.ai`. Both share one OpenCode API key, stored with `/connect` in the provider registry like any other provider (no environment variable is consulted). Zen is the curated multi-model gateway. Go is the low-cost subscription for open coding models. Model refs accept the `opencode/<model-id>` and `opencode-go/<model-id>` conventions as well as bare model ids - the prefix is stripped before the request. A successful model listing is an inventory, not an entitlement check: inference still requires the matching subscription. Fetch the current lineup from `https://opencode.ai/zen/v1/models` and `https://opencode.ai/zen/go/v1/models`. These endpoints sit behind Cloudflare bot protection, which rejects urllib's default `Python-urllib/<ver>` user agent with `HTTP 403: error code: 1010`. Provider requests send an identifying `replio/<version>` `User-Agent` and a stable per-conversation `x-opencode-session` header (OpenCode uses it for routing and prompt caching. Go rejects requests without it), so `/connect`, `/model list --online`, and chat all work.
+`opencode` (Zen) and `opencode-go` (Go) are the two hosted catalogs at `opencode.ai`. Both share one OpenCode API key, stored with `/connect` in the provider registry like any other provider (no environment variable is consulted). Zen is the curated multi-model gateway. Go is the low-cost subscription for open coding models. Model refs accept the `opencode/<model-id>` and `opencode-go/<model-id>` conventions as well as bare model ids - the prefix is stripped before the request. A successful model listing is an inventory, not an entitlement check: inference still requires the matching subscription. Fetch the current lineup from `https://opencode.ai/zen/v1/models` and `https://opencode.ai/zen/go/v1/models`. These endpoints sit behind Cloudflare bot protection, which rejects urllib's default `Python-urllib/<ver>` user agent with `HTTP 403: error code: 1010`. Provider requests send an identifying `replio/<version>` `User-Agent` and a stable per-conversation `x-opencode-session` header (OpenCode uses it for routing and prompt caching. Go rejects requests without it), so `/connect`, `/models list`, and chat all work.
 
 ## Configuration
 
@@ -32,7 +32,7 @@ The vendor providers ship as bundled plugins. The core keeps the base classes (`
 }
 ```
 
-The engine resolves the API key for the active provider from the provider registry (a `(key)` entry from `/connect`), falling back to `""` - no environment variable is consulted. A custom `base_url` stored there is used when the config leaves it empty. The approved-model history (`~/.config/replio/models.json`) records every model used for `/model list`.
+The engine resolves the API key for the active provider from the provider registry (a `(key)` entry from `/connect`), falling back to `""` - no environment variable is consulted. A custom `base_url` stored there is used when the config leaves it empty. The approved-model history (`~/.config/replio/models.json`) records every model used for `/models`.
 
 ## Model refs and approval
 
@@ -58,9 +58,9 @@ When the configured provider name is unknown, or when `base_url` matches a known
 - `/connect <url>` - connect by URL. A known host (or a plugin provider's default URL) selects that provider with the URL as its base URL. Anything else creates a named custom provider, with the name derived from the host (e.g. `https://llm.acme.example/v1` -> `acme-example`).
 - `/connect <url> <name>` - custom provider with an explicit name instead of the derived one.
 
-All forms **test the connection** (a `GET <base_url>/v1/models` probe) before saving: broken values are rejected unless you confirm `Save anyway?`. A successful connect prints `Connected to <provider> (<base_url>)`, records the entry in `providers.json`, writes `provider`/`base_url` into the config, and points you at `/model list --online <provider>` to pick a model.
+All forms **test the connection** (a `GET <base_url>/v1/models` probe) before saving: broken values are rejected unless you confirm `Save anyway?`. A successful connect prints `Connected to <provider> (<base_url>)`, records the entry in `providers.json`, writes `provider`/`base_url` into the config, and points you at `/models list <provider>` to pick a model.
 
-Related surfaces: `/model <name>` shows or switches the active model (a `provider/model` ref switches provider and model together, approving the model), `/models` (alias `/model-list`) lists the models the connected provider advertises, `/provider <name>` shows or switches the active provider, and `replio run --provider ... --model ... --base-url ...` provides headless overrides.
+Related surfaces: `/model <name>` shows or switches the active model (a `provider/model` ref switches provider and model together, approving the model), `/models` lists the configured/approved models and `/models list [provider]` probes a provider's advertised models, `/provider <name>` shows or switches the active provider, and `replio run --provider ... --model ... --base-url ...` provides headless overrides.
 
 Connection probing is gated by the `connect_check` config (default `true`). Set it to `false` to skip the probes (e.g. offline or flaky networks). `OpenAICompatibleProvider.check_connection()` returns `(ok, message)` by reusing `_fetch_models()` - the shared `GET /v1/models` helper that `list_models()` also uses.
 

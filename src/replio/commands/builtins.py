@@ -91,6 +91,9 @@ def _render_online_models(chat, provider_arg):
         print(f'No models listed from {provider} ({base_url})')
         return
     _render_models(models, provider, base_url)
+    model = chat.config.get('model')
+    if model and model not in models:
+        print(f'  (configured model "{model}" not in the model list)')
 
 
 def _render_tool_detail(chat, name):
@@ -185,7 +188,7 @@ def _connect_save(chat, providers, provider, base_url, api_key):
     else:
         print(f'Connected to {provider} ({base_url})')
     print(f'  {verb} provider "{provider}"')
-    print(f'  Pick a model with /model list --online {provider} or /model {provider}/<model>')
+    print(f'  Pick a model with /models list {provider} or /model {provider}/<model>')
 
 
 def _connect_named(chat, providers, factory, name, base_url=None):
@@ -291,21 +294,12 @@ def register_builtins(registry):
     def version_cmd(_=None):
         print(f'Replio {get_version()}')
 
-    @registry.register('model', description='Show or switch the model; `model list` shows configured models, `model list --online [provider]` probes a provider')
+    @registry.register('model', description='Show or switch the active model; `/model <name>` sets it on the current provider, `/model <provider>/<model>` switches provider and model together')
     def model_cmd(arg=''):
         arg = arg.strip()
         if not arg:
             print(f'Current model: {chat.config.get("model")} '
                   f'({chat.config.get("provider")} @ {chat.config.get("base_url")})')
-            return
-        if arg.startswith('list'):
-            rest = arg[len('list'):].strip()
-            if not rest:
-                _render_known_models(chat)
-            elif rest.startswith('--online'):
-                _render_online_models(chat, rest[len('--online'):].strip())
-            else:
-                print('Usage: /model list [--online [provider]]')
             return
         ref = chat.unfold_ref(arg)
         if ref is not None:
@@ -380,26 +374,19 @@ def register_builtins(registry):
         if arg == 'plan':
             print('  Read-only: write and exec tools are disabled')
 
-    @registry.register('models', aliases=['model-list'],
-                       description='List models available from the connected provider')
-    def models_cmd(_=None):
-        provider = chat.config.get('provider')
-        base_url = chat.config.get('base_url')
-        try:
-            models, error = chat.list_models()
-        except Exception as e:
-            models, error = [], str(e)
-        if error:
-            print(f'[Error] Failed to list models: {error}')
-            print(f'  probing {provider} ({base_url}) - run /connect to fix')
-            return
-        if not models:
-            print(f'No models listed from {provider} ({base_url})')
-            return
-        _render_models(models, provider, base_url)
-        model = chat.config.get('model')
-        if model and model not in models:
-            print(f'  (configured model "{model}" not in the model list)')
+    @registry.register('models', description='List configured models, or probe a provider\'s available models', subcommands=[
+        ('list', 'Probe a provider\'s advertised models (list [provider], default current)'),
+    ])
+    def models_cmd(arg=''):
+        arg = arg.strip()
+        if not arg:
+            _render_known_models(chat)
+        elif arg == 'list':
+            _render_online_models(chat, '')
+        elif arg.startswith('list '):
+            _render_online_models(chat, arg[len('list'):].strip())
+        else:
+            print('Usage: /models [list [provider]]')
 
     @registry.register('type', description='Manage agent types', subcommands=[
         ('list', 'List agent types (list <tag> filters by tag)'),

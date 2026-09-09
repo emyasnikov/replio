@@ -157,7 +157,6 @@ Session artifacts become portable and navigable.
 | Bookmarks (`/bookmark`) | S | session pinning |
 | Command palette / fuzzy history - CTRL-P style history search | M | fast history search |
 | Session log full-restructuring (deferred) - typed `parts` model (OpenCode-style) replacing flat role-attribute messages, no migration of existing logs | M | ecosystem-aligned session format |
-| Consolidate model commands - unify `/models` into `/model list --online`, keep `/models` as a thin alias | S | one obvious model command |
 
 ## Enterprise operations & data
 

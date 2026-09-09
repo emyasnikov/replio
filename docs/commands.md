@@ -13,8 +13,8 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/help`                 | `/h`           | Show available commands and tools (`/help <cmd|tool>` for detail) |
 | `/jobs`                 |                | Manage scheduled and durable jobs: `list`, `status`, `show`, `add`, `approve`, `reject`, `enable`, `disable`, `stop`, `remove`, `run`. See [jobs.md](jobs.md) |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
-| `/model`                 |                | Show or switch the active model. `model list` shows the approved-model history grouped by provider (with `(key)` when the provider has a stored key), `model list --online [provider]` probes a provider's available models. `model <provider>/<model>` switches provider and model together, approving the model on confirm |
-| `/models`                | `/model-list` | List models available from the connected provider              |
+| `/model`                 |                | Show or switch the active model. `/model <name>` sets it on the current provider, `/model <provider>/<model>` switches provider and model together, approving the model on confirm |
+| `/models`                |                | List configured models, or probe a provider's available models. `/models` shows the approved-model history grouped by provider (with `(key)` when the provider has a stored key), `/models list [provider]` probes a provider's advertised models live (default: current provider) |
 | `/plugins`              | `/plugin`      | Manage plugins: `list`, `enable`, `disable`, `install`, `update`, `uninstall` |
 | `/provider`              |                | Show or switch the active provider                             |
 | `/session`              |                | Manage sessions: `new`, `list`, `preview`, `load`, `delete`, `save`, `export` |

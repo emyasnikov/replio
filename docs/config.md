@@ -159,8 +159,8 @@ Two global files live separately from config in `~/.config/replio/`. Neither is 
 
 ### Model registry (`models.json`)
 
-`~/.config/replio/models.json` is the history of approved models - entries `{provider, model, added_at, last_used}`, no API keys (keys and custom base URLs live in `providers.json`). It records every model you connect or switch to, so `/model list` shows what has been used per provider and `>` marks the active one. The active model still comes from `config.model`.
+`~/.config/replio/models.json` is the history of approved models - entries `{provider, model, added_at, last_used}`, no API keys (keys and custom base URLs live in `providers.json`). It records every model you connect or switch to, so `/models` shows what has been used per provider and `>` marks the active one. The active model still comes from `config.model`.
 
 - `/connect` records the model for the connection it just saved.
-- `/model list` shows the approved models grouped by provider with the active one marked `>`, and `(key)` when that provider has a stored key.
-- `/model list --online [provider]` probes a provider's advertised models live (default: current provider).
+- `/models` shows the approved models grouped by provider with the active one marked `>`, and `(key)` when that provider has a stored key.
+- `/models list [provider]` probes a provider's advertised models live (default: current provider).
