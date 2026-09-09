@@ -1198,7 +1198,6 @@
 </ul>
 <h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] Consolidate model commands - <code>/models</code> (alias <code>model-list</code>) only probes the connected provider's live list, duplicating <code>/model list --online [provider]</code>, while <code>/model list</code> alone shows the approved <code>models.json</code> history. The overlap confuses users (which one lists what). Unify under <code>/model</code> subcommands (<code>/model list</code> = approved history, <code>/model list --online [provider]</code> = live probe), fold <code>/models</code>/<code>model-list</code> into the same command or keep it as a thin alias for <code>--online</code>, then update <code>/help</code>, <code>docs/commands.md</code>, and the command tests</li>
 <li>[ ] Autonomous supervisor track - compose the delegate loop turn + ask routing + jobs daemon + report-back so a supervisor task started once runs unattended and reports back (milestone M4 in PLAN.md)</li>
 <li>[ ] Supervisor report-back - finished/failed supervisor runs surface a per-run summary (interactive session result footer + <code>replio jobs status</code>), delivered out-of-band via the job event hooks + connectors when the terminal is closed</li>
 <li>[ ] Pending-ask inbox - an unattended run's <code>ask target='human'</code> parks as a pending request (persisted, listed in the REPL + serve API) instead of failing, and answering resumes the run from its session (resumable mid-run state shared with the mid-run blocking job approval item)</li>
@@ -1282,6 +1281,7 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] Model commands - /model show/switch, /models configured, /models list [provider] live</li>
 <li>[x] Loop tools - <code>/tool delegate</code> runs a persisted loop turn, sub-agent ask reaches the operator</li>
 <li>[x] Externalize bundled providers - vendor providers to bundled plugins, base + host hints stay core</li>
 <li>[x] <code>ask</code> tool - core: human or lead mid-run questions, sub-agent routing</li>
