@@ -416,17 +416,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#team-kit-plugin-private-movable" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Team kit plugin (private, movable)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#plugin-ecosystem" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1350,17 +1339,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#team-kit-plugin-private-movable" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Team kit plugin (private, movable)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#plugin-ecosystem" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1497,6 +1475,21 @@
 </thead>
 <tbody>
 <tr>
+<td>Onboarding - first run: the assistant introduces itself, explains what it can do, and asks what to do. No system-level configuration for simple users</td>
+<td>M</td>
+<td>a supported first step</td>
+</tr>
+<tr>
+<td>One-window status - <code>/status</code> lists sessions, running agents, and configured jobs on the machine, with logs reachable from the same surface</td>
+<td>M</td>
+<td>see everything from one place</td>
+</tr>
+<tr>
+<td>Agent health monitoring - the assistant watches endpoints (e.g. the <code>/health</code> of agents running as web APIs) and warns when an agent stops responding</td>
+<td>S-M</td>
+<td>alert when an agent is down</td>
+</tr>
+<tr>
 <td>Pending-ask inbox - an unattended run's <code>ask target='human'</code> parks as a pending request (persisted, listed in the REPL + serve API) and answering resumes the run from its session. Shares the resumable mid-run state with the mid-run blocking job approval item</td>
 <td>M</td>
 <td>unattended runs can still ask</td>
@@ -1530,17 +1523,22 @@
 </thead>
 <tbody>
 <tr>
-<td>Delegation progress in the REPL - live status of which sub-agent is working and its progress mid-run, read out of the sub-engine loop the single blocking <code>Engine.chat()</code> does not expose today</td>
+<td>Non-blocking delegation + progress - the assistant starts sub-agents or whole teams for bigger tasks and reports their status instead of blocking the current run. Live status of which sub-agent is working, read out of the sub-engine loop the single blocking <code>Engine.chat()</code> does not expose today</td>
 <td>M</td>
-<td>visibility during long runs</td>
+<td>the current run keeps flowing</td>
 </tr>
 <tr>
-<td>Interactive delegation focus - jump in/out of the active sub-agent, arrows switch between concurrent sub-agent session logs rendered from their own saved logs (opencode-style sub-agent views)</td>
+<td>Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style)</td>
 <td>M</td>
 <td>current state of a delegation</td>
 </tr>
 <tr>
-<td>Auto team selection - the lead agent composes the team (types + order + briefs) for a task and delegates in sequence</td>
+<td>Interactive delegation focus - jump in/out of the active sub-agent, arrows switch between concurrent sub-agent session logs rendered from their own saved logs (opencode-style sub-agent views)</td>
+<td>M</td>
+<td>focus a running sub-agent</td>
+</tr>
+<tr>
+<td>Auto team selection - the assistant composes the team (types + order + briefs) for a task and delegates in sequence</td>
 <td>M</td>
 <td>team orchestration as a user-facing pattern</td>
 </tr>
@@ -1587,6 +1585,11 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>Recurring tasks carry their own role - each job carries its own type and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time</td>
+<td>S-M</td>
+<td>encoded recurring behavior</td>
+</tr>
 <tr>
 <td>Persistent member sessions for recurring teams - <code>job</code>-style warm sessions, one-off runs stay fresh <code>sub_</code> sessions</td>
 <td>M</td>
@@ -1682,54 +1685,6 @@
 <td>Observability + telemetry decision - latency/cost/error metrics, Pi-style contracts</td>
 <td>M</td>
 <td>measured operations</td>
-</tr>
-</tbody>
-</table>
-<h2 id="team-kit-plugin-private-movable">Team kit plugin (private, movable)<a class="headerlink" href="#team-kit-plugin-private-movable" title="Permanent link">&para;</a></h2>
-<p>Templates, recipes, library, and generator - the composition machinery, kept out of the core so internal know-how leaves the repo as one documented unit. Bundled during development as <code>plugins/replio-teamkit/</code>, moved out per the <code>docs/teamkit.md</code> checklist.</p>
-<table>
-<thead>
-<tr>
-<th>Task</th>
-<th>Effort</th>
-<th>Provides</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Kit skeleton - <code>plugins/replio-teamkit/</code>: manifest, entry module, one template, one recipe, tests</td>
-<td>M</td>
-<td>installable private kit</td>
-</tr>
-<tr>
-<td><code>docs/teamkit.md</code> draft - authoring + move-out guide</td>
-<td>S</td>
-<td>documented authoring + move-out</td>
-</tr>
-<tr>
-<td>Template-based composition - stack signature from request + project description -&gt; tags -&gt; matching templates -&gt; AI-generated deltas only, persisted locally (types.json + skills + teams.json, with reload)</td>
-<td>M</td>
-<td>fresh team per project, reusing proven artifacts</td>
-</tr>
-<tr>
-<td>Team kit library - flat tagged store per stack and customer</td>
-<td>M</td>
-<td>reuse across projects without publishing know-how</td>
-</tr>
-<tr>
-<td><code>/teamkit</code> authoring commands - init, list, new, match, export, import, per-customer split</td>
-<td>M</td>
-<td>quick team definition per customer</td>
-</tr>
-<tr>
-<td>Move-out - external repo (optionally per-customer), <code>plugins install --global</code>, bundled copy removed from the default set</td>
-<td>S-M</td>
-<td>the kit fully outside the project</td>
-</tr>
-<tr>
-<td>Plugin download service for battle-tested kits</td>
-<td>L</td>
-<td>later phase, listed in VISION.md out-of-scope</td>
 </tr>
 </tbody>
 </table>
@@ -2051,7 +2006,7 @@
 <p>One round hands off in three steps:</p>
 <ol>
 <li><strong>Start</strong> - the operator starts a task: <code>replio jobs add</code>/<code>run</code> for scheduled work, or a REPL prompt or <code>/tool delegate</code> for ad-hoc work. The jobs operator API adds a remote start (<code>POST /jobs/&lt;name&gt;/approve</code>) later</li>
-<li><strong>Distribute + review</strong> - the lead agent splits the task into subtasks and delegates them: sequentially by type or team stage today (<code>delegate</code>, <code>Engine.run_team</code>), routed to fleet agents over <code>POST /chat</code> once cross-process delegation lands, with auditor agents reviewing the output (generate &gt; check &gt; correct)</li>
+<li><strong>Distribute + review</strong> - the assistant splits the task into subtasks and delegates them: sequentially by type or team stage today (<code>delegate</code>, <code>Engine.run_team</code>), routed to fleet agents over <code>POST /chat</code> once cross-process delegation lands, with auditor agents reviewing the output (generate &gt; check &gt; correct)</li>
 <li><strong>Return</strong> - results come back to the operator: the delegate result, team memory, or job summary today, the jobs operator API + webhook/email/Telegram connectors when the jobs layer lands. The fleet supervisor restarts crashed processes underneath. The jobs layer restarts failed work - two kinds of restart, both compose</li>
 </ol>
 <p>Fleet is the substrate that stays up, not the conductor of the work.</p>

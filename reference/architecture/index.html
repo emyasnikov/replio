@@ -1325,10 +1325,10 @@
 
 
 <h1 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h1>
-<p>Replio is a terminal-based agentic REPL core: the model is the planner, the tool registry is how it acts. It is a zero-dependency Python app (stdlib only) built around a <strong>single agent loop</strong> - one SSE stream per turn where the model either emits content or requests tool calls, which the loop executes and feeds back until the model answers.</p>
+<p>Replio is a terminal-based agentic REPL core: the model is the planner, the tool registry is how it acts. It is a zero-dependency Python app (stdlib only) built around a <strong>single agent loop</strong> - one SSE stream per turn where the model emits content or requests tool calls, which the loop executes and feeds back until the model answers.</p>
 <h2 id="the-three-core-layers">The three core layers<a class="headerlink" href="#the-three-core-layers" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>Agent loop</strong> (<code>src/replio/engine.py</code>) - the headless core. Each turn runs a single streaming request. The provider's <code>chat()</code> is a generator yielding events, and the engine reacts:</li>
+<li><strong>Agent loop</strong> (<code>src/replio/engine.py</code>) - the headless core. Each turn runs a single streaming request. The provider's <code>chat()</code> is a generator yielding events the engine reacts to:</li>
 <li><code>thinking</code> / <code>token</code> - streamed to the sink (<code>UISink</code>)</li>
 <li><code>tool_calls</code> - appends the assistant message, executes each call, appends <code>tool</code> results, then continues the loop</li>
 <li><code>error</code> - records and prints, then bails</li>
@@ -1336,7 +1336,7 @@
 <p><code>done</code> - persists the assistant message (timestamp/duration/model) and stops</p>
 </li>
 <li>
-<p><strong>ToolRegistry</strong> (<code>src/replio/tools/registry.py</code>) - the single dispatch point. The model invokes tools via OpenAI function calling. Slash commands are thin wrappers calling the same <code>execute()</code>. The loop never special-cases tool names - per-tool behavior comes from registration metadata. See <a href="../tools/">tools.md</a>.</p>
+<p><strong>ToolRegistry</strong> (<code>src/replio/tools/registry.py</code>) - the single dispatch point. The model invokes tools via OpenAI function calling, slash commands are thin wrappers calling the same <code>execute()</code>. The loop never special-cases tool names - per-tool behavior comes from registration metadata. See <a href="../tools/">tools.md</a>.</p>
 </li>
 <li>
 <p><strong>Commands</strong> (<code>src/replio/commands/</code>) - user-facing affordances. A command either wraps a tool or performs a local action (<code>/model</code>, <code>/session</code>, <code>/sessions</code>).</p>
@@ -1344,13 +1344,13 @@
 </ol>
 <p>Providers (<code>src/replio/providers/</code>) are OpenAI-compatible <code>/v1/chat/completions</code> backends implementing the event-generator <code>chat()</code> contract. See <a href="../providers/">providers.md</a>.</p>
 <h2 id="engine-and-turnresult">Engine and TurnResult<a class="headerlink" href="#engine-and-turnresult" title="Permanent link">&para;</a></h2>
-<p><code>Engine.chat(text) -&gt; TurnResult</code> is the front-end-agnostic entry point. The REPL (<code>ChatLoop</code>), the headless CLI (<code>replio run</code>), and the HTTP API (<code>replio serve</code>) all call it. A <code>TurnResult</code> carries:</p>
+<p><code>Engine.chat(text) -&gt; TurnResult</code> is the front-end-agnostic entry point, called by the REPL (<code>ChatLoop</code>), the headless CLI (<code>replio run</code>), and the HTTP API (<code>replio serve</code>). A <code>TurnResult</code> carries:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="n">content</span><span class="p">,</span> <span class="n">thinking</span><span class="p">,</span> <span class="n">tool_calls</span><span class="p">,</span> <span class="n">errors</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">usage</span><span class="p">,</span>
  <span class="n">model</span><span class="p">,</span> <span class="n">provider</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">status</span><span class="p">}</span>
 </code></pre></div>
-<p><code>status</code> is <code>ok</code>, <code>error</code>, <code>empty</code>, <code>truncated</code>, or <code>cancelled</code>. Sessions are addressed from any front-end via <code>Engine.load_or_create_session(name)</code>. <code>Engine.chat_tool(name, args)</code> runs a <code>loop</code>-registered tool (e.g. <code>delegate</code>) as a persisted agent-loop turn: the tool call and result land in the session, then the model streams its final answer.</p>
+<p><code>status</code> is <code>ok</code>, <code>error</code>, <code>empty</code>, <code>truncated</code>, or <code>cancelled</code>. Any front-end addresses sessions via <code>Engine.load_or_create_session(name)</code>. <code>Engine.chat_tool(name, args)</code> runs a <code>loop</code>-registered tool (e.g. <code>delegate</code>) as a persisted agent-loop turn: the tool call and result land in the session, then the model streams its final answer.</p>
 <h2 id="one-stream-one-round-trip">One stream, one round trip<a class="headerlink" href="#one-stream-one-round-trip" title="Permanent link">&para;</a></h2>
-<p>When no tools are used, a turn is a single streaming request - no separate non-streaming decision round. <code>chat_nonstreaming()</code> is reserved for auxiliary decisions: query refinement, tool-result analysis, and compaction. The <code>&lt;thinking&gt;</code> marker split lives in the engine so thinking stays separate from content in JSON results and session logs.</p>
+<p>When no tools are used, a turn is a single streaming request - no separate non-streaming decision round. <code>chat_nonstreaming()</code> is reserved for auxiliary decisions: query refinement, tool-result analysis, compaction. The <code>&lt;thinking&gt;</code> marker split lives in the engine so thinking stays separate from content in JSON results and session logs.</p>
 <h2 id="ui-sinks">UI sinks<a class="headerlink" href="#ui-sinks" title="Permanent link">&para;</a></h2>
 <p>The loop renders through a <code>UISink</code>, an interface of methods the loop calls as events happen (<code>token</code>, <code>thinking</code>, <code>tool_status</code>, <code>activity</code>, <code>footer</code>, <code>confirm</code>, <code>error</code>, ...):</p>
 <table>
@@ -1403,11 +1403,11 @@
 </tr>
 </tbody>
 </table>
-<p>Agents talk to each other over the same <code>POST /chat</code> API that <code>replio serve</code> exposes, which is how fleets and swarms compose. See <a href="../fleet/">fleet.md</a>, <a href="../swarm/">swarm.md</a>, and <a href="../api/">api.md</a>.</p>
+<p>Agents talk to each other over the same <code>POST /chat</code> API that <code>replio serve</code> exposes, which is how fleets and swarms compose. See <a href="../fleet/">fleet.md</a>, <a href="../swarm/">swarm.md</a>, <a href="../api/">api.md</a>.</p>
 <h2 id="sessions">Sessions<a class="headerlink" href="#sessions" title="Permanent link">&para;</a></h2>
 <p>Every turn appends to a session - a complete, append-only JSON log of messages, tool calls and results, reasoning, and errors. The provider payload is prepared from the log by <code>_provider_messages()</code>. See <a href="../session/">session.md</a>.</p>
 <h2 id="plugins">Plugins<a class="headerlink" href="#plugins" title="Permanent link">&para;</a></h2>
-<p>Plugins extend the core with tools, providers, commands, and services without changing it. <code>PluginManager</code> discovers plugins in the bundled, global, and local roots, validates manifests, and hooks them into the live registries. The core stays stdlib-only. Plugin dependencies are imported lazily. See <a href="../plugins/">plugins.md</a>.</p>
+<p>Plugins extend the core with tools, providers, commands, and services without changing it. <code>PluginManager</code> discovers plugins in the bundled, global, and local roots, validates manifests, and hooks them into the live registries. The core stays stdlib-only, and plugin dependencies are imported lazily. See <a href="../plugins/">plugins.md</a>.</p>
 <h2 id="source-layout">Source layout<a class="headerlink" href="#source-layout" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>src/replio/
 ├── __main__.py          # python -m replio
@@ -1441,7 +1441,7 @@
 <ul>
 <li><strong>Adding a tool</strong> - see <a href="../tools/">tools.md</a></li>
 <li><strong>Adding a provider</strong> - see <a href="../providers/">providers.md</a></li>
-<li><strong>Adding a command</strong> - commands are registered via <code>@registry.register()</code>. If the command performs a tool action it calls the tool registry rather than reimplementing it</li>
+<li><strong>Adding a command</strong> - registered via <code>@registry.register()</code>. A command performing a tool action calls the tool registry rather than reimplementing it</li>
 <li><strong>Adding a plugin</strong> - see <a href="../plugins/">plugins.md</a></li>
 </ul>
 

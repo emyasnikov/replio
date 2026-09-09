@@ -1427,7 +1427,7 @@
 <tr>
 <td><code>/connect</code></td>
 <td></td>
-<td>Connect a provider. <code>/connect</code> picks from the known providers interactively. <code>/connect &lt;name&gt;</code> presets a known provider's defaults and (re)enters its API key. <code>/connect &lt;url&gt;</code> detects a known host or creates a named custom provider (derived from the host, or <code>/connect &lt;url&gt; &lt;name&gt;</code> to name it). Tests the connection before saving, stores the API key + base URL in the global <code>providers.json</code>, and writes <code>provider</code>/<code>base_url</code> into config - the model is picked separately with <code>/model</code></td>
+<td>Connect a provider. <code>/connect</code> picks interactively from the known providers. <code>/connect &lt;name&gt;</code> presets a known provider's defaults and (re)enters its API key. <code>/connect &lt;url&gt;</code> detects a known host or creates a named custom provider (derived from the host, or <code>/connect &lt;url&gt; &lt;name&gt;</code> to name it). Tests the connection before saving, stores the API key + base URL in global <code>providers.json</code>, and writes <code>provider</code>/<code>base_url</code> into config - the model is picked separately with <code>/model</code></td>
 </tr>
 <tr>
 <td><code>/exit</code></td>
@@ -1452,12 +1452,12 @@
 <tr>
 <td><code>/model</code></td>
 <td></td>
-<td>Show or switch the active model. <code>/model &lt;name&gt;</code> sets it on the current provider, <code>/model &lt;provider&gt;/&lt;model&gt;</code> switches provider and model together, approving the model on confirm</td>
+<td>Show or switch the active model. <code>/model &lt;name&gt;</code> sets it on the current provider. <code>/model &lt;provider&gt;/&lt;model&gt;</code> switches provider and model together, approving the model on confirm</td>
 </tr>
 <tr>
 <td><code>/models</code></td>
 <td></td>
-<td>List configured models, or probe a provider's available models. <code>/models</code> shows the approved-model history grouped by provider (with <code>(key)</code> when the provider has a stored key), <code>/models list [provider]</code> probes a provider's advertised models live (default: current provider)</td>
+<td>List configured models, or probe a provider's available models. <code>/models</code> shows the approved-model history grouped by provider (<code>(key)</code> when the provider has a stored key). <code>/models list [provider]</code> probes a provider's advertised models live (default: current provider)</td>
 </tr>
 <tr>
 <td><code>/plugins</code></td>
@@ -1477,7 +1477,7 @@
 <tr>
 <td><code>/sessions</code></td>
 <td></td>
-<td>Manage the saved-session catalog: <code>list</code>, <code>preview</code>, <code>delete</code>, <code>export</code></td>
+<td>Manage the saved-session catalog: <code>list</code>, <code>preview</code>, <code>delete</code>, <code>export &lt;name&gt; [out]</code> (Markdown output, see <a href="../session/">session.md</a>)</td>
 </tr>
 <tr>
 <td><code>/skills</code></td>
@@ -1511,9 +1511,8 @@
 </tr>
 </tbody>
 </table>
-<p><code>/help</code> renders commands with their subcommands indented below, and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under <code>/tool</code>. <code>/tool</code> with no arguments lists the same tools with their short descriptions.</p>
-<p><code>/sessions export &lt;name&gt; [out]</code> renders a saved session as Markdown (see <a href="../session/">session.md</a>).</p>
-<p>Delegation is a normal tool: the lead agent proposes it, or you run it directly - <code>/tool delegate {"type": "researcher", "task": "..."}</code> routes through the same tool policy. A configured type delegates without prompting (<code>delegate</code> category defaults to <code>allow</code>, set an agent type's <code>delegate</code> to <code>ask</code> to confirm), and an agent type outside the registry is denied. See <a href="../types/">types.md</a> and <a href="../swarm/">swarm.md</a>.</p>
+<p><code>/help</code> renders commands with subcommands indented below and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under <code>/tool</code>. <code>/tool</code> with no arguments lists the same tools with their short descriptions.</p>
+<p>Delegation is a normal tool: the lead agent proposes it, or you run it directly - <code>/tool delegate {"type": "researcher", "task": "..."}</code> routes through the same tool policy. A configured type delegates without prompting (<code>delegate</code> defaults to <code>allow</code>. Set an agent type's <code>delegate</code> to <code>ask</code> to confirm), and an agent type outside the registry is denied. See <a href="../types/">types.md</a> and <a href="../swarm/">swarm.md</a>.</p>
 <h2 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>usage: replio [-h] [--path PATH] [-v] {config,eval,export,fleet,jobs,mcp,models,plugins,run,serve} ...
 </code></pre></div>
@@ -1556,7 +1555,7 @@
 </tr>
 <tr>
 <td><code>--model</code></td>
-<td>Model override (accepts a <code>provider/model</code> ref. An explicit <code>--model</code> auto-approves)</td>
+<td>Model override (accepts a <code>provider/model</code> ref. Explicit <code>--model</code> auto-approves)</td>
 </tr>
 <tr>
 <td><code>--approve-model</code></td>
@@ -1626,10 +1625,9 @@
 </table>
 <h3 id="replio-models"><code>replio models</code><a class="headerlink" href="#replio-models" title="Permanent link">&para;</a></h3>
 <p>List configured models, or probe a provider's available models (mirrors <code>/models</code>).</p>
-<div class="highlight"><pre><span></span><code>replio<span class="w"> </span>models<span class="w">                          </span><span class="c1"># configured/approved models.json history</span>
-replio<span class="w"> </span>models<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>provider<span class="o">]</span><span class="w">          </span><span class="c1"># probe a provider's advertised models</span>
+<div class="highlight"><pre><span></span><code>replio<span class="w"> </span>models<span class="w">                          </span><span class="c1"># approved-model history grouped by provider, `&gt;` marks the active model, `(key)` a stored key</span>
+replio<span class="w"> </span>models<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>provider<span class="o">]</span><span class="w">          </span><span class="c1"># probe a provider's advertised models (default: current), exit 1 on failure</span>
 </code></pre></div>
-<p><code>replio models</code> (no subcommand) shows the approved-model history grouped by provider with <code>&gt;</code> for the active model and <code>(key)</code> when the provider has a stored key. <code>replio models list [provider]</code> probes a provider's advertised models live (default: the current provider), exiting <code>1</code> on a failed probe.</p>
 <table>
 <thead>
 <tr>
@@ -1783,7 +1781,7 @@ replio<span class="w"> </span>config<span class="w"> </span>reload<span class="w
 </tbody>
 </table>
 <h3 id="replio-jobs"><code>replio jobs</code><a class="headerlink" href="#replio-jobs" title="Permanent link">&para;</a></h3>
-<p>Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, a human-in-the-loop approval gate, and a recorded run history. See <a href="../jobs/">jobs.md</a>.</p>
+<p>Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, a human-in-the-loop approval gate, and recorded run history. See <a href="../jobs/">jobs.md</a>.</p>
 <table>
 <thead>
 <tr>
@@ -1794,7 +1792,7 @@ replio<span class="w"> </span>config<span class="w"> </span>reload<span class="w
 <tbody>
 <tr>
 <td><code>add</code></td>
-<td><code>replio jobs add &lt;name&gt; --file jobs/&lt;name&gt;.md --cron "0 2 * * *"</code> (or <code>--interval N</code> / <code>--at ISO</code>, <code>--prompt</code> optional when <code>--file</code> is given), plus <code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--type</code>, <code>--system-prompt</code>, <code>--tools-deny</code>, <code>--tool-permission</code>, <code>--retries</code>, <code>--backoff</code>, <code>--timeout</code>, <code>--require-approval</code>, <code>--approve-model</code>, <code>--approval auto</code></td>
+<td><code>replio jobs add &lt;name&gt; --file jobs/&lt;name&gt;.md --cron "0 2 * * *"</code> (or <code>--interval N</code> / <code>--at ISO</code>, with <code>--prompt</code> optional when <code>--file</code> given), plus <code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--type</code>, <code>--system-prompt</code>, <code>--tools-deny</code>, <code>--tool-permission</code>, <code>--retries</code>, <code>--backoff</code>, <code>--timeout</code>, <code>--require-approval</code>, <code>--approve-model</code>, <code>--approval auto</code></td>
 </tr>
 <tr>
 <td><code>approve</code></td>
@@ -1886,7 +1884,7 @@ replio<span class="w"> </span>config<span class="w"> </span>reload<span class="w
 </tr>
 </tbody>
 </table>
-<p><code>--path</code> may be given either before the subcommand (<code>replio --path X fleet status</code>) or after it (<code>replio fleet --path X status</code>).</p>
+<p><code>--path</code> may be given before the subcommand (<code>replio --path X fleet status</code>) or after it (<code>replio fleet --path X status</code>).</p>
 <h3 id="replio-plugins"><code>replio plugins</code><a class="headerlink" href="#replio-plugins" title="Permanent link">&para;</a></h3>
 <p>Manage plugins headlessly. See <a href="../plugins/">plugins.md</a>.</p>
 <table>
@@ -1923,7 +1921,7 @@ replio<span class="w"> </span>config<span class="w"> </span>reload<span class="w
 </tr>
 </tbody>
 </table>
-<p><code>--path</code> may be given either before the subcommand (<code>replio --path X plugins list</code>) or after it (<code>replio plugins --path X list</code>).</p>
+<p><code>--path</code> may be given before the subcommand (<code>replio --path X plugins list</code>) or after it (<code>replio plugins --path X list</code>).</p>
 
 
 

@@ -1237,7 +1237,7 @@
 
 
 <h1 id="tool-use-evaluation-harness">Tool-use evaluation harness<a class="headerlink" href="#tool-use-evaluation-harness" title="Permanent link">&para;</a></h1>
-<p><code>replio eval</code> measures how well a model uses the registered tools. It runs task fixtures through the same headless agent loop as <code>replio run</code> and reports metrics per fixture and across the suite, so tool descriptions and schemas can be tuned against measured behavior, and providers can be compared side by side.</p>
+<p><code>replio eval</code> measures how well a model uses the registered tools. It runs task fixtures through the same headless agent loop as <code>replio run</code> and reports metrics per fixture and across the suite, so tool descriptions and schemas can be tuned against measured behavior, and providers compared side by side.</p>
 <h2 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>replio<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--path<span class="w"> </span>&lt;project&gt;<span class="w"> </span>list<span class="w">        </span><span class="c1"># list discovered fixtures</span>
 replio<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--path<span class="w"> </span>&lt;project&gt;<span class="w"> </span>run<span class="w">         </span><span class="c1"># run the suite, print the metrics table</span>
@@ -1246,7 +1246,7 @@ replio<span class="w"> </span><span class="nb">eval</span><span class="w"> </spa
 replio<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--path<span class="w"> </span>&lt;project&gt;<span class="w"> </span>run<span class="w"> </span>--compare<span class="w"> </span>ollama,openai
 </code></pre></div>
 <p>The <code>--path</code> flag sits on the <code>eval</code> command before the subcommand, like <code>jobs</code> and <code>fleet</code>.</p>
-<p>Each fixture runs in its own isolated temp worktree. The fixture's <code>files</code> are written into that worktree, a throwaway <code>.replio/config.json</code> carries the connection and permission settings, and the process changes into the worktree for the turn so relative tool paths resolve there. Sessions are throwaway and deleted with the worktree. The engine uses <code>HeadlessUI(auto='allow')</code>, so ask-gated tools run without prompting.</p>
+<p>Each fixture runs in its own isolated temp worktree. Its <code>files</code> are written there, a throwaway <code>.replio/config.json</code> carries the connection and permission settings, and the process changes into the worktree for the turn so relative tool paths resolve. Sessions are throwaway and deleted with the worktree. The engine uses <code>HeadlessUI(auto='allow')</code>, so ask-gated tools run without prompting.</p>
 <p>Tool permissions default to <code>read</code>/<code>list</code>/<code>web</code> allowed and <code>edit</code>/<code>bash</code>/<code>mcp</code> denied. A fixture may override with its own <code>tool_permission</code> and <code>tools_deny</code>.</p>
 <h2 id="metrics">Metrics<a class="headerlink" href="#metrics" title="Permanent link">&para;</a></h2>
 <p>Per fixture:</p>
@@ -1261,7 +1261,7 @@ replio<span class="w"> </span><span class="nb">eval</span><span class="w"> </spa
 <li><code>tokens</code> - <code>total_tokens</code> from provider usage (prompt + completion fallback).</li>
 <li><code>status</code> - the turn status (<code>ok</code>, <code>truncated</code>, <code>error</code>, <code>cancelled</code>).</li>
 </ul>
-<p>The suite summary averages accuracy and pass rate, and totals calls, redundant calls, errors, and tokens. <code>--compare P1,P2</code> runs the same suite once per provider and prints a side-by-side summary.</p>
+<p>The suite summary averages accuracy and pass rate and totals calls, redundant calls, errors, and tokens. <code>--compare P1,P2</code> runs the same suite once per provider and prints a side-by-side summary.</p>
 <h2 id="fixtures">Fixtures<a class="headerlink" href="#fixtures" title="Permanent link">&para;</a></h2>
 <p>A fixture is a JSON file describing a task, optional worktree files, the expected tool trace, and a declarative verifier. Fixtures are discovered from three sources, merged by <code>id</code> with local winning: the bundled <code>replio-core-eval</code> plugin, <code>~/.config/replio/eval/*.json</code> (global), and <code>.replio/eval/*.json</code> (local).</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>

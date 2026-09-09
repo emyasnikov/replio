@@ -1259,9 +1259,9 @@
 
 
 <h1 id="agent-types">Agent types<a class="headerlink" href="#agent-types" title="Permanent link">&para;</a></h1>
-<p>An agent type is a named agent definition: a system prompt, an optional model override, and optionally a set of skills and per-agent tool permissions. An agent type turns a plain agent into a specialized sub-agent used for swarm delegation (see <a href="../swarm/">swarm.md</a>). Examples: a <code>researcher</code> who does web search and keeps a list of findings, a <code>writer</code> who turns those findings into prose, a <code>referencer</code> who extracts citations into a <code>.bib</code> file, and an <code>editor</code> who checks the written text against the original prompt.</p>
+<p>An agent type is a named agent definition: a system prompt, an optional model override, and optional skills and per-agent tool permissions. It turns a plain agent into a specialized sub-agent for swarm delegation (see <a href="../swarm/">swarm.md</a>). Examples: a <code>researcher</code> who searches the web and keeps findings, a <code>writer</code> who turns findings into prose, a <code>referencer</code> who extracts citations into a <code>.bib</code> file, and an <code>editor</code> who checks text against the original prompt.</p>
 <h2 id="what-an-agent-type-bundles">What an agent type bundles<a class="headerlink" href="#what-an-agent-type-bundles" title="Permanent link">&para;</a></h2>
-<p>An agent type is a single reusable profile that carries several distinct axes of an agent. The name <code>type</code> is deliberately neutral: it means "a kind of agent", so it can hold all of these without privileging any one of them.</p>
+<p>A type is a single reusable profile carrying several distinct axes of an agent. The name <code>type</code> is deliberately neutral - "a kind of agent" - so it holds all of these without privileging any one.</p>
 <table>
 <thead>
 <tr>
@@ -1303,7 +1303,7 @@
 </tr>
 </tbody>
 </table>
-<p>The bundled catalog ships two pre-carved teams, useful as delegation targets and as templates for your own types (see <a href="../teams/">teams.md</a>). All leave <code>model</code> and <code>skills</code> empty (they inherit the caller's model) and differ only in <code>tool_permission</code>:</p>
+<p>The bundled catalog ships two pre-carved teams, useful as delegation targets and as templates (see <a href="../teams/">teams.md</a>). All leave <code>model</code> and <code>skills</code> empty (inheriting the caller's model) and differ only in <code>tool_permission</code>:</p>
 <table>
 <thead>
 <tr>
@@ -1391,26 +1391,26 @@
 </tr>
 </tbody>
 </table>
-<p>"allow" echoes the caller's category default, "deny" is explicit. Override any type by creating a local (or global) entry with the same <code>name</code>.</p>
+<p><code>allow</code> echoes the caller's category default, <code>deny</code> is explicit. Override any type by creating a local (or global) entry with the same <code>name</code>.</p>
 <h2 id="why-type-and-not-the-alternatives">Why "type" and not the alternatives<a class="headerlink" href="#why-type-and-not-the-alternatives" title="Permanent link">&para;</a></h2>
-<p>Each natural synonym for this concept covers only part of the profile, or collides with a term already in use in the product:</p>
+<p>Each synonym covers only part of the profile, or collides with a term already in use:</p>
 <ul>
-<li><strong><code>role</code></strong> collides with the chat message roles already in the session format and the provider API (<code>"role": "user"</code> / <code>"assistant"</code> / <code>"tool"</code>). Two "role" concepts in the same API and docs would confuse readers.</li>
+<li><strong><code>role</code></strong> collides with the chat message roles in the session format and provider API (<code>"role": "user"</code> / <code>"assistant"</code> / <code>"tool"</code>). Two "role" concepts in the same API and docs would confuse readers.</li>
 <li><strong><code>function</code></strong> collides with OpenAI function calling - the mechanism the agent loop uses to invoke tools.</li>
 <li><strong><code>profile</code></strong> collides with the existing "permission profile" language (<code>tool_permission</code>).</li>
 <li><strong><code>capability</code></strong>, <strong><code>mandate</code></strong>, <strong><code>specialization</code></strong>, and <strong><code>duty</code></strong> each name one axis (what it can do, what it may do, its expertise, its obligation) but not the whole object.</li>
-<li><strong><code>persona</code></strong> is the identity-and-behavior axis alone. It is the right word for one axis, but as the name of the whole profile it undersells authority and function, and it reads as marketing jargon to enterprise readers.</li>
+<li><strong><code>persona</code></strong> names the identity-and-behavior axis alone. It fits one axis, but as the name of the whole profile it undersells authority and function, and reads as marketing jargon to enterprise readers.</li>
 </ul>
-<p><code>type</code> appears nowhere else as a user-facing concept in the product (it only shows up as a JSON schema keyword, where it always sits next to a property name and cannot be confused). So "agent type" carries all six axes with no collision, and reads naturally in every usage: "run replio as the researcher agent type", "delegate to the reviewer agent type", "the editor agent type is edit-denied".</p>
+<p><code>type</code> appears nowhere else as a user-facing concept (only as a JSON schema keyword, always next to a property name, so it cannot be confused). "Agent type" carries all six axes with no collision and reads naturally in every usage: "run replio as the researcher agent type", "delegate to the reviewer agent type", "the editor agent type is edit-denied".</p>
 <h2 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h2>
-<p>Agent types come from four layers, merged exactly like config: bundled first, then plugin contributions, then global, then local, with local winning per field. Precedence mirrors bundled plugins (<code>bundled &lt; plugin &lt; global &lt; local</code>):</p>
+<p>Agent types come from four layers, merged exactly like config: bundled, then plugin, then global, then local, local winning per field. Precedence mirrors bundled plugins (<code>bundled &lt; plugin &lt; global &lt; local</code>):</p>
 <ul>
 <li><strong>Bundled</strong> - the read-only default catalog shipped in the package (<code>src/replio/bundled_types.json</code>). Always present, never writable, overridable by any other layer.</li>
 <li><strong>Plugin</strong> - types contributed by plugins via the <code>register_types</code> entry hook (<code>registry.add_plugin(...)</code>, see <a href="../plugins/">plugins.md</a>). An in-memory layer: never written to any <code>types.json</code>, refreshed on <code>/plugins install</code>/<code>update</code>/<code>uninstall</code>.</li>
 <li><strong>Global</strong> - <code>~/.config/replio/types.json</code>.</li>
 <li><strong>Local</strong> - <code>.replio/types.json</code>.</li>
 </ul>
-<p>Merging is field-by-field for the same <code>name</code>: a local or global entry overrides only the fields it sets, so an unset local field (e.g. no <code>model</code>) inherits from the layer below.</p>
+<p>Merging is field-by-field for the same <code>name</code>: an entry overrides only the fields it sets, so an unset field (e.g. no <code>model</code>) inherits from the layer below.</p>
 <p>Schema (per entry):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"researcher"</span><span class="p">,</span>
@@ -1425,10 +1425,10 @@
 <ul>
 <li><code>name</code> - unique key of the type.</li>
 <li><code>system_prompt</code> - the type's system prompt, injected when it runs.</li>
-<li><code>model</code> - optional. Overrides the caller's model when the type runs. Falls back to the caller's model when empty. Accepts a <code>provider/model</code> ref (e.g. <code>opencode-go/deepseek-v4-flash</code>) to pin provider and model together. A type's model must be approved before it can run (<code>delegate</code>/<code>/teams run</code> ask interactively, or pass <code>--approve-model</code> headlessly - see <a href="../providers/#model-refs-and-approval">Model refs and approval</a>).</li>
+<li><code>model</code> - optional. Overrides the caller's model when the type runs, falls back to the caller's when empty. Accepts a <code>provider/model</code> ref (e.g. <code>opencode-go/deepseek-v4-flash</code>) to pin provider and model together. The model must be approved before the type runs (<code>delegate</code>/<code>/teams run</code> ask interactively, or pass <code>--approve-model</code> headlessly - see <a href="../providers/#model-refs-and-approval">Model refs and approval</a>).</li>
 <li><code>skills</code> - optional list of skill names from the <a href="../skills/">skills registry</a>, resolved and injected into the type's sub-agent system prompt (and jobs with <code>--type</code>).</li>
 <li><code>tags</code> - optional list of job tags for grouping and filtering (<code>/types list &lt;tag&gt;</code>). The bundled set uses a controlled vocabulary: <code>research</code>, <code>writing</code>, <code>programming</code>, <code>review</code>.</li>
-<li><code>tool_permission</code> - optional per-agent overrides of <code>tool_permission</code> categories. This is the per-agent permission profile.</li>
+<li><code>tool_permission</code> - optional per-agent overrides of <code>tool_permission</code> categories. The per-agent permission profile.</li>
 </ul>
 <h2 id="command">Command<a class="headerlink" href="#command" title="Permanent link">&para;</a></h2>
 <p><code>/types</code> manages the registry:</p>
@@ -1445,10 +1445,9 @@
 <li>A configured type uses its own <code>tool_permission</code> overrides. The default for the <code>delegate</code> category is <code>allow</code> (delegation runs without a prompt). Set <code>delegate: "ask"</code> on a type to confirm each delegation to it.</li>
 <li>A temporary type created only to run a task in parallel defaults to <code>deny</code> until you opt in.</li>
 </ul>
-<p>The rule lets known types delegate freely while keeping every other tool gated as configured, and an administrator can still tighten any type to <code>ask</code>.</p>
 <h2 id="relationship-to-agent-skills-and-fleets">Relationship to /agent, skills, and fleets<a class="headerlink" href="#relationship-to-agent-skills-and-fleets" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>/agent</code> is the planned interactive way to pick an agent type and run with it. Today you run a type directly through the <code>delegate</code> tool (the lead model proposes it, or <code>/tool delegate {"type": ..., "task": ...}</code>), which builds the in-process sub-engine from this catalog.</li>
+<li><code>/agent</code> is the planned interactive way to pick an agent type and run with it. Today a type runs directly through the <code>delegate</code> tool (the lead model proposes it, or <code>/tool delegate {"type": ..., "task": ...}</code>), which builds the in-process sub-engine from this catalog.</li>
 <li>Skills (a dedicated registry) are a separate capability layer attached to an agent type, distinct from tools and plugins.</li>
 <li>An agent type runs either in-process as a sub-engine (the default for delegation) or as a scoped <code>replio serve</code> process in a fleet. In-process variants share the caller's privileges, cross-process variants are confined by the target agent's worktree and <code>tool_permission</code> (see <a href="../fleet/">fleet.md</a>).</li>
 </ul>

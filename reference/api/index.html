@@ -1221,8 +1221,7 @@
 </code></pre></div>
 <p>All responses are JSON with <code>Content-Type: application/json</code>.</p>
 <h2 id="post-chat">POST /chat<a class="headerlink" href="#post-chat" title="Permanent link">&para;</a></h2>
-<p>Runs one agent turn on the same engine as the REPL and CLI.</p>
-<p>Request body:</p>
+<p>Runs one agent turn on the same engine as the REPL and CLI. Request body:</p>
 <table>
 <thead>
 <tr>
@@ -1248,8 +1247,7 @@
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>localhost:8787/chat<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"prompt": "Hi", "session_id": "api"}'</span>
 </code></pre></div>
-<p>Response is the same <code>TurnResult</code> the CLI returns (see the README). <code>session</code> is the resolved session name.</p>
-<p>Errors: <code>400</code> for a missing/empty <code>prompt</code> or invalid JSON body.</p>
+<p>Response is the same <code>TurnResult</code> the CLI returns (see the README). <code>session</code> is the resolved session name. Errors: <code>400</code> for a missing/empty <code>prompt</code> or invalid JSON body.</p>
 <h2 id="get-sessions">GET /sessions<a class="headerlink" href="#get-sessions" title="Permanent link">&para;</a></h2>
 <p>Lists saved session names.</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>localhost:8787/sessions

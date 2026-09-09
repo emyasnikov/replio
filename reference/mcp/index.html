@@ -1376,7 +1376,7 @@
 <li><strong>Client</strong> - connect to external MCP servers (stdio or HTTP), import their tools into the <code>ToolRegistry</code>, and call them like any other Replio tool. Tool policy, <code>/tool</code>, <code>/help</code>, glyph activity lines, query refinement and session logging all apply.</li>
 <li><strong>Server</strong> - expose Replio's registered tools and sessions as an MCP server to external agents (Claude, opencode, and other MCP clients) over stdio (<code>replio mcp</code>) and HTTP (<code>POST /mcp</code> on <code>replio serve</code>).</li>
 </ul>
-<p>Both eras are supported and negotiated per connection: the modern stateless revision (<code>2026-07-28</code>, per-request <code>_meta</code>) and the legacy <code>initialize</code>-handshake revisions (<code>2025-11-25</code> and earlier). The client probes <code>server/discover</code> and falls back to <code>initialize</code>. The server serves either based on how the client opens.</p>
+<p>Both eras are supported and negotiated per connection: the modern stateless revision (<code>2026-07-28</code>, per-request <code>_meta</code>) and the legacy <code>initialize</code>-handshake revisions (<code>2025-11-25</code> and earlier). The client probes <code>server/discover</code> and falls back to <code>initialize</code>. The server serves either, based on how the client opens.</p>
 <h2 id="client">Client<a class="headerlink" href="#client" title="Permanent link">&para;</a></h2>
 <h3 id="config">Config<a class="headerlink" href="#config" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1485,17 +1485,17 @@
 </tr>
 </tbody>
 </table>
-<p>Imported tools are named <code>&lt;prefix&gt;.&lt;tool&gt;</code> (e.g. <code>github.list_issues</code>). They inherit the <code>mcp</code> permission category, which defaults to <code>ask</code>, so each call confirms in the REPL. Flip it to <code>allow</code>/<code>deny</code> via <code>tool_permission.mcp</code> or per-name <code>tools.allow</code>/<code>tools.deny</code>. Because a fresh <code>ToolRegistry</code> is built each turn, tools connected mid-prompt become available from the next prompt.</p>
+<p>Imported tools are named <code>&lt;prefix&gt;.&lt;tool&gt;</code> (e.g. <code>github.list_issues</code>) and inherit the <code>mcp</code> permission category, which defaults to <code>ask</code>, so each call confirms in the REPL. Flip it to <code>allow</code>/<code>deny</code> via <code>tool_permission.mcp</code> or per-name <code>tools.allow</code>/<code>tools.deny</code>. A fresh <code>ToolRegistry</code> is built each turn, so tools connected mid-prompt become available from the next prompt.</p>
 <h3 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Tool descriptions and schemas come from the server and must be treated as untrusted metadata.</li>
+<li>Treat server-provided tool descriptions and schemas as untrusted metadata.</li>
 <li>stdio spawns arbitrary commands from your config. Only configure servers you trust.</li>
 <li>HTTP servers are contacted over the network. Credentials in <code>headers</code> are sent as-is.</li>
 <li>Every imported tool call routes through <code>ToolPolicy</code> (<code>mcp: ask</code> by default), giving a human confirmation in the REPL before the remote call runs.</li>
 <li>Tool results are logged to the session like any tool result.</li>
 </ul>
 <h2 id="server">Server<a class="headerlink" href="#server" title="Permanent link">&para;</a></h2>
-<p>The server exposes Replio's currently registered tools (policy-filtered) and its saved sessions as resources, without mutating the active session. Tool execution follows <code>ToolPolicy</code>. Tools whose action is <code>ask</code> are run directly (the external MCP client is the human-in-the-loop and shows its own confirmations) unless <code>mcp_server.allow_ask</code> is <code>false</code>, in which case they are refused.</p>
+<p>The server exposes Replio's currently registered tools (policy-filtered) and its saved sessions as resources, without mutating the active session. Tool execution follows <code>ToolPolicy</code>. <code>ask</code> tools run directly (the external MCP client is the human-in-the-loop and shows its own confirmations) unless <code>mcp_server.allow_ask</code> is <code>false</code>, which refuses them.</p>
 <h3 id="stdio-replio-mcp">stdio - <code>replio mcp</code><a class="headerlink" href="#stdio-replio-mcp" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>replio<span class="w"> </span>mcp<span class="w">                </span><span class="c1"># read JSON-RPC from stdin, write to stdout</span>
 </code></pre></div>
@@ -1538,7 +1538,7 @@
 <li>Modern (2026-07-28) clients/servers: <code>server/discover</code>, per-request <code>_meta</code> (<code>protocolVersion</code> + <code>clientCapabilities</code>). Missing required <code>_meta</code> fields are rejected with <code>-32602</code>.</li>
 <li>Legacy (&lt;= 2025-11-25) clients/servers: <code>initialize</code> handshake, then <code>tools/*</code>.</li>
 <li>The deprecated 2024-11-05 HTTP+SSE transport is not implemented.</li>
-<li>Multi-round-trip requests (MRTR), elicitation, sampling, auth, and the tasks/apps extensions are out of scope for v1. A server asking for input returns an <code>input_required</code> result which the client reports as an unsupported error.</li>
+<li>Multi-round-trip requests (MRTR), elicitation, sampling, auth, and the tasks/apps extensions are out of scope for v1. A server asking for input returns an <code>input_required</code> result, which the client reports as an unsupported error.</li>
 </ul>
 
 

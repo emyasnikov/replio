@@ -1223,7 +1223,7 @@
 <li><strong>Global</strong> - <code>~/.config/replio/skills/&lt;name&gt;.md</code>.</li>
 <li><strong>Local</strong> - <code>.replio/skills/&lt;name&gt;.md</code>.</li>
 </ul>
-<p>Each skill is one flat Markdown file: the filename stem is the skill name, the file body is the skill's instructions.</p>
+<p>Each skill is one flat Markdown file: the filename stem is the skill name, the body is the instructions.</p>
 <h2 id="schema">Schema<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="gh"># finders</span>
 
@@ -1234,7 +1234,7 @@ the source URL, and a one-line reliability assessment.
 <ul>
 <li><code>name</code> - the filename stem (<code>finders.md</code> -&gt; <code>finders</code>), referenced from <code>AgentType.skills</code>.</li>
 <li><code>content</code> - the full file body, injected verbatim into the agent type's system prompt.</li>
-<li><code>description</code> - optional, defaults to the first line of the content for file-based skills. Plugin contributions may set it explicitly along with <code>tags</code>.</li>
+<li><code>description</code> - optional, defaults to the first line of the content for file-based skills. Plugin contributions may set it explicitly with <code>tags</code>.</li>
 </ul>
 <p>Plugin contributions use the same entry shape, with an explicit <code>content</code> field:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_skills</span><span class="p">(</span><span class="n">registry</span><span class="p">):</span>
@@ -1250,7 +1250,7 @@ the source URL, and a one-line reliability assessment.
 
 Find sources and evaluate them. ...
 </code></pre></div>
-<p>Missing or empty skills are skipped silently, and an agent type without skills gets an unchanged prompt. Jobs with <code>--type</code> inject the same section (from the global/local file layers - plugin contributions do not reach the scheduler's preparse, same rule as plugin types there). The injection format is built by <code>skills_section(registry, names)</code> in <code>replio.skills</code>.</p>
+<p>Missing or empty skills are skipped silently, and an agent type without skills gets an unchanged prompt. Jobs with <code>--type</code> inject the same section (from the global/local file layers - plugin contributions do not reach the scheduler's preparse, same rule as plugin types there). The format is built by <code>skills_section(registry, names)</code> in <code>replio.skills</code>.</p>
 <h2 id="managing-skills">Managing skills<a class="headerlink" href="#managing-skills" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>/skills</code> - list skills (name, first-line description, origin) - <code>(local)</code> / <code>(global)</code> / <code>(plugin)</code> / <code>(merged)</code>.</li>
@@ -1258,7 +1258,7 @@ Find sources and evaluate them. ...
 <li><code>/skills remove &lt;name&gt;</code> - remove a local skill. Plugin skills cannot be removed (override them locally instead).</li>
 <li><code>/skills show &lt;name&gt;</code> - print the full skill content.</li>
 </ul>
-<p>The team kit (see <a href="../swarm/">swarm.md</a>) generates skills as part of its templates and persists them to the local skills dir.</p>
+<p>Skills are plain Markdown files. The assistant can save a reusable procedure as a local skill (for example when composing a recurring task), and delegation injects a type's skills into the sub-agent prompt.</p>
 
 
 

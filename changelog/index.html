@@ -404,10 +404,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0290" class="md-nav__link">
+  <a href="#v0290-2026-09-09" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.29.0
+        v0.29.0 - 2026-09-09
       
     </span>
   </a>
@@ -1427,10 +1427,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0290" class="md-nav__link">
+  <a href="#v0290-2026-09-09" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.29.0
+        v0.29.0 - 2026-09-09
       
     </span>
   </a>
@@ -1763,7 +1763,7 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<h2 id="v0290">v0.29.0<a class="headerlink" href="#v0290" title="Permanent link">&para;</a></h2>
+<h2 id="v0290-2026-09-09">v0.29.0 - 2026-09-09<a class="headerlink" href="#v0290-2026-09-09" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Realigned the headless CLI to the internal slash commands - <code>replio models</code> now mirrors <code>/models</code>: bare <code>replio models</code> shows the configured/approved <code>models.json</code> history grouped by provider (<code>&gt;</code> active, <code>(key)</code> marker, <code>No models configured yet</code> when empty) and <code>replio models list [provider]</code> probes a provider's advertised models live (default: current provider, <code>1</code> exit on a failed probe). <code>replio plugins enable|disable &lt;name&gt;</code> joins the existing CLI plugin subcommands (toggles the <code>plugins</code> config list, applies on next start, mirroring <code>/plugins</code>). <code>replio config reload</code> re-reads the config files from disk (mirrors <code>/config reload</code>). <code>replio jobs</code> and <code>replio export</code> were verified aligned. Docs synced (<code>commands.md</code>, <code>testing.md</code>). Tests: <code>test_cli.py</code> <code>TestCliModels</code> rewritten + <code>TestCliPlugins</code> enable/disable cases, <code>test_config.py</code> reload case</li>
 <li>Pluralized the registry commands - <code>/type</code> -&gt; <code>/types</code>, <code>/team</code> -&gt; <code>/teams</code>, <code>/skill</code> -&gt; <code>/skills</code>, matching the <code>/model</code> vs <code>/models</code> convention that catalog commands take plural names (no aliases - breaking). Usage strings, tab completion, and docs updated (<code>commands.md</code>, <code>types.md</code>, <code>teams.md</code>, <code>skills.md</code>, <code>swarm.md</code>, <code>plugins.md</code>, <code>providers.md</code>, <code>testing.md</code>, <code>AGENTS.md</code>, <code>README.md</code>, <code>VISION.md</code>, <code>use-cases/developer.md</code>). Tests: <code>test_types.py</code>/<code>test_teams.py</code>/<code>test_skills.py</code>/<code>test_team_run.py</code> dispatch on the plural names</li>

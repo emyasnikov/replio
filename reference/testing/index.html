@@ -1215,12 +1215,12 @@
 
 
 <h1 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h1>
-<p>Tests live in <code>tests/</code> and use the stdlib <code>unittest</code> framework - no external test runner, no network, no API key required. <strong>Mock tests</strong> patch provider responses so the agent loop, engine, CLI, and server are exercised without hitting a real model.</p>
+<p>Tests live in <code>tests/</code> and use the stdlib <code>unittest</code> framework - no external runner, no network, no API key. <strong>Mock tests</strong> patch provider responses so the agent loop, engine, CLI, and server are exercised without a real model.</p>
 <h2 id="running-tests">Running tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h2>
 <p>Run all tests:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>discover<span class="w"> </span>tests
 </code></pre></div>
-<p>The canonical setup installs the package (<code>pip install -e .</code>), which is also what CI does. On a source checkout without installing, use <code>PYTHONPATH=$PWD/src</code> (absolute - the detached-fleet daemon changes directory, so a relative <code>src</code> would not resolve): <code>PluginManager</code> then falls back to the repo-root <code>plugins/</code> directory for the bundled plugins.</p>
+<p>The canonical setup installs the package (<code>pip install -e .</code>), which is also what CI does. On a source checkout without installing, use <code>PYTHONPATH=$PWD/src</code> (absolute - the detached-fleet daemon changes directory, so a relative <code>src</code> would not resolve). <code>PluginManager</code> then falls back to the repo-root <code>plugins/</code> directory for the bundled plugins.</p>
 <p>Run a single file:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>tests.test_tool_calling
 </code></pre></div>
@@ -1366,14 +1366,11 @@
 <td><code>test_ui.py</code></td>
 <td>UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, <code>!</code> tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm), confirm <code>?</code> glyph at line start, confirm re-raises KeyboardInterrupt / returns False on EOF</td>
 </tr>
-<tr>
-<td><code>tests/helpers.py</code> provides <code>make_chat(config_data)</code> - a <code>ChatLoop</code> with a mocked provider - used by most tests to drive the engine without a model.</td>
-<td></td>
-</tr>
 </tbody>
 </table>
+<p><code>tests/helpers.py</code> provides <code>make_chat(config_data)</code> - a <code>ChatLoop</code> with a mocked provider - used by most tests to drive the engine without a model.</p>
 <h2 id="plugin-test-suites">Plugin test suites<a class="headerlink" href="#plugin-test-suites" title="Permanent link">&para;</a></h2>
-<p>Each bundled plugin ships its unit tests in its own directory (<code>plugins/&lt;name&gt;/tests/</code>), covering the plugin's tools and helpers without touching the core. They are discovered by the core suite through <code>tests/test_plugin_suites.py</code> (registered via <code>load_tests</code>), so <code>python -m unittest discover tests</code> runs everything. A single plugin's suite runs standalone with <code>python plugins/&lt;name&gt;/tests/&lt;file&gt;.py</code>, and headless via <code>replio plugins test &lt;name&gt;</code> (or <code>replio plugins test</code> for every plugin with a suite).</p>
+<p>Each bundled plugin ships its unit tests in its own directory (<code>plugins/&lt;name&gt;/tests/</code>), covering the plugin's tools and helpers without touching the core. The core suite discovers them through <code>tests/test_plugin_suites.py</code> (registered via <code>load_tests</code>), so <code>python -m unittest discover tests</code> runs everything. A single plugin's suite runs standalone with <code>python plugins/&lt;name&gt;/tests/&lt;file&gt;.py</code>, and headless via <code>replio plugins test &lt;name&gt;</code> (or <code>replio plugins test</code> for every plugin with a suite).</p>
 <h2 id="live-testing">Live testing<a class="headerlink" href="#live-testing" title="Permanent link">&para;</a></h2>
 <p>Manual live tests against a real provider API are done ad-hoc, not automated. Use a local model (Ollama) or a disposable API key, and verify a turn end-to-end: streaming output, a tool call round trip, and session persistence.</p>
 

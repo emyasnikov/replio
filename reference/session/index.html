@@ -1406,7 +1406,7 @@
 <p>Sessions are complete, append-only conversation logs. Every message, tool call and its result, reasoning, and error is persisted as JSON under the project's <code>.replio/sessions/</code> directory. Entries are never removed - compaction only trims the provider context, never the log.</p>
 <h2 id="where-sessions-live">Where sessions live<a class="headerlink" href="#where-sessions-live" title="Permanent link">&para;</a></h2>
 <p>Each session is one JSON file: <code>.replio/sessions/&lt;name&gt;.json</code>, next to the local <code>.replio/config.json</code>.</p>
-<p>Names are either explicit (<code>/session new &lt;name&gt;</code>, <code>/session load &lt;name&gt;</code>, <code>replio run --session-id &lt;name&gt;</code>) or auto-generated as <code>ses_&lt;timestamp&gt;_&lt;first-message-slug&gt;</code>, for example <code>ses_20260817_120000_what_is_oee</code>.</p>
+<p>Names are explicit (<code>/session new &lt;name&gt;</code>, <code>/session load &lt;name&gt;</code>, <code>replio run --session-id &lt;name&gt;</code>) or auto-generated as <code>ses_&lt;timestamp&gt;_&lt;first-message-slug&gt;</code>, e.g. <code>ses_20260817_120000_what_is_oee</code>.</p>
 <p>Session files carry a type prefix so the three kinds stay distinguishable at a glance:</p>
 <table>
 <thead>
@@ -1436,7 +1436,7 @@
 </table>
 <p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code>, where the suffix is the calling (parent) session id (<code>sub_20260817_120100_ses_20260817_120000_what_is_oee</code>). These live in the same <code>.replio/sessions/</code> directory and are regular sessions - listed by <code>/sessions list</code> (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.</p>
 <h2 id="managing-sessions">Managing sessions<a class="headerlink" href="#managing-sessions" title="Permanent link">&para;</a></h2>
-<p>The active session is handled by <code>/session</code> (like <code>/model</code> for the active model); the catalog of saved sessions lives under <code>/sessions</code> (like <code>/models</code>).</p>
+<p>The active session is handled by <code>/session</code> (like <code>/model</code> for the model). The catalog of saved sessions lives under <code>/sessions</code> (like <code>/models</code>).</p>
 <table>
 <thead>
 <tr>
@@ -1483,11 +1483,11 @@
 </tr>
 </tbody>
 </table>
-<p>The current session is auto-saved after every message and command, so nothing is lost on exit.</p>
+<p>The current session auto-saves after every message and command, so nothing is lost on exit.</p>
 <h2 id="exporting-to-markdown">Exporting to Markdown<a class="headerlink" href="#exporting-to-markdown" title="Permanent link">&para;</a></h2>
 <p><code>/sessions export &lt;name&gt;</code> renders any saved session as a Markdown transcript. It reads the persisted log directly (<code>read()</code>, not <code>load()</code>), so the current session is never switched and the source file is left untouched.</p>
-<p>The default output is <code>.replio/exports/&lt;name&gt;.md</code>, next to the <code>sessions/</code> directory. A second argument overrides the path (<code>/sessions export &lt;name&gt; out.md</code>), and <code>-</code> prints the transcript to stdout instead of writing a file. The command tab-completes session names.</p>
-<p>The export is the full, auditable log: each message becomes a <code>### &lt;Role&gt;</code> section with its timestamp, assistant meta (provider/model/duration) and thinking, tool calls and results as fenced code blocks (with tool <code>analysis</code>), <code>command</code> records, compaction summaries (with the trimmed context boundary), and a final <code>## Errors</code> section. Because it renders the persisted form, serialization-time transforms (<code>noise_tools</code> markers, <code>session_tool_max_chars</code> truncation) carry through as they appear in the file.</p>
+<p>Default output is <code>.replio/exports/&lt;name&gt;.md</code>, next to the <code>sessions/</code> directory. A second argument overrides the path (<code>/sessions export &lt;name&gt; out.md</code>). <code>-</code> prints the transcript to stdout instead of a file. The command tab-completes session names.</p>
+<p>The export is the full, auditable log: each message becomes a <code>### &lt;Role&gt;</code> section with its timestamp, assistant meta (provider/model/duration) and thinking, tool calls and results as fenced code blocks (with tool <code>analysis</code>), <code>command</code> records, compaction summaries (with the trimmed context boundary), and a final <code>## Errors</code> section. Since it renders the persisted form, serialization-time transforms (<code>noise_tools</code> markers, <code>session_tool_max_chars</code> truncation) carry through as they appear in the file.</p>
 <p>The headless CLI <code>replio export &lt;name&gt; [--out &lt;file&gt;]</code> reuses the same renderer for scripts and CI - <code>--out -</code> prints to stdout, the default matches the slash command (<code>.replio/exports/&lt;name&gt;.md</code>).</p>
 <h2 id="file-structure">File structure<a class="headerlink" href="#file-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1548,13 +1548,13 @@
 <tr>
 <td><code>sub_sessions</code></td>
 <td>array</td>
-<td>Names of sessions spawned from this one (delegations. The delegate sets a sub-agent's <code>parent_id</code> here)</td>
+<td>Names of sessions spawned from this one (delegations - the delegate sets the sub-agent's <code>parent_id</code>)</td>
 </tr>
 </tbody>
 </table>
 <p><code>/sessions preview</code> prints the <code>parent</code> and <code>sub-sessions</code> links. <code>/sessions list</code> annotates <code>sub_*</code> children with their parent.</p>
 <h2 id="message-schema">Message schema<a class="headerlink" href="#message-schema" title="Permanent link">&para;</a></h2>
-<p>Every message has at least <code>role</code>, <code>content</code>, and <code>timestamp</code> (ISO 8601 UTC). The fields beyond those depend on the role.</p>
+<p>Every message has at least <code>role</code>, <code>content</code>, and <code>timestamp</code> (ISO 8601 UTC). Fields beyond those depend on the role.</p>
 <table>
 <thead>
 <tr>
@@ -1607,7 +1607,7 @@
 <tr>
 <td><code>reasoning</code></td>
 <td><code>assistant</code></td>
-<td>The <code>reasoning</code> config value in effect for this message (how reasoning was requested: <code>false</code>/<code>"off"</code> or an effort value)</td>
+<td>The <code>reasoning</code> config value in effect for this message (<code>false</code>/<code>"off"</code> or an effort value)</td>
 </tr>
 <tr>
 <td><code>mode</code></td>
@@ -1659,12 +1659,12 @@
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"command"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/model llama3.3"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:02:00+00:00"</span><span class="p">},</span>
 <span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"command"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/compact"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:03:00+00:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Summary of the earlier conversation..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"compact_from"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">}</span>
 </code></pre></div>
-<p>A <code>command</code> message with a <code>result</code> is a compaction record: <code>result</code> holds the summary and <code>compact_from</code> is the index into <code>messages</code> where the kept portion starts. A search context injected by the <code>web_search: true</code> auto-search mode is recorded as a <code>system</code> message. The configured <code>system_prompt</code> and mode instruction are injected at request time, never stored in the log.</p>
+<p>A <code>command</code> message with a <code>result</code> is a compaction record: <code>result</code> holds the summary, <code>compact_from</code> the index into <code>messages</code> where the kept portion starts. A search context injected by the <code>web_search: true</code> auto-search mode is recorded as a <code>system</code> message. The configured <code>system_prompt</code> and mode instruction are injected at request time, never stored in the log.</p>
 <h2 id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">&para;</a></h2>
 <p>Turn-level failures are appended to the <code>errors</code> array, separate from the message log:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="mi">401</span><span class="p">,</span><span class="w"> </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unauthorized"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:40:00+00:00"</span><span class="p">}</span>
 </code></pre></div>
-<p><code>code</code> is the HTTP status where one exists, otherwise <code>0</code>. Errors include provider auth/network failures, stream EOF or empty completions, <code>max_tokens</code> truncation, and unexpected exceptions from the agent loop.</p>
+<p><code>code</code> is the HTTP status where one exists, otherwise <code>0</code>. Errors include provider auth/network failures, stream EOF or empty completions, <code>max_tokens</code> truncation, and unexpected agent-loop exceptions.</p>
 <h2 id="permissions">Permissions<a class="headerlink" href="#permissions" title="Permanent link">&para;</a></h2>
 <p>Every tool permission resolution is recorded to the <code>permissions</code> array, making the log an audit trail of what the agent was allowed to do:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"tool"</span><span class="p">:</span><span class="w"> </span><span class="s2">"run_command"</span><span class="p">,</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ask"</span><span class="p">,</span><span class="w"> </span><span class="nt">"decision"</span><span class="p">:</span><span class="w"> </span><span class="s2">"granted"</span><span class="p">,</span><span class="w"> </span><span class="nt">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/home/me/proj"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:40:00+00:00"</span><span class="p">}</span>
@@ -1700,14 +1700,13 @@
 </tr>
 </tbody>
 </table>
-<p>Per-invocation (resolver-based) actions are recorded the same way - for example <code>delegate</code> logs the action resolved from the target type, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - there is no config switch, so the log stays a reliable audit record.</p>
+<p>Per-invocation (resolver-based) actions are recorded the same way - e.g. <code>delegate</code> logs the action resolved from the target type, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - no config switch - so the log stays a reliable audit record.</p>
 <h2 id="append-only-semantics">Append-only semantics<a class="headerlink" href="#append-only-semantics" title="Permanent link">&para;</a></h2>
-<p>Messages and errors are only ever appended. Compaction stores the summary in a new <code>command</code> record and leaves the earlier messages in place. Loading a session never rewrites history. The only transformations happen at serialization time (below), never to the in-memory log.</p>
-<p>An <code>assistant</code> message is written whenever the turn produced content <strong>or</strong> thinking - so a truncated mid-reasoning turn still persists its thinking, and a reasoning-only turn (thinking present, no content) is recorded rather than lost. Empty turns (no content, no thinking) persist nothing.</p>
+<p>Messages and errors are only ever appended. Compaction stores the summary in a new <code>command</code> record and leaves the earlier messages in place. Loading a session never rewrites history. The only transformations happen at serialization time (below), never to the in-memory log. An <code>assistant</code> message is written whenever the turn produced content <strong>or</strong> thinking - a truncated mid-reasoning turn still persists its thinking, and a reasoning-only turn (thinking, no content) is recorded rather than lost. Empty turns (no content, no thinking) persist nothing.</p>
 <h2 id="serialization-time-transforms">Serialization-time transforms<a class="headerlink" href="#serialization-time-transforms" title="Permanent link">&para;</a></h2>
-<p>Two config keys reshape <code>tool</code> message content when the session is written to disk, without touching the stored messages themselves:</p>
+<p>Two config keys reshape <code>tool</code> message content when the session is written to disk, without touching the stored messages:</p>
 <ul>
-<li><strong><code>noise_tools</code></strong> (default <code>["web_fetch", "open", "fetch_page"]</code>) - results of the listed tools are replaced with <code>[&lt;tool&gt; result excluded from log, see tool call above for parameters]</code>, keeping noisy results out of session files while preserving the parameters in the tool call above.</li>
+<li><strong><code>noise_tools</code></strong> (default <code>["web_fetch", "open", "fetch_page"]</code>) - results of the listed tools are replaced with <code>[&lt;tool&gt; result excluded from log, see tool call above for parameters]</code>, keeping noisy results out of session files while the parameters stay in the tool call above.</li>
 <li><strong><code>session_tool_max_chars</code></strong> (default <code>0</code> = unlimited) - caps persisted tool-result content to N characters, appending <code>… (truncated from &lt;len&gt; chars)</code>.</li>
 </ul>
 <h2 id="preparing-the-provider-context">Preparing the provider context<a class="headerlink" href="#preparing-the-provider-context" title="Permanent link">&para;</a></h2>
@@ -1715,10 +1714,10 @@
 <ul>
 <li><code>command</code> role messages are dropped.</li>
 <li>Compaction records (<code>command</code> with <code>result</code>) become a <code>system</code> summary: <code>Summary of earlier conversation:\n\n&lt;summary&gt;</code>.</li>
-<li>Dangling <code>tool</code> messages (whose <code>tool_call_id</code> is no longer matched by a declared <code>tool_calls</code> entry, e.g. at a <code>compact_from</code> boundary) are skipped.</li>
+<li>Dangling <code>tool</code> messages (whose <code>tool_call_id</code> no longer matches a declared <code>tool_calls</code> entry, e.g. at a <code>compact_from</code> boundary) are skipped.</li>
 <li>Everything else is passed through in order.</li>
 </ul>
-<p>For compaction, tool results are folded back into the summarized context as <code>[tool result] &lt;content&gt;</code> user messages so the summary can carry forward what the tools found.</p>
+<p>For compaction, tool results fold back into the summarized context as <code>[tool result] &lt;content&gt;</code> user messages so the summary can carry forward what the tools found.</p>
 <h2 id="compaction">Compaction<a class="headerlink" href="#compaction" title="Permanent link">&para;</a></h2>
 <p><code>/compact</code> summarizes the earlier conversation and trims the provider context, controlled by <code>compact_keep</code> (default 4 = messages kept at the tail). The summary is stored in the <code>result</code> of a <code>command</code> record with a <code>compact_from</code> boundary, so the full history stays in the log while only the summary is sent to the model going forward.</p>
 

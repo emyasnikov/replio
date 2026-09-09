@@ -1227,13 +1227,12 @@
 
 
 <h1 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h1>
-<p>You can run <code>replio serve</code> directly, but a fleet of agents is best supervised by Docker: one container per agent, restarted on failure, with the agent's config and sessions kept on a mounted folder. Replio has two install paths:</p>
+<p>You can run <code>replio serve</code> directly, but a fleet of agents is best supervised by Docker: one container per agent, restarted on failure, with config and sessions on a mounted folder. Replio has two install paths:</p>
 <ul>
 <li><strong>Single interactive agent</strong> - install with pipx and run the REPL, <code>replio run</code>, or <code>replio serve</code> by hand. See the <a href="../README.md">README</a>.</li>
 <li><strong>Supervised fleet or always-on server</strong> - this page. Build the image from the repo's <code>Dockerfile</code> and run one container per agent with <code>docker-compose.yml.example</code>.</li>
 </ul>
-<p>The Docker templates live at the repo root (<code>Dockerfile</code>, <code>replio-entrypoint.sh</code>, <code>docker-compose.yml.example</code>) and work as-is. Per-agent values - the project path, the port, and the API key - are configured on your machine, never in the templates.</p>
-<p>A deployed agent is always just <code>replio serve</code> pointed at a folder inside the container. The folder holds <code>.replio/config.json</code> with the provider, model, system prompt, tool permissions, and plugins. Sessions are written under <code>.replio/sessions/</code> in the same folder. Mount that folder into the container and the agent keeps its state across restarts.</p>
+<p>The Docker templates live at the repo root (<code>Dockerfile</code>, <code>replio-entrypoint.sh</code>, <code>docker-compose.yml.example</code>) and work as-is. Per-agent values - the project path, the port, and the API key - are configured on your machine, never in the templates. A deployed agent is always <code>replio serve</code> pointed at a folder inside the container. The folder holds <code>.replio/config.json</code> (provider, model, system prompt, tool permissions, plugins) and writes sessions under <code>.replio/sessions/</code>. Mount that folder into the container and the agent keeps its state across restarts.</p>
 <h2 id="docker">Docker<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h2>
 <p>The image runs <code>replio serve</code> and takes three environment variables:</p>
 <table>
@@ -1272,9 +1271,9 @@
 <span class="w">  </span>-v<span class="w"> </span><span class="s2">"</span><span class="nv">$PWD</span><span class="s2">/agents/docs:/srv/docs"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>replio
 </code></pre></div>
-<p>The mounted <code>agents/docs</code> directory holds the agent's <code>.replio/config.json</code> (model and permissions) and its sessions. The API key is resolved from the global provider registry (<code>~/.config/replio/providers.json</code>), so mount that file into the container (or register the connection with <code>/connect</code> inside it) for keyed providers. The container runs as root, so agent-written session files are root-owned on the host, add <code>--user "$(id -u):$(id -g)"</code> if you want them owned by your uid.</p>
+<p>The mounted <code>agents/docs</code> directory holds the agent's <code>.replio/config.json</code> (model and permissions) and its sessions. The API key resolves from the global provider registry (<code>~/.config/replio/providers.json</code>), so mount that file into the container (or register the connection with <code>/connect</code> inside it) for keyed providers. The container runs as root, so agent-written session files are root-owned on the host. Add <code>--user "$(id -u):$(id -g)"</code> if you want them owned by your uid.</p>
 <h3 id="fleet-with-docker-compose">Fleet with Docker Compose<a class="headerlink" href="#fleet-with-docker-compose" title="Permanent link">&para;</a></h3>
-<p>The file <code>docker-compose.yml.example</code> at the repo root defines one service per agent. Copy it to <code>docker-compose.yml</code>, adjust the services (name, <code>REPLIO_PATH</code>, port, volume - the API key and model come from the mounted <code>.replio/config.json</code>):</p>
+<p>The repo root's <code>docker-compose.yml.example</code> defines one service per agent. Copy it to <code>docker-compose.yml</code> and adjust the services (name, <code>REPLIO_PATH</code>, port, volume - the API key and model come from the mounted <code>.replio/config.json</code>):</p>
 <div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docs-agent</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">build</span><span class="p">:</span>
@@ -1288,8 +1287,7 @@
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"127.0.0.1:8781:8781"</span>
 <span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
 </code></pre></div>
-<p>Ports publish on <code>127.0.0.1</code> so the JSON API stays host-local behind your reverse proxy. Containers run as root, add <code>user: "1000:1000"</code> (your uid) to a service if you want agent-written files in the mounted folders owned by you.</p>
-<p>Add an agent by copying a service block and changing the name, port, and volume. Bring the fleet up:</p>
+<p>Ports publish on <code>127.0.0.1</code> so the JSON API stays host-local behind your reverse proxy. Containers run as root. Add <code>user: "1000:1000"</code> (your uid) to a service if you want agent-written files in the mounted folders owned by you. Add an agent by copying a service block and changing the name, port, and volume. Bring the fleet up:</p>
 <div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
 </code></pre></div>
 <p>Compose's <code>restart: unless-stopped</code> restarts a dead agent. See <a href="../usage/programming/">docs/usage/programming.md</a> for a full role-based programming fleet built on this template.</p>
