@@ -107,6 +107,7 @@
 
 ## Done
 
+- [x] CLI realigned to internal commands - replio models/config/plugins mirror /models, /config, /plugins
 - [x] Plural registry commands - /types, /teams, /skills (was /type, /team, /skill)
 - [x] `/session` split - active session vs `/sessions` catalog (mirrors /model vs /models)
 - [x] Model commands - /model show/switch, /models configured, /models list [provider] live

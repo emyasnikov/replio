@@ -76,7 +76,14 @@ Export a saved session to Markdown (see [session.md](session.md)).
 
 ### `replio models`
 
-List the models the connected provider advertises.
+List configured models, or probe a provider's available models (mirrors `/models`).
+
+```bash
+replio models                          # configured/approved models.json history
+replio models list [provider]          # probe a provider's advertised models
+```
+
+`replio models` (no subcommand) shows the approved-model history grouped by provider with `>` for the active model and `(key)` when the provider has a stored key. `replio models list [provider]` probes a provider's advertised models live (default: the current provider), exiting `1` on a failed probe.
 
 | Flag             | Default                      | Description                       |
 |------------------|------------------------------|-----------------------------------|
@@ -109,6 +116,7 @@ Scoped, scriptable config management (same layers as `/config` - see [config.md]
 replio config get [key ...] [--show-origin]   # effective values, default all keys
 replio config set <key> <value> [--global]    # JSON-parseable value, default local
 replio config unset <key> [--global]          # drop a value from the selected scope
+replio config reload                          # re-read the config files from disk
 ```
 
 | Flag             | Default                      | Description                       |
@@ -179,7 +187,9 @@ Manage plugins headlessly. See [plugins.md](plugins.md).
 
 | Subcommand    | Description                                                     |
 |---------------|-----------------------------------------------------------------|
-| `install`     | `replio plugins install <git-url|path> [--global] [--deps]` - install a plugin |
+| `disable`     | `replio plugins disable <name>` - remove a plugin from the plugins list (applies on next start) |
+| `enable`      | `replio plugins enable <name>` - add a plugin to the plugins list (applies on next start) |
+| `install`     | `replio plugins install <git-url\|path> [--global] [--deps]` - install a plugin |
 | `list`        | List installed plugins and their load status                    |
 | `uninstall`   | `replio plugins uninstall <name>` - remove a plugin             |
 | `update`      | `replio plugins update <name>` - re-fetch from the recorded source |

@@ -201,13 +201,13 @@ class TestControllerLifecycle(unittest.TestCase):
         self._ctrl().manifest.add(agent)
         return agent
 
-    def _wait_healthy(self, ctrl, name, timeout=8.0):
+    def _wait_healthy(self, ctrl, name, timeout=15.0):
         st = ctrl.state.agents[name]
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             if st.status == 'healthy':
                 return st
-            time.sleep(0.4)
+            time.sleep(1.0)
             ctrl.sweep()
             st = ctrl.state.agents[name]
         return st

@@ -68,12 +68,32 @@ def cmd_models(args) -> int:
     from .ui import NullUI
     config = Config(path=getattr(args, 'path', None))
     engine = Engine(config, ui=NullUI())
-    models, error = engine.list_models()
+    if getattr(args, 'action', None) != 'list':
+        entries = engine.models.all()
+        if not entries:
+            print('No models configured yet - run /connect to add one')
+            return 0
+        provider = config.get('provider')
+        model = config.get('model')
+        for group, items in engine.models.grouped():
+            print(group + ':')
+            for e in items:
+                active = '>' if (e.provider == provider and e.model == model) else ' '
+                key = ' (key)' if engine.providers.api_key_for(e.provider) else ''
+                print(f'  {active} {e.model}{key}')
+        return 0
+    provider = (getattr(args, 'provider', '') or '').strip() or config.get('provider') or ''
+    entry = engine.providers.find(provider)
+    base_url = (entry.base_url if entry and entry.base_url else '') or \
+        config.get('base_url') or ''
+    api_key = engine.providers.api_key_for(provider)
+    model = next((e.model for e in engine.models.all() if e.provider == provider),
+                 None) or config.get('model')
+    models, error = engine.list_models(provider=provider, base_url=base_url,
+                                       api_key=api_key, model=model)
     if error:
         print(f'Error: {error}', file=sys.stderr)
         return 1
-    provider = config.get('provider')
-    base_url = config.get('base_url')
     if not models:
         print(f'No models listed from {provider} ({base_url})')
         return 0
@@ -214,6 +234,11 @@ def cmd_config(args) -> int:
         print(f'Unset {args.key} ({scope} config)')
         return 0
 
+    if action == 'reload':
+        config.reload()
+        print('Config reloaded from disk')
+        return 0
+
     return 0
 
 
@@ -237,6 +262,21 @@ def cmd_plugins(args) -> int:
             if missing:
                 parts.append('needs: ' + ', '.join(missing))
             print('  ' + ' - '.join(parts))
+        return 0
+    if args.action in ('enable', 'disable'):
+        if pm.get(args.name) is None:
+            print(f'Plugin not installed: {args.name}', file=sys.stderr)
+            return 1
+        plugins = [str(n) for n in (config.get('plugins') or [])]
+        if args.action == 'enable':
+            if args.name not in plugins:
+                plugins.append(args.name)
+            print(f'Plugin {args.name} enabled (applies on next start)')
+        else:
+            if args.name in plugins:
+                plugins.remove(args.name)
+            print(f'Plugin {args.name} disabled (applies on next start)')
+        config.set('plugins', plugins)
         return 0
     try:
         if args.action == 'install':

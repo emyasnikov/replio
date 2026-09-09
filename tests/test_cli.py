@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 from replio.cli import cmd_run, cmd_export, cmd_models, cmd_plugins
 from replio.main import main
 from replio import get_version
+from replio.config import Config
 from replio.sessions.manager import Session
 
 
@@ -275,6 +276,37 @@ class TestCliPlugins(unittest.TestCase):
         self.assertEqual(rc, 1)
         self.assertIn('Error', err)
 
+    def _install_hello(self):
+        src = Path(self.path) / 'src_plugin'
+        (src / 'manifest.json').parent.mkdir(parents=True, exist_ok=True)
+        with open(src / 'manifest.json', 'w') as f:
+            json.dump({'name': 'hello', 'version': '1.0.0'}, f)
+        with open(src / 'plugin.py', 'w') as f:
+            f.write('def register_tools(registry):\n    pass\n')
+        rc, _, _ = self._capture(self._args(action='install', source=str(src)))
+        self.assertEqual(rc, 0)
+
+    def test_plugins_enable_adds_to_plugins_list(self):
+        self._install_hello()
+        cfg = Config(path=self.path)
+        cfg.set('plugins', [p for p in cfg.get('plugins') if p != 'hello'])
+        rc, out, _ = self._capture(self._args(action='enable', name='hello'))
+        self.assertEqual(rc, 0)
+        self.assertIn('enabled', out)
+        self.assertIn('hello', Config(path=self.path).get('plugins'))
+
+    def test_plugins_disable_removes_from_plugins_list(self):
+        self._install_hello()
+        rc, out, _ = self._capture(self._args(action='disable', name='hello'))
+        self.assertEqual(rc, 0)
+        self.assertIn('disabled', out)
+        self.assertNotIn('hello', Config(path=self.path).get('plugins'))
+
+    def test_plugins_toggle_unknown_plugin_errors(self):
+        rc, _, err = self._capture(self._args(action='enable', name='nosuch'))
+        self.assertEqual(rc, 1)
+        self.assertIn('Plugin not installed', err)
+
 
 class TestCliExport(unittest.TestCase):
 
@@ -349,13 +381,21 @@ class TestCliModels(unittest.TestCase):
         self.tmp.cleanup()
 
     def _args(self, **kw):
-        base = dict(path=self.path)
+        base = dict(path=self.path, action=None, provider='')
         base.update(kw)
         return SimpleNamespace(**base)
 
-    def _capture(self, args, list_result):
+    def _engine(self, models=None, grouped=None, keys=None, list_result=None):
         engine = MagicMock()
-        engine.list_models.return_value = list_result
+        engine.models.all.return_value = models or []
+        engine.models.grouped.return_value = grouped or []
+        engine.providers.find.return_value = None
+        engine.providers.api_key_for.side_effect = keys or (lambda p: '')
+        if list_result is not None:
+            engine.list_models.return_value = list_result
+        return engine
+
+    def _capture(self, args, engine):
         with patch('replio.cli.Engine', return_value=engine):
             out = io.StringIO()
             err = io.StringIO()
@@ -363,31 +403,81 @@ class TestCliModels(unittest.TestCase):
                 rc = cmd_models(args)
         return rc, out.getvalue(), err.getvalue()
 
-    def test_models_lists_available(self):
-        rc, out, _ = self._capture(self._args(), (['m1', 'm2'], None))
+    def test_models_bare_lists_configured(self):
+        e1 = SimpleNamespace(provider='openai', model='gpt-4o')
+        e2 = SimpleNamespace(provider='ollama', model='llama3.2')
+        engine = self._engine(models=[e1, e2],
+                              grouped=[('openai', [e1]), ('ollama', [e2])],
+                              keys=lambda p: 'k' if p == 'openai' else '')
+        rc, out, _ = self._capture(self._args(), engine)
         self.assertEqual(rc, 0)
-        self.assertIn('2 models available from', out)
-        self.assertIn('- m1', out)
+        self.assertIn('openai:', out)
+        self.assertIn('gpt-4o', out)
+        self.assertIn('(key)', out)
+        self.assertIn('ollama:', out)
 
-    def test_models_error_exit_code(self):
-        rc, _, err = self._capture(self._args(), ([], 'HTTP 500: boom'))
+    def test_models_bare_marks_active(self):
+        e = SimpleNamespace(provider='ollama', model='llama3.2')
+        engine = self._engine(models=[e], grouped=[('ollama', [e])])
+        rc, out, _ = self._capture(self._args(), engine)
+        self.assertEqual(rc, 0)
+        self.assertIn('> llama3.2', out)
+
+    def test_models_bare_empty(self):
+        rc, out, _ = self._capture(self._args(), self._engine())
+        self.assertEqual(rc, 0)
+        self.assertIn('No models configured yet', out)
+
+    def test_models_list_probes_current(self):
+        engine = self._engine(list_result=(['m1', 'm2'], None))
+        rc, out, _ = self._capture(self._args(action='list'), engine)
+        self.assertEqual(rc, 0)
+        self.assertIn('2 models available from ollama', out)
+        self.assertIn('- m1', out)
+        engine.list_models.assert_called_once_with(
+            provider='ollama', base_url='https://api.ollama.com',
+            api_key='', model='llama3.2')
+
+    def test_models_list_probes_provider(self):
+        engine = self._engine(list_result=(['gpt-4o', 'gpt-5'], None))
+        rc, out, _ = self._capture(self._args(action='list', provider='openai'),
+                                   engine)
+        self.assertEqual(rc, 0)
+        self.assertIn('2 models available from openai', out)
+        engine.list_models.assert_called_once_with(
+            provider='openai', base_url='https://api.ollama.com',
+            api_key='', model='llama3.2')
+
+    def test_models_list_error_exit_code(self):
+        engine = self._engine(list_result=([], 'HTTP 500: boom'))
+        rc, _, err = self._capture(self._args(action='list'), engine)
         self.assertEqual(rc, 1)
         self.assertIn('HTTP 500: boom', err)
 
-    def test_models_empty(self):
-        rc, out, _ = self._capture(self._args(), ([], None))
+    def test_models_list_empty(self):
+        engine = self._engine(list_result=([], None))
+        rc, out, _ = self._capture(self._args(action='list'), engine)
         self.assertEqual(rc, 0)
-        self.assertIn('No models listed', out)
+        self.assertIn('No models listed from ollama', out)
 
     def test_models_main_dispatch(self):
-        engine = MagicMock()
-        engine.list_models.return_value = (['m1'], None)
+        e = SimpleNamespace(provider='ollama', model='llama3.2')
+        engine = self._engine(models=[e], grouped=[('ollama', [e])])
         with patch('replio.cli.Engine', return_value=engine):
             out = io.StringIO()
             with patch('sys.stdout', new=out):
                 rc = main(['models', '--path', self.path])
         self.assertEqual(rc, 0)
-        self.assertIn('1 models available from', out.getvalue())
+        self.assertIn('> llama3.2', out.getvalue())
+
+    def test_models_list_main_dispatch(self):
+        engine = self._engine(list_result=(['m1'], None))
+        with patch('replio.cli.Engine', return_value=engine):
+            out = io.StringIO()
+            with patch('sys.stdout', new=out):
+                rc = main(['models', '--path', self.path, 'list'])
+        self.assertEqual(rc, 0)
+        self.assertIn('1 models available from ollama', out.getvalue())
 
 
 class TestCliEval(unittest.TestCase):

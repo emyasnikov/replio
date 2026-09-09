@@ -39,9 +39,13 @@ def _add_export_parser(sub):
 
 
 def _add_models_parser(sub):
-    p = sub.add_parser('models', help='List models available from the connected provider')
+    p = sub.add_parser('models', help='List configured models, or probe a provider\'s available models')
     p.add_argument('--path', default=argparse.SUPPRESS,
                    help='Project path (default: current directory)')
+    g = p.add_subparsers(dest='action')
+    gl = g.add_parser('list', help='Probe a provider\'s advertised models (default: current provider)')
+    gl.add_argument('provider', nargs='?', default='',
+                    help='Provider name (default: current)')
 
 
 def _add_eval_parser(sub):
@@ -94,6 +98,7 @@ def _add_config_parser(sub):
     gs.add_argument('value', nargs='?')
     gu = g.add_parser('unset', help='Remove a config value from the selected scope')
     gu.add_argument('key')
+    g.add_parser('reload', help='Re-read the config files from disk')
     for sub in (gg, gs, gu):
         sub.add_argument('--global', dest='global_', action='store_true',
                          help='Use the global config file (~/.config/replio/config.json)')
@@ -107,6 +112,10 @@ def _add_plugins_parser(sub):
                    help='Project path (default: current directory)')
     g = p.add_subparsers(dest='action', required=True)
     g.add_parser('list', help='List installed plugins')
+    ge = g.add_parser('enable', help='Enable a plugin (add to the plugins list, applies on next start)')
+    ge.add_argument('name')
+    gd = g.add_parser('disable', help='Disable a plugin (remove from the plugins list, applies on next start)')
+    gd.add_argument('name')
     pi = g.add_parser('install', help='Install a plugin from a git URL or local path')
     pi.add_argument('source', help='Git URL or local path of the plugin')
     pi.add_argument('--global', dest='global_', action='store_true',

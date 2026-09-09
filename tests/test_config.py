@@ -208,6 +208,13 @@ class TestConfigCli(_IsolatedConfigBase):
         self.assertEqual(fresh.get('max_tokens'),
                          DEFAULT_CONFIG['max_tokens'])
 
+    def test_reload_re_reads_disk(self):
+        self.local_path.write_text('{"max_tokens": 4096}')
+        rc, out = self._run(self._args(action='reload'))
+        self.assertEqual(rc, 0)
+        self.assertIn('Config reloaded from disk', out)
+        self.assertEqual(Config(path=str(self.project)).get('max_tokens'), 4096)
+
 
 if __name__ == '__main__':
     unittest.main()
