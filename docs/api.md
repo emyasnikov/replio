@@ -11,9 +11,7 @@ All responses are JSON with `Content-Type: application/json`.
 
 ## POST /chat
 
-Runs one agent turn on the same engine as the REPL and CLI.
-
-Request body:
+Runs one agent turn on the same engine as the REPL and CLI. Request body:
 
 | Field         | Type     | Description                                             |
 |---------------|----------|---------------------------------------------------------|
@@ -27,9 +25,7 @@ curl localhost:8787/chat -X POST -H 'Content-Type: application/json' \
   -d '{"prompt": "Hi", "session_id": "api"}'
 ```
 
-Response is the same `TurnResult` the CLI returns (see the README). `session` is the resolved session name.
-
-Errors: `400` for a missing/empty `prompt` or invalid JSON body.
+Response is the same `TurnResult` the CLI returns (see the README). `session` is the resolved session name. Errors: `400` for a missing/empty `prompt` or invalid JSON body.
 
 ## GET /sessions
 

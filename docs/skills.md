@@ -10,7 +10,7 @@ Skills come from three layers, merged like types and teams: plugin contributions
 - **Global** - `~/.config/replio/skills/<name>.md`.
 - **Local** - `.replio/skills/<name>.md`.
 
-Each skill is one flat Markdown file: the filename stem is the skill name, the file body is the skill's instructions.
+Each skill is one flat Markdown file: the filename stem is the skill name, the body is the instructions.
 
 ## Schema
 
@@ -25,7 +25,7 @@ A skill has:
 
 - `name` - the filename stem (`finders.md` -> `finders`), referenced from `AgentType.skills`.
 - `content` - the full file body, injected verbatim into the agent type's system prompt.
-- `description` - optional, defaults to the first line of the content for file-based skills. Plugin contributions may set it explicitly along with `tags`.
+- `description` - optional, defaults to the first line of the content for file-based skills. Plugin contributions may set it explicitly with `tags`.
 
 Plugin contributions use the same entry shape, with an explicit `content` field:
 
@@ -48,7 +48,7 @@ When an agent type with `skills` runs as a sub-agent (`delegate`), each register
 Find sources and evaluate them. ...
 ```
 
-Missing or empty skills are skipped silently, and an agent type without skills gets an unchanged prompt. Jobs with `--type` inject the same section (from the global/local file layers - plugin contributions do not reach the scheduler's preparse, same rule as plugin types there). The injection format is built by `skills_section(registry, names)` in `replio.skills`.
+Missing or empty skills are skipped silently, and an agent type without skills gets an unchanged prompt. Jobs with `--type` inject the same section (from the global/local file layers - plugin contributions do not reach the scheduler's preparse, same rule as plugin types there). The format is built by `skills_section(registry, names)` in `replio.skills`.
 
 ## Managing skills
 
@@ -57,4 +57,4 @@ Missing or empty skills are skipped silently, and an agent type without skills g
 - `/skills remove <name>` - remove a local skill. Plugin skills cannot be removed (override them locally instead).
 - `/skills show <name>` - print the full skill content.
 
-Skills are plain Markdown files. The assistant can save a reusable procedure as a local skill (for example when composing a recurring task), and the delegation flow injects a type's skills into the sub-agent prompt.
+Skills are plain Markdown files. The assistant can save a reusable procedure as a local skill (for example when composing a recurring task), and delegation injects a type's skills into the sub-agent prompt.

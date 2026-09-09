@@ -6,7 +6,7 @@ Sessions are complete, append-only conversation logs. Every message, tool call a
 
 Each session is one JSON file: `.replio/sessions/<name>.json`, next to the local `.replio/config.json`.
 
-Names are either explicit (`/session new <name>`, `/session load <name>`, `replio run --session-id <name>`) or auto-generated as `ses_<timestamp>_<first-message-slug>`, for example `ses_20260817_120000_what_is_oee`.
+Names are explicit (`/session new <name>`, `/session load <name>`, `replio run --session-id <name>`) or auto-generated as `ses_<timestamp>_<first-message-slug>`, e.g. `ses_20260817_120000_what_is_oee`.
 
 Session files carry a type prefix so the three kinds stay distinguishable at a glance:
 
@@ -20,7 +20,7 @@ Delegation writes each sub-agent's log as its own session: `sub_<ts>_<parent-ses
 
 ## Managing sessions
 
-The active session is handled by `/session` (like `/model` for the active model). The catalog of saved sessions lives under `/sessions` (like `/models`).
+The active session is handled by `/session` (like `/model` for the model). The catalog of saved sessions lives under `/sessions` (like `/models`).
 
 | Command | Purpose |
 |---------|---------|
@@ -34,15 +34,15 @@ The active session is handled by `/session` (like `/model` for the active model)
 | `/sessions export <name> [out]` | Export a session to Markdown |
 | `replio run --session-id <name>` | Load or create a session from headless mode |
 
-The current session is auto-saved after every message and command, so nothing is lost on exit.
+The current session auto-saves after every message and command, so nothing is lost on exit.
 
 ## Exporting to Markdown
 
 `/sessions export <name>` renders any saved session as a Markdown transcript. It reads the persisted log directly (`read()`, not `load()`), so the current session is never switched and the source file is left untouched.
 
-The default output is `.replio/exports/<name>.md`, next to the `sessions/` directory. A second argument overrides the path (`/sessions export <name> out.md`), and `-` prints the transcript to stdout instead of writing a file. The command tab-completes session names.
+Default output is `.replio/exports/<name>.md`, next to the `sessions/` directory. A second argument overrides the path (`/sessions export <name> out.md`). `-` prints the transcript to stdout instead of a file. The command tab-completes session names.
 
-The export is the full, auditable log: each message becomes a `### <Role>` section with its timestamp, assistant meta (provider/model/duration) and thinking, tool calls and results as fenced code blocks (with tool `analysis`), `command` records, compaction summaries (with the trimmed context boundary), and a final `## Errors` section. Because it renders the persisted form, serialization-time transforms (`noise_tools` markers, `session_tool_max_chars` truncation) carry through as they appear in the file.
+The export is the full, auditable log: each message becomes a `### <Role>` section with its timestamp, assistant meta (provider/model/duration) and thinking, tool calls and results as fenced code blocks (with tool `analysis`), `command` records, compaction summaries (with the trimmed context boundary), and a final `## Errors` section. Since it renders the persisted form, serialization-time transforms (`noise_tools` markers, `session_tool_max_chars` truncation) carry through as they appear in the file.
 
 The headless CLI `replio export <name> [--out <file>]` reuses the same renderer for scripts and CI - `--out -` prints to stdout, the default matches the slash command (`.replio/exports/<name>.md`).
 
@@ -70,13 +70,13 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 | `errors` | array | Turn-level errors (provider, network, agent loop) |
 | `permissions` | array | Audit log of tool permission decisions (see below) |
 | `parent_id` | string | Name of the session this one was spawned from (sub-agent sessions set it, empty otherwise) |
-| `sub_sessions` | array | Names of sessions spawned from this one (delegations. The delegate sets a sub-agent's `parent_id` here) |
+| `sub_sessions` | array | Names of sessions spawned from this one (delegations - the delegate sets the sub-agent's `parent_id`) |
 
 `/sessions preview` prints the `parent` and `sub-sessions` links. `/sessions list` annotates `sub_*` children with their parent.
 
 ## Message schema
 
-Every message has at least `role`, `content`, and `timestamp` (ISO 8601 UTC). The fields beyond those depend on the role.
+Every message has at least `role`, `content`, and `timestamp` (ISO 8601 UTC). Fields beyond those depend on the role.
 
 | Field | Applies to | Description |
 |-------|-----------|-------------|
@@ -88,7 +88,7 @@ Every message has at least `role`, `content`, and `timestamp` (ISO 8601 UTC). Th
 | `model` | `assistant` | Model that produced the response |
 | `provider` | `assistant` | Provider that served it |
 | `thinking` | `assistant` | Reasoning text preceding the answer or tool call, excluded from `content` |
-| `reasoning` | `assistant` | The `reasoning` config value in effect for this message (how reasoning was requested: `false`/`"off"` or an effort value) |
+| `reasoning` | `assistant` | The `reasoning` config value in effect for this message (`false`/`"off"` or an effort value) |
 | `mode` | `assistant` | The agent `mode` config value in effect for this message (`build`, `plan`, or a custom mode) |
 | `tool_calls` | `assistant` | OpenAI function-call objects requested by the model |
 | `tool_call_id` | `tool` | ID linking the result to the originating `tool_calls` entry |
@@ -120,7 +120,7 @@ A command and a compaction record:
 {"role": "command", "content": "/compact", "timestamp": "2026-08-17T12:03:00+00:00", "result": "Summary of the earlier conversation...", "compact_from": 8}
 ```
 
-A `command` message with a `result` is a compaction record: `result` holds the summary and `compact_from` is the index into `messages` where the kept portion starts. A search context injected by the `web_search: true` auto-search mode is recorded as a `system` message. The configured `system_prompt` and mode instruction are injected at request time, never stored in the log.
+A `command` message with a `result` is a compaction record: `result` holds the summary, `compact_from` the index into `messages` where the kept portion starts. A search context injected by the `web_search: true` auto-search mode is recorded as a `system` message. The configured `system_prompt` and mode instruction are injected at request time, never stored in the log.
 
 ## Errors
 
@@ -130,7 +130,7 @@ Turn-level failures are appended to the `errors` array, separate from the messag
 {"code": 401, "message": "Unauthorized", "timestamp": "2026-08-17T12:40:00+00:00"}
 ```
 
-`code` is the HTTP status where one exists, otherwise `0`. Errors include provider auth/network failures, stream EOF or empty completions, `max_tokens` truncation, and unexpected exceptions from the agent loop.
+`code` is the HTTP status where one exists, otherwise `0`. Errors include provider auth/network failures, stream EOF or empty completions, `max_tokens` truncation, and unexpected agent-loop exceptions.
 
 ## Permissions
 
@@ -149,19 +149,17 @@ Every tool permission resolution is recorded to the `permissions` array, making 
 | `path` | The tool's `path_arg` value when the tool has one (e.g. the file or command target) |
 | `timestamp` | ISO 8601 UTC timestamp |
 
-Per-invocation (resolver-based) actions are recorded the same way - for example `delegate` logs the action resolved from the target type, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - there is no config switch, so the log stays a reliable audit record.
+Per-invocation (resolver-based) actions are recorded the same way - e.g. `delegate` logs the action resolved from the target type, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - no config switch - so the log stays a reliable audit record.
 
 ## Append-only semantics
 
-Messages and errors are only ever appended. Compaction stores the summary in a new `command` record and leaves the earlier messages in place. Loading a session never rewrites history. The only transformations happen at serialization time (below), never to the in-memory log.
-
-An `assistant` message is written whenever the turn produced content **or** thinking - so a truncated mid-reasoning turn still persists its thinking, and a reasoning-only turn (thinking present, no content) is recorded rather than lost. Empty turns (no content, no thinking) persist nothing.
+Messages and errors are only ever appended. Compaction stores the summary in a new `command` record and leaves the earlier messages in place. Loading a session never rewrites history. The only transformations happen at serialization time (below), never to the in-memory log. An `assistant` message is written whenever the turn produced content **or** thinking - a truncated mid-reasoning turn still persists its thinking, and a reasoning-only turn (thinking, no content) is recorded rather than lost. Empty turns (no content, no thinking) persist nothing.
 
 ## Serialization-time transforms
 
-Two config keys reshape `tool` message content when the session is written to disk, without touching the stored messages themselves:
+Two config keys reshape `tool` message content when the session is written to disk, without touching the stored messages:
 
-- **`noise_tools`** (default `["web_fetch", "open", "fetch_page"]`) - results of the listed tools are replaced with `[<tool> result excluded from log, see tool call above for parameters]`, keeping noisy results out of session files while preserving the parameters in the tool call above.
+- **`noise_tools`** (default `["web_fetch", "open", "fetch_page"]`) - results of the listed tools are replaced with `[<tool> result excluded from log, see tool call above for parameters]`, keeping noisy results out of session files while the parameters stay in the tool call above.
 - **`session_tool_max_chars`** (default `0` = unlimited) - caps persisted tool-result content to N characters, appending `… (truncated from <len> chars)`.
 
 ## Preparing the provider context
@@ -170,10 +168,10 @@ The provider payload is prepared from the log by `_provider_messages()`:
 
 - `command` role messages are dropped.
 - Compaction records (`command` with `result`) become a `system` summary: `Summary of earlier conversation:\n\n<summary>`.
-- Dangling `tool` messages (whose `tool_call_id` is no longer matched by a declared `tool_calls` entry, e.g. at a `compact_from` boundary) are skipped.
+- Dangling `tool` messages (whose `tool_call_id` no longer matches a declared `tool_calls` entry, e.g. at a `compact_from` boundary) are skipped.
 - Everything else is passed through in order.
 
-For compaction, tool results are folded back into the summarized context as `[tool result] <content>` user messages so the summary can carry forward what the tools found.
+For compaction, tool results fold back into the summarized context as `[tool result] <content>` user messages so the summary can carry forward what the tools found.
 
 ## Compaction
 

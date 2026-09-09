@@ -7,18 +7,18 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | Command                 | Aliases        | Description                                                    |
 |-------------------------|----------------|----------------------------------------------------------------|
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
-| `/config`               |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)` |
-| `/connect`              |                | Connect a provider. `/connect` picks from the known providers interactively. `/connect <name>` presets a known provider's defaults and (re)enters its API key. `/connect <url>` detects a known host or creates a named custom provider (derived from the host, or `/connect <url> <name>` to name it). Tests the connection before saving, stores the API key + base URL in the global `providers.json`, and writes `provider`/`base_url` into config - the model is picked separately with `/model` |
+| `/config`              |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)` |
+| `/connect`              |                | Connect a provider. `/connect` picks interactively from the known providers. `/connect <name>` presets a known provider's defaults and (re)enters its API key. `/connect <url>` detects a known host or creates a named custom provider (derived from the host, or `/connect <url> <name>` to name it). Tests the connection before saving, stores the API key + base URL in global `providers.json`, and writes `provider`/`base_url` into config - the model is picked separately with `/model` |
 | `/exit`                 | `/quit`, `/q`  | Save and exit                                                  |
 | `/help`                 | `/h`           | Show available commands and tools (`/help <cmd|tool>` for detail) |
 | `/jobs`                 |                | Manage scheduled and durable jobs: `list`, `status`, `show`, `add`, `approve`, `reject`, `enable`, `disable`, `stop`, `remove`, `run`. See [jobs.md](jobs.md) |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
-| `/model`                 |                | Show or switch the active model. `/model <name>` sets it on the current provider, `/model <provider>/<model>` switches provider and model together, approving the model on confirm |
-| `/models`                |                | List configured models, or probe a provider's available models. `/models` shows the approved-model history grouped by provider (with `(key)` when the provider has a stored key), `/models list [provider]` probes a provider's advertised models live (default: current provider) |
+| `/model`                 |                | Show or switch the active model. `/model <name>` sets it on the current provider. `/model <provider>/<model>` switches provider and model together, approving the model on confirm |
+| `/models`                |                | List configured models, or probe a provider's available models. `/models` shows the approved-model history grouped by provider (`(key)` when the provider has a stored key). `/models list [provider]` probes a provider's advertised models live (default: current provider) |
 | `/plugins`              | `/plugin`      | Manage plugins: `list`, `enable`, `disable`, `install`, `update`, `uninstall` |
 | `/provider`              |                | Show or switch the active provider                             |
 | `/session`              |                | Show or switch the active session: `/session new`, `/session load <name>`, `/session save`. Saved-session catalog operations live under `/sessions` |
-| `/sessions`             |                | Manage the saved-session catalog: `list`, `preview`, `delete`, `export` |
+| `/sessions`             |                | Manage the saved-session catalog: `list`, `preview`, `delete`, `export <name> [out]` (Markdown output, see [session.md](session.md)) |
 | `/skills`               |                | Manage skills: `list`, `show <name>`, `new <name>`, `remove <name>`. See [skills.md](skills.md) |
 | `/teams`                |                | Manage teams: `list` (`list <tag>` filters), `show <name>`, `new <name> [description]`, `remove <name>`, `run <name> <task>`. See [teams.md](teams.md) |
 | `/thinking`             | `/reasoning`   | Show or switch reasoning display and request (`/thinking on` streams reasoning dimmed, `off` shows only a spinner) |
@@ -26,11 +26,9 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/types`                |                | Manage types: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [types.md](types.md) |
 | `/version`              | `/v`           | Show the Replio version                                       |
 
-`/help` renders commands with their subcommands indented below, and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.
+`/help` renders commands with subcommands indented below and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.
 
-`/sessions export <name> [out]` renders a saved session as Markdown (see [session.md](session.md)).
-
-Delegation is a normal tool: the lead agent proposes it, or you run it directly - `/tool delegate {"type": "researcher", "task": "..."}` routes through the same tool policy. A configured type delegates without prompting (`delegate` category defaults to `allow`, set an agent type's `delegate` to `ask` to confirm), and an agent type outside the registry is denied. See [types.md](types.md) and [swarm.md](swarm.md).
+Delegation is a normal tool: the lead agent proposes it, or you run it directly - `/tool delegate {"type": "researcher", "task": "..."}` routes through the same tool policy. A configured type delegates without prompting (`delegate` defaults to `allow`. Set an agent type's `delegate` to `ask` to confirm), and an agent type outside the registry is denied. See [types.md](types.md) and [swarm.md](swarm.md).
 
 ## CLI
 
@@ -53,7 +51,7 @@ One-shot headless chat.
 |----------------------|--------------------------------------------------------------|
 | `--prompt`, `-p`     | **Required.** The prompt to send                              |
 | `--provider`         | Provider override (e.g. `ollama`, `openai`, `groq`)           |
-| `--model`            | Model override (accepts a `provider/model` ref. An explicit `--model` auto-approves) |
+| `--model`            | Model override (accepts a `provider/model` ref. Explicit `--model` auto-approves) |
 | `--approve-model`    | Approve the configured model ref without prompting             |
 | `--base-url`         | Base URL override                                            |
 | `--mode`             | Agent mode override (`plan`, `build`, or a custom mode)      |
@@ -79,11 +77,9 @@ Export a saved session to Markdown (see [session.md](session.md)).
 List configured models, or probe a provider's available models (mirrors `/models`).
 
 ```bash
-replio models                          # configured/approved models.json history
-replio models list [provider]          # probe a provider's advertised models
+replio models                          # approved-model history grouped by provider, `>` marks the active model, `(key)` a stored key
+replio models list [provider]          # probe a provider's advertised models (default: current), exit 1 on failure
 ```
-
-`replio models` (no subcommand) shows the approved-model history grouped by provider with `>` for the active model and `(key)` when the provider has a stored key. `replio models list [provider]` probes a provider's advertised models live (default: the current provider), exiting `1` on a failed probe.
 
 | Flag             | Default                      | Description                       |
 |------------------|------------------------------|-----------------------------------|
@@ -147,11 +143,11 @@ Run replio as an MCP server over stdio (newline-delimited JSON-RPC). See [mcp.md
 
 ### `replio jobs`
 
-Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, a human-in-the-loop approval gate, and a recorded run history. See [jobs.md](jobs.md).
+Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, a human-in-the-loop approval gate, and recorded run history. See [jobs.md](jobs.md).
 
 | Subcommand    | Description                                                              |
 |---------------|--------------------------------------------------------------------------|
-| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`, `--prompt` optional when `--file` is given), plus `--mode`, `--provider`/`--model`, `--type`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approve-model`, `--approval auto` |
+| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`, with `--prompt` optional when `--file` given), plus `--mode`, `--provider`/`--model`, `--type`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approve-model`, `--approval auto` |
 | `approve`     | `approve <name>` - activate a job (or arm the next run for `--require-approval` jobs) |
 | `daemon`      | `daemon [--tick 15] [--quiet]` - scheduler loop, Ctrl-C to stop           |
 | `edit`        | `edit <name>` - open the job's linked task file in `$EDITOR` (creates the template first) |
@@ -179,7 +175,7 @@ Supervise a fleet of scoped `replio serve` agents: ports, health checks, restart
 | `status`      | Live table: agent, enabled, port, pid, state, restarts, last error               |
 | `up`          | `up [--detach]` - start agents. Ctrl-C = graceful down, `--detach` = background daemon |
 
-`--path` may be given either before the subcommand (`replio --path X fleet status`) or after it (`replio fleet --path X status`).
+`--path` may be given before the subcommand (`replio --path X fleet status`) or after it (`replio fleet --path X status`).
 
 ### `replio plugins`
 
@@ -194,4 +190,4 @@ Manage plugins headlessly. See [plugins.md](plugins.md).
 | `uninstall`   | `replio plugins uninstall <name>` - remove a plugin             |
 | `update`      | `replio plugins update <name>` - re-fetch from the recorded source |
 
-`--path` may be given either before the subcommand (`replio --path X plugins list`) or after it (`replio plugins --path X list`).
+`--path` may be given before the subcommand (`replio --path X plugins list`) or after it (`replio plugins --path X list`).

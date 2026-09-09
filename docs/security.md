@@ -1,6 +1,6 @@
 # Security
 
-Replio is local-first and deliberately small. Its security posture rests on a few properties: an explicit per-tool permission model, worktree-scoped file access, a config-driven surface, and complete session logs that double as an audit trail. This document covers the threat model and the controls in place today.
+Replio is local-first and deliberately small. Its security posture rests on an explicit per-tool permission model, worktree-scoped file access, a config-driven surface, and complete session logs that double as an audit trail. This document covers the threat model and the controls in place today.
 
 ## Permission model
 
@@ -25,7 +25,7 @@ The `ask` tool is the explicit human-in-the-loop channel: it pauses the run and 
 
 ## Headless agents are confined
 
-In headless mode (`replio serve` / `replio run`), `ask`-gated tools are denied outright - the headless UI auto-answers with the configured `--yes` / `--no` policy. An agent's reachable surface is therefore exactly its `allow` tools on paths inside its worktree. This is the isolation boundary that makes one-agent-per-process fleets safe: a crash or a misbehaving agent cannot touch another agent's folder or run commands it was not given. See [fleet.md](fleet.md).
+In headless mode (`replio serve` / `replio run`), `ask`-gated tools are denied outright - the headless UI auto-answers with the configured `--yes` / `--no` policy. An agent's reachable surface is exactly its `allow` tools on paths inside its worktree. This isolation boundary makes one-agent-per-process fleets safe: a crash or misbehaving agent cannot touch another agent's folder or run commands it was not given. See [fleet.md](fleet.md).
 
 ## Delegation
 
@@ -33,25 +33,25 @@ The `delegate` tool runs a task under an agent type as an in-process sub-agent. 
 
 ## Modes
 
-Modes ([config.md](config.md)) are named postures that combine an instruction block with tool-policy overrides. The built-in `plan` mode is a read-only posture: it denies the `edit` and `bash` categories, so write and exec tools are filtered from the provider schema and refused on direct calls, and its system prompt instructs the model to investigate and propose rather than modify. Custom modes can express stronger postures (e.g. deny `mcp` as well) per deployment. The active mode is recorded on each assistant message in the session log, so the posture in effect for every turn is auditable. Mode switches are recorded as `command` messages.
+Modes ([config.md](config.md)) are named postures combining an instruction block with tool-policy overrides. The built-in `plan` mode is read-only: it denies the `edit` and `bash` categories, so write and exec tools are filtered from the provider schema and refused on direct calls, and its system prompt instructs the model to investigate and propose rather than modify. Custom modes can express stronger postures (e.g. deny `mcp` as well) per deployment. The active mode is recorded on each assistant message in the session log, so the posture in effect for every turn is auditable. Mode switches are recorded as `command` messages.
 
 ## Config-driven surface
 
-The model only sees tools whose schema passes policy filtering (`tools.allow` / `tools.deny` / `tool_permission`), and plugin activation is an explicit `plugins` list. The surface area - providers, tools, plugins, permissions - is configuration, not convention. Tool status lines are ephemeral UI and are never persisted to session files. Permission decisions (each `allow` / `ask` / `deny` resolution and its outcome) are recorded in the session `permissions` array as an audit trail. Gaps against a full audit trail: session files are not hash-chained or tamper-evident (append-only by convention, not by construction), tool-result content can be redacted by `noise_tools` / `session_tool_max_chars`, and tool `analysis` is off by default (`tool_analysis`).
+The model only sees tools whose schema passes policy filtering (`tools.allow` / `tools.deny` / `tool_permission`), and plugin activation is an explicit `plugins` list. The surface area - providers, tools, plugins, permissions - is configuration, not convention. Tool status lines are ephemeral UI, never persisted to session files. Permission decisions (each `allow` / `ask` / `deny` resolution and its outcome) are recorded in the session `permissions` array as an audit trail. Gaps against a full audit trail: session files are not hash-chained or tamper-evident (append-only by convention, not by construction), tool-result content can be redacted by `noise_tools` / `session_tool_max_chars`, and tool `analysis` is off by default (`tool_analysis`).
 
 ## Audit trail
 
-Sessions are complete, append-only logs: every message, tool call with its arguments and result, reasoning, and error is recorded with timestamps. Compaction only trims the provider context, never the log, so any action can be reconstructed later. See [session.md](session.md). For enterprise deployments this is the base for compliance and forensics, with central aggregation and tamper-evidence as additive hardening (see [use-cases/enterprise.md](use-cases/enterprise.md)).
+Sessions are complete, append-only logs: every message, tool call with arguments and result, reasoning, and error is recorded with timestamps. Compaction only trims the provider context, never the log, so any action can be reconstructed later. See [session.md](session.md). For enterprise deployments this is the base for compliance and forensics, with central aggregation and tamper-evidence as additive hardening (see [use-cases/enterprise.md](use-cases/enterprise.md)).
 
 ## Data posture
 
-- **Local-first** - config and session logs live on your disk. All provider traffic is outbound. There is no external telemetry or logging service holding enterprise data.
+- **Local-first** - config and session logs live on your disk. All provider traffic is outbound. No external telemetry or logging service holds enterprise data.
 - **Zero dependencies** - the core is Python stdlib only, so there is no supply chain to audit and no lockfile churn. Plugins may add third-party deps, imported lazily and only when the plugin is used.
-- **API keys** - stored in the global provider registry (`~/.config/replio/providers.json`, one key per provider, written `0600` when it holds keys), never in config and never in a session log by hand. Keep keys out of repositories.
+- **API keys** - stored in the global provider registry (`~/.config/replio/providers.json`, one key per provider, written `0600` when it holds keys), never in config or a session log by hand. Keep keys out of repositories.
 
 ## Plugins
 
-Plugins are arbitrary Python code that run with your user's privileges. Install only plugins you trust. A plugin's `register_providers` hook runs at load. Its tools run on demand like any built-in tool. The manifest declares `replio_version` and `python` compatibility ranges, and incompatible plugins are skipped at load. See [plugins.md](plugins.md) for management and the security notes.
+Plugins are arbitrary Python code that run with your user's privileges. Install only plugins you trust. A plugin's `register_providers` hook runs at load, and its tools run on demand like any built-in tool. The manifest declares `replio_version` and `python` compatibility ranges, and incompatible plugins are skipped at load. See [plugins.md](plugins.md) for management and the security notes.
 
 ## Prompt injection
 

@@ -5,7 +5,7 @@ Replio speaks MCP in both directions through the bundled `replio-core-mcp` plugi
 - **Client** - connect to external MCP servers (stdio or HTTP), import their tools into the `ToolRegistry`, and call them like any other Replio tool. Tool policy, `/tool`, `/help`, glyph activity lines, query refinement and session logging all apply.
 - **Server** - expose Replio's registered tools and sessions as an MCP server to external agents (Claude, opencode, and other MCP clients) over stdio (`replio mcp`) and HTTP (`POST /mcp` on `replio serve`).
 
-Both eras are supported and negotiated per connection: the modern stateless revision (`2026-07-28`, per-request `_meta`) and the legacy `initialize`-handshake revisions (`2025-11-25` and earlier). The client probes `server/discover` and falls back to `initialize`. The server serves either based on how the client opens.
+Both eras are supported and negotiated per connection: the modern stateless revision (`2026-07-28`, per-request `_meta`) and the legacy `initialize`-handshake revisions (`2025-11-25` and earlier). The client probes `server/discover` and falls back to `initialize`. The server serves either, based on how the client opens.
 
 ## Client
 
@@ -56,11 +56,11 @@ Both eras are supported and negotiated per connection: the modern stateless revi
 | `mcp_list` / `/mcp list`       | Show configured servers, connection status and imported tools                |
 | `mcp_disconnect` / `/mcp disconnect <name>` | Disconnect and unregister a server's tools                            |
 
-Imported tools are named `<prefix>.<tool>` (e.g. `github.list_issues`). They inherit the `mcp` permission category, which defaults to `ask`, so each call confirms in the REPL. Flip it to `allow`/`deny` via `tool_permission.mcp` or per-name `tools.allow`/`tools.deny`. Because a fresh `ToolRegistry` is built each turn, tools connected mid-prompt become available from the next prompt.
+Imported tools are named `<prefix>.<tool>` (e.g. `github.list_issues`) and inherit the `mcp` permission category, which defaults to `ask`, so each call confirms in the REPL. Flip it to `allow`/`deny` via `tool_permission.mcp` or per-name `tools.allow`/`tools.deny`. A fresh `ToolRegistry` is built each turn, so tools connected mid-prompt become available from the next prompt.
 
 ### Security
 
-- Tool descriptions and schemas come from the server and must be treated as untrusted metadata.
+- Treat server-provided tool descriptions and schemas as untrusted metadata.
 - stdio spawns arbitrary commands from your config. Only configure servers you trust.
 - HTTP servers are contacted over the network. Credentials in `headers` are sent as-is.
 - Every imported tool call routes through `ToolPolicy` (`mcp: ask` by default), giving a human confirmation in the REPL before the remote call runs.
@@ -68,7 +68,7 @@ Imported tools are named `<prefix>.<tool>` (e.g. `github.list_issues`). They inh
 
 ## Server
 
-The server exposes Replio's currently registered tools (policy-filtered) and its saved sessions as resources, without mutating the active session. Tool execution follows `ToolPolicy`. Tools whose action is `ask` are run directly (the external MCP client is the human-in-the-loop and shows its own confirmations) unless `mcp_server.allow_ask` is `false`, in which case they are refused.
+The server exposes Replio's currently registered tools (policy-filtered) and its saved sessions as resources, without mutating the active session. Tool execution follows `ToolPolicy`. `ask` tools run directly (the external MCP client is the human-in-the-loop and shows its own confirmations) unless `mcp_server.allow_ask` is `false`, which refuses them.
 
 ### stdio - `replio mcp`
 
@@ -103,4 +103,4 @@ Sessions are exposed as MCP resources under `replio://session/<name>` with `reso
 - Modern (2026-07-28) clients/servers: `server/discover`, per-request `_meta` (`protocolVersion` + `clientCapabilities`). Missing required `_meta` fields are rejected with `-32602`.
 - Legacy (<= 2025-11-25) clients/servers: `initialize` handshake, then `tools/*`.
 - The deprecated 2024-11-05 HTTP+SSE transport is not implemented.
-- Multi-round-trip requests (MRTR), elicitation, sampling, auth, and the tasks/apps extensions are out of scope for v1. A server asking for input returns an `input_required` result which the client reports as an unsupported error.
+- Multi-round-trip requests (MRTR), elicitation, sampling, auth, and the tasks/apps extensions are out of scope for v1. A server asking for input returns an `input_required` result, which the client reports as an unsupported error.

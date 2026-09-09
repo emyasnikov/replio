@@ -1,6 +1,6 @@
 # Plugins
 
-Plugins extend Replio with **tools**, **providers**, **slash commands**, and **services** without changing the core. The core stays stdlib-only. Any third-party dependencies live inside the plugin and are imported lazily, so they only matter when you install and use that plugin.
+Plugins extend Replio with **tools**, **providers**, **slash commands**, and **services** without changing the core. The core stays stdlib-only. Third-party dependencies live inside the plugin and are imported lazily, so they only matter when you install and use that plugin.
 
 ## Installation locations
 
@@ -10,11 +10,11 @@ Plugins extend Replio with **tools**, **providers**, **slash commands**, and **s
 | `~/.config/replio/plugins/` | global, all projects | middle |
 | `.replio/plugins/` | local to a project | highest (wins on name collision) |
 
-First-party plugins ship with replio and are listed in the default `plugins` config, so they are active out of the box. `replio-core-web` provides `web_search` and `web_fetch`. `replio-core-fs` provides `file_read`, `list_dir`, `file_write`, `glob`, and `grep`. `replio-core-exec` provides `run_command`. `replio-core-mcp` provides the MCP client (`mcp_connect`/`mcp_list`/`mcp_disconnect`) and server (`replio mcp` and `POST /mcp`) - see [mcp.md](mcp.md). `replio-core-eval` provides the eval fixture catalog for `replio eval` - see [eval.md](eval.md). `replio-core-edit` provides `file_edit`, `replio-core-git` provides `git`/`git_commit`, and `replio-core-dev` provides `code_test`/`code_lint`/`code_format`. The vendor providers ship as bundled plugins too (`replio-core-ollama`, `replio-core-openai`, `replio-core-groq`, `replio-core-anthropic`, `replio-core-opencode`) - see [providers.md](providers.md). They behave like any other plugin. Remove a name from `plugins` (or use `/plugins disable`) to stop it loading, but they cannot be uninstalled or updated, since they version with replio. A global or local plugin with the same name overrides the bundled one.
+First-party plugins ship with replio and are listed in the default `plugins` config, so they are active out of the box. `replio-core-web` provides `web_search` and `web_fetch`. `replio-core-fs` provides `file_read`, `list_dir`, `file_write`, `glob`, and `grep`. `replio-core-exec` provides `run_command`. `replio-core-mcp` provides the MCP client (`mcp_connect`/`mcp_list`/`mcp_disconnect`) and server (`replio mcp` and `POST /mcp`) - see [mcp.md](mcp.md). `replio-core-eval` provides the eval fixture catalog for `replio eval` - see [eval.md](eval.md). `replio-core-edit` provides `file_edit`, `replio-core-git` provides `git`/`git_commit`, and `replio-core-dev` provides `code_test`/`code_lint`/`code_format`. The vendor providers ship as bundled plugins too (`replio-core-ollama`, `replio-core-openai`, `replio-core-groq`, `replio-core-anthropic`, `replio-core-opencode`) - see [providers.md](providers.md). They behave like any other plugin but cannot be uninstalled or updated, since they version with replio. Remove a name from `plugins` (or `/plugins disable`) to stop one loading. A global or local plugin with the same name overrides the bundled one.
 
 ## Plugin layout
 
-A plugin is a directory with a `manifest.json`, an entry module, and an optional unit-test suite. Source modules live under `src/` and tests under `tests/` (a bare `.py` file at the root is also accepted - name = filename, defaults apply):
+A plugin is a directory with a `manifest.json`, an entry module, and an optional unit-test suite. Source modules live under `src/`, tests under `tests/` (a bare `.py` file at the root is also accepted - name = filename, defaults apply):
 
 ```
 ~/.config/replio/plugins/web-scraper/
@@ -26,7 +26,7 @@ A plugin is a directory with a `manifest.json`, an entry module, and an optional
     test_plugins.py    # optional - run by `replio plugins test` and the core suite
 ```
 
-The entry module may sit anywhere under the plugin directory - `manifest.json` `"entry"` is a path relative to the plugin root (default `plugin.py`). Sibling imports resolve from the entry module's own directory, so a `src/` layout works the same as a flat one.
+The entry module may sit anywhere under the plugin directory - `manifest.json` `"entry"` is a path relative to the plugin root (default `plugin.py`). Sibling imports resolve from the entry module's directory, so a `src/` layout works like a flat one.
 
 ## Manifest
 
@@ -71,23 +71,19 @@ def register_skills(skills) -> None: ...         # skills.add_plugin({...}) - se
 def register_fixtures(fixtures) -> None: ...     # fixtures["id"] = fixture data - see eval.md
 ```
 
-Plugin tools automatically inherit the tool permission policy, `/tool`, `/help`, query refinement, `noise_tools`, and session logging. The loop never special-cases plugin names.
-
-A tool handler may declare a `_config` keyword argument to receive the engine's `Config` (e.g. to read a config key like `tool_max_result_chars`). The registry passes it only when the handler's signature accepts it, and it is never exposed to the model. See [tools.md](tools.md).
+Plugin tools automatically inherit the tool permission policy, `/tool`, `/help`, query refinement, `noise_tools`, and session logging. The loop never special-cases plugin names. A tool handler may declare a `_config` keyword argument to receive the engine's `Config` (e.g. to read a config key like `tool_max_result_chars`). The registry passes it only when the handler's signature accepts it. It is never exposed to the model. See [tools.md](tools.md).
 
 ### Providers
 
-`register_providers` contributes to the same provider set as the core `PROVIDERS` dict: the plugin provider appears in the `/connect` picker, and passing its `DEFAULT_BASE_URL` as a `/connect <url>` argument selects it automatically (see [providers.md](providers.md)). A plugin provider's `DEFAULT_BASE_URL` also makes it a model-ref target (`<name>/<model>`).
-
-A provider class may declare `HOST_PATTERNS` - a tuple of URL substrings - so `/connect <url>` auto-detects it from the host (see [Auto-detection](providers.md#auto-detection)). The core `detect_provider()` scans the merged set and prefers the longest matching pattern. The bundled vendor providers (`replio-core-ollama`, `-openai`, `-groq`, `-anthropic`, `replio-core-opencode`) are plugins themselves, so an external plugin registering a provider with the same name as a bundled one does not override it - the core `PROVIDERS` registry wins on name conflicts.
+`register_providers` contributes to the same provider set as the core `PROVIDERS` dict: the plugin provider appears in the `/connect` picker, and passing its `DEFAULT_BASE_URL` as a `/connect <url>` argument selects it automatically (see [providers.md](providers.md)). A plugin provider's `DEFAULT_BASE_URL` also makes it a model-ref target (`<name>/<model>`). A provider class may declare `HOST_PATTERNS` - a tuple of URL substrings - so `/connect <url>` auto-detects it from the host (see [Auto-detection](providers.md#auto-detection)). The core `detect_provider()` scans the merged set and prefers the longest matching pattern. The bundled vendor providers (`replio-core-ollama`, `-openai`, `-groq`, `-anthropic`, `replio-core-opencode`) are plugins themselves, so an external plugin registering a provider with the same name as a bundled one does not override it - the core `PROVIDERS` registry wins on name conflicts.
 
 ### Services
 
-`register_services` lets a plugin power a core feature that is not tool-calling. Today the only service is the web search-then-answer mode (`web_search: true`). The bundled `replio-core-web` registers `services['search']` with `search(query, num)`, `display(query, results)`, and `context(query, results)` methods. If no plugin registers the service, that mode reports that it is unavailable instead of erroring.
+`register_services` lets a plugin power a core feature that is not tool-calling. Today the only service is the web search-then-answer mode (`web_search: true`). The bundled `replio-core-web` registers `services['search']` with `search(query, num)`, `display(query, results)`, and `context(query, results)` methods. Without it, that mode reports the service is unavailable instead of erroring.
 
 ### Agent types, teams, and skills
 
-`register_types(registry)` contributes types to the `TypeRegistry` via `registry.add_plugin(entry)` (same entry shape as `types.json`). Plugin types form an in-memory layer between bundled and global, so precedence is `bundled < plugin < global < local`, and a `types.json` entry can always override or replace a plugin-provided type. `register_teams(teams)` and `register_skills(skills)` register into the team and skills registries the same way (`teams.add_plugin(...)` / `skills.add_plugin(...)`, entry shapes in [teams.md](teams.md) and [skills.md](skills.md)). The `/types` list marks plugin types `(plugin)`, and after `/plugins install`/`update`/`uninstall` the running REPL re-applies all three hooks immediately. Tools and commands still activate on the next start.
+`register_types(registry)` contributes types to the `TypeRegistry` via `registry.add_plugin(entry)` (same entry shape as `types.json`). Plugin types form an in-memory layer between bundled and global, so precedence is `bundled < plugin < global < local`, and a `types.json` entry can always override or replace a plugin-provided type. `register_teams(teams)` and `register_skills(skills)` register into the team and skills registries the same way (`teams.add_plugin(...)` / `skills.add_plugin(...)`, entry shapes in [teams.md](teams.md) and [skills.md](skills.md)). The `/types` list marks plugin types `(plugin)`. After `/plugins install`/`update`/`uninstall` the running REPL re-applies all three hooks immediately. Tools and commands still activate on the next start.
 
 ### Eval fixtures
 
@@ -95,7 +91,7 @@ A provider class may declare `HOST_PATTERNS` - a tuple of URL substrings - so `/
 
 ### Lazy dependencies
 
-Keep third-party imports **inside** the tool function, not at module top level. A missing dependency then surfaces as a normal tool result with install guidance:
+Keep third-party imports **inside** the tool function, not at module top level. A missing dependency then surfaces as a normal tool result with install guidance. Plugin packages are only imported in the process running your configured plugins, and only when their tools are actually called:
 
 ```python
 def register_tools(registry):
@@ -110,8 +106,6 @@ def register_tools(registry):
         ...
 ```
 
-This is why the core stays zero-dependency. Plugin packages are only imported in the process that runs your configured plugins, and only when their tools are actually called.
-
 ## Managing plugins
 
 ### Config activation
@@ -122,8 +116,7 @@ This is why the core stays zero-dependency. Plugin packages are only imported in
 }
 ```
 
-- `plugins` is the list of plugins to load. **Empty (`[]`) = all discovered plugins load.**
-- The default config lists the bundled plugins so they are active by default. Remove a name (or `/plugins disable`) to stop that plugin loading.
+- `plugins` is the list of plugins to load. **Empty (`[]`) = all discovered plugins load.** The default config lists the bundled plugins so they are active by default. Remove a name (or `/plugins disable`) to stop one loading.
 - `/plugins enable <name>` appends a name. `/plugins install` and `/plugins uninstall` add or remove the name automatically.
 - Changes apply on the next start (plugins load once at engine init). `plugins.enabled` / `plugins.deny` from earlier versions are migrated automatically.
 
@@ -141,7 +134,7 @@ This is why the core stays zero-dependency. Plugin packages are only imported in
 
 ### CLI
 
-The same operations are available headless (for example before a CI `replio run`):
+The same operations are available headless (e.g. before a CI `replio run`):
 
 ```
 replio plugins list
@@ -158,7 +151,7 @@ replio plugins test [name]
 
 ## Status
 
-`/plugins` (and `replio plugins list`) shows each plugin's name, version, **origin** (`bundled` / `global` / `local`), load status, and any unmet `requires`:
+`/plugins` (and `replio plugins list`) shows each plugin's name, version, **origin** (`bundled` / `global` / `local`), load status, and unmet `requires`:
 
 - `loaded` - active
 - `disabled` - not in the `plugins` list (when it is non-empty)

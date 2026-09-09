@@ -1,6 +1,6 @@
 # Testing
 
-Tests live in `tests/` and use the stdlib `unittest` framework - no external test runner, no network, no API key required. **Mock tests** patch provider responses so the agent loop, engine, CLI, and server are exercised without hitting a real model.
+Tests live in `tests/` and use the stdlib `unittest` framework - no external runner, no network, no API key. **Mock tests** patch provider responses so the agent loop, engine, CLI, and server are exercised without a real model.
 
 ## Running tests
 
@@ -10,7 +10,7 @@ Run all tests:
 python -m unittest discover tests
 ```
 
-The canonical setup installs the package (`pip install -e .`), which is also what CI does. On a source checkout without installing, use `PYTHONPATH=$PWD/src` (absolute - the detached-fleet daemon changes directory, so a relative `src` would not resolve): `PluginManager` then falls back to the repo-root `plugins/` directory for the bundled plugins.
+The canonical setup installs the package (`pip install -e .`), which is also what CI does. On a source checkout without installing, use `PYTHONPATH=$PWD/src` (absolute - the detached-fleet daemon changes directory, so a relative `src` would not resolve). `PluginManager` then falls back to the repo-root `plugins/` directory for the bundled plugins.
 
 Run a single file:
 
@@ -57,11 +57,12 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_tool_registry.py` | Tool registration metadata, schema, refine flags, note-result predicates, `_config` pass-through, activity params strings, fs tool glyphs (`* List` / `* Grep`), `permission_fn` storage + `resolver_for` |
 | `test_types.py` | `TypeRegistry`: bundled/plugin/global/local merge and precedence, origins (bundled/plugin/local/global origin), tags roundtrip + merge, put/remove/reload (disk re-read + plugin-manager re-apply), `/types` command (list/show/new override/remove, `list <tag>` filter, bundled remove rejected) |
 | `test_ui.py` | UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, `!` tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm), confirm `?` glyph at line start, confirm re-raises KeyboardInterrupt / returns False on EOF |
+
 `tests/helpers.py` provides `make_chat(config_data)` - a `ChatLoop` with a mocked provider - used by most tests to drive the engine without a model.
 
 ## Plugin test suites
 
-Each bundled plugin ships its unit tests in its own directory (`plugins/<name>/tests/`), covering the plugin's tools and helpers without touching the core. They are discovered by the core suite through `tests/test_plugin_suites.py` (registered via `load_tests`), so `python -m unittest discover tests` runs everything. A single plugin's suite runs standalone with `python plugins/<name>/tests/<file>.py`, and headless via `replio plugins test <name>` (or `replio plugins test` for every plugin with a suite).
+Each bundled plugin ships its unit tests in its own directory (`plugins/<name>/tests/`), covering the plugin's tools and helpers without touching the core. The core suite discovers them through `tests/test_plugin_suites.py` (registered via `load_tests`), so `python -m unittest discover tests` runs everything. A single plugin's suite runs standalone with `python plugins/<name>/tests/<file>.py`, and headless via `replio plugins test <name>` (or `replio plugins test` for every plugin with a suite).
 
 ## Live testing
 

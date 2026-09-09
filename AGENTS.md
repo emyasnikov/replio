@@ -122,7 +122,7 @@ Replio/
 
 ### Doc Conventions
 - Four planning files with distinct roles, kept in sync with actual project state:
-  - `VISION.md` - the **why**: vision, decisions, and architecture (stable, changes rarely and deliberately). The swarm/team track ("one terminal, whole teams") is planned there, including its context economics and out-of-scope list.
+  - `VISION.md` - the **why**: vision, decisions, and architecture (stable, changes rarely and deliberately). The assistant track ("one window to access and control all agents") is planned there, including its context economics and out-of-scope list.
   - `PLAN.md` - the **what**: the structured mapping of open TODO tasks into work packages. Each package is a table (`Task | Effort | Provides`, effort S < M < L), packages ordered top-to-bottom by urgency and importance, re-ranked against the backlog before each next step. **Finished tasks are removed from `PLAN.md`** - they live as one-liners in `TODO.md` `## Done` and in detail in `CHANGELOG.md`.
   - `TODO.md` - the **backlog**: ideas at the very top (plain bullets, no header, no checkbox - they evolve over time), `## Open` (defined `[ ]` tasks), `## Done` (`[x]` items, separated by `---`). Within `## Open` and `## Done`, items are sorted newest-first so new tasks are added at the top of their zone without reorganizing, nested sub-bullets are preserved (e.g. machine tools, tool policy). Completed items stay in `## Done` and are never moved to an archive. `## Done` entries are short one-liners - detailed change descriptions live in `CHANGELOG.md` under the matching version. As a soft rule, keep each `## Done` entry to a single line of at most 100 characters (shorter is better - trim detail rather than wrap or exceed).
   - `CHANGELOG.md` - the **history**: grouped by versions, newest at the top - new `## vX.Y.Z - YYYY-MM-DD` sections go above previous ones, so the latest changes are readable with `head`. Entries under each version form a **single flat bullet list, newest first** (no `### Added`/`### Changed`/`### Removed` grouping).
@@ -191,6 +191,7 @@ Plugins currently install from git URLs or local paths into the plugin roots. Sh
   - Management: `/plugins` and `replio plugins` - `install`/`update`/`uninstall`/`enable`/`disable`. Activation is via the `plugins` config list (empty = all)
   - Plugin third-party deps are lazy (imported inside plugin functions) - the core stays stdlib-only
   - Built-in web + machine tools ship as bundled plugins (`replio-core-web`, `replio-core-fs`, `replio-core-exec`, `replio-core-edit`, `replio-core-git`, `replio-core-dev`). Future: per-plugin venv isolation, PyPI entry-point source, externalizing the bundled plugins
+- **Phase 6 - Assistant governance** - the current vision track ("one window to access and control all agents", see `VISION.md`): first-run onboarding, one-window `/status`, non-blocking delegation with per-agent todo lists, recurring tasks carrying their own type and skills, agent health monitoring, and report-back connectors. Packaged in `PLAN.md` under Control & governance, Delegation & swarm, and Jobs operations + report-back
 
 Implement one phase at a time. Docs-first: restructure planning docs, then build the phase, mark it `[x]`, and log it in `CHANGELOG.md`.
 

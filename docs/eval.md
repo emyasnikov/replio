@@ -1,6 +1,6 @@
 # Tool-use evaluation harness
 
-`replio eval` measures how well a model uses the registered tools. It runs task fixtures through the same headless agent loop as `replio run` and reports metrics per fixture and across the suite, so tool descriptions and schemas can be tuned against measured behavior, and providers can be compared side by side.
+`replio eval` measures how well a model uses the registered tools. It runs task fixtures through the same headless agent loop as `replio run` and reports metrics per fixture and across the suite, so tool descriptions and schemas can be tuned against measured behavior, and providers compared side by side.
 
 ## CLI
 
@@ -14,7 +14,7 @@ replio eval --path <project> run --compare ollama,openai
 
 The `--path` flag sits on the `eval` command before the subcommand, like `jobs` and `fleet`.
 
-Each fixture runs in its own isolated temp worktree. The fixture's `files` are written into that worktree, a throwaway `.replio/config.json` carries the connection and permission settings, and the process changes into the worktree for the turn so relative tool paths resolve there. Sessions are throwaway and deleted with the worktree. The engine uses `HeadlessUI(auto='allow')`, so ask-gated tools run without prompting.
+Each fixture runs in its own isolated temp worktree. Its `files` are written there, a throwaway `.replio/config.json` carries the connection and permission settings, and the process changes into the worktree for the turn so relative tool paths resolve. Sessions are throwaway and deleted with the worktree. The engine uses `HeadlessUI(auto='allow')`, so ask-gated tools run without prompting.
 
 Tool permissions default to `read`/`list`/`web` allowed and `edit`/`bash`/`mcp` denied. A fixture may override with its own `tool_permission` and `tools_deny`.
 
@@ -32,7 +32,7 @@ Per fixture:
 - `tokens` - `total_tokens` from provider usage (prompt + completion fallback).
 - `status` - the turn status (`ok`, `truncated`, `error`, `cancelled`).
 
-The suite summary averages accuracy and pass rate, and totals calls, redundant calls, errors, and tokens. `--compare P1,P2` runs the same suite once per provider and prints a side-by-side summary.
+The suite summary averages accuracy and pass rate and totals calls, redundant calls, errors, and tokens. `--compare P1,P2` runs the same suite once per provider and prints a side-by-side summary.
 
 ## Fixtures
 

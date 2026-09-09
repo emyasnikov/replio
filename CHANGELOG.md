@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.29.0
+## v0.29.0 - 2026-09-09
 
 - Realigned the headless CLI to the internal slash commands - `replio models` now mirrors `/models`: bare `replio models` shows the configured/approved `models.json` history grouped by provider (`>` active, `(key)` marker, `No models configured yet` when empty) and `replio models list [provider]` probes a provider's advertised models live (default: current provider, `1` exit on a failed probe). `replio plugins enable|disable <name>` joins the existing CLI plugin subcommands (toggles the `plugins` config list, applies on next start, mirroring `/plugins`). `replio config reload` re-reads the config files from disk (mirrors `/config reload`). `replio jobs` and `replio export` were verified aligned. Docs synced (`commands.md`, `testing.md`). Tests: `test_cli.py` `TestCliModels` rewritten + `TestCliPlugins` enable/disable cases, `test_config.py` reload case
 - Pluralized the registry commands - `/type` -> `/types`, `/team` -> `/teams`, `/skill` -> `/skills`, matching the `/model` vs `/models` convention that catalog commands take plural names (no aliases - breaking). Usage strings, tab completion, and docs updated (`commands.md`, `types.md`, `teams.md`, `skills.md`, `swarm.md`, `plugins.md`, `providers.md`, `testing.md`, `AGENTS.md`, `README.md`, `VISION.md`, `use-cases/developer.md`). Tests: `test_types.py`/`test_teams.py`/`test_skills.py`/`test_team_run.py` dispatch on the plural names

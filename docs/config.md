@@ -1,11 +1,11 @@
 # Configuration
 
-Config is a single JSON object read from two files, merged per key with project-local values winning:
+Config is a single JSON object read from two files and merged per key, with project-local values winning:
 
 1. **Global** - `~/.config/replio/config.json` (user-wide defaults, credentials).
 2. **Local** - `.replio/config.json` in the project path (project overrides).
 
-Every process merges them in memory. Nothing is ever distributed to folders. Writes default to the **local** file and hold only the keys you actually selected - a save never re-writes the merged config. API keys are not part of the config: they live in the global provider registry (`~/.config/replio/providers.json`) and are managed through `/connect` (see [Models](#model-registry-not-config)).
+Every process merges them in memory. Nothing is distributed to folders. Writes default to the **local** file and hold only the keys you selected - a save never re-writes the merged config. API keys live outside the config, in the global provider registry (`~/.config/replio/providers.json`), managed through `/connect` (see [Models](#model-registry-not-config)).
 
 ```bash
 # inspect in the REPL (origin: default/global/local)
@@ -33,52 +33,52 @@ replio config set max_tokens 0 --global        # global file
 replio config unset max_tokens                 # remove from project-local
 ```
 
-Deleting a project's `.replio/config.json` reverts that project to the global and built-in defaults. To keep settings across local deletions, globalize individual lines with `--global` (both the REPL `/config` and the CLI accept it), e.g. `/config --global provider ollama`, `/config --global model <model>`.
+Deleting a project's `.replio/config.json` reverts it to the global and built-in defaults. To keep settings across local deletions, set them globally with `--global` (accepted by both the REPL `/config` and the CLI), e.g. `/config --global provider ollama`, `/config --global model <model>`.
 
 ## Schema
 
 | Key                         | Default                | Description                                                            |
 |-----------------------------|------------------------|------------------------------------------------------------------------|
-| `auto_continue`             | `true`                 | On truncation (`finish_reason=length`) with a partial answer, re-request the turn with a "continue" instruction and stitch the parts into one message |
-| `auto_continue_max`         | `2`                    | Max continuation rounds per turn before the truncation is reported     |
+| `auto_continue`             | `true`                 | On truncation (`finish_reason=length`) with a partial answer, re-request with a "continue" instruction and stitch the parts into one message |
+| `auto_continue_max`         | `2`                    | Max continuation rounds per turn before reporting truncation     |
 | `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
 | `clear_screen`              | `true`                 | Clear the screen before the REPL banner                                |
 | `compact_keep`              | `4`                    | Messages to keep when compacting the provider context                  |
-| `connect_check`             | `true`                 | Test the provider connection when config changes: `/connect` probes before saving (broken values are rejected unless confirmed), `/provider` warns on a failed probe. `false` skips all probes |
-| `delegate_echo`             | `true`                 | When the `delegate` tool runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result. The sub footer is emitted alongside the sub-agent's own rendered output only when on |
-| `footer_tokens`             | `["context"]`          | Which token counts the footer shows, in order, joined by `/`. `context` = `<n> tokens` (context/input size, chars/4 fallback), `in`/`out`/`thinking` = `<n>t` from provider usage (unavailable counts are skipped). Empty list hides the token section entirely |
-| `glyph_lines`               | `true`                 | Typed `<glyph> <verb> <arg>` status lines for mapped categories. When off, or for unmapped categories, the `[tool: arg]` oneliner is used |
-| `glyph_params`              | `true`                 | Append the tool call parameters to glyph status lines and confirm prompts (e.g. `← Read engine.py [offset=299, limit=85]`). Off for bare `<glyph> <verb> <arg>` |
-| `list_dir_max_entries`      | `200`                  | Cap the number of entries `list_dir` returns (`... (showing first N of M entries)` appended). `0` = unlimited |
+| `connect_check`             | `true`                 | Test the provider connection on config changes: `/connect` probes before saving (broken values rejected unless confirmed), `/provider` warns on a failed probe. `false` skips all probes |
+| `delegate_echo`             | `true`                 | When `delegate` runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result. The footer shows only when on, alongside the sub-agent's own output |
+| `footer_tokens`             | `["context"]`          | Token counts the footer shows, in order, joined by `/`. `context` = `<n> tokens` (context/input size, chars/4 fallback), `in`/`out`/`thinking` = `<n>t` from provider usage (unavailable counts skipped). Empty list hides the section |
+| `glyph_lines`               | `true`                 | Typed `<glyph> <verb> <arg>` status lines for mapped categories. Off or unmapped categories fall back to the `[tool: arg]` oneliner |
+| `glyph_params`              | `true`                 | Append tool call parameters to glyph status lines and confirm prompts (e.g. `← Read engine.py [offset=299, limit=85]`). Off for bare `<glyph> <verb> <arg>` |
+| `list_dir_max_entries`      | `200`                  | Cap entries `list_dir` returns (`... (showing first N of M entries)` appended). `0` = unlimited |
 | `markdown_streaming`        | `false`                | Basic markdown-aware streaming                                         |
-| `max_tokens`                | `8192`                 | Output token cap sent to the provider. `0` = unset (provider default applies, e.g. Ollama caps at 2048). Default `8192` overrides low provider defaults |
+| `max_tokens`                | `8192`                 | Output token cap sent to the provider. `0` = unset (provider default applies, e.g. Ollama caps at 2048). The default overrides low provider defaults |
 | `mcp.servers`               | `[]`                   | MCP client server definitions (see [mcp.md](mcp.md) for the schema)     |
 | `mcp_server.allow_ask`      | `true`                 | When serving MCP, run `ask`-policy tools (deferred to the client) vs refuse them |
 | `mode`                      | `"build"`              | Active agent mode (`build`, `plan`, or a custom mode from `modes`) |
 | `model`                     | `"llama3.2"`           | Model name. A `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) unfolds to that provider and model. An unfolded model must be approved (see [Model refs and approval](providers.md#model-refs-and-approval)) |
 | `noise_tools`               | `["web_fetch", "open", "fetch_page"]` | Tool results replaced by a marker in persisted sessions                |
 | `plugins`                   | *(bundled)*            | Plugins to load. Empty = all discovered plugins load                   |
-| `project_instructions`     | `"AGENTS.md"`          | Per-worktree instructions file auto-loaded into the system prompt (e.g. `AGENTS.md`, `CLAUDE.md`). `""` disables. Absent files are skipped. Content is capped at 20000 chars |
-| `provider`                  | `"ollama"`             | Provider name. The bundled provider plugins (`replio-core-ollama`, `-openai`, `-groq`, `-anthropic`, `-opencode`) register `ollama`, `openai`, `groq`, `anthropic`, `opencode`, and `opencode-go`. `openai-compatible` is the generic fallback. External plugins can register more |
+| `project_instructions`     | `"AGENTS.md"`          | Per-worktree instructions file auto-loaded into the system prompt (e.g. `AGENTS.md`, `CLAUDE.md`). `""` disables. Absent files skipped, content capped at 20000 chars |
+| `provider`                  | `"ollama"`             | Provider name. Bundled provider plugins (`replio-core-ollama`, `-openai`, `-groq`, `-anthropic`, `-opencode`) register `ollama`, `openai`, `groq`, `anthropic`, `opencode`, `opencode-go`. `openai-compatible` is the generic fallback. External plugins can register more |
 | `query_refine`              | `false`                | Auto-refine short web-search queries via a lightweight model call      |
 | `query_refine_context`      | `4`                    | Recent-message context to inject into refinement                       |
 | `query_refine_min_words`    | `3`                    | Minimum query length before refinement applies                         |
-| `reasoning`                 | `"auto"`               | Request reasoning from the model and control its token budget: `false`/`"off"` = do not request, `true`/`"on"`/`"auto"` = request with provider default, `"low"`/`"medium"`/`"high"` = explicit budget hint. Mapping is provider-specific (OpenAI `reasoning_effort`, Claude `thinking.budget_tokens`, Qwen `enable_thinking`) |
+| `reasoning`                 | `"auto"`               | Request reasoning and control its token budget: `false`/`"off"` = none, `true`/`"on"`/`"auto"` = provider default, `"low"`/`"medium"`/`"high"` = explicit budget hint. Mapping is provider-specific (OpenAI `reasoning_effort`, Claude `thinking.budget_tokens`, Qwen `enable_thinking`) |
 | `search_results`            | `5`                    | Number of search results to fetch                                      |
 | `session_tool_max_chars`    | `0`                    | `0` = unlimited. Caps persisted tool-result content                    |
 | `show_context_size`         | `true`                 | Dimmed context-size line after each response                           |
 | `show_errors`               | `true`                 | Show a dimmed `! Error: ...` line (first line of the result) when a tool call fails. Off hides the line |
 | `show_notes`                | `true`                 | Show a dimmed info line for soft tool results (e.g. `(empty file)`, `(no matches for "x")`). Off hides the line |
-| `show_thinking`             | `false`                | Stream thinking/reasoning tokens dimmed. When off, thinking is shown only as an animated spinner plus a `+ Thought N.Ns` summary (display only - does not change what is sent to the model) |
+| `show_thinking`             | `false`                | Stream thinking/reasoning tokens dimmed. When off, thinking shows as an animated spinner plus a `+ Thought N.Ns` summary (display only - what is sent to the model is unchanged) |
 | `show_thought_duration`     | `true`                 | When thinking is streamed (`show_thinking` on), print a dimmed `(Thought N.Ns)` line after each thinking block. Off hides it |
 | `show_version`              | `true`                 | Show the version in the REPL banner                                    |
-| `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event with no content |
+| `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event without content |
 | `stream_retry_delay`        | `0.5`                  | Seconds to wait between stream retries                                  |
 | `system_prompt`             | `""`                   | Optional system prompt, injected for every front-end (REPL, `run`, `serve`) |
 | `temperature`               | `0.7`                  | Sampling temperature                                                   |
 | `tool_analysis`             | `false`                | Model-generated one-line analysis of each tool result (log-only)      |
 | `tool_calling`              | `true`                 | Enable OpenAI-compatible function calling                              |
-| `tool_max_result_chars`     | `100000`               | Caps tool-result content returned to the model (`... (truncated)` appended). `0` = unlimited. With the default, the model sizes files via the `file_read` header and pages with `offset`/`limit` |
+| `tool_max_result_chars`     | `100000`               | Cap tool-result content returned to the model (`... (truncated)` appended). `0` = unlimited. With the default, the model sizes files via the `file_read` header and pages with `offset`/`limit` |
 | `tool_permission`           | *(see below)*          | Category permission actions                                            |
 | `tool_status_visible`       | `true`                 | Show dimmed tool status in the REPL                                    |
 | `tools.allow`               | `[]`                   | Name-level allowlist. Empty means no restriction                       |
@@ -88,7 +88,7 @@ Deleting a project's `.replio/config.json` reverts that project to the global an
 
 ### `modes`
 
-Modes are named postures combining an instruction block with tool-policy overrides. The built-ins ship as defaults - `build` (no overrides) and `plan` (read-only: `edit` and `bash` categories denied):
+Modes are named postures combining an instruction block with tool-policy overrides. The built-ins ship as defaults - `build` (no overrides) and `plan` (read-only, `edit` and `bash` denied):
 
 ```json
 {
@@ -103,7 +103,7 @@ Modes are named postures combining an instruction block with tool-policy overrid
 }
 ```
 
-Each mode may define `system_prompt` (instructions), `tool_permission` (category actions merged over the base `tool_permission`, mode wins per key), `tools.deny` (appended to the base deny list), and `tools.allow` (replaces the base allowlist when non-empty). An unknown `mode` value falls back to `build`. Switch live with `/mode <name>` or set `--mode <name>` on `replio run` / `replio serve`. The mode instruction and `system_prompt` are injected as a system message for every front-end. The active mode is recorded on each assistant message in the session log.
+Each mode may define `system_prompt` (instructions), `tool_permission` (category actions merged over the base, mode wins per key), `tools.deny` (appended to the base deny list), and `tools.allow` (replaces the base allowlist when non-empty). An unknown `mode` falls back to `build`. Switch live with `/mode <name>` or `--mode <name>` on `replio run` / `replio serve`. The mode instruction and `system_prompt` are injected as a system message for every front-end, and the active mode is recorded on each assistant message in the session log.
 
 ### `tool_permission`
 
@@ -121,13 +121,13 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 }
 ```
 
-Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the project worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)). The `ask` category gates the `ask` tool (default `allow` - the tool itself is the interaction. The answerer is the human or the lead agent, see [tools.md](tools.md)).
+Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)). The `ask` category gates the `ask` tool (default `allow` - the interaction itself, answered by the human or the lead agent, see [tools.md](tools.md)).
 
 ### `bash_allow` - command allowlist for `run_command`
 
-`tool_permission.bash_allow` (list, default `[]`) restricts `run_command` to commands whose first token matches an allowed prefix. Empty or unset means unrestricted (the `bash` category action applies to every command). When set:
+`tool_permission.bash_allow` (list, default `[]`) restricts `run_command` to commands whose first token matches an allowed prefix. Empty or unset means unrestricted (the `bash` action applies to every command). When set:
 
-- Each command is split into chained segments over `&&`, `||`, `;`, `|`, and `&`, and every segment must start with one of the allowed prefixes (e.g. `pytest -q && ruff check .` needs both `pytest` and `ruff` allowed).
+- Commands split into chained segments over `&&`, `||`, `;`, `|`, and `&`. Every segment must start with an allowed prefix (e.g. `pytest -q && ruff check .` needs both `pytest` and `ruff`).
 - Shell-script forms are rejected outright: multi-line commands and heredocs (`<<`) always return `deny`.
 - A matching command falls through to the normal `bash` action (`ask` by default, `allow`/`deny` per config). A non-matching command is `deny`.
 
@@ -135,7 +135,7 @@ The check runs through the per-invocation policy resolver, so it composes with m
 
 ## Model registry (not config)
 
-Two global files live separately from config in `~/.config/replio/`. Neither is part of the config merge - `/config` never lists or writes them, and they have no local scope.
+Two global files live separately from config in `~/.config/replio/`. Neither is part of the config merge - `/config` never lists or writes them, and neither has a local scope.
 
 ### Provider registry (`providers.json`)
 
@@ -152,15 +152,15 @@ Two global files live separately from config in `~/.config/replio/`. Neither is 
 }
 ```
 
-- `api_key` lives here, one per provider. It is the only place API keys live.
+- `api_key` lives here, one per provider - the only place API keys live.
 - `base_url` is the effective base URL of the connection - the preset provider default (e.g. `/connect ollama`) or a custom URL (`/connect <url>`). The engine falls back to it when the config leaves `base_url` empty.
-- Managed through `/connect` (which writes the key and any custom base URL). Re-running `/connect` lets you re-enter a missing or stale key.
-- The engine resolves the API key for the active provider from this file (matching entry or `""`), and falls back to a stored custom `base_url` when the config has none. There is no `api_key` config key anymore, and `replio config set api_key` would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.
+- Managed through `/connect` (writes the key and any custom base URL). Re-running it re-enters a missing or stale key.
+- The engine resolves the active provider's API key from this file (matching entry or `""`), falling back to a stored custom `base_url` when the config has none. There is no `api_key` config key anymore - `replio config set api_key` would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.
 
 ### Model registry (`models.json`)
 
-`~/.config/replio/models.json` is the history of approved models - entries `{provider, model, added_at, last_used}`, no API keys (keys and custom base URLs live in `providers.json`). It records every model you connect or switch to, so `/models` shows what has been used per provider and `>` marks the active one. The active model still comes from `config.model`.
+`~/.config/replio/models.json` is the history of approved models - entries `{provider, model, added_at, last_used}`, no API keys (those live in `providers.json`). It records every model you connect or switch to, so `/models` shows what has been used per provider with `>` marking the active one. The active model still comes from `config.model`.
 
 - `/connect` records the model for the connection it just saved.
-- `/models` shows the approved models grouped by provider with the active one marked `>`, and `(key)` when that provider has a stored key.
+- `/models` shows approved models grouped by provider, the active one marked `>`, plus `(key)` when that provider has a stored key.
 - `/models list [provider]` probes a provider's advertised models live (default: current provider).
