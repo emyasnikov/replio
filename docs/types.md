@@ -70,20 +70,20 @@ Fields:
 
 - `name` - unique key of the type.
 - `system_prompt` - the type's system prompt, injected when it runs.
-- `model` - optional. Overrides the caller's model when the type runs. Falls back to the caller's model when empty. Accepts a `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) to pin provider and model together. A type's model must be approved before it can run (`delegate`/`/team run` ask interactively, or pass `--approve-model` headlessly - see [Model refs and approval](providers.md#model-refs-and-approval)).
+- `model` - optional. Overrides the caller's model when the type runs. Falls back to the caller's model when empty. Accepts a `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) to pin provider and model together. A type's model must be approved before it can run (`delegate`/`/teams run` ask interactively, or pass `--approve-model` headlessly - see [Model refs and approval](providers.md#model-refs-and-approval)).
 - `skills` - optional list of skill names from the [skills registry](skills.md), resolved and injected into the type's sub-agent system prompt (and jobs with `--type`).
-- `tags` - optional list of job tags for grouping and filtering (`/type list <tag>`). The bundled set uses a controlled vocabulary: `research`, `writing`, `programming`, `review`.
+- `tags` - optional list of job tags for grouping and filtering (`/types list <tag>`). The bundled set uses a controlled vocabulary: `research`, `writing`, `programming`, `review`.
 - `tool_permission` - optional per-agent overrides of `tool_permission` categories. This is the per-agent permission profile.
 
 ## Command
 
-`/type` manages the registry:
+`/types` manages the registry:
 
-- `/type` - list agent types, marking each one's origin (`bundled` / `plugin` / `local` / `global` / `merged`) and tags.
-- `/type list <tag>` - list only types carrying the tag (e.g. `/type list programming`). Unknown tags print the known tags.
-- `/type new <name> [system prompt]` - create a type in the local catalog (edit the JSON for full fields, including tags). Using an existing name overrides that type.
-- `/type remove <name>` - remove a type from the local catalog. Bundled types cannot be removed (override them instead).
-- `/type show <name>` - show a type's full definition.
+- `/types` - list agent types, marking each one's origin (`bundled` / `plugin` / `local` / `global` / `merged`) and tags.
+- `/types list <tag>` - list only types carrying the tag (e.g. `/types list programming`). Unknown tags print the known tags.
+- `/types new <name> [system prompt]` - create a type in the local catalog (edit the JSON for full fields, including tags). Using an existing name overrides that type.
+- `/types remove <name>` - remove a type from the local catalog. Bundled types cannot be removed (override them instead).
+- `/types show <name>` - show a type's full definition.
 
 ## Delegation and permissions
 

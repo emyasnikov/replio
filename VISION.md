@@ -60,7 +60,7 @@ the core, so internal know-how leaves the repo as one documented unit whenever n
   local `types.json` + `skills/` + `teams.json` (with `reload`).
 - Authoring commands (`/teamkit`): init, list, new, match, export, import, and per-customer
   export/splitting.
-- Core's `/team` stays registry + run only.
+- Core's `/teams` stays registry + run only.
 
 ## Work packages and milestones
 
@@ -69,7 +69,7 @@ The task mapping lives in `PLAN.md` (work packages + milestone checkboxes). The 
 - **M1 - Skeleton and core hooks**: `PLAN.md` mapping, TODO items under `## Open`, `docs/teamkit.md`
   draft (full authoring + move-out guide), core hooks (reload, teams/skills registries, plugin
   hooks, `run_team` sequential + memory + handoff), kit skeleton (manifest, entry, one template,
-  one recipe, tests). Verified: `/team run` end-to-end + unit tests.
+  one recipe, tests). Verified: `/teams run` end-to-end + unit tests.
 - **M2 - Authoring and template matching**: generator, library store with tags,
   `/teamkit new|match`, project-description matching, generate-deltas-only flow, docs completed.
   Verified: one command composes a new project's team. A second project reuses stored artifacts.

@@ -189,7 +189,7 @@ class TestTeamRunCommand(unittest.TestCase):
 
     def _team(self, arg=''):
         with patch('sys.stdout', new=io.StringIO()) as buf:
-            self.chat.registry.dispatch('/team ' + arg)
+            self.chat.registry.dispatch('/teams ' + arg)
         return buf.getvalue()
 
     def _result(self, content):
@@ -212,7 +212,7 @@ class TestTeamRunCommand(unittest.TestCase):
 
     def test_run_usage(self):
         out = self._team('run')
-        self.assertIn('Usage: /team run <name> <task>', out)
+        self.assertIn('Usage: /teams run <name> <task>', out)
 
 
 if __name__ == '__main__':

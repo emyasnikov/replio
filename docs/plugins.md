@@ -87,7 +87,7 @@ A provider class may declare `HOST_PATTERNS` - a tuple of URL substrings - so `/
 
 ### Agent types, teams, and skills
 
-`register_types(registry)` contributes types to the `TypeRegistry` via `registry.add_plugin(entry)` (same entry shape as `types.json`). Plugin types form an in-memory layer between bundled and global, so precedence is `bundled < plugin < global < local`, and a `types.json` entry can always override or replace a plugin-provided type. `register_teams(teams)` and `register_skills(skills)` register into the team and skills registries the same way (`teams.add_plugin(...)` / `skills.add_plugin(...)`, entry shapes in [teams.md](teams.md) and [skills.md](skills.md)). The `/type` list marks plugin types `(plugin)`, and after `/plugins install`/`update`/`uninstall` the running REPL re-applies all three hooks immediately. Tools and commands still activate on the next start.
+`register_types(registry)` contributes types to the `TypeRegistry` via `registry.add_plugin(entry)` (same entry shape as `types.json`). Plugin types form an in-memory layer between bundled and global, so precedence is `bundled < plugin < global < local`, and a `types.json` entry can always override or replace a plugin-provided type. `register_teams(teams)` and `register_skills(skills)` register into the team and skills registries the same way (`teams.add_plugin(...)` / `skills.add_plugin(...)`, entry shapes in [teams.md](teams.md) and [skills.md](skills.md)). The `/types` list marks plugin types `(plugin)`, and after `/plugins install`/`update`/`uninstall` the running REPL re-applies all three hooks immediately. Tools and commands still activate on the next start.
 
 ### Eval fixtures
 

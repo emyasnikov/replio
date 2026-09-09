@@ -1,6 +1,6 @@
 # Teams
 
-A team is a named, ordered chain of delegated stages - each stage runs under an agent type, and its result is handed to the next stage. A team turns the `delegate` primitive into a repeatable pipeline: "writing" = researcher > writer > referencer > editor for documents, "programming" = planner > programmer > tester > code-reviewer. The registry stores the definition and the sequential stage loop (`Engine.run_team`, `/team run`) executes it.
+A team is a named, ordered chain of delegated stages - each stage runs under an agent type, and its result is handed to the next stage. A team turns the `delegate` primitive into a repeatable pipeline: "writing" = researcher > writer > referencer > editor for documents, "programming" = planner > programmer > tester > code-reviewer. The registry stores the definition and the sequential stage loop (`Engine.run_team`, `/teams run`) executes it.
 
 ## Storage
 
@@ -41,8 +41,8 @@ Team fields:
 
 - `name` - unique key (the file/registry key).
 - `stages` - ordered list of stage objects. A stage may also be a plain string (`"researcher"`), shorthand for a stage with only an agent type.
-- `description` - optional, shown in `/team show`.
-- `tags` - optional list for grouping and filtering (`/team list <tag>`), same vocabulary as types.
+- `description` - optional, shown in `/teams show`.
+- `tags` - optional list for grouping and filtering (`/teams list <tag>`), same vocabulary as types.
 
 Stage fields:
 
@@ -53,11 +53,11 @@ Stage fields:
 
 ## Managing teams
 
-- `/team` - list teams, marking each one's origin (`bundled` / `plugin` / `local` / `global` / `merged`) and tags, with the stage chain on the next line.
-- `/team list <tag>` - list only teams carrying the tag (e.g. `/team list programming`).
-- `/team new <name> [description]` - create a team in the local catalog (edit the JSON for stages, tags, and per-stage fields). Using an existing name overrides that team.
-- `/team remove <name>` - remove a team from the local catalog. Bundled teams cannot be removed (override them instead).
-- `/team show <name>` - show a team's full definition (stages, task hints, handoff notes).
+- `/teams` - list teams, marking each one's origin (`bundled` / `plugin` / `local` / `global` / `merged`) and tags, with the stage chain on the next line.
+- `/teams list <tag>` - list only teams carrying the tag (e.g. `/teams list programming`).
+- `/teams new <name> [description]` - create a team in the local catalog (edit the JSON for stages, tags, and per-stage fields). Using an existing name overrides that team.
+- `/teams remove <name>` - remove a team from the local catalog. Bundled teams cannot be removed (override them instead).
+- `/teams show <name>` - show a team's full definition (stages, task hints, handoff notes).
 
 Plugins contribute teams through the same `register_teams` entry hook that the kit machine (templates, recipes) uses - see [plugins.md](plugins.md).
 
@@ -75,6 +75,6 @@ The brief handed to each member is built per run from:
 
 After the run, the whole team run is summarized - seeded with the previous team memory - and written to **`.replio/teams/<name>/memory.md`** (atomic write, human-editable). The same memory file is read back into the briefs of the next run, so facts from earlier runs carry without the session files growing. If the summarizer fails, a fallback of one line per stage (type, status, first part of the output or error) is stored instead.
 
-`/team run <name> <task>` executes a team from the REPL and prints one line per stage (`<n>. <type> <status> <duration>s`), the final member's result, and the memory file path.
+`/teams run <name> <task>` executes a team from the REPL and prints one line per stage (`<n>. <type> <status> <duration>s`), the final member's result, and the memory file path.
 
 Recurring teams with persistent member sessions (`job`-style warm sessions) and scheduled team runs (`jobs add --team`) are later milestones.

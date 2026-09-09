@@ -212,7 +212,7 @@ class TestSkillCommand(unittest.TestCase):
 
     def _skill(self, arg=''):
         with patch('sys.stdout', new=io.StringIO()) as buf:
-            self.chat.registry.dispatch('/skill ' + arg)
+            self.chat.registry.dispatch('/skills ' + arg)
         return buf.getvalue()
 
     def test_list_empty(self):

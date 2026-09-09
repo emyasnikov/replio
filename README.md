@@ -33,7 +33,7 @@ Replio is a deliberately small, auditable, zero-dependency agentic core built on
 
 ### Orchestration
 
-- **Swarm** - make agents cooperate. A type catalog (bundled defaults plus global/local `.replio/types.json`) and the `delegate` tool, which runs a task under an agent type as an in-process sub-agent with its own `sub_*` session log, its own prompt, model override, and tool permissions. Manage types with `/type` (and tag-filter them)
+- **Swarm** - make agents cooperate. A type catalog (bundled defaults plus global/local `.replio/types.json`) and the `delegate` tool, which runs a task under an agent type as an in-process sub-agent with its own `sub_*` session log, its own prompt, model override, and tool permissions. Manage types with `/types` (and tag-filter them)
 - **Jobs** - scheduled, durable workflows with built-in discipline. Cron / interval / one-shot schedules, retries with exponential backoff, per-run timeouts, linked Markdown task files, a rolling run-memory summary, and human-in-the-loop approvals. Managed by `replio jobs`, `/jobs`, and the long-running `replio jobs daemon`
 - **Fleet** - run many scoped agents under one supervisor. `replio fleet` allocates conflict-free ports, health-checks every `replio serve` child, restarts failures with a bounded backoff, and generates per-agent configs - with `status`, `logs`, and `restart` for ops, foreground or detached
 - **MCP (Model Context Protocol)** - work alongside other AI tools. Import external MCP servers' tools, or expose Replio's policy-filtered tools and session resources to other agents over `replio mcp` or `POST /mcp`
@@ -108,7 +108,7 @@ curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
 A lead agent (or you) hands a task to a specialized type. The sub-agent runs in-process, writes its own session log, and returns its final answer. Agent types are model- and permission-scoped: a researcher is read-only, a programmer may run shell.
 
 ```
->>> /type list
+>>> /types list
 >>> /tool delegate {"type": "researcher", "task": "Summarize docs/ and cite sources"}
 [delegate researcher] <final answer of the research sub-agent, sources cited>
 ```
@@ -156,7 +156,7 @@ On `replio serve` the same is available at `POST /mcp`. See [docs/mcp.md](docs/m
 
 ## Roadmap
 
-Fleet orchestration, scheduled and durable jobs, and the swarm foundations - bundled types, in-process sub-agents, the `delegate` tool, team pipelines (`/team run`), and the `ask` tool - are live. Building next: the governance track (the assistant introduces itself on first run, a one-window status over sessions, running agents, and jobs, agent health monitoring, and per-agent todo lists), report-back connectors (webhook/email), the jobs operator API, non-blocking delegation with progress, the interactive `/agent` command, and remote channels. See [docs/swarm.md](docs/swarm.md), [docs/jobs.md](docs/jobs.md), and the open tasks in [TODO.md](TODO.md).
+Fleet orchestration, scheduled and durable jobs, and the swarm foundations - bundled types, in-process sub-agents, the `delegate` tool, team pipelines (`/teams run`), and the `ask` tool - are live. Building next: the governance track (the assistant introduces itself on first run, a one-window status over sessions, running agents, and jobs, agent health monitoring, and per-agent todo lists), report-back connectors (webhook/email), the jobs operator API, non-blocking delegation with progress, the interactive `/agent` command, and remote channels. See [docs/swarm.md](docs/swarm.md), [docs/jobs.md](docs/jobs.md), and the open tasks in [TODO.md](TODO.md).
 
 ## Contributing
 

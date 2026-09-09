@@ -242,7 +242,7 @@ class TestTeamCommand(unittest.TestCase):
 
     def _team(self, arg=''):
         with patch('sys.stdout', new=io.StringIO()) as buf:
-            self.chat.registry.dispatch('/team ' + arg)
+            self.chat.registry.dispatch('/teams ' + arg)
         return buf.getvalue()
 
     def test_list_shows_bundled(self):

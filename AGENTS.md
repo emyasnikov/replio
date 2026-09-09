@@ -184,7 +184,7 @@ Plugins currently install from git URLs or local paths into the plugin roots. Sh
 - **Phase 0** - Unified streaming agent loop (single SSE stream, `tool_calls` events)
 - **Phase 1** - Unified dispatch (slash commands > same `ToolRegistry`, generic refinement)
 - **Phase 2** - Machine access (read/write/exec tools, tool policies, `confirm`-gated exec)
-- **Phase 3** - Agent types - landed: type catalog (`bundled_types.json` + global/local `types.json` merge), `/type` (list/show/new/remove, tag filter), tags, per-type `tool_permission`. Remaining: interactive `/agent` command
+- **Phase 3** - Agent types - landed: type catalog (`bundled_types.json` + global/local `types.json` merge), `/types` (list/show/new/remove, tag filter), tags, per-type `tool_permission`. Remaining: interactive `/agent` command
 - **Phase 4** - Delegation - landed (core): `delegate` tool > in-process sub-`Engine` (`run_subagent`), per-type permission resolver, `delegate_echo`. Remaining: auditor agents, generate > check > correct, jobs/team orchestration, delegation progress/focus in the REPL
 - **Phase 5** - Plugins (tools + providers + commands installable, directory-based)
   - `PluginManager` discovers plugins in bundled `replio.plugins.bundled`, `~/.config/replio/plugins/`, and `.replio/plugins/` (local wins), validates the manifest (`replio_version`/`python` ranges), imports entry modules once, and hooks tools/providers/commands/services into the live registries

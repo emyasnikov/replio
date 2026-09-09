@@ -40,7 +40,7 @@ A **model ref** `provider/model` (e.g. `opencode-go/deepseek-v4-flash`, `ollama/
 
 Using an unfolded model is **gated on approval**: the model must appear in `models.json`, otherwise the engine prompts to approve it. The surfaces:
 
-- **Interactive** - the REPL asks on load for an unapproved configured ref, `/model <ref>` asks before switching, and `/team run` pre-checks the stages' type models and asks once for any unapproved ones.
+- **Interactive** - the REPL asks on load for an unapproved configured ref, `/model <ref>` asks before switching, and `/teams run` pre-checks the stages' type models and asks once for any unapproved ones.
 - **Headless** - an explicit `--model` auto-approves (records into `models.json`). A model referenced by an agent type or team is denied unless `--approve-model` is passed (`replio run --approve-model`, `replio jobs add --approve-model`, `replio fleet config --approve-model`). A denied run stops with a clear "model not approved" error.
 
 A ref naming a provider with no stored key still switches to it but prints `run /connect <provider>` (the request then surfaces the auth error until you connect).

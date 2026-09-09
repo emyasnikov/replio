@@ -19,11 +19,11 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/provider`              |                | Show or switch the active provider                             |
 | `/session`              |                | Show or switch the active session: `/session new`, `/session load <name>`, `/session save`. Saved-session catalog operations live under `/sessions` |
 | `/sessions`             |                | Manage the saved-session catalog: `list`, `preview`, `delete`, `export` |
-| `/skill`                |                | Manage skills: `list`, `show <name>`, `new <name>`, `remove <name>`. See [skills.md](skills.md) |
-| `/team`                 |                | Manage teams: `list` (`list <tag>` filters), `show <name>`, `new <name> [description]`, `remove <name>`, `run <name> <task>`. See [teams.md](teams.md) |
+| `/skills`               |                | Manage skills: `list`, `show <name>`, `new <name>`, `remove <name>`. See [skills.md](skills.md) |
+| `/teams`                |                | Manage teams: `list` (`list <tag>` filters), `show <name>`, `new <name> [description]`, `remove <name>`, `run <name> <task>`. See [teams.md](teams.md) |
 | `/thinking`             | `/reasoning`   | Show or switch reasoning display and request (`/thinking on` streams reasoning dimmed, `off` shows only a spinner) |
 | `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
-| `/type`              |                | Manage types: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [types.md](types.md) |
+| `/types`                |                | Manage types: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [types.md](types.md) |
 | `/version`              | `/v`           | Show the Replio version                                       |
 
 `/help` renders commands with their subcommands indented below, and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.

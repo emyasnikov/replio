@@ -283,7 +283,7 @@ class TestTypeCommand(unittest.TestCase):
 
     def _type(self, arg=''):
         with patch('sys.stdout', new=io.StringIO()) as buf:
-            self.chat.registry.dispatch('/type ' + arg)
+            self.chat.registry.dispatch('/types ' + arg)
         return buf.getvalue()
 
     def test_list_shows_bundled(self):

@@ -388,7 +388,7 @@ def register_builtins(registry):
         else:
             print('Usage: /models [list [provider]]')
 
-    @registry.register('type', description='Manage agent types', subcommands=[
+    @registry.register('types', description='Manage agent types', subcommands=[
         ('list', 'List agent types (list <tag> filters by tag)'),
         ('show', 'Show an agent type definition'),
         ('new', 'Create or override an agent type (local)'),
@@ -415,7 +415,7 @@ def register_builtins(registry):
                         print(f'  known tags: {known}')
                 else:
                     print('  (no agent types configured)')
-                    print('  Create one with /type new <name>, or edit '
+                    print('  Create one with /types new <name>, or edit '
                           f'{tr.local_path}')
                 return
             label = f' tagged "{tag}"' if tag else ''
@@ -429,7 +429,7 @@ def register_builtins(registry):
         if action == 'show':
             name = parts[1].strip() if len(parts) > 1 else ''
             if not name:
-                print('Usage: /type show <name>')
+                print('Usage: /types show <name>')
                 return
             t = tr.find(name)
             if t is None:
@@ -450,7 +450,7 @@ def register_builtins(registry):
         if action == 'new':
             rest = parts[1].strip() if len(parts) > 1 else ''
             if not rest:
-                print('Usage: /type new <name> [system prompt]')
+                print('Usage: /types new <name> [system prompt]')
                 return
             name = rest.split(maxsplit=1)[0]
             prompt = rest[len(name):].strip()
@@ -466,20 +466,20 @@ def register_builtins(registry):
         if action == 'remove':
             name = parts[1].strip() if len(parts) > 1 else ''
             if not name:
-                print('Usage: /type remove <name>')
+                print('Usage: /types remove <name>')
                 return
             if tr.remove(name):
                 print(f'Removed agent type: {name} (local)')
             elif tr.is_bundled(name):
                 print(f'{name} is bundled with replio - override it with '
-                      '/type new <name>, or edit the local types file, '
+                      '/types new <name>, or edit the local types file, '
                       'instead of removing')
             else:
                 print(f'No local agent type to remove: {name}')
             return
-        print('Usage: /type [list|show <name>|new <name> [prompt]|remove <name>]')
+        print('Usage: /types [list|show <name>|new <name> [prompt]|remove <name>]')
 
-    @registry.register('team', description='Manage teams', subcommands=[
+    @registry.register('teams', description='Manage teams', subcommands=[
         ('list', 'List teams (list <tag> filters by tag)'),
         ('show', 'Show a team definition'),
         ('new', 'Create or override a team (local)'),
@@ -507,7 +507,7 @@ def register_builtins(registry):
                         print(f'  known tags: {known}')
                 else:
                     print('  (no teams configured)')
-                    print('  Create one with /team new <name>, or edit '
+                    print('  Create one with /teams new <name>, or edit '
                           f'{tr.local_path}')
                 return
             label = f' tagged "{tag}"' if tag else ''
@@ -523,7 +523,7 @@ def register_builtins(registry):
         if action == 'show':
             name = parts[1].strip() if len(parts) > 1 else ''
             if not name:
-                print('Usage: /team show <name>')
+                print('Usage: /teams show <name>')
                 return
             t = tr.find(name)
             if t is None:
@@ -549,7 +549,7 @@ def register_builtins(registry):
         if action == 'new':
             rest = parts[1].strip() if len(parts) > 1 else ''
             if not rest:
-                print('Usage: /team new <name> [description]')
+                print('Usage: /teams new <name> [description]')
                 return
             name = rest.split(maxsplit=1)[0]
             description = rest[len(name):].strip()
@@ -566,13 +566,13 @@ def register_builtins(registry):
         if action == 'remove':
             name = parts[1].strip() if len(parts) > 1 else ''
             if not name:
-                print('Usage: /team remove <name>')
+                print('Usage: /teams remove <name>')
                 return
             if tr.remove(name):
                 print(f'Removed team: {name} (local)')
             elif tr.is_bundled(name):
                 print(f'{name} is bundled with replio - override it with '
-                      '/team new <name>, or edit the local teams file, '
+                      '/teams new <name>, or edit the local teams file, '
                       'instead of removing')
             else:
                 print(f'No local team to remove: {name}')
@@ -582,7 +582,7 @@ def register_builtins(registry):
             name = rest.split(maxsplit=1)[0] if rest else ''
             task = rest[len(name):].strip() if name else ''
             if not name or not task:
-                print('Usage: /team run <name> <task>')
+                print('Usage: /teams run <name> <task>')
                 return
             t = tr.find(name)
             if t is None:
@@ -604,9 +604,9 @@ def register_builtins(registry):
             if result.memory:
                 print(f'  team memory: {result.memory}')
             return
-        print('Usage: /team [list|show <name>|new <name> [description]|remove <name>|run <name> <task>]')
+        print('Usage: /teams [list|show <name>|new <name> [description]|remove <name>|run <name> <task>]')
 
-    @registry.register('skill', description='Manage skills', subcommands=[
+    @registry.register('skills', description='Manage skills', subcommands=[
         ('list', 'List skills'),
         ('show', 'Show a skill definition'),
         ('new', 'Create or override a skill (local)'),
@@ -621,7 +621,7 @@ def register_builtins(registry):
             skills = sr.all()
             if not skills:
                 print('  (no skills configured)')
-                print(f'  Create one with /skill new <name>, or add a '
+                print(f'  Create one with /skills new <name>, or add a '
                       f'<name>.md file to {sr.local_dir}')
                 return
             print(f'{len(skills)} skills:')
@@ -633,7 +633,7 @@ def register_builtins(registry):
         if action == 'show':
             name = parts[1].strip() if len(parts) > 1 else ''
             if not name:
-                print('Usage: /skill show <name>')
+                print('Usage: /skills show <name>')
                 return
             s = sr.find(name)
             if s is None:
@@ -650,7 +650,7 @@ def register_builtins(registry):
         if action == 'new':
             name = parts[1].strip() if len(parts) > 1 else ''
             if not name:
-                print('Usage: /skill new <name>')
+                print('Usage: /skills new <name>')
                 return
             existing = sr.find(name)
             prev_origin = sr.origin(name)
@@ -665,18 +665,18 @@ def register_builtins(registry):
         if action == 'remove':
             name = parts[1].strip() if len(parts) > 1 else ''
             if not name:
-                print('Usage: /skill remove <name>')
+                print('Usage: /skills remove <name>')
                 return
             if sr.remove(name):
                 print(f'Removed skill: {name} (local)')
             elif sr.origin(name) == 'plugin':
                 print(f'{name} comes from a plugin - override it with '
-                      '/skill new <name>, or edit the local skills dir, '
+                      '/skills new <name>, or edit the local skills dir, '
                       'instead of removing')
             else:
                 print(f'No local skill to remove: {name}')
             return
-        print('Usage: /skill [list|show <name>|new <name>|remove <name>]')
+        print('Usage: /skills [list|show <name>|new <name>|remove <name>]')
 
     @registry.register('connect', description='Connect a provider - /connect <name|url> [name]')
     def connect_cmd(arg=''):

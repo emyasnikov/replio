@@ -52,9 +52,9 @@ Missing or empty skills are skipped silently, and an agent type without skills g
 
 ## Managing skills
 
-- `/skill` - list skills (name, first-line description, origin) - `(local)` / `(global)` / `(plugin)` / `(merged)`.
-- `/skill new <name>` - create an empty local skill (edit the created `.md` file, or write one directly).
-- `/skill remove <name>` - remove a local skill. Plugin skills cannot be removed (override them locally instead).
-- `/skill show <name>` - print the full skill content.
+- `/skills` - list skills (name, first-line description, origin) - `(local)` / `(global)` / `(plugin)` / `(merged)`.
+- `/skills new <name>` - create an empty local skill (edit the created `.md` file, or write one directly).
+- `/skills remove <name>` - remove a local skill. Plugin skills cannot be removed (override them locally instead).
+- `/skills show <name>` - print the full skill content.
 
 The team kit (see [swarm.md](swarm.md)) generates skills as part of its templates and persists them to the local skills dir.
