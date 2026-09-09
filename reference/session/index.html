@@ -1434,8 +1434,9 @@
 </tr>
 </tbody>
 </table>
-<p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code>, where the suffix is the calling (parent) session id (<code>sub_20260817_120100_ses_20260817_120000_what_is_oee</code>). These live in the same <code>.replio/sessions/</code> directory and are regular sessions - listed by <code>/session list</code> (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.</p>
+<p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code>, where the suffix is the calling (parent) session id (<code>sub_20260817_120100_ses_20260817_120000_what_is_oee</code>). These live in the same <code>.replio/sessions/</code> directory and are regular sessions - listed by <code>/sessions list</code> (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.</p>
 <h2 id="managing-sessions">Managing sessions<a class="headerlink" href="#managing-sessions" title="Permanent link">&para;</a></h2>
+<p>The active session is handled by <code>/session</code> (like <code>/model</code> for the active model); the catalog of saved sessions lives under <code>/sessions</code> (like <code>/models</code>).</p>
 <table>
 <thead>
 <tr>
@@ -1445,31 +1446,35 @@
 </thead>
 <tbody>
 <tr>
+<td><code>/session</code></td>
+<td>Show the active session (name, message count, context)</td>
+</tr>
+<tr>
 <td><code>/session new &lt;name&gt;</code></td>
 <td>Create and switch to a new session</td>
-</tr>
-<tr>
-<td><code>/session list</code></td>
-<td>List saved sessions</td>
-</tr>
-<tr>
-<td><code>/session preview &lt;name&gt;</code></td>
-<td>Structural preview (roles, tool names) without switching</td>
 </tr>
 <tr>
 <td><code>/session load &lt;name&gt;</code></td>
 <td>Load a session (with compaction offer if it has a summary)</td>
 </tr>
 <tr>
-<td><code>/session delete &lt;name&gt;</code></td>
-<td>Delete a session</td>
-</tr>
-<tr>
 <td><code>/session save</code></td>
 <td>Save the current session</td>
 </tr>
 <tr>
-<td><code>/session export &lt;name&gt; [out]</code></td>
+<td><code>/sessions</code></td>
+<td>List saved sessions</td>
+</tr>
+<tr>
+<td><code>/sessions preview &lt;name&gt;</code></td>
+<td>Structural preview (roles, tool names) without switching</td>
+</tr>
+<tr>
+<td><code>/sessions delete &lt;name&gt;</code></td>
+<td>Delete a session</td>
+</tr>
+<tr>
+<td><code>/sessions export &lt;name&gt; [out]</code></td>
 <td>Export a session to Markdown</td>
 </tr>
 <tr>
@@ -1480,8 +1485,8 @@
 </table>
 <p>The current session is auto-saved after every message and command, so nothing is lost on exit.</p>
 <h2 id="exporting-to-markdown">Exporting to Markdown<a class="headerlink" href="#exporting-to-markdown" title="Permanent link">&para;</a></h2>
-<p><code>/session export &lt;name&gt;</code> renders any saved session as a Markdown transcript. It reads the persisted log directly (<code>read()</code>, not <code>load()</code>), so the current session is never switched and the source file is left untouched.</p>
-<p>The default output is <code>.replio/exports/&lt;name&gt;.md</code>, next to the <code>sessions/</code> directory. A second argument overrides the path (<code>/session export &lt;name&gt; out.md</code>), and <code>-</code> prints the transcript to stdout instead of writing a file. The command tab-completes session names.</p>
+<p><code>/sessions export &lt;name&gt;</code> renders any saved session as a Markdown transcript. It reads the persisted log directly (<code>read()</code>, not <code>load()</code>), so the current session is never switched and the source file is left untouched.</p>
+<p>The default output is <code>.replio/exports/&lt;name&gt;.md</code>, next to the <code>sessions/</code> directory. A second argument overrides the path (<code>/sessions export &lt;name&gt; out.md</code>), and <code>-</code> prints the transcript to stdout instead of writing a file. The command tab-completes session names.</p>
 <p>The export is the full, auditable log: each message becomes a <code>### &lt;Role&gt;</code> section with its timestamp, assistant meta (provider/model/duration) and thinking, tool calls and results as fenced code blocks (with tool <code>analysis</code>), <code>command</code> records, compaction summaries (with the trimmed context boundary), and a final <code>## Errors</code> section. Because it renders the persisted form, serialization-time transforms (<code>noise_tools</code> markers, <code>session_tool_max_chars</code> truncation) carry through as they appear in the file.</p>
 <p>The headless CLI <code>replio export &lt;name&gt; [--out &lt;file&gt;]</code> reuses the same renderer for scripts and CI - <code>--out -</code> prints to stdout, the default matches the slash command (<code>.replio/exports/&lt;name&gt;.md</code>).</p>
 <h2 id="file-structure">File structure<a class="headerlink" href="#file-structure" title="Permanent link">&para;</a></h2>
@@ -1547,7 +1552,7 @@
 </tr>
 </tbody>
 </table>
-<p><code>/session preview</code> prints the <code>parent</code> and <code>sub-sessions</code> links. <code>/session list</code> annotates <code>sub_*</code> children with their parent.</p>
+<p><code>/sessions preview</code> prints the <code>parent</code> and <code>sub-sessions</code> links. <code>/sessions list</code> annotates <code>sub_*</code> children with their parent.</p>
 <h2 id="message-schema">Message schema<a class="headerlink" href="#message-schema" title="Permanent link">&para;</a></h2>
 <p>Every message has at least <code>role</code>, <code>content</code>, and <code>timestamp</code> (ISO 8601 UTC). The fields beyond those depend on the role.</p>
 <table>

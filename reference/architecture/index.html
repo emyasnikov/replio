@@ -1339,7 +1339,7 @@
 <p><strong>ToolRegistry</strong> (<code>src/replio/tools/registry.py</code>) - the single dispatch point. The model invokes tools via OpenAI function calling. Slash commands are thin wrappers calling the same <code>execute()</code>. The loop never special-cases tool names - per-tool behavior comes from registration metadata. See <a href="../tools/">tools.md</a>.</p>
 </li>
 <li>
-<p><strong>Commands</strong> (<code>src/replio/commands/</code>) - user-facing affordances. A command either wraps a tool or performs a local action (<code>/model</code>, <code>/session</code>).</p>
+<p><strong>Commands</strong> (<code>src/replio/commands/</code>) - user-facing affordances. A command either wraps a tool or performs a local action (<code>/model</code>, <code>/session</code>, <code>/sessions</code>).</p>
 </li>
 </ol>
 <p>Providers (<code>src/replio/providers/</code>) are OpenAI-compatible <code>/v1/chat/completions</code> backends implementing the event-generator <code>chat()</code> contract. See <a href="../providers/">providers.md</a>.</p>

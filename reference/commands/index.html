@@ -1472,7 +1472,12 @@
 <tr>
 <td><code>/session</code></td>
 <td></td>
-<td>Manage sessions: <code>new</code>, <code>list</code>, <code>preview</code>, <code>load</code>, <code>delete</code>, <code>save</code>, <code>export</code></td>
+<td>Show or switch the active session: <code>/session new</code>, <code>/session load &lt;name&gt;</code>, <code>/session save</code>. Saved-session catalog operations live under <code>/sessions</code></td>
+</tr>
+<tr>
+<td><code>/sessions</code></td>
+<td></td>
+<td>Manage the saved-session catalog: <code>list</code>, <code>preview</code>, <code>delete</code>, <code>export</code></td>
 </tr>
 <tr>
 <td><code>/skill</code></td>
@@ -1507,7 +1512,7 @@
 </tbody>
 </table>
 <p><code>/help</code> renders commands with their subcommands indented below, and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under <code>/tool</code>. <code>/tool</code> with no arguments lists the same tools with their short descriptions.</p>
-<p><code>/session export &lt;name&gt; [out]</code> renders a saved session as Markdown (see <a href="../session/">session.md</a>).</p>
+<p><code>/sessions export &lt;name&gt; [out]</code> renders a saved session as Markdown (see <a href="../session/">session.md</a>).</p>
 <p>Delegation is a normal tool: the lead agent proposes it, or you run it directly - <code>/tool delegate {"type": "researcher", "task": "..."}</code> routes through the same tool policy. A configured type delegates without prompting (<code>delegate</code> category defaults to <code>allow</code>, set an agent type's <code>delegate</code> to <code>ask</code> to confirm), and an agent type outside the registry is denied. See <a href="../types/">types.md</a> and <a href="../swarm/">swarm.md</a>.</p>
 <h2 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>usage: replio [-h] [--path PATH] [-v] {config,eval,export,fleet,jobs,mcp,models,plugins,run,serve} ...
