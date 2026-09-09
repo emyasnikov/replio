@@ -1253,10 +1253,10 @@ Find sources and evaluate them. ...
 <p>Missing or empty skills are skipped silently, and an agent type without skills gets an unchanged prompt. Jobs with <code>--type</code> inject the same section (from the global/local file layers - plugin contributions do not reach the scheduler's preparse, same rule as plugin types there). The injection format is built by <code>skills_section(registry, names)</code> in <code>replio.skills</code>.</p>
 <h2 id="managing-skills">Managing skills<a class="headerlink" href="#managing-skills" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>/skill</code> - list skills (name, first-line description, origin) - <code>(local)</code> / <code>(global)</code> / <code>(plugin)</code> / <code>(merged)</code>.</li>
-<li><code>/skill new &lt;name&gt;</code> - create an empty local skill (edit the created <code>.md</code> file, or write one directly).</li>
-<li><code>/skill remove &lt;name&gt;</code> - remove a local skill. Plugin skills cannot be removed (override them locally instead).</li>
-<li><code>/skill show &lt;name&gt;</code> - print the full skill content.</li>
+<li><code>/skills</code> - list skills (name, first-line description, origin) - <code>(local)</code> / <code>(global)</code> / <code>(plugin)</code> / <code>(merged)</code>.</li>
+<li><code>/skills new &lt;name&gt;</code> - create an empty local skill (edit the created <code>.md</code> file, or write one directly).</li>
+<li><code>/skills remove &lt;name&gt;</code> - remove a local skill. Plugin skills cannot be removed (override them locally instead).</li>
+<li><code>/skills show &lt;name&gt;</code> - print the full skill content.</li>
 </ul>
 <p>The team kit (see <a href="../swarm/">swarm.md</a>) generates skills as part of its templates and persists them to the local skills dir.</p>
 

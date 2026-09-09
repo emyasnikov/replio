@@ -1425,19 +1425,19 @@
 <ul>
 <li><code>name</code> - unique key of the type.</li>
 <li><code>system_prompt</code> - the type's system prompt, injected when it runs.</li>
-<li><code>model</code> - optional. Overrides the caller's model when the type runs. Falls back to the caller's model when empty. Accepts a <code>provider/model</code> ref (e.g. <code>opencode-go/deepseek-v4-flash</code>) to pin provider and model together. A type's model must be approved before it can run (<code>delegate</code>/<code>/team run</code> ask interactively, or pass <code>--approve-model</code> headlessly - see <a href="../providers/#model-refs-and-approval">Model refs and approval</a>).</li>
+<li><code>model</code> - optional. Overrides the caller's model when the type runs. Falls back to the caller's model when empty. Accepts a <code>provider/model</code> ref (e.g. <code>opencode-go/deepseek-v4-flash</code>) to pin provider and model together. A type's model must be approved before it can run (<code>delegate</code>/<code>/teams run</code> ask interactively, or pass <code>--approve-model</code> headlessly - see <a href="../providers/#model-refs-and-approval">Model refs and approval</a>).</li>
 <li><code>skills</code> - optional list of skill names from the <a href="../skills/">skills registry</a>, resolved and injected into the type's sub-agent system prompt (and jobs with <code>--type</code>).</li>
-<li><code>tags</code> - optional list of job tags for grouping and filtering (<code>/type list &lt;tag&gt;</code>). The bundled set uses a controlled vocabulary: <code>research</code>, <code>writing</code>, <code>programming</code>, <code>review</code>.</li>
+<li><code>tags</code> - optional list of job tags for grouping and filtering (<code>/types list &lt;tag&gt;</code>). The bundled set uses a controlled vocabulary: <code>research</code>, <code>writing</code>, <code>programming</code>, <code>review</code>.</li>
 <li><code>tool_permission</code> - optional per-agent overrides of <code>tool_permission</code> categories. This is the per-agent permission profile.</li>
 </ul>
 <h2 id="command">Command<a class="headerlink" href="#command" title="Permanent link">&para;</a></h2>
-<p><code>/type</code> manages the registry:</p>
+<p><code>/types</code> manages the registry:</p>
 <ul>
-<li><code>/type</code> - list agent types, marking each one's origin (<code>bundled</code> / <code>plugin</code> / <code>local</code> / <code>global</code> / <code>merged</code>) and tags.</li>
-<li><code>/type list &lt;tag&gt;</code> - list only types carrying the tag (e.g. <code>/type list programming</code>). Unknown tags print the known tags.</li>
-<li><code>/type new &lt;name&gt; [system prompt]</code> - create a type in the local catalog (edit the JSON for full fields, including tags). Using an existing name overrides that type.</li>
-<li><code>/type remove &lt;name&gt;</code> - remove a type from the local catalog. Bundled types cannot be removed (override them instead).</li>
-<li><code>/type show &lt;name&gt;</code> - show a type's full definition.</li>
+<li><code>/types</code> - list agent types, marking each one's origin (<code>bundled</code> / <code>plugin</code> / <code>local</code> / <code>global</code> / <code>merged</code>) and tags.</li>
+<li><code>/types list &lt;tag&gt;</code> - list only types carrying the tag (e.g. <code>/types list programming</code>). Unknown tags print the known tags.</li>
+<li><code>/types new &lt;name&gt; [system prompt]</code> - create a type in the local catalog (edit the JSON for full fields, including tags). Using an existing name overrides that type.</li>
+<li><code>/types remove &lt;name&gt;</code> - remove a type from the local catalog. Bundled types cannot be removed (override them instead).</li>
+<li><code>/types show &lt;name&gt;</code> - show a type's full definition.</li>
 </ul>
 <h2 id="delegation-and-permissions">Delegation and permissions<a class="headerlink" href="#delegation-and-permissions" title="Permanent link">&para;</a></h2>
 <p><code>delegate</code> resolves its permission from the target type rather than from a single tool-level default:</p>

@@ -1215,7 +1215,7 @@
 
 
 <h1 id="teams">Teams<a class="headerlink" href="#teams" title="Permanent link">&para;</a></h1>
-<p>A team is a named, ordered chain of delegated stages - each stage runs under an agent type, and its result is handed to the next stage. A team turns the <code>delegate</code> primitive into a repeatable pipeline: "writing" = researcher &gt; writer &gt; referencer &gt; editor for documents, "programming" = planner &gt; programmer &gt; tester &gt; code-reviewer. The registry stores the definition and the sequential stage loop (<code>Engine.run_team</code>, <code>/team run</code>) executes it.</p>
+<p>A team is a named, ordered chain of delegated stages - each stage runs under an agent type, and its result is handed to the next stage. A team turns the <code>delegate</code> primitive into a repeatable pipeline: "writing" = researcher &gt; writer &gt; referencer &gt; editor for documents, "programming" = planner &gt; programmer &gt; tester &gt; code-reviewer. The registry stores the definition and the sequential stage loop (<code>Engine.run_team</code>, <code>/teams run</code>) executes it.</p>
 <h2 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h2>
 <p>Teams come from four layers, merged exactly like types: bundled first, then plugin contributions, then global, then local, with local winning per field. Precedence is <code>bundled &lt; plugin &lt; global &lt; local</code>:</p>
 <ul>
@@ -1250,8 +1250,8 @@
 <ul>
 <li><code>name</code> - unique key (the file/registry key).</li>
 <li><code>stages</code> - ordered list of stage objects. A stage may also be a plain string (<code>"researcher"</code>), shorthand for a stage with only an agent type.</li>
-<li><code>description</code> - optional, shown in <code>/team show</code>.</li>
-<li><code>tags</code> - optional list for grouping and filtering (<code>/team list &lt;tag&gt;</code>), same vocabulary as types.</li>
+<li><code>description</code> - optional, shown in <code>/teams show</code>.</li>
+<li><code>tags</code> - optional list for grouping and filtering (<code>/teams list &lt;tag&gt;</code>), same vocabulary as types.</li>
 </ul>
 <p>Stage fields:</p>
 <ul>
@@ -1262,11 +1262,11 @@
 </ul>
 <h2 id="managing-teams">Managing teams<a class="headerlink" href="#managing-teams" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>/team</code> - list teams, marking each one's origin (<code>bundled</code> / <code>plugin</code> / <code>local</code> / <code>global</code> / <code>merged</code>) and tags, with the stage chain on the next line.</li>
-<li><code>/team list &lt;tag&gt;</code> - list only teams carrying the tag (e.g. <code>/team list programming</code>).</li>
-<li><code>/team new &lt;name&gt; [description]</code> - create a team in the local catalog (edit the JSON for stages, tags, and per-stage fields). Using an existing name overrides that team.</li>
-<li><code>/team remove &lt;name&gt;</code> - remove a team from the local catalog. Bundled teams cannot be removed (override them instead).</li>
-<li><code>/team show &lt;name&gt;</code> - show a team's full definition (stages, task hints, handoff notes).</li>
+<li><code>/teams</code> - list teams, marking each one's origin (<code>bundled</code> / <code>plugin</code> / <code>local</code> / <code>global</code> / <code>merged</code>) and tags, with the stage chain on the next line.</li>
+<li><code>/teams list &lt;tag&gt;</code> - list only teams carrying the tag (e.g. <code>/teams list programming</code>).</li>
+<li><code>/teams new &lt;name&gt; [description]</code> - create a team in the local catalog (edit the JSON for stages, tags, and per-stage fields). Using an existing name overrides that team.</li>
+<li><code>/teams remove &lt;name&gt;</code> - remove a team from the local catalog. Bundled teams cannot be removed (override them instead).</li>
+<li><code>/teams show &lt;name&gt;</code> - show a team's full definition (stages, task hints, handoff notes).</li>
 </ul>
 <p>Plugins contribute teams through the same <code>register_teams</code> entry hook that the kit machine (templates, recipes) uses - see <a href="../plugins/">plugins.md</a>.</p>
 <h2 id="running-a-team">Running a team<a class="headerlink" href="#running-a-team" title="Permanent link">&para;</a></h2>
@@ -1280,7 +1280,7 @@
 <li>the stage's <code>task_hint</code> (or a generic "Complete this stage of the task." line).</li>
 </ul>
 <p>After the run, the whole team run is summarized - seeded with the previous team memory - and written to <strong><code>.replio/teams/&lt;name&gt;/memory.md</code></strong> (atomic write, human-editable). The same memory file is read back into the briefs of the next run, so facts from earlier runs carry without the session files growing. If the summarizer fails, a fallback of one line per stage (type, status, first part of the output or error) is stored instead.</p>
-<p><code>/team run &lt;name&gt; &lt;task&gt;</code> executes a team from the REPL and prints one line per stage (<code>&lt;n&gt;. &lt;type&gt; &lt;status&gt; &lt;duration&gt;s</code>), the final member's result, and the memory file path.</p>
+<p><code>/teams run &lt;name&gt; &lt;task&gt;</code> executes a team from the REPL and prints one line per stage (<code>&lt;n&gt;. &lt;type&gt; &lt;status&gt; &lt;duration&gt;s</code>), the final member's result, and the memory file path.</p>
 <p>Recurring teams with persistent member sessions (<code>job</code>-style warm sessions) and scheduled team runs (<code>jobs add --team</code>) are later milestones.</p>
 
 

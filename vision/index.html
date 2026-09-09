@@ -1314,7 +1314,7 @@ the core, so internal know-how leaves the repo as one documented unit whenever n
   local <code>types.json</code> + <code>skills/</code> + <code>teams.json</code> (with <code>reload</code>).</li>
 <li>Authoring commands (<code>/teamkit</code>): init, list, new, match, export, import, and per-customer
   export/splitting.</li>
-<li>Core's <code>/team</code> stays registry + run only.</li>
+<li>Core's <code>/teams</code> stays registry + run only.</li>
 </ul>
 <h2 id="work-packages-and-milestones">Work packages and milestones<a class="headerlink" href="#work-packages-and-milestones" title="Permanent link">&para;</a></h2>
 <p>The task mapping lives in <code>PLAN.md</code> (work packages + milestone checkboxes). The milestones below name the verifiable phases of the swarm/team track.</p>
@@ -1322,7 +1322,7 @@ the core, so internal know-how leaves the repo as one documented unit whenever n
 <li><strong>M1 - Skeleton and core hooks</strong>: <code>PLAN.md</code> mapping, TODO items under <code>## Open</code>, <code>docs/teamkit.md</code>
   draft (full authoring + move-out guide), core hooks (reload, teams/skills registries, plugin
   hooks, <code>run_team</code> sequential + memory + handoff), kit skeleton (manifest, entry, one template,
-  one recipe, tests). Verified: <code>/team run</code> end-to-end + unit tests.</li>
+  one recipe, tests). Verified: <code>/teams run</code> end-to-end + unit tests.</li>
 <li><strong>M2 - Authoring and template matching</strong>: generator, library store with tags,
   <code>/teamkit new|match</code>, project-description matching, generate-deltas-only flow, docs completed.
   Verified: one command composes a new project's team. A second project reuses stored artifacts.</li>

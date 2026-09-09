@@ -1480,12 +1480,12 @@
 <td>Manage the saved-session catalog: <code>list</code>, <code>preview</code>, <code>delete</code>, <code>export</code></td>
 </tr>
 <tr>
-<td><code>/skill</code></td>
+<td><code>/skills</code></td>
 <td></td>
 <td>Manage skills: <code>list</code>, <code>show &lt;name&gt;</code>, <code>new &lt;name&gt;</code>, <code>remove &lt;name&gt;</code>. See <a href="../skills/">skills.md</a></td>
 </tr>
 <tr>
-<td><code>/team</code></td>
+<td><code>/teams</code></td>
 <td></td>
 <td>Manage teams: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [description]</code>, <code>remove &lt;name&gt;</code>, <code>run &lt;name&gt; &lt;task&gt;</code>. See <a href="../teams/">teams.md</a></td>
 </tr>
@@ -1500,7 +1500,7 @@
 <td>Run a tool directly (<code>/tool &lt;name&gt; {"key": "value"}</code>)</td>
 </tr>
 <tr>
-<td><code>/type</code></td>
+<td><code>/types</code></td>
 <td></td>
 <td>Manage types: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [prompt]</code>, <code>remove &lt;name&gt;</code>. See <a href="../types/">types.md</a></td>
 </tr>
@@ -1625,7 +1625,11 @@
 </tbody>
 </table>
 <h3 id="replio-models"><code>replio models</code><a class="headerlink" href="#replio-models" title="Permanent link">&para;</a></h3>
-<p>List the models the connected provider advertises.</p>
+<p>List configured models, or probe a provider's available models (mirrors <code>/models</code>).</p>
+<div class="highlight"><pre><span></span><code>replio<span class="w"> </span>models<span class="w">                          </span><span class="c1"># configured/approved models.json history</span>
+replio<span class="w"> </span>models<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>provider<span class="o">]</span><span class="w">          </span><span class="c1"># probe a provider's advertised models</span>
+</code></pre></div>
+<p><code>replio models</code> (no subcommand) shows the approved-model history grouped by provider with <code>&gt;</code> for the active model and <code>(key)</code> when the provider has a stored key. <code>replio models list [provider]</code> probes a provider's advertised models live (default: the current provider), exiting <code>1</code> on a failed probe.</p>
 <table>
 <thead>
 <tr>
@@ -1694,6 +1698,7 @@ replio<span class="w"> </span><span class="nb">eval</span><span class="w"> </spa
 <div class="highlight"><pre><span></span><code>replio<span class="w"> </span>config<span class="w"> </span>get<span class="w"> </span><span class="o">[</span>key<span class="w"> </span>...<span class="o">]</span><span class="w"> </span><span class="o">[</span>--show-origin<span class="o">]</span><span class="w">   </span><span class="c1"># effective values, default all keys</span>
 replio<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>&lt;key&gt;<span class="w"> </span>&lt;value&gt;<span class="w"> </span><span class="o">[</span>--global<span class="o">]</span><span class="w">    </span><span class="c1"># JSON-parseable value, default local</span>
 replio<span class="w"> </span>config<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>&lt;key&gt;<span class="w"> </span><span class="o">[</span>--global<span class="o">]</span><span class="w">          </span><span class="c1"># drop a value from the selected scope</span>
+replio<span class="w"> </span>config<span class="w"> </span>reload<span class="w">                          </span><span class="c1"># re-read the config files from disk</span>
 </code></pre></div>
 <table>
 <thead>
@@ -1893,8 +1898,16 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </thead>
 <tbody>
 <tr>
+<td><code>disable</code></td>
+<td><code>replio plugins disable &lt;name&gt;</code> - remove a plugin from the plugins list (applies on next start)</td>
+</tr>
+<tr>
+<td><code>enable</code></td>
+<td><code>replio plugins enable &lt;name&gt;</code> - add a plugin to the plugins list (applies on next start)</td>
+</tr>
+<tr>
 <td><code>install</code></td>
-<td><code>replio plugins install &lt;git-url|path&gt; [--global] [--deps]</code> - install a plugin</td>
+<td><code>replio plugins install &lt;git-url\|path&gt; [--global] [--deps]</code> - install a plugin</td>
 </tr>
 <tr>
 <td><code>list</code></td>

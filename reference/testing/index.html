@@ -1248,7 +1248,7 @@
 </tr>
 <tr>
 <td><code>test_cli.py</code></td>
-<td><code>replio run</code>: JSON/text output, session-id persistence, exit codes, one-shot overrides applied but never persisted, <code>_engine_from_args</code> approval wiring (explicit <code>--model</code> auto-approves, <code>--approve-model</code> grants, default does not). <code>replio export</code>: default/custom/stdout targets, unknown session. <code>replio models</code>: listing, error/empty, <code>main</code> dispatch</td>
+<td><code>replio run</code>: JSON/text output, session-id persistence, exit codes, one-shot overrides applied but never persisted, <code>_engine_from_args</code> approval wiring (explicit <code>--model</code> auto-approves, <code>--approve-model</code> grants, default does not). <code>replio export</code>: default/custom/stdout targets, unknown session. <code>replio models</code>: bare configured listing (grouped, active marker, key marker, empty) and <code>list [provider]</code> probe (default/<code>&lt;provider&gt;</code>, error/empty), <code>main</code> dispatch for both. <code>replio plugins</code>: list/install/uninstall, enable/disable plugins-list toggle + unknown name, <code>main</code> dispatch</td>
 </tr>
 <tr>
 <td><code>test_commands.py</code></td>
@@ -1260,7 +1260,7 @@
 </tr>
 <tr>
 <td><code>test_config.py</code></td>
-<td>Config scopes: local-only saves, <code>--global</code> writes, <code>apply()</code> in-memory overrides (never written), unset fallback/origin, global&gt;local merge, empty-local-does-not-shadow-global, <code>replio config</code> CLI (get/set/unset, JSON values, show-origin). <code>api_key</code> is an ordinary key - no global forcing, <code>0600</code>, or migration</td>
+<td>Config scopes: local-only saves, <code>--global</code> writes, <code>apply()</code> in-memory overrides (never written), unset fallback/origin, global&gt;local merge, empty-local-does-not-shadow-global, <code>replio config</code> CLI (get/set/unset/reload, JSON values, show-origin). <code>api_key</code> is an ordinary key - no global forcing, <code>0600</code>, or migration</td>
 </tr>
 <tr>
 <td><code>test_delegate.py</code></td>
@@ -1328,7 +1328,7 @@
 </tr>
 <tr>
 <td><code>test_skills.py</code></td>
-<td><code>SkillRegistry</code>: local/global dir scans, plugin/global/local merge and precedence, origins, put/remove round-trip, reload (disk re-read + plugin-manager re-apply), <code>skills_section</code>, <code>/skill</code> command (list/show/new override/remove, plugin remove rejected)</td>
+<td><code>SkillRegistry</code>: local/global dir scans, plugin/global/local merge and precedence, origins, put/remove round-trip, reload (disk re-read + plugin-manager re-apply), <code>skills_section</code>, <code>/skills</code> command (list/show/new override/remove, plugin remove rejected)</td>
 </tr>
 <tr>
 <td><code>test_subagent.py</code></td>
@@ -1340,11 +1340,11 @@
 </tr>
 <tr>
 <td><code>test_team_run.py</code></td>
-<td><code>Engine.run_team</code>: brief builder (task + prior results + handoff + memory + task hint, prior-result truncation), sequential stage execution with per-stage <code>sub_*</code> sessions + parent linkage + exact brief persistence, stage mode override + caller-mode inheritance, stop-on-failure, unknown-stage-type stop, zero stages, rolling team-memory write (summarized + prior-seeded + fallback), <code>/team run</code> command output (stages + final result, unknown team, usage)</td>
+<td><code>Engine.run_team</code>: brief builder (task + prior results + handoff + memory + task hint, prior-result truncation), sequential stage execution with per-stage <code>sub_*</code> sessions + parent linkage + exact brief persistence, stage mode override + caller-mode inheritance, stop-on-failure, unknown-stage-type stop, zero stages, rolling team-memory write (summarized + prior-seeded + fallback), <code>/teams run</code> command output (stages + final result, unknown team, usage)</td>
 </tr>
 <tr>
 <td><code>test_teams.py</code></td>
-<td><code>TeamRegistry</code>: bundled/plugin/global/local merge and precedence, origins, stage round-trip (dict + short-string forms), put/remove, reload (disk re-read + plugin-manager re-apply), <code>/team</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
+<td><code>TeamRegistry</code>: bundled/plugin/global/local merge and precedence, origins, stage round-trip (dict + short-string forms), put/remove, reload (disk re-read + plugin-manager re-apply), <code>/teams</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
 </tr>
 <tr>
 <td><code>test_tool_calling.py</code></td>
@@ -1360,7 +1360,7 @@
 </tr>
 <tr>
 <td><code>test_types.py</code></td>
-<td><code>TypeRegistry</code>: bundled/plugin/global/local merge and precedence, origins (bundled/plugin/local/global origin), tags roundtrip + merge, put/remove/reload (disk re-read + plugin-manager re-apply), <code>/type</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
+<td><code>TypeRegistry</code>: bundled/plugin/global/local merge and precedence, origins (bundled/plugin/local/global origin), tags roundtrip + merge, put/remove/reload (disk re-read + plugin-manager re-apply), <code>/types</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
 </tr>
 <tr>
 <td><code>test_ui.py</code></td>
