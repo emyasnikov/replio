@@ -20,6 +20,7 @@ The assistant is the operator's single window to the machine: served agents are 
 | Onboarding - first run: the assistant introduces itself, explains what it can do, and asks what to do. No system-level configuration for simple users | M | a supported first step |
 | One-window status - `/status` lists sessions, running agents, and configured jobs on the machine, with logs reachable from the same surface | M | see everything from one place |
 | Agent health monitoring - the assistant watches endpoints (e.g. the `/health` of agents running as web APIs) and warns when an agent stops responding | S-M | alert when an agent is down |
+| Unattended mode - `unattended` config / `--unattended` / `/unattended` drops `_ask_ui` propagation so no sub-agent can reach stdin, auto-denies leftover confirms, and parks human asks instead of blocking | S-M | overnight runs cannot freeze on a prompt |
 | Pending-ask inbox - an unattended run's `ask target='human'` parks as a pending request (persisted, listed in the REPL + serve API) and answering resumes the run from its session. Shares the resumable mid-run state with the mid-run blocking job approval item | M | unattended runs can still ask |
 | `/spawn` command - launch a scoped `replio serve` agent from the REPL (home -> project path), supervise (health/list/stop) and delegate to it | S-M | fleet agents from the terminal |
 | Supervisor report-back - finished/failed supervisor runs surface a per-run summary (session result footer + `replio jobs status`), delivered out-of-band via the job event hooks + connectors when the terminal is closed | M | the operator is told, not asked to look |
@@ -31,6 +32,7 @@ Agents cooperate through types, delegation, and team stages. Sub-agents use the 
 
 | Task | Effort | Provides |
 |------|--------|----------|
+| `team` tool - a core, model-invokable `team(name, task)` that runs `Engine.run_team`, so a lead agent can drive named teams (not just single types), with a per-stage ceiling check and a recursion/depth guard | S-M | the supervisor can orchestrate teams |
 | Non-blocking delegation + progress - the assistant starts sub-agents or whole teams for bigger tasks and reports their status instead of blocking the current run. Live status of which sub-agent is working, read out of the sub-engine loop the single blocking `Engine.chat()` does not expose today | M | the current run keeps flowing |
 | Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style) | M | current state of a delegation |
 | Interactive delegation focus - jump in/out of the active sub-agent, arrows switch between concurrent sub-agent session logs rendered from their own saved logs (opencode-style sub-agent views) | M | focus a running sub-agent |

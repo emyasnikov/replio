@@ -62,7 +62,9 @@ Schema (per entry):
   "model": "deepseek-r1",
   "skills": [],
   "tags": ["research", "writing"],
-  "tool_permission": { "web": "allow", "delegate": "allow" }
+  "tool_permission": { "web": "allow", "delegate": "allow" },
+  "grant_permission": { "web": "allow", "delegate": "allow" },
+  "ask_policy": { "permission": "auto", "direction": "human" }
 }
 ```
 
@@ -74,6 +76,8 @@ Fields:
 - `skills` - optional list of skill names from the [skills registry](skills.md), resolved and injected into the type's sub-agent system prompt (and jobs with `--type`).
 - `tags` - optional list of job tags for grouping and filtering (`/types list <tag>`). The bundled set uses a controlled vocabulary: `research`, `writing`, `programming`, `review`.
 - `tool_permission` - optional per-agent overrides of `tool_permission` categories. The per-agent permission profile.
+- `grant_permission` - optional ceiling on the categories this type may hand down to sub-agents. Defaults to the type's own `tool_permission`, so it never widens delegation unless set explicitly. See [Delegation and permissions](#delegation-and-permissions).
+- `ask_policy` - optional per-type override of the `ask` routing by kind (`permission`/`direction`), merged over the config `ask_policy`. See [config.md](config.md#ask_policy).
 
 ## Command
 
@@ -91,6 +95,8 @@ Fields:
 
 - A configured type uses its own `tool_permission` overrides. The default for the `delegate` category is `allow` (delegation runs without a prompt). Set `delegate: "ask"` on a type to confirm each delegation to it.
 - A temporary type created only to run a task in parallel defaults to `deny` until you opt in.
+
+Sub-agent permissions are bounded by the caller: the effective carve is the caller's `tool_permission`, narrowed by the type's carve and capped by the caller's `grant_permission` ceiling (see [config.md](config.md#permission-authority)). `grant_permission` defaults to the caller's own `tool_permission`, so a type can never grant a sub-agent more than the caller holds. A type that sets `grant_permission` may delegate categories it does not use itself - e.g. a supervisor that denies `edit`/`bash` for itself but allows them in its ceiling can hand them to an `implementer` while never running them. An approved `ask(kind="permission")` request creates a one-shot grant on the asking sub-agent, consumed by the next matching call. The operator may grant `always` for the rest of that sub-agent's run.
 
 ## Relationship to /agent, skills, and fleets
 

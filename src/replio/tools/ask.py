@@ -8,6 +8,13 @@ _ASK_SYSTEM = (
     'to the decision the sub-agent needs.'
 )
 
+_PERMISSION_SYSTEM = (
+    'You are the lead agent coordinating delegated agents. A sub-agent asks for '
+    'permission to use a tool. Decide whether to grant one use. Answer with '
+    '"yes" or "no" as the first word, and add a one-line reason only if it '
+    'helps. Do not ask questions back; commit to the decision.'
+)
+
 _NO_ANSWER = ('[cancelled] No answer given - decide autonomously or return the '
               'question as an open item')
 _NO_ONE = ('Error: ask has no one to answer (no lead agent and no interactive '
@@ -22,7 +29,8 @@ def _task_preview(engine) -> str:
     return ''
 
 
-def _lead_answer(engine, question: str, context: str, options) -> str | None:
+def _lead_answer(engine, question: str, context: str, options,
+                 system: str = _ASK_SYSTEM) -> str | None:
     lead = getattr(engine, '_lead', None)
     if lead is None:
         return None
@@ -37,7 +45,7 @@ def _lead_answer(engine, question: str, context: str, options) -> str | None:
     try:
         result = lead.provider.chat_nonstreaming(
             [
-                {'role': 'system', 'content': _ASK_SYSTEM},
+                {'role': 'system', 'content': system},
                 {'role': 'user', 'content': '\n'.join(parts)},
             ],
             tools=None,
@@ -51,6 +59,63 @@ def _lead_answer(engine, question: str, context: str, options) -> str | None:
     return content or None
 
 
+def _permission_key(engine, permission: str) -> str:
+    registry = getattr(engine, '_tool_registry', None)
+    if registry is not None and registry.is_registered(permission):
+        return registry.permission_for(permission)
+    return permission
+
+
+def _ceiling_for(engine) -> dict:
+    lead = getattr(engine, '_lead', None)
+    if lead is not None and hasattr(lead, '_grant'):
+        return lead._grant()
+    return engine._grant()
+
+
+def _ask_permission(engine, question: str, context: str, options: list,
+                    permission: str) -> str:
+    key = _permission_key(engine, permission)
+    cap = _ceiling_for(engine).get(key, 'deny')
+    if cap == 'deny':
+        return (f'[denied] Permission "{permission}" cannot be granted '
+                '(above the delegation ceiling).')
+    ask_policy = engine.config.get('ask_policy') or {}
+    route = str(ask_policy.get('permission', 'auto'))
+    if cap == 'ask':
+        route = 'human'
+    if route == 'deny':
+        return f'[denied] Permission "{permission}" grants are disabled.'
+    if route == 'human':
+        ui = getattr(engine, '_ask_ui', None)
+        if ui is not None:
+            answer = ui.ask(question, context=context or '',
+                            options=options or [],
+                            origin=engine.current_session.name)
+            if not answer:
+                return _NO_ANSWER
+            if answer.strip().lower().startswith('y'):
+                scope = 'always' if 'always' in answer.lower() else 'once'
+                engine.grant_permission(permission, key, scope=scope,
+                                        origin='human')
+                return f'[granted] Permission "{permission}" approved ({scope}).'
+            return (f'[denied] Permission "{permission}" declined by the '
+                    'operator.')
+    lead = getattr(engine, '_lead', None)
+    if lead is not None:
+        answer = _lead_answer(engine, question, context, options,
+                              system=_PERMISSION_SYSTEM)
+        if answer is None:
+            return _NO_ONE
+        if answer.strip().lower().startswith('y'):
+            engine.grant_permission(permission, key, scope='once',
+                                    origin='supervisor')
+            return (f'[granted] Permission "{permission}" approved for one '
+                    'use.')
+        return f'[denied] Permission "{permission}" not approved by the lead.'
+    return _NO_ONE
+
+
 def register_ask_tool(registry, engine) -> Callable:
     @registry.register(
         name='ask',
@@ -58,8 +123,11 @@ def register_ask_tool(registry, engine) -> Callable:
             "Ask a question and pause until it is answered, to get a decision or "
             "permission mid-run instead of leaving it open. With target='human' "
             "the operator answers at the terminal. With target='lead' the agent "
-            "type or engine that delegated this run decides. Use it when a choice "
-            "cannot be resolved from the task alone, then continue from the answer."
+            "type or engine that delegated this run decides. For a permission "
+            "request set kind='permission' and name the tool or category in "
+            "permission; an approved request grants one use (or the rest of the "
+            "run when the operator grants it). Use it when a choice cannot be "
+            "resolved from the task alone, then continue from the answer."
         ),
         parameters={
             'type': 'object',
@@ -89,6 +157,18 @@ def register_ask_tool(registry, engine) -> Callable:
                                    "lead agent when headless). 'lead' asks the agent "
                                    "type or engine that delegated this run to decide.",
                 },
+                'kind': {
+                    'type': 'string',
+                    'enum': ['permission', 'direction'],
+                    'description': "'direction' (default) asks for a decision or "
+                                   "scope change. 'permission' requests a tool or "
+                                   "category the sub-agent is not allowed to use.",
+                },
+                'permission': {
+                    'type': 'string',
+                    'description': "For kind='permission': the tool name or "
+                                   "permission category to request.",
+                },
             },
             'required': ['question'],
         },
@@ -98,7 +178,11 @@ def register_ask_tool(registry, engine) -> Callable:
         short='Ask the human or the lead agent for a decision',
     )
     def ask(question: str, context: str = '', options: list | None = None,
-            target: str = 'human', _config=None) -> str:
+            target: str = 'human', kind: str = 'direction',
+            permission: str = '', _config=None) -> str:
+        if kind == 'permission' and permission:
+            return _ask_permission(engine, question, context or '',
+                                   options or [], permission)
         ui = getattr(engine, '_ask_ui', None)
         lead = getattr(engine, '_lead', None)
         if target == 'lead':

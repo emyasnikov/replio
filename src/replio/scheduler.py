@@ -26,17 +26,28 @@ def _build_engine(config: Config, job: Job, verbose: bool,
     sub_config = Config(path=str(config.local_path.parent.parent))
     agent_type = None
     skill_names = []
+    grant_ceiling = None
     if job.type:
-        from .types import TypeRegistry
+        from .modes import merge_policy
+        from .types import (TypeRegistry, resolve_permissions,
+                            resolve_grant_ceiling)
         types = TypeRegistry(local_path=config.local_path.parent / 'types.json')
         agent_type = types.find(job.type)
         if agent_type is None:
             raise ValueError(f'Unknown agent type: {job.type}')
         if agent_type.model:
             sub_config.apply('model', agent_type.model)
-        permissions = dict(sub_config.get('tool_permission') or {})
-        permissions.update(agent_type.tool_permission)
+        parent_self = dict(merge_policy(sub_config)[0])
+        parent_grant = (sub_config.get('grant_permission') or parent_self)
+        permissions = resolve_permissions(
+            parent_self, parent_grant, agent_type.tool_permission)
         sub_config.apply('tool_permission', permissions)
+        grant_ceiling = resolve_grant_ceiling(
+            parent_self, parent_grant, agent_type.grant_permission, permissions)
+        if agent_type.ask_policy:
+            ask_policy = dict(sub_config.get('ask_policy') or {})
+            ask_policy.update(agent_type.ask_policy)
+            sub_config.apply('ask_policy', ask_policy)
         skill_names = list(agent_type.skills or [])
     try:
         system_text = system_prompt_for(job, config.local_path.parent.parent,
@@ -68,6 +79,8 @@ def _build_engine(config: Config, job: Job, verbose: bool,
                     footer_tokens=sub_config.get('footer_tokens', ['context']))
     engine = Engine(sub_config, ui=ui,
                     approve_models=job.approve_model or bool(job.model))
+    if grant_ceiling is not None:
+        engine._grant_ceiling = grant_ceiling
     engine.load_or_create_session(session_name or job.session or f'job.{job.name}')
     return engine
 

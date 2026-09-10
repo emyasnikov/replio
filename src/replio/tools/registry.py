@@ -240,5 +240,9 @@ class ToolRegistry:
     def is_registered(self, name: str) -> bool:
         return name in self._tools
 
+    def canonical_name(self, name: str) -> str:
+        canon, _ = self._canonical(name)
+        return canon
+
     def primary_names(self) -> list[str]:
         return [n for n, t in self._tools.items() if 'alias_of' not in t]

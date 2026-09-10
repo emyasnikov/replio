@@ -7,6 +7,44 @@ from typing import Any
 from .config import Config
 
 
+_ACTION_RANK = {'deny': 0, 'ask': 1, 'allow': 2}
+
+
+def clamp_action(action: str, cap: str) -> str:
+    if not isinstance(action, str) or action not in _ACTION_RANK:
+        return action
+    if not isinstance(cap, str) or cap not in _ACTION_RANK:
+        return action
+    return action if _ACTION_RANK[action] <= _ACTION_RANK[cap] else cap
+
+
+def resolve_permissions(parent_self: dict, parent_grant: dict,
+                        type_permission: dict) -> dict:
+    parent_self = parent_self or {}
+    parent_grant = parent_grant or {}
+    type_permission = type_permission or {}
+    out: dict = {}
+    for key in set(parent_self) | set(type_permission):
+        cap = parent_grant.get(key, parent_self.get(key, 'ask'))
+        want = type_permission.get(key, parent_self.get(key, cap))
+        out[key] = clamp_action(want, cap)
+    return out
+
+
+def resolve_grant_ceiling(parent_self: dict, parent_grant: dict, type_grant: dict,
+                          self_permissions: dict) -> dict:
+    parent_self = parent_self or {}
+    parent_grant = parent_grant or {}
+    self_permissions = self_permissions or {}
+    base = type_grant if type_grant else self_permissions
+    out: dict = {}
+    for key in set(base) | set(self_permissions):
+        cap = parent_grant.get(key, parent_self.get(key, 'ask'))
+        want = base.get(key, self_permissions.get(key, 'deny'))
+        out[key] = clamp_action(want, cap)
+    return out
+
+
 @dataclass
 class AgentType:
     name: str
@@ -15,6 +53,8 @@ class AgentType:
     skills: list = field(default_factory=list)
     tags: list = field(default_factory=list)
     tool_permission: dict = field(default_factory=dict)
+    grant_permission: dict = field(default_factory=dict)
+    ask_policy: dict = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, d: dict) -> 'AgentType':
@@ -25,6 +65,8 @@ class AgentType:
             skills=list(d.get('skills') or []),
             tags=list(d.get('tags') or []),
             tool_permission=dict(d.get('tool_permission') or {}),
+            grant_permission=dict(d.get('grant_permission') or {}),
+            ask_policy=dict(d.get('ask_policy') or {}),
         )
 
     def to_body(self) -> dict:

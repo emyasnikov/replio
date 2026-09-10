@@ -31,13 +31,14 @@ Plugins register additional tools the same way and automatically inherit tool po
 
 ## Asking the human or the lead
 
-The `ask` tool (core, like `delegate`) pauses the run and routes a decision or permission request to an answerer, so a sub-agent or team stage gets a decision mid-run instead of returning open questions at the end. Schema: `question` (required), `context`, `options` (suggested answers), `target`:
+The `ask` tool (core, like `delegate`) pauses the run and routes a decision or permission request to an answerer, so a sub-agent or team stage gets a decision mid-run instead of returning open questions at the end. Schema: `question` (required), `context`, `options` (suggested answers), `target`, `kind` (`permission`/`direction`, default `direction`), and `permission` (the tool or category for a permission request):
 
 - `target='human'` (default) - the operator answers at the terminal. The root loop prompts directly. A sub-agent's ask is prefixed with its `sub_<...>` session name so the operator knows who is asking (delegation and team stages run synchronously in-process, so the terminal is free while a sub-agent runs). The answer feeds back into the asking agent's context and the run continues.
 - `target='lead'` - the agent type or engine that delegated this run decides. The lead answers through a lightweight non-streaming consultation (a bounded prompt with the question, context, options, and the sub-agent's delegated task), not a full parent turn. A root engine has no lead, so `target='lead'` falls back to `human`, and `human` falls back to `lead` when no terminal is reachable.
+- `kind='permission'` - a request for a tool or category the sub-agent is not allowed to use. Routing follows `ask_policy.permission` (`auto` = the lead decides and grants one use, `human` = the operator, `deny` = disabled), capped by the caller's `grant_permission` ceiling. An approval creates a one-shot grant on the asking sub-agent, consumed by the next matching call. The operator may answer `always` to make it reusable for the rest of that sub-agent's run. The lead only ever grants `once`. See [config.md](config.md#permission-authority).
 - When no one can answer (headless `run`/`serve`/jobs: no terminal and no lead at the root), `ask` returns an `Error: ask has no one to answer ...` result and the run continues autonomously. It never blocks on stdin outside the REPL. The asynchronous "pause a job and wait for an operator reply over a connector" variant is tracked separately (see [jobs.md](jobs.md)).
 
-The ask is not additionally gated - `tool_permission.ask` defaults to `allow` (the question and answer are the point). Operators can block it with `tools.deny: ["ask"]`. The question (tool arguments) and answer (tool result) persist in the asking session's log, and the call is recorded in the session `permissions` audit array like any tool call.
+The ask is not additionally gated - `tool_permission.ask` defaults to `allow` (the question and answer are the point). Operators can block it with `tools.deny: ["ask"]`. The question (tool arguments) and answer (tool result) persist in the asking session's log, and the call is recorded in the session `permissions` audit array like any tool call. A permission grant adds `scope` and `granted_by` fields to that audit entry.
 
 ## The tool loop
 

@@ -335,6 +335,33 @@ class Engine:
             self.current_session = self.sessions.create()
         return self.current_session
 
+    def _grant(self) -> dict:
+        ceiling = getattr(self, '_grant_ceiling', None)
+        if isinstance(ceiling, dict):
+            return dict(ceiling)
+        grant = self.config.get('grant_permission')
+        if isinstance(grant, dict) and grant:
+            return dict(grant)
+        return self._self_permissions()
+
+    def _self_permissions(self) -> dict:
+        from .modes import merge_policy
+        return dict(merge_policy(self.config)[0])
+
+    def grant_permission(self, permission: str, permission_key: str,
+                         scope: str = 'once', origin: str = 'supervisor') -> bool:
+        policy = getattr(self, '_tool_policy', None)
+        if policy is None:
+            return False
+        registry = getattr(self, '_tool_registry', None)
+        name = ''
+        if registry is not None and registry.is_registered(permission):
+            name = registry.canonical_name(permission)
+        policy.grant(name, permission_key, scope=scope, origin=origin)
+        self.current_session.add_permission(
+            permission, 'grant', 'granted', scope=scope, granted_by=origin)
+        return True
+
     def _new_sub_engine(self, type_name: str, provider=None, mode: str = '') -> 'Engine':
         agent_type = self.types.find(type_name)
         if agent_type is None:
@@ -359,16 +386,25 @@ class Engine:
                 sub_config.apply('model', t_model)
             else:
                 sub_config.apply('model', agent_type.model)
-        permissions = dict(self.config.get('tool_permission') or {})
-        permissions.update(agent_type.tool_permission)
+        from .types import resolve_permissions, resolve_grant_ceiling
+        parent_self = self._self_permissions()
+        parent_grant = self._grant()
+        permissions = resolve_permissions(
+            parent_self, parent_grant, agent_type.tool_permission)
         sub_config.apply('tool_permission', permissions)
         sub_config.apply('mode', mode or 'build')
+        if agent_type.ask_policy:
+            ask_policy = dict(self.config.get('ask_policy') or {})
+            ask_policy.update(agent_type.ask_policy)
+            sub_config.apply('ask_policy', ask_policy)
         if provider is None and not agent_type.model:
             provider = self.provider
         sub = Engine(sub_config, ui=NullUI(),
                      plugin_manager=self._plugin_manager, provider=provider)
         sub._lead = self
         sub._ask_ui = getattr(self, '_ask_ui', None)
+        sub._grant_ceiling = resolve_grant_ceiling(
+            parent_self, parent_grant, agent_type.grant_permission, permissions)
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
         sub.load_or_create_session(_sub_session_name(
             ts, self.current_session.name, self.sessions.sessions_dir))
@@ -603,6 +639,7 @@ class Engine:
                         self.ui.thinking_end(dur)
 
                 messages = self._provider_messages()
+                tools_schema = self._tool_schema()
                 max_attempts = 1 + max(0, int(self.config.get('stream_retries', 2)))
                 retry_delay = max(0.0, float(self.config.get('stream_retry_delay', 0.5)))
                 auto_continue = self.config.get('auto_continue', True)
@@ -911,10 +948,16 @@ class Engine:
             worktree=self.config.local_path.parent.parent,
             resolvers=resolvers,
         )
-        allowed = {n for n in self._tool_registry.names()
-                   if self._tool_policy.allowed(
-                       n, self._tool_registry.permission_for(n))}
-        return self._tool_registry.schema_filtered(allowed)
+        return self._tool_schema()
+
+    def _tool_schema(self):
+        registry = getattr(self, '_tool_registry', None)
+        policy = getattr(self, '_tool_policy', None)
+        if registry is None or policy is None:
+            return []
+        allowed = {n for n in registry.names()
+                   if policy.allowed(n, registry.permission_for(n))}
+        return registry.schema_filtered(allowed)
 
     def _run_tool(self, name: str, args: dict, echo: bool = True) -> str:
         registry = self._tool_registry
@@ -930,7 +973,9 @@ class Engine:
         cleaned = registry.clean_args(name, args)
         path_arg = registry.path_arg_for(name)
         path = cleaned.get(path_arg) if path_arg else None
-        action = policy.action(name, registry.permission_for(name), path, args)
+        permission_key = registry.permission_for(name)
+        grant = policy.grant_for(name, permission_key)
+        action = policy.action(name, permission_key, path, args)
         if action == 'deny':
             self._log_permission(name, action, 'denied', path)
             return f'Error: tool "{name}" is disabled by tool policy'
@@ -943,6 +988,11 @@ class Engine:
             self._log_permission(name, action, 'granted' if granted else 'declined', path)
             if not granted:
                 return f'[cancelled] User declined the {name} call'
+        elif grant is not None:
+            policy.consume(name, permission_key)
+            self._log_permission(name, 'grant', 'granted', path,
+                                 scope=grant.get('scope'),
+                                 granted_by=grant.get('origin'))
         else:
             self._log_permission(name, action, 'granted', path)
         if self.config.get('tool_status_visible', True):
@@ -956,8 +1006,8 @@ class Engine:
         return result
 
     def _log_permission(self, name: str, action: str, decision: str,
-                        path: str | None = None):
-        self.current_session.add_permission(name, action, decision, path)
+                        path: str | None = None, **extra):
+        self.current_session.add_permission(name, action, decision, path, **extra)
 
     def _confirm_tool(self, name: str, args: dict) -> bool:
         key_arg = self._tool_registry.key_arg_for(name)

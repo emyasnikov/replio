@@ -35,7 +35,8 @@
 
 ## Open
 
-- [ ] Autonomous supervisor track - compose the delegate loop turn + ask routing + jobs daemon + report-back so a supervisor task started once runs unattended and reports back (supervisor track in PLAN.md)
+- [ ] Per-task decide-vs-park for `direction` asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator
+- [ ] Autonomous supervisor track - compose the delegate loop turn + ask routing + jobs daemon + report-back so a supervisor task started once runs unattended and reports back (supervisor track in PLAN.md).
 - [ ] Supervisor report-back - finished/failed supervisor runs surface a per-run summary (interactive session result footer + `replio jobs status`), delivered out-of-band via the job event hooks + connectors when the terminal is closed
 - [ ] Pending-ask inbox - an unattended run's `ask target='human'` parks as a pending request (persisted, listed in the REPL + serve API) instead of failing, and answering resumes the run from its session (resumable mid-run state shared with the mid-run blocking job approval item)
 - [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
@@ -110,6 +111,7 @@
 
 ## Done
 
+- [x] Delegation permission ceiling + `ask` permission grants - `grant_permission`, `ask_policy`
 - [x] CLI realigned to internal commands - replio models/config/plugins mirror /models, /config, /plugins
 - [x] Plural registry commands - /types, /teams, /skills (was /type, /team, /skill)
 - [x] `/session` split - active session vs `/sessions` catalog (mirrors /model vs /models)

@@ -44,12 +44,14 @@ class Session:
         self._touch()
 
     def add_permission(self, tool: str, action: str, decision: str,
-                       path: str | None = None, timestamp: str | None = None):
+                       path: str | None = None, timestamp: str | None = None,
+                       **extra):
         ts = timestamp or datetime.now(timezone.utc).isoformat(timespec='seconds')
         entry = {'tool': tool, 'action': action, 'decision': decision,
                  'timestamp': ts}
         if path is not None:
             entry['path'] = path
+        entry.update(extra)
         self.permissions.append(entry)
         self._touch()
 

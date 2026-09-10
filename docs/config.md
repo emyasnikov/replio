@@ -39,6 +39,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 
 | Key                         | Default                | Description                                                            |
 |-----------------------------|------------------------|------------------------------------------------------------------------|
+| `ask_policy`                | *(see below)*          | Routing for the `ask` tool by kind (`permission`/`direction`)          |
 | `auto_continue`             | `true`                 | On truncation (`finish_reason=length`) with a partial answer, re-request with a "continue" instruction and stitch the parts into one message |
 | `auto_continue_max`         | `2`                    | Max continuation rounds per turn before reporting truncation     |
 | `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
@@ -49,6 +50,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 | `footer_tokens`             | `["context"]`          | Token counts the footer shows, in order, joined by `/`. `context` = `<n> tokens` (context/input size, chars/4 fallback), `in`/`out`/`thinking` = `<n>t` from provider usage (unavailable counts skipped). Empty list hides the section |
 | `glyph_lines`               | `true`                 | Typed `<glyph> <verb> <arg>` status lines for mapped categories. Off or unmapped categories fall back to the `[tool: arg]` oneliner |
 | `glyph_params`              | `true`                 | Append tool call parameters to glyph status lines and confirm prompts (e.g. `← Read engine.py [offset=299, limit=85]`). Off for bare `<glyph> <verb> <arg>` |
+| `grant_permission`          | `{}`                   | Delegation ceiling: the maximum category actions an engine may hand down to sub-agents. Empty means the engine's own `tool_permission` is the ceiling (no escalation). See [Permission authority](#permission-authority) |
 | `list_dir_max_entries`      | `200`                  | Cap entries `list_dir` returns (`... (showing first N of M entries)` appended). `0` = unlimited |
 | `markdown_streaming`        | `false`                | Basic markdown-aware streaming                                         |
 | `max_tokens`                | `8192`                 | Output token cap sent to the provider. `0` = unset (provider default applies, e.g. Ollama caps at 2048). The default overrides low provider defaults |
@@ -122,6 +124,35 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 ```
 
 Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)). The `ask` category gates the `ask` tool (default `allow` - the interaction itself, answered by the human or the lead agent, see [tools.md](tools.md)).
+
+### `ask_policy`
+
+Routes the `ask` tool by kind:
+
+```json
+{
+  "ask_policy": {
+    "permission": "auto",
+    "direction": "human"
+  }
+}
+```
+
+- `permission` - a sub-agent's request for a tool or category it is not allowed to use (`ask(kind="permission", permission="bash")`). `auto` has the lead agent decide and grants one use, `human` routes to the operator, `deny` disables grants. A request above the engine's `grant_permission` ceiling is always denied. The operator may grant `always` (reusable for the rest of that sub-agent's run), the lead only ever grants `once`.
+- `direction` - a decision or scope change. `human` (default) routes to the operator, `auto` to the lead.
+
+### Permission authority
+
+Every engine has two permission axes:
+
+- `tool_permission` - what the engine itself may use.
+- `grant_permission` - the ceiling on what it may hand down to sub-agents.
+
+A sub-agent's effective permissions are the parent's `tool_permission`, narrowed by the type's `tool_permission` carve and capped by the parent's `grant_permission`. A type can never widen a category above the ceiling, so a sub-agent cannot gain a permission its caller was not authorized to delegate. `grant_permission` defaults to the engine's own `tool_permission`, so delegation never escalates unless a type (or config) explicitly widens the ceiling.
+
+A type that sets `grant_permission` may delegate categories it does not use itself - e.g. a supervisor with `edit`/`bash` denied for itself but allowed in its ceiling can hand them to an `implementer` while never running them.
+
+An approved permission request creates a one-shot grant on the asking sub-agent (`once`), consumed by the next matching call. The operator may grant `always`, reusable for the rest of that sub-agent's run. Grants are never inherited by grandchildren and are recorded in the session `permissions` audit array.
 
 ### `bash_allow` - command allowlist for `run_command`
 
