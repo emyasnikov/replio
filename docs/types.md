@@ -96,7 +96,7 @@ Fields:
 - A configured type uses its own `tool_permission` overrides. The default for the `delegate` category is `allow` (delegation runs without a prompt). Set `delegate: "ask"` on a type to confirm each delegation to it.
 - A temporary type created only to run a task in parallel defaults to `deny` until you opt in.
 
-Sub-agent permissions are bounded by the caller: the effective carve is the caller's `tool_permission`, narrowed by the type's carve and capped by the caller's `grant_permission` ceiling (see [config.md](config.md#permission-authority)). `grant_permission` defaults to the caller's own `tool_permission`, so a type can never grant a sub-agent more than the caller holds. A type that sets `grant_permission` may delegate categories it does not use itself - e.g. a supervisor that denies `edit`/`bash` for itself but allows them in its ceiling can hand them to an `implementer` while never running them. An approved `ask(kind="permission")` request creates a one-shot grant on the asking sub-agent, consumed by the next matching call. The operator may grant `always` for the rest of that sub-agent's run.
+An approved `ask(kind="permission")` request creates a one-shot grant on the asking sub-agent, consumed by the next matching call. The operator may grant `always` for the rest of that sub-agent's run.
 
 ## Relationship to /agent, skills, and fleets
 

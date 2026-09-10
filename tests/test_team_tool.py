@@ -1,0 +1,184 @@
+import io
+import json
+import unittest
+from unittest.mock import MagicMock, patch
+
+from replio.teams import Team, TeamStage
+from replio.tools.team import _clamped_stages, _team_action
+from replio.types import AgentType
+
+from tests.helpers import make_chat
+
+
+class TestTeamTool(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+        self.chat._summarize = MagicMock(return_value='summary')
+        self.sessions_dir = self.chat.config.local_path.parent / 'sessions'
+        for name in ('researcher', 'writer'):
+            self.chat.types.put(
+                AgentType(name=name, system_prompt=f'You are the {name}.'),
+                scope='local')
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def _result(self, content, status='ok'):
+        return ({'type': 'token', 'content': content},
+                {'type': 'done', 'reason': 'stop'})
+
+    def _team(self, name='doc', *stages):
+        self.chat.teams.put(
+            Team(name=name, stages=list(stages)), scope='local')
+
+    def _run(self, name='doc', task='write a report'):
+        self.chat._init_tooling()
+        return self.chat._run_tool('team', {'name': name, 'task': task})
+
+    def test_registered_in_schema(self):
+        schema = self.chat._init_tooling()
+        names = [s['function']['name'] for s in schema]
+        self.assertIn('team', names)
+        entry = self.chat._tool_registry.info('team')
+        self.assertEqual(entry['category'], 'delegate')
+        self.assertEqual(entry['permission'], 'delegate')
+        self.assertTrue(self.chat._tool_registry.loop_for('team'))
+        self.assertIn('name', entry['parameters']['properties'])
+        self.assertIn('task', entry['parameters']['properties'])
+
+    def test_runs_pipeline_and_returns_final(self):
+        self._team('doc', TeamStage(type='researcher'), TeamStage(type='writer'))
+        self.chat.provider.chat.side_effect = [
+            self._result('Research done.'), self._result('Draft done.'),
+        ]
+        out = self._run()
+        self.assertIn('[team doc] Draft done.', out)
+        self.assertEqual(self.chat.provider.chat.call_count, 2)
+        self.assertEqual(len(self.chat.current_session.sub_sessions), 2)
+
+    def test_unknown_team_errors(self):
+        out = self._run(name='ghost')
+        self.assertIn('Error: unknown team "ghost"', out)
+
+    def test_team_without_stages_errors(self):
+        self._team('empty')
+        out = self._run(name='empty')
+        self.assertIn('has no stages', out)
+
+    def test_unknown_stage_type_errors(self):
+        self._team('doc', TeamStage(type='ghost'))
+        out = self._run()
+        self.assertIn('Error: team "doc" failed', out)
+        self.assertIn('Unknown agent type', out)
+
+    def test_resolver_allows_known_team(self):
+        self._team('doc', TeamStage(type='researcher'))
+        self.assertEqual(_team_action(self.chat, {'name': 'doc'}), 'allow')
+
+    def test_resolver_denies_stage_delegate_deny(self):
+        self.chat.types.put(AgentType(
+            name='locked', system_prompt='x',
+            tool_permission={'delegate': 'deny'}), scope='local')
+        self._team('doc', TeamStage(type='locked'))
+        self.assertEqual(_team_action(self.chat, {'name': 'doc'}), 'deny')
+        out = self._run()
+        self.assertIn('disabled by tool policy', out)
+
+    def test_resolver_asks_for_stage_delegate_ask(self):
+        self.chat.types.put(AgentType(
+            name='cautious', system_prompt='x',
+            tool_permission={'delegate': 'ask'}), scope='local')
+        self._team('doc', TeamStage(type='cautious'))
+        self.assertEqual(_team_action(self.chat, {'name': 'doc'}), 'ask')
+        self.chat.provider.chat.side_effect = [self._result('done')]
+        with patch('builtins.input', return_value='n'):
+            out = self._run()
+        self.assertIn('[cancelled]', out)
+
+    def test_clamped_stage_is_noted(self):
+        chat = make_chat({
+            'grant_permission': {'read': 'allow'},
+            'tool_permission': {'ask': 'allow', 'read': 'allow', 'bash': 'ask'},
+        })
+        try:
+            chat._summarize = MagicMock(return_value='summary')
+            chat.types.put(AgentType(
+                name='impl', system_prompt='x',
+                tool_permission={'bash': 'allow'}), scope='local')
+            chat.teams.put(Team(
+                name='doc', stages=[TeamStage(type='impl')]), scope='local')
+            chat.provider.chat.side_effect = [
+                ({'type': 'token', 'content': 'done'},
+                 {'type': 'done', 'reason': 'stop'}),
+            ]
+            chat._init_tooling()
+            out = chat._run_tool('team', {'name': 'doc', 'task': 't'})
+            self.assertIn('reduced permissions for: impl', out)
+        finally:
+            chat._tmp.cleanup()
+
+    def test_clamped_stages_helper(self):
+        chat = make_chat({
+            'grant_permission': {'read': 'allow'},
+            'tool_permission': {'ask': 'allow', 'read': 'allow', 'bash': 'ask'},
+        })
+        try:
+            chat.types.put(AgentType(
+                name='impl', system_prompt='x',
+                tool_permission={'bash': 'allow'}), scope='local')
+            chat.types.put(AgentType(
+                name='safe', system_prompt='x',
+                tool_permission={'bash': 'deny'}), scope='local')
+            team = Team(name='doc', stages=[
+                TeamStage(type='impl'), TeamStage(type='safe')])
+            self.assertEqual(_clamped_stages(chat, team), ['impl'])
+        finally:
+            chat._tmp.cleanup()
+
+    def test_cycle_guard(self):
+        self._team('doc', TeamStage(type='writer'))
+        self.chat._team_stack = ['doc']
+        result = self.chat.run_team(self.chat.teams.find('doc'), 'task')
+        self.assertEqual(result.status, 'error')
+        self.assertTrue(any(e.get('code') == 'team_cycle' for e in result.errors))
+
+    def test_depth_guard(self):
+        self._team('doc', TeamStage(type='writer'))
+        self.chat._team_depth = self.chat.config.get('max_team_depth')
+        result = self.chat.run_team(self.chat.teams.find('doc'), 'task')
+        self.assertEqual(result.status, 'error')
+        self.assertTrue(any(e.get('code') == 'team_depth' for e in result.errors))
+
+    def test_depth_and_stack_propagate_to_subengine(self):
+        self.chat._team_depth = 1
+        self.chat._team_stack = ['doc']
+        sub = self.chat._new_sub_engine('writer')
+        self.assertEqual(sub._team_depth, 1)
+        self.assertEqual(sub._team_stack, ['doc'])
+
+    def test_agent_loop_runs_team_tool(self):
+        self._team('doc', TeamStage(type='writer'))
+        tool_call = [{
+            'id': 'call_team001',
+            'type': 'function',
+            'function': {'name': 'team',
+                         'arguments': json.dumps({'name': 'doc',
+                                                  'task': 'write it'})},
+        }]
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'tool_calls', 'tool_calls': tool_call}],
+            self._result('Stage output.'),
+            self._result('Final answer.'),
+        ]
+        with patch('sys.stdout', new=io.StringIO()):
+            self.chat._agent_loop()
+        self.assertEqual(self.chat.provider.chat.call_count, 3)
+        tools = [m for m in self.chat.current_session.messages
+                 if m['role'] == 'tool']
+        self.assertTrue(tools)
+        self.assertIn('[team doc] Stage output.', tools[0]['content'])
+
+
+if __name__ == '__main__':
+    unittest.main()

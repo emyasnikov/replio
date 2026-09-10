@@ -24,6 +24,7 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 | `grep` | replio-core-fs | `search` | `read` | Regex content search (`file:line:` results, alias `find`) |
 | `list_dir` | replio-core-fs | `read` | `list` | List a directory (`depth` for trees, alias `ls`) |
 | `run_command` | replio-core-exec | `exec` | `bash` | Run a shell command with timeout (aliases `bash`, `exec`). Restricted by `tool_permission.bash_allow` |
+| `team` | core | `delegate` | `delegate` | Run a named team (an ordered chain of agent-type stages) and return the final stage's answer |
 | `web_fetch` | replio-core-web | `read` | `read` | Fetch a page by URL or by `web_search` result `id` (aliases `open`, `fetch_page`) |
 | `web_search` | replio-core-web | `search` | `web` | Web search (aliases `search`, `web`) |
 

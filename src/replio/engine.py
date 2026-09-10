@@ -405,6 +405,8 @@ class Engine:
         sub._ask_ui = getattr(self, '_ask_ui', None)
         sub._grant_ceiling = resolve_grant_ceiling(
             parent_self, parent_grant, agent_type.grant_permission, permissions)
+        sub._team_depth = getattr(self, '_team_depth', 0)
+        sub._team_stack = list(getattr(self, '_team_stack', []))
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
         sub.load_or_create_session(_sub_session_name(
             ts, self.current_session.name, self.sessions.sessions_dir))
@@ -488,6 +490,28 @@ class Engine:
         return '\n'.join(lines)[:1500]
 
     def run_team(self, team, task: str) -> TeamRunResult:
+        depth = getattr(self, '_team_depth', 0)
+        max_depth = int(self.config.get('max_team_depth', 2) or 0)
+        stack = list(getattr(self, '_team_stack', []))
+        if team.name in stack:
+            return TeamRunResult(
+                name=team.name, status='error',
+                errors=[{'code': 'team_cycle', 'message':
+                         f'Team cycle detected: {" -> ".join(stack + [team.name])}'}])
+        if max_depth and depth >= max_depth:
+            return TeamRunResult(
+                name=team.name, status='error',
+                errors=[{'code': 'team_depth', 'message':
+                         f'Team nesting limit reached ({max_depth}): {team.name}'}])
+        self._team_stack = stack + [team.name]
+        self._team_depth = depth + 1
+        try:
+            return self._run_team_stages(team, task)
+        finally:
+            self._team_stack = stack
+            self._team_depth = depth
+
+    def _run_team_stages(self, team, task: str) -> TeamRunResult:
         from .teams import read_team_memory, write_team_memory
         for stage in team.stages:
             agent_type = self.types.find(stage.type)
@@ -924,10 +948,12 @@ class Engine:
         from .tools.registry import ToolRegistry
         from .tools.policy import ToolPolicy
         from .tools.delegate import register_delegate_tool
+        from .tools.team import register_team_tool
         from .tools.ask import register_ask_tool
         from .modes import merge_policy
         self._tool_registry = ToolRegistry()
         register_delegate_tool(self._tool_registry, self)
+        register_team_tool(self._tool_registry, self)
         register_ask_tool(self._tool_registry, self)
         plugin_manager = getattr(self, '_plugin_manager', None)
         if plugin_manager is not None:

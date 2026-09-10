@@ -32,7 +32,6 @@ Agents cooperate through types, delegation, and team stages. Sub-agents use the 
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| `team` tool - a core, model-invokable `team(name, task)` that runs `Engine.run_team`, so a lead agent can drive named teams (not just single types), with a per-stage ceiling check and a recursion/depth guard | S-M | the supervisor can orchestrate teams |
 | Non-blocking delegation + progress - the assistant starts sub-agents or whole teams for bigger tasks and reports their status instead of blocking the current run. Live status of which sub-agent is working, read out of the sub-engine loop the single blocking `Engine.chat()` does not expose today | M | the current run keeps flowing |
 | Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style) | M | current state of a delegation |
 | Interactive delegation focus - jump in/out of the active sub-agent, arrows switch between concurrent sub-agent session logs rendered from their own saved logs (opencode-style sub-agent views) | M | focus a running sub-agent |

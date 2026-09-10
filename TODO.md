@@ -111,6 +111,7 @@
 
 ## Done
 
+- [x] `team` tool - model-invokable team pipeline, per-stage permission + ceiling/depth guards
 - [x] Delegation permission ceiling + `ask` permission grants - `grant_permission`, `ask_policy`
 - [x] CLI realigned to internal commands - replio models/config/plugins mirror /models, /config, /plugins
 - [x] Plural registry commands - /types, /teams, /skills (was /type, /team, /skill)

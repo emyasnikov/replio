@@ -26,7 +26,7 @@ The agentic core has three layers:
 
    One stream, one round trip when no tools are used. `chat_nonstreaming()` is reserved for query refinement, not the main path. The loop is front-end agnostic: `ChatLoop` (REPL), `replio run` (CLI), and `replio serve` (HTTP) all call `Engine.chat(text) -> TurnResult`. The `<thinking>` marker split lives in the engine so thinking stays separate from content.
 
-2. **ToolRegistry** (`tools/registry.py`) - the **single dispatch point**. The model invokes tools via OpenAI function calling, slash commands are thin wrappers that call the same `execute()`. The loop never special-cases tool names - per-tool behavior comes from registration metadata (`refine`, `permission_fn`, `note`, later `confirm`). The `delegate` tool (`tools/delegate.py`) is a core tool that runs a task under an agent type by spawning an in-process sub-`Engine` (`Engine.run_subagent`) - the same agent loop, its own `sub_<ts>_<parent-session>` session, a quiet `NullUI`. Its permission is a per-invocation `permission_fn` resolved per type.
+2. **ToolRegistry** (`tools/registry.py`) - the **single dispatch point**. The model invokes tools via OpenAI function calling, slash commands are thin wrappers that call the same `execute()`. The loop never special-cases tool names - per-tool behavior comes from registration metadata (`refine`, `permission_fn`, `note`, later `confirm`). The `delegate` tool (`tools/delegate.py`) is a core tool that runs a task under an agent type by spawning an in-process sub-`Engine` (`Engine.run_subagent`) - the same agent loop, its own `sub_<ts>_<parent-session>` session, a quiet `NullUI`. Its permission is a per-invocation `permission_fn` resolved per type. The `team` tool (`tools/team.py`) runs a named team pipeline (`Engine.run_team`) with the same per-stage permission resolution plus cycle and `max_team_depth` guards.
 
 3. **Commands** (`commands/`) - user-facing affordances. A command either wraps a tool or performs a local action (`/model`, `/session`, `/sessions`).
 
@@ -76,6 +76,7 @@ Replio/
 │   │   ├── registry.py      # Tool registration + dispatch (OpenAI function calling)
 │   │   ├── policy.py        # ToolPolicy - allow/ask/deny permissions + path scoping
 │   │   ├── delegate.py      # Core delegate tool - type sub-agents via per-invocation policy
+│   │   ├── team.py          # Core team tool - run a named team pipeline, ceiling + depth guards
 │   │   └── ask.py           # Core ask tool - human/lead mid-run questions
 │   ├── plugins/
 │   │   ├── __init__.py

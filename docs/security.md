@@ -31,7 +31,7 @@ In headless mode (`replio serve` / `replio run`), `ask`-gated tools are denied o
 
 ## Delegation
 
-The `delegate` tool runs a task under an agent type as an in-process sub-agent. A sub-agent shares the caller's worktree and tool policy, narrowed by the agent type's `tool_permission` carve and capped by the caller's `grant_permission` ceiling, so it can never exceed what the caller is authorized to delegate. `grant_permission` defaults to the caller's own carve, so delegation never escalates unless a type or config explicitly widens the ceiling. Ask-gated tools are auto-denied inside a sub-agent (no interactive confirm), so its effective permissions are the categories its carve allows. An approved `ask(kind="permission")` request adds a one-shot grant capped by the ceiling. The permission resolves per invocation from the target type: a configured type uses its own `tool_permission` (category `delegate` defaults to `allow`, set `ask` on an agent type to confirm each delegation), and an agent type outside the registry is denied outright. Delegation is recorded in the session `permissions` audit array like any tool call, and each sub-agent's work persists as its own `sub_<ts>_<parent-session>` session log (suffix = the calling session id). For delegation across trust boundaries, run separate `replio serve` processes scoped to their own folders and delegate over the API instead - see [fleet.md](fleet.md).
+so its effective permissions are the categories its carve allows. An approved `ask(kind="permission")` request adds a one-shot grant capped by the ceiling. The permission resolves per invocation
 
 ## Modes
 
