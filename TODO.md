@@ -110,6 +110,7 @@
 
 ## Done
 
+- [x] `replio-core-webhook` - report-back connector POSTing job reports to `report.webhook`
 - [x] Pending-ask inbox - unattended human asks park in `.replio/asks.json`, answered via `/asks`
 - [x] Unattended mode - no stdin at any depth, confirms auto-deny, `confirm_timeout`
 - [x] `team` tool - model-invokable team pipeline, per-stage permission + ceiling/depth guards

@@ -313,6 +313,35 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(len(job.history), 1)
         self.assertTrue(job.next_run_at)
 
+    def test_report_service_receives_completed_run(self):
+        class _FakeService:
+            def __init__(self):
+                self.calls = []
+            def report(self, payload, config):
+                self.calls.append(payload)
+        service = _FakeService()
+        manager = SimpleNamespace(
+            get=lambda name: service if name == 'report' else None)
+        engine = ScriptedEngine([TurnResult(status='ok', content='done',
+                                            duration=1.0, session='job.a')])
+        engine._plugin_manager = manager
+        engine._summarize = lambda messages: 'summary'
+        engine.current_session.messages = []
+        patcher = patch('replio.scheduler._build_engine', return_value=engine)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        job = Job('a', {'interval': 3600}, prompt='work', status='approved')
+        self.registry.put(job)
+        run = self.scheduler.run_job(job)
+        self.assertEqual(run.status, 'verified')
+        self.assertEqual(len(service.calls), 1)
+        payload = service.calls[0]
+        self.assertEqual(payload['event'], 'job.run.completed')
+        self.assertEqual(payload['job'], 'a')
+        self.assertEqual(payload['status'], 'verified')
+        self.assertEqual(payload['memory'], 'summary')
+        self.assertTrue(payload['worktree'])
+
     def test_truncated_counts_as_verified(self):
         self._patch_engine([
             TurnResult(status='truncated', content='partial', duration=1.0, session='job.a'),

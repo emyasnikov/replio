@@ -197,10 +197,11 @@ class JobScheduler:
             if delay > 0:
                 time.sleep(delay)
         self._finish(job, run, finished)
-        self._update_memory(engine, job, run)
+        memory = self._update_memory(engine, job, run)
+        self._report(engine, job, run, memory)
         return run
 
-    def _update_memory(self, engine, job: Job, run: JobRun):
+    def _update_memory(self, engine, job: Job, run: JobRun) -> str:
         worktree = self.config.local_path.parent.parent
         summary = None
         if engine is not None:
@@ -226,6 +227,32 @@ class JobScheduler:
             summary = summary[:1500]
         write_memory(worktree, job, summary)
         self._out(f'{job.name}: run memory updated')
+        return summary
+
+    def _report(self, engine, job: Job, run: JobRun, memory: str = '') -> None:
+        manager = getattr(engine, '_plugin_manager', None) if engine is not None else None
+        if manager is None:
+            return
+        service = manager.get('report')
+        if service is None:
+            return
+        payload = {
+            'event': 'job.run.completed',
+            'job': job.name,
+            'status': run.status,
+            'duration': run.duration,
+            'reason': run.reason,
+            'session': run.session,
+            'started_at': run.started_at,
+            'finished_at': run.finished_at,
+            'content': run.content,
+            'worktree': str(self.config.local_path.parent.parent),
+            'memory': memory,
+        }
+        try:
+            service.report(payload, self.config)
+        except Exception as e:
+            self._out(f'{job.name}: report failed: {e}', error=True)
 
     def _finish(self, job: Job, run: JobRun, finished: datetime) -> JobRun:
         job.last_run_at = run.started_at

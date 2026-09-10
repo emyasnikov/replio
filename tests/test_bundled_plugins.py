@@ -6,12 +6,22 @@ from replio.config import Config
 from replio.plugins.manager import PluginManager, PluginError
 from replio.tools.registry import ToolRegistry
 
-BUNDLED = {'replio-core-web', 'replio-core-fs', 'replio-core-edit',
-           'replio-core-git', 'replio-core-dev', 'replio-core-exec',
-           'replio-core-mcp', 'replio-core-eval',
-           'replio-core-opencode', 'replio-core-ollama',
-           'replio-core-openai', 'replio-core-groq',
-           'replio-core-anthropic'}
+BUNDLED = {
+    'replio-core-anthropic',
+    'replio-core-dev',
+    'replio-core-edit',
+    'replio-core-eval',
+    'replio-core-exec',
+    'replio-core-fs',
+    'replio-core-git',
+    'replio-core-groq',
+    'replio-core-mcp',
+    'replio-core-ollama',
+    'replio-core-openai',
+    'replio-core-opencode',
+    'replio-core-web',
+    'replio-core-webhook',
+    }
 
 
 class TestBundledPlugins(unittest.TestCase):

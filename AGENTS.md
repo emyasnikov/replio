@@ -96,7 +96,8 @@ Replio/
     ├── replio-core-ollama/      # OllamaProvider
     ├── replio-core-openai/      # OpenAIProvider
     ├── replio-core-opencode/    # OpenCodeProvider + OpenCodeGoProvider (session-id base)
-    └── replio-core-web/         # web_search, web_fetch + search service
+    ├── replio-core-web/         # web_search, web_fetch + search service
+    └── replio-core-webhook/     # report-back connector (job run reports)
 ```
 
 ## Conventions
@@ -203,6 +204,7 @@ Full schema and defaults are in `docs/config.md`. Notable edge cases:
 
 - `max_tokens` defaults to `8192` - the cap sent to the provider, which overrides low provider-side defaults (e.g. Ollama's 2048). Set it to `0` to omit it from the provider payload, so the provider's own default applies. Hitting the limit prints a warning (distinguishing a configured cap from the provider's default) and logs a session `errors` entry.
 - `unattended: true` (or `replio --unattended` / `/unattended`) guarantees no stdin is read at any depth: confirms auto-deny, and `ask target='human'` parks as a pending request in `.replio/asks.json` (returned as `[parked] Ask #<id>`, answered via `/asks` or the serve API. The answer injects into the origin session). `confirm_timeout` (seconds, default `0` = forever) makes attended confirm/ask prompts self-deny after a timeout instead of hanging.
+- `report.webhook` (default `""`) is the URL the bundled `replio-core-webhook` connector POSTs a completed job run to (the scheduler dispatches one `job.run.completed` event per run to the registered `report` service). Empty disables out-of-band reporting.
 - `plugins` lists the plugins to load, and the bundled plugins are in the default. An empty list loads all discovered plugins. `plugins.enabled`/`plugins.deny` from earlier versions are migrated automatically.
 
 ## Testing
