@@ -1415,6 +1415,11 @@
 </thead>
 <tbody>
 <tr>
+<td><code>/asks</code></td>
+<td></td>
+<td>List and answer parked asks from unattended runs (<code>/asks list [all|pending|answered]</code>, <code>/asks show &lt;id&gt;</code>, <code>/asks answer &lt;id&gt; &lt;text&gt;</code>). Answering resumes the origin session. See <a href="../config/#unattended-mode">config.md</a></td>
+</tr>
+<tr>
 <td><code>/compact</code></td>
 <td><code>/c</code></td>
 <td>Summarize the conversation and trim the provider context</td>
@@ -1442,7 +1447,7 @@
 <tr>
 <td><code>/jobs</code></td>
 <td></td>
-<td>Manage scheduled and durable jobs: <code>list</code>, <code>status</code>, <code>show</code>, <code>add</code>, <code>approve</code>, <code>reject</code>, <code>enable</code>, <code>disable</code>, <code>stop</code>, <code>remove</code>, <code>run</code>. See <a href="../jobs/">jobs.md</a></td>
+<td>Manage scheduled and durable jobs: <code>list</code>, <code>status</code>, <code>show</code>, <code>add</code>, <code>add-supervisor</code>, <code>approve</code>, <code>reject</code>, <code>enable</code>, <code>disable</code>, <code>stop</code>, <code>remove</code>, <code>run</code>. See <a href="../jobs/">jobs.md</a></td>
 </tr>
 <tr>
 <td><code>/mode</code></td>
@@ -1503,6 +1508,11 @@
 <td><code>/types</code></td>
 <td></td>
 <td>Manage types: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [prompt]</code>, <code>remove &lt;name&gt;</code>. See <a href="../types/">types.md</a></td>
+</tr>
+<tr>
+<td><code>/unattended</code></td>
+<td></td>
+<td>Show or toggle unattended mode (<code>/unattended on</code>/<code>off</code>): no stdin at any depth, confirms auto-deny, human asks route to the lead or return without pausing. See <a href="../config/#unattended-mode">config.md</a></td>
 </tr>
 <tr>
 <td><code>/version</code></td>
@@ -1793,6 +1803,10 @@ replio<span class="w"> </span>config<span class="w"> </span>reload<span class="w
 <tr>
 <td><code>add</code></td>
 <td><code>replio jobs add &lt;name&gt; --file jobs/&lt;name&gt;.md --cron "0 2 * * *"</code> (or <code>--interval N</code> / <code>--at ISO</code>, with <code>--prompt</code> optional when <code>--file</code> given), plus <code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--type</code>, <code>--system-prompt</code>, <code>--tools-deny</code>, <code>--tool-permission</code>, <code>--retries</code>, <code>--backoff</code>, <code>--timeout</code>, <code>--require-approval</code>, <code>--approve-model</code>, <code>--approval auto</code></td>
+</tr>
+<tr>
+<td><code>add-supervisor</code></td>
+<td><code>replio jobs add-supervisor &lt;name&gt; [--interval N | --at ISO | --cron "expr"] [--task "text" | --file path]</code> - scaffold an approved <code>leader</code>-typed supervisor job from the supervisor task template</td>
 </tr>
 <tr>
 <td><code>approve</code></td>

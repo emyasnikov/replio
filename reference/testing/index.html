@@ -1243,8 +1243,16 @@
 <td><code>ask</code> tool (core): schema/registration (<code>category ask</code>, <code>permission ask</code>, <code>key_arg question</code>, <code>tool_permission.ask</code> default allow), human answer / empty-cancelled / context+options rendering, no-channel error (headless), <code>target='lead'</code> lead-model consultation (question + delegated task in the prompt) + silent-lead fallback to human + root-fallback, sub-engine <code>_lead</code>/<code>_ask_ui</code> inheritance, full-loop ask -&gt; answer tool message -&gt; continue</td>
 </tr>
 <tr>
+<td><code>test_asks.py</code></td>
+<td>Pending-ask inbox: <code>AskStore</code> add/find/list/status-filter/answer round-trip + persistence + incrementing ids + unknown/empty answer, <code>inject_answer</code> appends the <code>user</code> message to the origin session (+ missing-session skip), parking (unattended root/sub-agent human ask -&gt; <code>[parked]</code> + record with no stdin, <code>target='lead'</code> lead-less root parks, attended still prompts, permission-ask <code>human</code> route parks with <code>kind=permission</code> while <code>auto</code> route still grants <code>once</code> to the lead), resume-in-context after reload, <code>/asks</code> command (list/show/answer/usage/unknown-id, answer reloads a current origin session), serve <code>GET /asks</code> + <code>POST /asks/&lt;id&gt;/answer</code> (200/404/400)</td>
+</tr>
+<tr>
+<td><code>test_autonomous_supervisor.py</code></td>
+<td>End-to-end governance loop (deterministic, mock provider): a <code>leader</code>-typed supervisor job runs a <code>team</code>, a stage's <code>ask</code> parks under unattended mode, the run verifies and the <code>report</code> payload carries the parked ask. Answering injects into the origin session and a resumed turn sees it. The <code>grant_permission</code> ceiling lets the leader delegate <code>bash</code> it denies itself</td>
+</tr>
+<tr>
 <td><code>test_bundled_plugins.py</code></td>
-<td>Bundled plugin discovery, tool registration, search service, bundled update/uninstall blocking, default-config plugin set, provider registration via the hook</td>
+<td>Bundled plugin discovery, tool registration, search/mcp_server/report service, bundled update/uninstall blocking, default-config plugin set, provider registration via the hook</td>
 </tr>
 <tr>
 <td><code>test_cli.py</code></td>
@@ -1267,6 +1275,10 @@
 <td><code>delegate</code> tool: type allow default (no prompt) / <code>ask</code> confirm grant-decline / unknown-type deny, <code>delegate_echo</code> on/off display + sub footer, <code>/tool delegate</code> single print, empty-content log-summary fallback, sub-agent session persistence + resolver actions</td>
 </tr>
 <tr>
+<td><code>test_delegation_permissions.py</code></td>
+<td>Permission ceiling + grants: <code>clamp_action</code>/<code>resolve_permissions</code>/<code>resolve_grant_ceiling</code>, <code>ToolPolicy</code> one-shot/always grants + consume + category/tool matching, no-escalation (a type carve cannot widen above the caller's <code>grant_permission</code>), supervisor grants a category it cannot use itself, one-shot grants do not propagate to children, <code>ask(kind='permission')</code> routing (<code>auto</code>/<code>human</code>/<code>deny</code>, ceiling denial, lead grants <code>once</code> only, operator grants <code>once</code>/<code>always</code>), granted tool appears then is consumed from the schema, audit entries</td>
+</tr>
+<tr>
 <td><code>test_engine.py</code></td>
 <td><code>Engine.chat</code> turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-message <code>mode</code>, glyph param suffix gating, <code>!</code> error-line rendering and <code>show_errors</code> gating, soft-result note-line rendering and <code>show_notes</code> gating, <code>check_connection</code>/<code>list_models</code> probe resolution and overrides without state mutation, <code>_reinit_provider</code> provider-registry API key resolution (no config fallback, registry custom base_url fallback when config empty), model-ref unfold + approval gate (unfolded provider/base_url/model, headless deny, <code>approve_models</code> grant, chat short-circuit, subagent type-model unfold + gate, team-run pre-check deny)</td>
 </tr>
@@ -1284,7 +1296,7 @@
 </tr>
 <tr>
 <td><code>test_jobs.py</code></td>
-<td>Job model + registry (round-trip incl. <code>require_approval</code>/<code>task_file</code>/<code>approve_model</code>/<code>created_at</code>, runnable + ready-to-run gates, corrupt file tolerance), cron parser (steps/ranges/lists/dom/dow/the restrictive day rule, leap day), <code>next_run</code>/<code>compute_next_run</code>/<code>parse_dt</code>, scheduler run/tick under a mocked engine (verified/failed, retries with backoff, per-attempt history, unknown type, one-shot <code>at</code>, approval gates, per-run <code>require_approval</code> park/re-arm, run memory write + injection, per-run session naming + collision dedupe + <code>--session</code> stability, run content capture), <code>_build_engine</code> type-skill injection (present/missing), task file template/linkage/missing-file failure, status/list/show rendering, <code>replio jobs</code> CLI (add/approve/list, <code>--file</code>, edit, status output, stop, auto-approval, bad cron, duplicates, run exit codes + content printing)</td>
+<td>Job model + registry (round-trip incl. <code>require_approval</code>/<code>task_file</code>/<code>approve_model</code>/<code>created_at</code>, runnable + ready-to-run gates, corrupt file tolerance), cron parser (steps/ranges/lists/dom/dow/the restrictive day rule, leap day), <code>next_run</code>/<code>compute_next_run</code>/<code>parse_dt</code>, scheduler run/tick under a mocked engine (verified/failed, retries with backoff, per-attempt history, unknown type, one-shot <code>at</code>, approval gates, per-run <code>require_approval</code> park/re-arm, run memory write + injection, per-run session naming + collision dedupe + <code>--session</code> stability, run content capture), <code>_build_engine</code> type-skill injection (present/missing), task file template/linkage/missing-file failure, status/list/show rendering (incl. the <code>last run:</code> summary line), <code>replio jobs</code> CLI (add/approve/list, <code>--file</code>, edit, status output, stop, auto-approval, bad cron, duplicates, run exit codes + content printing), report-back dispatch (verified/failed/build-failure events, payload fields, injected service, no-service no-op, service-exception tolerance)</td>
 </tr>
 <tr>
 <td><code>test_models.py</code></td>
@@ -1335,12 +1347,12 @@
 <td>In-process sub-engine: provider/plugin/worktree inheritance, type prompt/mode/tool_permission application, type-skill system-prompt injection (present/missing/empty/no-skills), model override, <code>NullUI</code>, unknown type, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
 </tr>
 <tr>
-<td><code>test_subagent.py</code></td>
-<td>In-process sub-engine: provider/plugin/worktree inheritance, type prompt/mode/tool_permission application, model override, <code>NullUI</code>, unknown type, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
-</tr>
-<tr>
 <td><code>test_team_run.py</code></td>
 <td><code>Engine.run_team</code>: brief builder (task + prior results + handoff + memory + task hint, prior-result truncation), sequential stage execution with per-stage <code>sub_*</code> sessions + parent linkage + exact brief persistence, stage mode override + caller-mode inheritance, stop-on-failure, unknown-stage-type stop, zero stages, rolling team-memory write (summarized + prior-seeded + fallback), <code>/teams run</code> command output (stages + final result, unknown team, usage)</td>
+</tr>
+<tr>
+<td><code>test_team_tool.py</code></td>
+<td><code>team</code> tool: schema/registration (<code>category delegate</code>, <code>loop</code>), pipeline run + final result + sub-sessions, unknown team / no stages / unknown stage type errors, resolver allow/deny/ask per stage type, clamped-stage note, <code>run_team</code> cycle + depth guards, <code>_team_depth</code>/<code>_team_stack</code> propagation, full agent-loop team call</td>
 </tr>
 <tr>
 <td><code>test_teams.py</code></td>
@@ -1359,6 +1371,10 @@
 <td>Tool registration metadata, schema, refine flags, note-result predicates, <code>_config</code> pass-through, activity params strings, fs tool glyphs (<code>* List</code> / <code>* Grep</code>), <code>permission_fn</code> storage + <code>resolver_for</code></td>
 </tr>
 <tr>
+<td><code>test_unattended.py</code></td>
+<td>Unattended mode: config defaults, root <code>_ask_ui</code> dropped (config, <code>--unattended</code>, <code>/unattended</code>) and restored by <code>set_unattended</code>, sub-engine inherits <code>unattended</code> + no <code>_ask_ui</code>, confirm auto-deny (no <code>ui.confirm</code> call), root human ask non-blocking / sub-agent human ask routes to the lead (no <code>input</code>), full-loop run_command confirm auto-deny, model approval not prompted unless <code>approve_models</code>, <code>/unattended</code> command status + toggle, <code>confirm_timeout</code> deny-on-timeout / answer-when-ready / zero-timeout passthrough for confirm and ask</td>
+</tr>
+<tr>
 <td><code>test_types.py</code></td>
 <td><code>TypeRegistry</code>: bundled/plugin/global/local merge and precedence, origins (bundled/plugin/local/global origin), tags roundtrip + merge, put/remove/reload (disk re-read + plugin-manager re-apply), <code>/types</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
 </tr>
@@ -1373,6 +1389,7 @@
 <p>Each bundled plugin ships its unit tests in its own directory (<code>plugins/&lt;name&gt;/tests/</code>), covering the plugin's tools and helpers without touching the core. The core suite discovers them through <code>tests/test_plugin_suites.py</code> (registered via <code>load_tests</code>), so <code>python -m unittest discover tests</code> runs everything. A single plugin's suite runs standalone with <code>python plugins/&lt;name&gt;/tests/&lt;file&gt;.py</code>, and headless via <code>replio plugins test &lt;name&gt;</code> (or <code>replio plugins test</code> for every plugin with a suite).</p>
 <h2 id="live-testing">Live testing<a class="headerlink" href="#live-testing" title="Permanent link">&para;</a></h2>
 <p>Manual live tests against a real provider API are done ad-hoc, not automated. Use a local model (Ollama) or a disposable API key, and verify a turn end-to-end: streaming output, a tool call round trip, and session persistence.</p>
+<p>The overnight autonomous run is verified live with a real model: <code>replio jobs add-supervisor night --interval 86400 --task "..."</code>, run it (<code>replio jobs run night</code> or the daemon), watch <code>/asks</code> for a parked question, answer it, and confirm the run completes and (with <code>report.webhook</code> set) the report arrives. See the <a href="../jobs/#supervisor-overnight-run">Supervisor overnight run</a> section in <code>docs/jobs.md</code>.</p>
 
 
 

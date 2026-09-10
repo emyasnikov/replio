@@ -1303,7 +1303,7 @@
 </tr>
 </tbody>
 </table>
-<p>The bundled catalog ships two pre-carved teams, useful as delegation targets and as templates (see <a href="../teams/">teams.md</a>). All leave <code>model</code> and <code>skills</code> empty (inheriting the caller's model) and differ only in <code>tool_permission</code>:</p>
+<p>The bundled catalog ships two pre-carved teams plus a <code>leader</code> supervisor type, useful as delegation targets and as templates (see <a href="../teams/">teams.md</a>). All leave <code>model</code> and <code>skills</code> empty (inheriting the caller's model) and differ mainly in <code>tool_permission</code> (<code>leader</code> also sets <code>grant_permission</code>/<code>ask_policy</code>):</p>
 <table>
 <thead>
 <tr>
@@ -1331,6 +1331,15 @@
 <td>auditor: checks a document against the prompt and sources</td>
 <td>writing, review</td>
 <td>deny</td>
+<td>deny</td>
+<td>deny</td>
+<td>allow</td>
+</tr>
+<tr>
+<td><code>leader</code></td>
+<td>supervisor: coordinates teams and agents, delegates, parks asks</td>
+<td>research, writing, programming, review</td>
+<td>allow</td>
 <td>deny</td>
 <td>deny</td>
 <td>allow</td>
@@ -1418,7 +1427,9 @@
 <span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deepseek-r1"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"skills"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">  </span><span class="nt">"tags"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"research"</span><span class="p">,</span><span class="w"> </span><span class="s2">"writing"</span><span class="p">],</span>
-<span class="w">  </span><span class="nt">"tool_permission"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"web"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span><span class="w"> </span><span class="nt">"delegate"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="nt">"tool_permission"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"web"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span><span class="w"> </span><span class="nt">"delegate"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"grant_permission"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"web"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span><span class="w"> </span><span class="nt">"delegate"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"ask_policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"permission"</span><span class="p">:</span><span class="w"> </span><span class="s2">"auto"</span><span class="p">,</span><span class="w"> </span><span class="nt">"direction"</span><span class="p">:</span><span class="w"> </span><span class="s2">"human"</span><span class="w"> </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Fields:</p>
@@ -1429,6 +1440,8 @@
 <li><code>skills</code> - optional list of skill names from the <a href="../skills/">skills registry</a>, resolved and injected into the type's sub-agent system prompt (and jobs with <code>--type</code>).</li>
 <li><code>tags</code> - optional list of job tags for grouping and filtering (<code>/types list &lt;tag&gt;</code>). The bundled set uses a controlled vocabulary: <code>research</code>, <code>writing</code>, <code>programming</code>, <code>review</code>.</li>
 <li><code>tool_permission</code> - optional per-agent overrides of <code>tool_permission</code> categories. The per-agent permission profile.</li>
+<li><code>grant_permission</code> - optional ceiling on the categories this type may hand down to sub-agents. Defaults to the type's own <code>tool_permission</code>, so it never widens delegation unless set explicitly. See <a href="#delegation-and-permissions">Delegation and permissions</a>.</li>
+<li><code>ask_policy</code> - optional per-type override of the <code>ask</code> routing by kind (<code>permission</code>/<code>direction</code>), merged over the config <code>ask_policy</code>. See <a href="../config/#ask_policy">config.md</a>.</li>
 </ul>
 <h2 id="command">Command<a class="headerlink" href="#command" title="Permanent link">&para;</a></h2>
 <p><code>/types</code> manages the registry:</p>
@@ -1445,6 +1458,7 @@
 <li>A configured type uses its own <code>tool_permission</code> overrides. The default for the <code>delegate</code> category is <code>allow</code> (delegation runs without a prompt). Set <code>delegate: "ask"</code> on a type to confirm each delegation to it.</li>
 <li>A temporary type created only to run a task in parallel defaults to <code>deny</code> until you opt in.</li>
 </ul>
+<p>Sub-agent permissions are bounded by the caller: the effective carve is the caller's <code>tool_permission</code>, narrowed by the type's carve and capped by the caller's <code>grant_permission</code> ceiling (see <a href="../config/#permission-authority">config.md</a>). <code>grant_permission</code> defaults to the caller's own <code>tool_permission</code>, so a type can never grant a sub-agent more than the caller holds. A type that sets <code>grant_permission</code> may delegate categories it does not use itself - e.g. a supervisor that denies <code>edit</code>/<code>bash</code> for itself but allows them in its ceiling can hand them to an <code>implementer</code> while never running them. An approved <code>ask(kind="permission")</code> request creates a one-shot grant on the asking sub-agent, consumed by the next matching call. The operator may grant <code>always</code> for the rest of that sub-agent's run.</p>
 <h2 id="relationship-to-agent-skills-and-fleets">Relationship to /agent, skills, and fleets<a class="headerlink" href="#relationship-to-agent-skills-and-fleets" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>/agent</code> is the planned interactive way to pick an agent type and run with it. Today a type runs directly through the <code>delegate</code> tool (the lead model proposes it, or <code>/tool delegate {"type": ..., "task": ...}</code>), which builds the in-process sub-engine from this catalog.</li>

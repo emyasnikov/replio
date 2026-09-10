@@ -781,6 +781,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#report-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Report-back
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supervisor-overnight-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supervisor overnight run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#session-files-per-run" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1308,6 +1330,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#report-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Report-back
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supervisor-overnight-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supervisor overnight run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#session-files-per-run" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1532,7 +1576,30 @@ replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </spa
 <li><strong>Per-run approval (<code>--require-approval</code>)</strong> - for when "something has to be decided" about <em>this</em> run, not arm-or-disarm for all time. Each run parks in <code>waiting_approval</code>: the daemon will not fire it, <code>replio jobs status</code> shows <code>WAITING for approve</code>, and <code>replio jobs approve &lt;name&gt;</code> (or <code>/jobs approve</code>) arms exactly the next run. It parks again after the run. <code>reject</code> clears the grant. <code>run</code> still overrides and executes now.</li>
 <li><strong>Mid-run blocking approval (tool-level, planned)</strong> - an <code>ask</code> tool inside a running job pauses the run in place and waits for a human reply before resuming on the same session. The deepest "decide during the task" model, tracked separately in <a href="../../TODO.md">TODO.md</a>: it needs resumable mid-run state, a wait loop inside the run, and a transport to deliver the ask and return the answer (the planned webhook/email/Telegram connectors drive the same operator API).</li>
 </ol>
-<p>A job runs with <code>HeadlessUI(auto='deny')</code> - the same posture as <code>replio serve</code>. So until mid-run blocking is implemented, an <code>ask</code> tool inside a run is not paused: with no terminal and no lead agent at the root it returns an <code>Error: ask has no one to answer ...</code> result and the run continues without it (or fails if the task depended on it). Give a job its permissions up front (<code>--tool-permission bash=allow</code>, an agent type carve, or a <code>--tools-deny</code> list) and it will not need mid-run interruption. A sub-agent inside a job can still use <code>ask target='lead'</code> for a decision from the job's model mid-run. <code>timeout</code> runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so inspect a timed-out job with <code>replio jobs show &lt;name&gt;</code> before a manual retry.</p>
+<p>A job runs with <code>HeadlessUI(auto='deny')</code> on an unattended engine - the same posture as <code>replio serve</code>, plus parking. So until mid-run blocking is implemented, an <code>ask target='human'</code> inside a run is not paused and does not hang: it parks as a pending request in <code>.replio/asks.json</code> (returned to the agent as <code>[parked] Ask #&lt;id&gt; ...</code>), the run continues or finishes, and the operator answers later with <code>/asks answer &lt;id&gt; &lt;text&gt;</code> or <code>POST /asks/&lt;id&gt;/answer</code> on <code>replio serve</code> - which injects the answer into the run's session for the next run/continuation. Give a job its permissions up front (<code>--tool-permission bash=allow</code>, an agent type carve, or a <code>--tools-deny</code> list) and it will not need mid-run interruption. A sub-agent inside a job can still use <code>ask target='lead'</code> for a decision from the job's model mid-run. <code>timeout</code> runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so inspect a timed-out job with <code>replio jobs show &lt;name&gt;</code> before a manual retry.</p>
+<h2 id="report-back">Report-back<a class="headerlink" href="#report-back" title="Permanent link">&para;</a></h2>
+<p>A finished or failed run is surfaced in-band and, optionally, out-of-band, so an unattended supervisor does not have to be watched:</p>
+<ul>
+<li><strong><code>replio jobs status</code> / <code>/jobs status</code></strong> prints a <code>last run:</code> line per job (status, duration, reason, session) under the run counts.</li>
+<li><strong><code>replio jobs run</code> / <code>/jobs run</code></strong> print the run's result plus a <code>summary:</code> line from the run memory written after the run.</li>
+<li><strong>Delegated and team runs</strong> show their outcome in the REPL sub-footer (<code>status session</code> after the duration/token footer, when <code>delegate_echo</code> is on).</li>
+<li><strong>Out-of-band</strong>: after each completed run the scheduler dispatches one <code>job.run.completed</code> event to a registered <code>report</code> service. The bundled <code>replio-core-webhook</code> plugin implements it: set <code>report.webhook</code> to a URL and it POSTs the JSON payload (job, status, duration, reason, session, timestamps, content, worktree, memory summary, parked asks) - a pending ask parked during the run is flagged by id and origin, so a night that "finished but needs you" is visible in the report. Empty <code>report.webhook</code> is a no-op. Service failures are logged and never fail the run. A report fires once per completed run (the final status after retries), not per attempt. Per-job destinations are future work (TODO).</li>
+</ul>
+<h2 id="supervisor-overnight-run">Supervisor overnight run<a class="headerlink" href="#supervisor-overnight-run" title="Permanent link">&para;</a></h2>
+<p>A standing supervisor job is the overnight surface: job engines run unattended (they never read stdin), park human questions as asks, and report back. One command scaffolds it:</p>
+<div class="highlight"><pre><span></span><code>replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>add-supervisor<span class="w"> </span>night<span class="w"> </span>--interval<span class="w"> </span><span class="m">86400</span><span class="w"> </span>--task<span class="w"> </span><span class="s2">"Lead the work."</span>
+<span class="c1"># creates .replio/jobs/night.md from a supervisor template, type=leader, approved</span>
+replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>daemon<span class="w">            </span><span class="c1"># runs it on schedule</span>
+replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>run<span class="w"> </span>night<span class="w">         </span><span class="c1"># or run it once now</span>
+</code></pre></div>
+<p>The job's type is <code>leader</code>, whose <code>grant_permission</code> lets it delegate categories it denies itself (bash, web) to team stages, and whose <code>ask_policy</code> routes decisions to the operator (parking them under unattended mode). The task file (<code>.replio/jobs/&lt;name&gt;.md</code>) carries the standing goal - edit it and the next run picks the change up. The model the job uses must be approved (<code>/model</code>, or <code>--approve-model</code> when a type or team references a model).</p>
+<p>While it runs:</p>
+<ul>
+<li><code>/asks</code> (or <code>GET /asks</code> on <code>replio serve</code>) lists parked asks. <code>/asks answer &lt;id&gt; &lt;text&gt;</code> (or <code>POST /asks/&lt;id&gt;/answer</code>) marks one answered and injects the answer into its origin session.</li>
+<li><code>replio jobs status</code> shows the last run plus any parked asks. <code>replio jobs run</code>/<code>/jobs run</code> print the run summary and parked asks.</li>
+<li>With <code>report.webhook</code> set, each completed run is POSTed out-of-band, so a finished or failed night is reported without the terminal being watched.</li>
+</ul>
+<p>Resuming a parked ask: the ask lives in the run's sub-session. Answer it, then continue that session with <code>replio run --session-id &lt;origin&gt; "continue"</code> (or <code>/session load &lt;origin&gt;</code> in the REPL).</p>
 <h2 id="session-files-per-run">Session files per run<a class="headerlink" href="#session-files-per-run" title="Permanent link">&para;</a></h2>
 <p>The <strong>compact memory</strong> is the run-memory file (<a href="#run-memory">Run memory</a>): a rolling summary injected into every run to keep the model oriented across runs. Session files are the per-run audit:</p>
 <ul>

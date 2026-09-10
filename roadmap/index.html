@@ -1490,24 +1490,9 @@
 <td>alert when an agent is down</td>
 </tr>
 <tr>
-<td>Pending-ask inbox - an unattended run's <code>ask target='human'</code> parks as a pending request (persisted, listed in the REPL + serve API) and answering resumes the run from its session. Shares the resumable mid-run state with the mid-run blocking job approval item</td>
-<td>M</td>
-<td>unattended runs can still ask</td>
-</tr>
-<tr>
 <td><code>/spawn</code> command - launch a scoped <code>replio serve</code> agent from the REPL (home -&gt; project path), supervise (health/list/stop) and delegate to it</td>
 <td>S-M</td>
 <td>fleet agents from the terminal</td>
-</tr>
-<tr>
-<td>Supervisor report-back - finished/failed supervisor runs surface a per-run summary (session result footer + <code>replio jobs status</code>), delivered out-of-band via the job event hooks + connectors when the terminal is closed</td>
-<td>M</td>
-<td>the operator is told, not asked to look</td>
-</tr>
-<tr>
-<td>End-to-end verification - an overnight supervisor job delegates, parks one ask (answered from the terminal), and delivers its report without the REPL being watched</td>
-<td>M</td>
-<td>proves the governance loop</td>
 </tr>
 </tbody>
 </table>

@@ -971,6 +971,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#the-team-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The team tool
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1197,6 +1208,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#the-team-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The team tool
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1215,7 +1237,7 @@
 
 
 <h1 id="teams">Teams<a class="headerlink" href="#teams" title="Permanent link">&para;</a></h1>
-<p>A team is a named, ordered chain of delegated stages - each runs under an agent type and its result is handed to the next. A team turns the <code>delegate</code> primitive into a repeatable pipeline: "writing" = researcher &gt; writer &gt; referencer &gt; editor for documents, "programming" = planner &gt; programmer &gt; tester &gt; code-reviewer. The registry stores the definition and the sequential stage loop (<code>Engine.run_team</code>, <code>/teams run</code>) executes it.</p>
+<p>A team is a named, ordered chain of delegated stages - each runs under an agent type and its result is handed to the next. A team turns the <code>delegate</code> primitive into a repeatable pipeline: "writing" = researcher &gt; writer &gt; referencer &gt; editor for documents, "programming" = planner &gt; programmer &gt; tester &gt; code-reviewer. The registry stores the definition and the sequential stage loop (<code>Engine.run_team</code>) executes it, reachable from the REPL (<code>/teams run</code>), the model (the <code>team</code> tool), and the CLI.</p>
 <h2 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h2>
 <p>Teams come from four layers, merged exactly like types: bundled, then plugin, then global, then local, local winning per field. Precedence is <code>bundled &lt; plugin &lt; global &lt; local</code>:</p>
 <ul>
@@ -1280,7 +1302,16 @@
 <li>the stage's <code>task_hint</code> (or a generic "Complete this stage of the task." line).</li>
 </ul>
 <p>After the run, the whole team run is summarized - seeded with the previous team memory - and written to <strong><code>.replio/teams/&lt;name&gt;/memory.md</code></strong> (atomic write, human-editable). The next run reads the same file back into its briefs, so facts from earlier runs carry without the session files growing. If the summarizer fails, a fallback of one line per stage (type, status, first part of the output or error) is stored instead.</p>
-<p><code>/teams run &lt;name&gt; &lt;task&gt;</code> executes a team from the REPL and prints one line per stage (<code>&lt;n&gt;. &lt;type&gt; &lt;status&gt; &lt;duration&gt;s</code>), the final member's result, and the memory file path. Recurring teams with persistent member sessions (<code>job</code>-style warm sessions) and scheduled team runs (<code>jobs add --team</code>) are later milestones.</p>
+<p><code>/teams run &lt;name&gt; &lt;task&gt;</code> executes a team from the REPL and prints one line per stage (<code>&lt;n&gt;. &lt;type&gt; &lt;status&gt; &lt;duration&gt;s</code>), the final member's result, and the memory file path.</p>
+<h2 id="the-team-tool">The <code>team</code> tool<a class="headerlink" href="#the-team-tool" title="Permanent link">&para;</a></h2>
+<p><code>team(name, task)</code> is the model-facing entry point (core, like <code>delegate</code> and <code>ask</code>), so a lead agent can orchestrate a whole pipeline in one call instead of delegating each stage itself. It runs <code>Engine.run_team</code> and returns the final stage's answer (or <code>Error: team "&lt;name&gt;" failed: &lt;reason&gt;</code>).</p>
+<ul>
+<li><strong>Permission</strong>: category <code>delegate</code>, resolved per invocation like <code>delegate</code> - a stage type that sets <code>delegate: "deny"</code> disables the team, <code>"ask"</code> confirms it, otherwise it runs. Unknown teams and stages with unknown types return a clear error.</li>
+<li><strong>Ceiling</strong>: each stage's carve is still capped by the caller's <code>grant_permission</code> (see <a href="../config/#permission-authority">config.md</a>). When a stage's requested permissions get clamped, the result carries a <code>(reduced permissions for: &lt;type&gt;)</code> note, so a silently degraded run is visible.</li>
+<li><strong>Depth and cycles</strong>: <code>run_team</code> refuses a team already on the current stack (<code>team_cycle</code>) and stops at <code>max_team_depth</code> nested team runs (default 2, <code>team_depth</code>), so a supervisor stage that itself runs teams cannot recurse forever. Both values propagate into sub-engines.</li>
+</ul>
+<p>The REPL <code>/tool team {"name": ..., "task": ...}</code> runs the same handler through a persisted agent-loop turn (the tool is registered <code>loop=True</code>).</p>
+<p>Recurring teams with persistent member sessions (<code>job</code>-style warm sessions) and scheduled team runs (<code>jobs add --team</code>) are later milestones.</p>
 
 
 
