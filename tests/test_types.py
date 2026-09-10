@@ -129,8 +129,8 @@ class TestTypeRegistry(unittest.TestCase):
     def test_bundled_defaults_loaded(self):
         reg = self.bundled()
         names = reg.names()
-        self.assertEqual(len(names), 8)
-        for expected in ('researcher', 'writer', 'referencer', 'editor',
+        self.assertEqual(len(names), 9)
+        for expected in ('leader', 'researcher', 'writer', 'referencer', 'editor',
                          'planner', 'programmer', 'tester', 'code-reviewer'):
             self.assertIn(expected, names)
         self.assertEqual(reg.origin('researcher'), 'bundled')
@@ -288,7 +288,7 @@ class TestTypeCommand(unittest.TestCase):
 
     def test_list_shows_bundled(self):
         out = self._type()
-        self.assertIn('8 agent types', out)
+        self.assertIn('9 agent types', out)
         self.assertIn('researcher', out)
         self.assertIn('(bundled)', out)
 

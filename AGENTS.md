@@ -51,7 +51,7 @@ Replio/
 │   ├── config.py            # JSON config (global + local merge)
 │   ├── models.py            # global model registry - models.json (connections + keys)
 │   ├── types.py             # TypeRegistry - bundled/global/local types.json merge + tags
-│   ├── bundled_types.json  # bundled default types (8, two pre-carved teams)
+│   ├── bundled_types.json  # bundled default types (9, leader + two pre-carved teams)
 │   ├── engine.py            # Headless agent core - Engine + TurnResult + run_subagent
 │   ├── chat.py              # ChatLoop(Engine) - REPL shell with readline
 │   ├── jobs.py              # Scheduled jobs - Job/JobRun model, registry, cron parser

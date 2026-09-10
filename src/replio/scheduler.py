@@ -7,7 +7,8 @@ from pathlib import Path
 from .config import Config
 from .engine import Engine, TurnResult
 from .jobs import (Job, JobRun, JobRegistry, compute_next_run, job_session_name,
-                   parse_dt, read_memory, system_prompt_for, write_memory)
+                   parked_asks_for_run, parse_dt, read_memory,
+                   system_prompt_for, write_memory)
 from .ui import HeadlessUI
 
 
@@ -152,6 +153,8 @@ class JobScheduler:
                 return
             worktree = self.config.local_path.parent.parent
             memory = read_memory(worktree, job)
+            parked = parked_asks_for_run(self.config.local_path.parent,
+                                         run.session)
             payload = {
                 'event': 'job.run.completed',
                 'job': job.name,
@@ -164,6 +167,7 @@ class JobScheduler:
                 'content': run.content,
                 'worktree': str(worktree),
                 'memory': (' '.join(memory.split()))[:1000] if memory else '',
+                'parked_asks': parked,
             }
             reporter(payload, self.config)
             self._out(f'{job.name}: report dispatched')

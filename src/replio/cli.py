@@ -371,6 +371,8 @@ def cmd_jobs(args) -> int:
         print(f'Job {args.name}: status={job.status}, '
               f'{"enabled" if job.enabled else "disabled"}')
         return 0
+    if action == 'add-supervisor':
+        return _jobs_add_supervisor(config, registry, args)
     if action == 'add':
         file_arg = getattr(args, 'file', None) or ''
         prompt = getattr(args, 'prompt', '') or ''
@@ -471,6 +473,37 @@ def _store_task_file(worktree: Path, value: str) -> str:
         return str(path)
 
 
+def _jobs_add_supervisor(config, registry, args) -> int:
+    from .jobs import add_supervisor_job, describe_schedule
+    name = args.name
+    schedule = {}
+    if getattr(args, 'cron', None):
+        schedule['cron'] = args.cron
+    elif getattr(args, 'interval', None):
+        schedule['interval'] = args.interval
+    elif getattr(args, 'at', None):
+        schedule['at'] = args.at
+    else:
+        schedule['interval'] = 86400
+    try:
+        job = add_supervisor_job(
+            registry, name, config.local_path.parent.parent, schedule,
+            task=getattr(args, 'task', '') or '',
+            task_file=getattr(args, 'file', None) or '',
+            require_approval=bool(getattr(args, 'require_approval', False)))
+    except ValueError as e:
+        print(f'Error: {e}', file=sys.stderr)
+        return 1
+    print(f'Added supervisor job: {job.name} [{job.status}]')
+    print(f'  type:      {job.type}')
+    print(f'  schedule:  {describe_schedule(job)}')
+    print(f'  task file: {job.task_file}')
+    print(f'  run now:   replio jobs run {job.name}')
+    print(f'  daemon:    replio jobs daemon')
+    print('  parked asks: /asks  (or GET /asks on replio serve)')
+    return 0
+
+
 def _jobs_run(config, registry, args) -> int:
     from .scheduler import JobScheduler
     job = registry.find(args.name)
@@ -494,10 +527,13 @@ def _jobs_run(config, registry, args) -> int:
         print(f'  reason: {run.reason}')
     if run.session:
         print(f'  session: {run.session}')
-    from .jobs import read_memory
+    from .jobs import read_memory, parked_asks_for_run
     memory = read_memory(config.local_path.parent.parent, job)
     if memory:
         print(f'  summary: {" ".join(memory.split())[:200]}')
+    parked = parked_asks_for_run(config.local_path.parent, run.session)
+    if parked:
+        print('  parked asks: ' + ', '.join(f'#{a["id"]}' for a in parked))
     return 0 if run.status == 'verified' else 1
 
 

@@ -753,6 +753,28 @@ class TestSchedulerReport(unittest.TestCase):
         self.assertEqual(self.reporter.payloads[0]['status'], 'failed')
         self.assertIn('unknown type', self.reporter.payloads[0]['reason'])
 
+    def test_report_includes_parked_asks(self):
+        from replio.asks import AskStore
+        from replio.sessions.manager import SessionManager
+        replio_dir = self.config.local_path.parent
+        sessions = SessionManager(replio_dir / 'sessions')
+        root = sessions.create('job.a')
+        root.sub_sessions = ['sub_1']
+        sessions.save(root)
+        sub = sessions.create('sub_1')
+        sessions.save(sub)
+        AskStore(replio_dir / 'asks.json').add('which port?', 'sub_1')
+        self._patch_engine([
+            TurnResult(status='ok', content='done', duration=1.0, session='job.a'),
+        ])
+        job = Job('a', {'interval': 60}, prompt='work', status='approved',
+                  session='job.a')
+        self.registry.put(job)
+        self.scheduler.run_job(job)
+        parked = self.reporter.payloads[0]['parked_asks']
+        self.assertEqual([a['id'] for a in parked], [1])
+        self.assertEqual(parked[0]['origin'], 'sub_1')
+
     def test_no_service_no_dispatch(self):
         self.scheduler._pm = _FakePM(None)
         self._patch_engine([
@@ -777,6 +799,37 @@ class TestSchedulerReport(unittest.TestCase):
         self.registry.put(job)
         run = self.scheduler.run_job(job)
         self.assertEqual(run.status, 'verified')
+
+
+class TestAddSupervisor(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.config = _config(self.tmp)
+        self.registry = JobRegistry(self.config.local_path.parent / 'jobs.json')
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_scaffolds_supervisor_job(self):
+        from replio.jobs import add_supervisor_job, read_task_file
+        worktree = self.config.local_path.parent.parent
+        job = add_supervisor_job(self.registry, 'night', worktree,
+                                 {'interval': 86400}, task='Lead.')
+        self.assertEqual(job.type, 'leader')
+        self.assertEqual(job.status, 'approved')
+        self.assertTrue(job.enabled)
+        task = read_task_file(worktree, job)
+        self.assertIn('supervisor', task)
+        self.assertIn('leader', task)
+
+    def test_duplicate_name_rejected(self):
+        from replio.jobs import add_supervisor_job
+        worktree = self.config.local_path.parent.parent
+        add_supervisor_job(self.registry, 'night', worktree,
+                           {'interval': 86400})
+        with self.assertRaises(ValueError):
+            add_supervisor_job(self.registry, 'night', worktree,
+                               {'interval': 60})
 
 
 class TestRender(unittest.TestCase):

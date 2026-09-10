@@ -12,7 +12,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/connect`              |                | Connect a provider. `/connect` picks interactively from the known providers. `/connect <name>` presets a known provider's defaults and (re)enters its API key. `/connect <url>` detects a known host or creates a named custom provider (derived from the host, or `/connect <url> <name>` to name it). Tests the connection before saving, stores the API key + base URL in global `providers.json`, and writes `provider`/`base_url` into config - the model is picked separately with `/model` |
 | `/exit`                 | `/quit`, `/q`  | Save and exit                                                  |
 | `/help`                 | `/h`           | Show available commands and tools (`/help <cmd|tool>` for detail) |
-| `/jobs`                 |                | Manage scheduled and durable jobs: `list`, `status`, `show`, `add`, `approve`, `reject`, `enable`, `disable`, `stop`, `remove`, `run`. See [jobs.md](jobs.md) |
+| `/jobs`                 |                | Manage scheduled and durable jobs: `list`, `status`, `show`, `add`, `add-supervisor`, `approve`, `reject`, `enable`, `disable`, `stop`, `remove`, `run`. See [jobs.md](jobs.md) |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
 | `/model`                 |                | Show or switch the active model. `/model <name>` sets it on the current provider. `/model <provider>/<model>` switches provider and model together, approving the model on confirm |
 | `/models`                |                | List configured models, or probe a provider's available models. `/models` shows the approved-model history grouped by provider (`(key)` when the provider has a stored key). `/models list [provider]` probes a provider's advertised models live (default: current provider) |
@@ -150,6 +150,7 @@ Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, 
 | Subcommand    | Description                                                              |
 |---------------|--------------------------------------------------------------------------|
 | `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`, with `--prompt` optional when `--file` given), plus `--mode`, `--provider`/`--model`, `--type`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approve-model`, `--approval auto` |
+| `add-supervisor` | `replio jobs add-supervisor <name> [--interval N | --at ISO | --cron "expr"] [--task "text" | --file path]` - scaffold an approved `leader`-typed supervisor job from the supervisor task template |
 | `approve`     | `approve <name>` - activate a job (or arm the next run for `--require-approval` jobs) |
 | `daemon`      | `daemon [--tick 15] [--quiet]` - scheduler loop, Ctrl-C to stop           |
 | `edit`        | `edit <name>` - open the job's linked task file in `$EDITOR` (creates the template first) |

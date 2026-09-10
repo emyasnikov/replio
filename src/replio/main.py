@@ -177,6 +177,21 @@ def _add_jobs_parser(sub):
     ga.add_argument('--approval', choices=['manual', 'auto'], default='manual',
                     help='manual starts proposed and waits for approve (default); '
                          'auto starts approved')
+    gsup = g.add_parser('add-supervisor',
+                        help='Add an approved supervisor job (type=leader) that plans, '
+                             'runs teams, parks questions, and reports back')
+    gsup.add_argument('name')
+    gsup.add_argument('--task', default='',
+                      help='Task prompt (default: lead the work and report back)')
+    gsup.add_argument('--file', help='Task file (default .replio/jobs/<name>.md, '
+                      'created from a supervisor template)')
+    gsup_sched = gsup.add_mutually_exclusive_group()
+    gsup_sched.add_argument('--cron', help='5-field cron expression')
+    gsup_sched.add_argument('--interval', type=int,
+                            help='Seconds between runs (default 86400 = daily)')
+    gsup_sched.add_argument('--at', help='One-shot run at an ISO datetime')
+    gsup.add_argument('--require-approval', action='store_true',
+                      help='Park each run in waiting_approval until approved')
     for name, help_text in (
             ('approve', 'Approve a job so it runs on schedule'),
             ('reject', 'Reject a proposed job'),

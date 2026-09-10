@@ -21,7 +21,6 @@ The assistant is the operator's single window to the machine: served agents are 
 | One-window status - `/status` lists sessions, running agents, and configured jobs on the machine, with logs reachable from the same surface | M | see everything from one place |
 | Agent health monitoring - the assistant watches endpoints (e.g. the `/health` of agents running as web APIs) and warns when an agent stops responding | S-M | alert when an agent is down |
 | `/spawn` command - launch a scoped `replio serve` agent from the REPL (home -> project path), supervise (health/list/stop) and delegate to it | S-M | fleet agents from the terminal |
-| End-to-end verification - an overnight supervisor job delegates, parks one ask (answered from the terminal), and delivers its report without the REPL being watched | M | proves the governance loop |
 
 ## Delegation & swarm
 

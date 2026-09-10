@@ -37,7 +37,6 @@
 
 - [ ] Per-job report destination - a `report_url` (or connector list) on a job so different jobs report to different endpoints, instead of one global `report.webhook`
 - [ ] Per-task decide-vs-park for `direction` asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator
-- [ ] Autonomous supervisor track - compose the delegate loop turn + ask routing + jobs daemon + report-back so a supervisor task started once runs unattended and reports back
 - [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
 - [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
 - [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`web_fetch` guidance to tool descriptions
@@ -110,6 +109,7 @@
 
 ## Done
 
+- [x] End-to-end supervisor verification - `replio jobs add-supervisor`, governance-loop test
 - [x] Report-back - `job.run.completed` events, `last run:`/`summary:` lines, footer status
 - [x] `replio-core-webhook` - report-back connector POSTing job reports to `report.webhook`
 - [x] Pending-ask inbox - unattended human asks park in `.replio/asks.json`, answered via `/asks`

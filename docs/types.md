@@ -15,12 +15,13 @@ A type is a single reusable profile carrying several distinct axes of an agent. 
 | **Expertise** | The domains it is tagged for, used for grouping and filtering | `tags` |
 | **Archetype** | A stored, reusable pattern that teams reference as a stage | the registry entry itself |
 
-The bundled catalog ships two pre-carved teams, useful as delegation targets and as templates (see [teams.md](teams.md)). All leave `model` and `skills` empty (inheriting the caller's model) and differ only in `tool_permission`:
+The bundled catalog ships two pre-carved teams plus a `leader` supervisor type, useful as delegation targets and as templates (see [teams.md](teams.md)). All leave `model` and `skills` empty (inheriting the caller's model) and differ mainly in `tool_permission` (`leader` also sets `grant_permission`/`ask_policy`):
 
 | type | function | tags | edit | bash | web | read |
 |---|---|---|---|---|---|---|
 | `code-reviewer` | auditor: reviews a change, returns findings | programming, review | deny | allow | deny | allow |
 | `editor` | auditor: checks a document against the prompt and sources | writing, review | deny | deny | deny | allow |
+| `leader` | supervisor: coordinates teams and agents, delegates, parks asks | research, writing, programming, review | allow | deny | deny | allow |
 | `planner` | decomposes a task into an ordered, verifiable plan | programming | deny | deny | allow | allow |
 | `programmer` | implements a change and runs the tests until green | programming | allow | allow | deny | allow |
 | `referencer` | resolves citations into a `.bib` file | writing | allow | deny | deny | allow |

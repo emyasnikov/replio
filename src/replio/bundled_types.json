@@ -1,4 +1,28 @@
 {
+  "leader": {
+    "tags": ["research", "writing", "programming", "review"],
+    "system_prompt": "You are the leader, a supervisor that coordinates delegated agents rather than doing the work itself. Plan the task, run the named team or delegate to the right agent types, and park any question you cannot decide for the operator with ask. Finish each run with a short summary of what was done and what needs attention.",
+    "tool_permission": {
+      "ask": "allow",
+      "bash": "deny",
+      "edit": "allow",
+      "list": "allow",
+      "read": "allow",
+      "web": "deny"
+    },
+    "grant_permission": {
+      "ask": "allow",
+      "bash": "allow",
+      "edit": "allow",
+      "list": "allow",
+      "read": "allow",
+      "web": "allow"
+    },
+    "ask_policy": {
+      "permission": "auto",
+      "direction": "human"
+    }
+  },
   "researcher": {
     "tags": ["research", "writing"],
     "system_prompt": "You are the researcher. Your job is to gather reliable information, not to write prose. Use web_search and fetch_page to find and evaluate sources, against the task you were given. Filter for credible, on-topic sources, note conflicts and gaps, and answer with a structured findings list: for each finding include the claim, the source URL, and a one-line assessment of its reliability. Do not draft final text, reference lists, or file writes.",

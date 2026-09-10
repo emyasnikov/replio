@@ -1088,8 +1088,9 @@ def register_builtins(registry):
         ('run', 'Run a job now'),
     ])
     def jobs_cmd(arg=''):
-        from ..jobs import (Job, JobRegistry, publish, read_memory, render_list,
-                            render_show, render_status, validate_schedule)
+        from ..jobs import (Job, JobRegistry, parked_asks_for_run, publish,
+                            read_memory, render_list, render_show,
+                            render_status, validate_schedule)
         import shlex
         registry = JobRegistry(chat.config.local_path.parent / 'jobs.json')
         tokens = shlex.split(arg)
@@ -1155,6 +1156,48 @@ def register_builtins(registry):
             memory = read_memory(chat.config.local_path.parent.parent, job)
             if memory:
                 print(f'  summary: {" ".join(memory.split())[:200]}')
+            parked = parked_asks_for_run(chat.config.local_path.parent,
+                                         run.session)
+            if parked:
+                print('  parked asks: '
+                      + ', '.join(f'#{a["id"]}' for a in parked))
+            return
+        if action == 'add-supervisor':
+            if len(tokens) < 2:
+                print('Usage: /jobs add-supervisor <name> '
+                      '[--at ISO | --interval N | --cron "expr"] '
+                      '[--task "text" | --file path]')
+                return
+            opts = {}
+            i = 2
+            while i < len(tokens):
+                tok = tokens[i]
+                if tok in ('--at', '--interval', '--cron', '--task', '--file'):
+                    opts[tok] = tokens[i + 1] if i + 1 < len(tokens) else ''
+                    i += 2
+                else:
+                    i += 1
+            schedule = {}
+            if opts.get('--cron'):
+                schedule['cron'] = opts['--cron']
+            elif opts.get('--interval'):
+                schedule['interval'] = int(opts['--interval'])
+            elif opts.get('--at'):
+                schedule['at'] = opts['--at']
+            else:
+                schedule['interval'] = 86400
+            from ..jobs import add_supervisor_job, describe_schedule
+            try:
+                job = add_supervisor_job(
+                    registry, tokens[1], chat.config.local_path.parent.parent,
+                    schedule, task=opts.get('--task', ''),
+                    task_file=opts.get('--file', ''))
+            except ValueError as e:
+                print(f'Error: {e}')
+                return
+            print(f'Added supervisor job: {job.name} [{job.status}]')
+            print(f'  schedule:  {describe_schedule(job)}')
+            print(f'  run now:   /jobs run {job.name}')
             return
         if action == 'add':
             if len(tokens) < 2:

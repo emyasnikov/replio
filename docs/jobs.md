@@ -138,7 +138,28 @@ A finished or failed run is surfaced in-band and, optionally, out-of-band, so an
 - **`replio jobs status` / `/jobs status`** prints a `last run:` line per job (status, duration, reason, session) under the run counts.
 - **`replio jobs run` / `/jobs run`** print the run's result plus a `summary:` line from the run memory written after the run.
 - **Delegated and team runs** show their outcome in the REPL sub-footer (`status session` after the duration/token footer, when `delegate_echo` is on).
-- **Out-of-band**: after each completed run the scheduler dispatches one `job.run.completed` event to a registered `report` service. The bundled `replio-core-webhook` plugin implements it: set `report.webhook` to a URL and it POSTs the JSON payload (job, status, duration, reason, session, timestamps, content, worktree, memory summary). Empty `report.webhook` is a no-op. Service failures are logged and never fail the run. A report fires once per completed run (the final status after retries), not per attempt. Per-job destinations are future work (TODO).
+- **Out-of-band**: after each completed run the scheduler dispatches one `job.run.completed` event to a registered `report` service. The bundled `replio-core-webhook` plugin implements it: set `report.webhook` to a URL and it POSTs the JSON payload (job, status, duration, reason, session, timestamps, content, worktree, memory summary, parked asks) - a pending ask parked during the run is flagged by id and origin, so a night that "finished but needs you" is visible in the report. Empty `report.webhook` is a no-op. Service failures are logged and never fail the run. A report fires once per completed run (the final status after retries), not per attempt. Per-job destinations are future work (TODO).
+
+## Supervisor overnight run
+
+A standing supervisor job is the overnight surface: job engines run unattended (they never read stdin), park human questions as asks, and report back. One command scaffolds it:
+
+```bash
+replio jobs add-supervisor night --interval 86400 --task "Lead the work."
+# creates .replio/jobs/night.md from a supervisor template, type=leader, approved
+replio jobs daemon            # runs it on schedule
+replio jobs run night         # or run it once now
+```
+
+The job's type is `leader`, whose `grant_permission` lets it delegate categories it denies itself (bash, web) to team stages, and whose `ask_policy` routes decisions to the operator (parking them under unattended mode). The task file (`.replio/jobs/<name>.md`) carries the standing goal - edit it and the next run picks the change up. The model the job uses must be approved (`/model`, or `--approve-model` when a type or team references a model).
+
+While it runs:
+
+- `/asks` (or `GET /asks` on `replio serve`) lists parked asks. `/asks answer <id> <text>` (or `POST /asks/<id>/answer`) marks one answered and injects the answer into its origin session.
+- `replio jobs status` shows the last run plus any parked asks. `replio jobs run`/`/jobs run` print the run summary and parked asks.
+- With `report.webhook` set, each completed run is POSTed out-of-band, so a finished or failed night is reported without the terminal being watched.
+
+Resuming a parked ask: the ask lives in the run's sub-session. Answer it, then continue that session with `replio run --session-id <origin> "continue"` (or `/session load <origin>` in the REPL).
 
 ## Session files per run
 

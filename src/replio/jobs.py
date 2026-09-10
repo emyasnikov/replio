@@ -355,6 +355,50 @@ def ensure_task_file(worktree: Path, job: 'Job') -> Path:
     return path
 
 
+SUPERVISOR_TYPE = 'leader'
+
+SUPERVISOR_TASK_TEMPLATE = """# {name}
+
+## Task
+Describe the standing goal the supervisor owns. On each run it plans, runs the
+right teams or agents, parks any question it cannot decide for the operator, and
+finishes with a short summary.
+
+## Done when
+How we know this run succeeded.
+
+## Notes
+- The supervisor is the `leader` type: it coordinates and delegates, it does not
+  implement. It may call `team`/`delegate` and `ask`.
+- Under unattended mode a human question parks in .replio/asks.json. Answer it
+  with /asks or POST /asks/<id>/answer, then resume the run's session.
+"""
+
+
+def add_supervisor_job(registry: 'JobRegistry', name: str, worktree: Path,
+                       schedule: dict, task: str = '', task_file: str = '',
+                       require_approval: bool = False) -> 'Job':
+    if registry.find(name) is not None:
+        raise ValueError(f'Job already exists: {name}')
+    validate_schedule(schedule)
+    job = Job(
+        name=name,
+        schedule=schedule,
+        prompt=task or 'Lead the work, coordinate the teams, and report back.',
+        type=SUPERVISOR_TYPE,
+        task_file=task_file or f'.replio/jobs/{name}.md',
+        status='waiting_approval' if require_approval else 'approved',
+        enabled=True,
+        require_approval=require_approval,
+    )
+    path = task_file_path(Path(worktree), job)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(SUPERVISOR_TASK_TEMPLATE.format(name=name))
+    registry.put(job)
+    return job
+
+
 def read_task_file(worktree: Path, job: 'Job') -> str | None:
     path = task_file_path(worktree, job)
     if path.exists():
@@ -471,6 +515,31 @@ def render_list(registry: JobRegistry, print=print):
           'replio jobs status for a runtime summary)')
 
 
+def parked_asks_for_run(replio_dir: Path, session: str) -> list[dict]:
+    if not session:
+        return []
+    from .asks import AskStore
+    from .sessions.manager import SessionManager
+    sessions_dir = Path(replio_dir) / 'sessions'
+    if not sessions_dir.exists():
+        return []
+    manager = SessionManager(sessions_dir)
+    seen: set[str] = set()
+    queue = [session]
+    while queue:
+        name = queue.pop()
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        loaded = manager.read(name)
+        if loaded is not None:
+            for child in (loaded.sub_sessions or []):
+                if child not in seen:
+                    queue.append(child)
+    store = AskStore(Path(replio_dir) / 'asks.json')
+    return [a.to_dict() for a in store.list('pending') if a.origin in seen]
+
+
 def render_status(registry: JobRegistry, print=print):
     jobs = registry.all()
     if not jobs:
@@ -500,6 +569,9 @@ def render_status(registry: JobRegistry, print=print):
                 detail += f' {last.reason[:60]}'
             if last.session:
                 detail += f' {last.session}'
+            parked = parked_asks_for_run(registry.path.parent, last.session)
+            if parked:
+                detail += f' [{len(parked)} parked ask(s)]'
             print(f'      last run: {detail}')
         if job.require_approval:
             pending = job.approval_pending
