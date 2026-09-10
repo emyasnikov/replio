@@ -202,6 +202,7 @@ Implement one phase at a time. Docs-first: restructure planning docs, then build
 Full schema and defaults are in `docs/config.md`. Notable edge cases:
 
 - `max_tokens` defaults to `8192` - the cap sent to the provider, which overrides low provider-side defaults (e.g. Ollama's 2048). Set it to `0` to omit it from the provider payload, so the provider's own default applies. Hitting the limit prints a warning (distinguishing a configured cap from the provider's default) and logs a session `errors` entry.
+- `unattended: true` (or `replio --unattended` / `/unattended`) guarantees no stdin is read at any depth: confirms auto-deny, root human asks return without pausing, and sub-agent human asks route to the lead. `confirm_timeout` (seconds, default `0` = forever) makes attended confirm/ask prompts self-deny after a timeout instead of hanging.
 - `plugins` lists the plugins to load, and the bundled plugins are in the default. An empty list loads all discovered plugins. `plugins.enabled`/`plugins.deny` from earlier versions are migrated automatically.
 
 ## Testing

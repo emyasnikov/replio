@@ -45,6 +45,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 | `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
 | `clear_screen`              | `true`                 | Clear the screen before the REPL banner                                |
 | `compact_keep`              | `4`                    | Messages to keep when compacting the provider context                  |
+| `confirm_timeout`           | `0`                    | Seconds a REPL confirm/ask prompt waits for input before auto-denying (`0` = wait forever). Applies at any depth, so an unattended-but-watched run still cannot freeze on a prompt. See [Unattended mode](#unattended-mode) |
 | `connect_check`             | `true`                 | Test the provider connection on config changes: `/connect` probes before saving (broken values rejected unless confirmed), `/provider` warns on a failed probe. `false` skips all probes |
 | `delegate_echo`             | `true`                 | When `delegate` runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result. The footer shows only when on, alongside the sub-agent's own output |
 | `footer_tokens`             | `["context"]`          | Token counts the footer shows, in order, joined by `/`. `context` = `<n> tokens` (context/input size, chars/4 fallback), `in`/`out`/`thinking` = `<n>t` from provider usage (unavailable counts skipped). Empty list hides the section |
@@ -86,6 +87,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 | `tool_status_visible`       | `true`                 | Show dimmed tool status in the REPL                                    |
 | `tools.allow`               | `[]`                   | Name-level allowlist. Empty means no restriction                       |
 | `tools.deny`                | `[]`                   | Name-level deny list (takes precedence over allow)                     |
+| `unattended`                | `false`                | Unattended mode: no stdin is read at any depth. Confirms auto-deny, `ask target='human'` routes to the lead agent or returns without pausing. See [Unattended mode](#unattended-mode) |
 | `web_search`                | `false`                | Auto-search mode: search the web before answering                       |
 | `word_streaming`            | `true`                 | Buffer REPL output to word boundaries so words render fully formed (no mid-word pauses). `false` streams character-by-character |
 
@@ -154,6 +156,16 @@ A sub-agent's effective permissions are the parent's `tool_permission`, narrowed
 A type that sets `grant_permission` may delegate categories it does not use itself - e.g. a supervisor with `edit`/`bash` denied for itself but allowed in its ceiling can hand them to an `implementer` while never running them.
 
 An approved permission request creates a one-shot grant on the asking sub-agent (`once`), consumed by the next matching call. The operator may grant `always`, reusable for the rest of that sub-agent's run. Grants are never inherited by grandchildren and are recorded in the session `permissions` audit array.
+
+### Unattended mode
+
+`unattended: true` guarantees that nothing in a turn reads stdin, at any depth - an overnight REPL run cannot freeze on a prompt. It applies to the whole sub-agent tree:
+
+- **Confirms auto-deny.** A tool whose policy action is `ask` (e.g. `run_command` with `bash: ask`) returns `[cancelled] User declined the <name> call` instead of prompting.
+- **`ask target='human'` never reaches the terminal.** The root engine drops its terminal UI (`_ask_ui` is not propagated down the tree), so a root ask returns the non-blocking "no one to answer" error and a sub-agent's human ask routes to its lead agent instead.
+- **Model approval is not prompted.** An unapproved type/team model is denied (the run reports the error) unless the headless `approve_models` flag was passed - launch with `--approve-model` if the run needs to approve one itself.
+
+Enable it per run with `replio --unattended` (not persisted), in config with `unattended: true`, or live with `/unattended`. `confirm_timeout` (seconds, default `0` = forever) additionally makes attended confirm/ask prompts self-limiting, so a prompt left unanswered auto-denies instead of hanging.
 
 ### `bash_allow` - command allowlist for `run_command`
 

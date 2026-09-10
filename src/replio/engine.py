@@ -101,7 +101,10 @@ class Engine:
         self.approve_models = approve_models
         self._provider_error = None
         self._ui = ui
+        self._unattended = bool(config.get('unattended'))
         self._ask_ui = ui if isinstance(ui, ReplUI) else None
+        if self._unattended:
+            self._ask_ui = None
         self._lead = None
         if plugin_manager is None:
             self._plugin_manager = PluginManager(config)
@@ -118,6 +121,17 @@ class Engine:
         self.registry = CommandRegistry(self)
         register_builtins(self.registry)
         self._plugin_manager.register_commands(self.registry)
+
+    def _is_unattended(self) -> bool:
+        return bool(getattr(self, '_unattended',
+                            self.config.get('unattended', False)))
+
+    def set_unattended(self, enabled: bool):
+        self._unattended = bool(enabled)
+        if enabled:
+            self._ask_ui = None
+        else:
+            self._ask_ui = self._ui if isinstance(self._ui, ReplUI) else None
 
     @property
     def ui(self):
@@ -203,6 +217,8 @@ class Engine:
         if getattr(self, 'approve_models', False):
             self.models.put(provider, model)
             return True
+        if self._is_unattended():
+            return False
         if isinstance(self.ui, ReplUI):
             try:
                 ok = self.ui.confirm('model', f'Approve model "{provider}/{model}"')
@@ -393,6 +409,7 @@ class Engine:
             parent_self, parent_grant, agent_type.tool_permission)
         sub_config.apply('tool_permission', permissions)
         sub_config.apply('mode', mode or 'build')
+        sub_config.apply('unattended', self._is_unattended())
         if agent_type.ask_policy:
             ask_policy = dict(self.config.get('ask_policy') or {})
             ask_policy.update(agent_type.ask_policy)
@@ -1036,6 +1053,8 @@ class Engine:
         self.current_session.add_permission(name, action, decision, path, **extra)
 
     def _confirm_tool(self, name: str, args: dict) -> bool:
+        if self._is_unattended():
+            return False
         key_arg = self._tool_registry.key_arg_for(name)
         label = name
         if key_arg and args.get(key_arg):

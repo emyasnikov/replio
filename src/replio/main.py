@@ -257,6 +257,10 @@ def main(argv=None):
         description='Replio - a terminal-based agentic REPL with headless CLI and API modes'
     )
     parser.add_argument('--path', '-p', help='Project path (default: current directory)')
+    parser.add_argument('--unattended', action='store_true',
+                        help='Run the REPL without touching stdin from any depth '
+                             '(confirms auto-deny, human asks route to the lead or '
+                             'return without pausing)')
     parser.add_argument('--version', '-v', action='version',
                         help='Print version and exit', version=_version())
     sub = parser.add_subparsers(dest='command')
@@ -304,6 +308,8 @@ def main(argv=None):
         return cmd_fleet(args)
 
     config = Config(path=args.path)
+    if getattr(args, 'unattended', False):
+        config.apply('unattended', True)
     chat = ChatLoop(config)
 
     try:

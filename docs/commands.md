@@ -24,6 +24,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/thinking`             | `/reasoning`   | Show or switch reasoning display and request (`/thinking on` streams reasoning dimmed, `off` shows only a spinner) |
 | `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
 | `/types`                |                | Manage types: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [types.md](types.md) |
+| `/unattended`           |                | Show or toggle unattended mode (`/unattended on`/`off`): no stdin at any depth, confirms auto-deny, human asks route to the lead or return without pausing. See [config.md](config.md#unattended-mode) |
 | `/version`              | `/v`           | Show the Replio version                                       |
 
 `/help` renders commands with subcommands indented below and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.

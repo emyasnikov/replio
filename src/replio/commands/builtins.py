@@ -352,6 +352,31 @@ def register_builtins(registry):
             chat.config.set('show_thinking', new)
             print(f'Thinking streaming: {"on" if new else "off"}')
 
+    @registry.register('unattended',
+                       description='Show or toggle unattended mode (no stdin from any depth: '
+                                   'confirms auto-deny, human asks route to the lead or '
+                                   'return without pausing)')
+    def unattended_cmd(arg=''):
+        arg = arg.strip().lower()
+        current = chat._is_unattended() if hasattr(chat, '_is_unattended') \
+            else chat.config.get('unattended', False)
+        if arg in ('on', '1', 'true', 'yes', 'enable'):
+            new = True
+        elif arg in ('off', '0', 'false', 'no', 'disable'):
+            new = False
+        elif arg in ('', '?', 'status'):
+            new = None
+        else:
+            print(f"Usage: /unattended [on|off]  (current: {'on' if current else 'off'})")
+            return
+        if new is None:
+            print(f'Unattended mode: {"on" if current else "off"}')
+        else:
+            chat.config.set('unattended', new)
+            if hasattr(chat, 'set_unattended'):
+                chat.set_unattended(new)
+            print(f'Unattended mode: {"on" if new else "off"}')
+
     @registry.register('mode', description='Show or switch the agent mode (plan = read-only, build, or custom)')
     def mode_cmd(arg=''):
         from ..modes import mode_list, resolve_mode

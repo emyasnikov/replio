@@ -1,3 +1,4 @@
+import select
 import sys
 import threading
 import time
@@ -5,6 +6,17 @@ import time
 
 SPINNER_FRAMES = ('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
 SPINNER_INTERVAL = 0.08
+
+
+def _timed_input(prompt: str, timeout: float) -> str | None:
+    if timeout and timeout > 0:
+        try:
+            ready, _, _ = select.select([sys.stdin], [], [], timeout)
+        except (OSError, ValueError, TypeError):
+            return input(prompt)
+        if not ready:
+            return None
+    return input(prompt)
 
 
 def render_markdown(token: str, state: dict) -> list[tuple[str, str]]:
@@ -258,20 +270,32 @@ class ReplUI:
 
     def confirm(self, name, label):
         self.flush()
+        timeout = self._confirm_timeout()
         try:
-            answer = input(
-                f'\001\033[90m\002? {label} - approve? [y/N] \001\033[0m\002'
-            ).strip().lower()
+            answer = _timed_input(
+                f'\001\033[90m\002? {label} - approve? [y/N] \001\033[0m\002',
+                timeout)
         except EOFError:
             sys.stdout.write('\n')
             return False
         except KeyboardInterrupt:
             sys.stdout.write('\n')
             raise
-        return answer in ('y', 'yes')
+        if answer is None:
+            sys.stdout.write(f'? {label} - no answer in {timeout:g}s, denied\n')
+            return False
+        return answer.strip().lower() in ('y', 'yes')
+
+    def _confirm_timeout(self) -> float:
+        loop = getattr(self, '_loop', None)
+        config = getattr(loop, 'config', None) if loop is not None else None
+        if config is None:
+            return 0.0
+        return max(0.0, float(config.get('confirm_timeout', 0) or 0))
 
     def ask(self, question, context='', options=None, origin=''):
         self.flush()
+        timeout = self._confirm_timeout()
         prefix = ''
         if origin and origin != self._loop.current_session.name:
             prefix = f'[{origin}] '
@@ -283,13 +307,17 @@ class ReplUI:
         sys.stdout.write('\n'.join(lines) + '\n')
         sys.stdout.flush()
         try:
-            answer = input('\001\033[90m\002? Answer: \001\033[0m\002')
+            answer = _timed_input('\001\033[90m\002? Answer: \001\033[0m\002',
+                                  timeout)
         except EOFError:
             sys.stdout.write('\n')
             return None
         except KeyboardInterrupt:
             sys.stdout.write('\n')
             raise
+        if answer is None:
+            sys.stdout.write('? no answer given\n')
+            return None
         return answer.strip() or None
 
 
