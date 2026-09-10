@@ -67,7 +67,11 @@ def _team_footer(engine, res):
     counts = {}
     if out:
         counts['out'] = out
-    engine.ui.footer(round(duration, 1), counts)
+    last_session = ''
+    if res.stages:
+        last_session = getattr(res.stages[-1], 'session', '') or ''
+    note = ' '.join(p for p in (getattr(res, 'status', ''), last_session) if p)
+    engine.ui.footer(round(duration, 1), counts, note=note)
 
 
 def register_team_tool(registry, engine) -> Callable:

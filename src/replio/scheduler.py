@@ -122,17 +122,53 @@ def _attempt(engine: Engine, prompt: str, timeout: int) -> TurnResult:
 
 class JobScheduler:
     def __init__(self, config: Config, verbose: bool = True,
-                 stream: bool = False):
+                 stream: bool = False, plugin_manager=None):
         self.config = config
         self.registry = JobRegistry(config.local_path.parent / 'jobs.json')
         self.verbose = verbose
         self.stream = stream
+        self._pm = plugin_manager
+
+    def _plugin_manager(self):
+        if getattr(self, '_pm', None) is None:
+            from .plugins.manager import PluginManager
+            self._pm = PluginManager(self.config)
+            self._pm.load()
+        return self._pm
 
     def _out(self, msg: str, error: bool = False):
         stream = sys.stderr if error else sys.stdout
         if self.verbose:
             stream.write(f'[job] {msg}\n')
             stream.flush()
+
+    def _dispatch_report(self, job: Job, run: JobRun):
+        try:
+            service = self._plugin_manager().service('report')
+            if service is None:
+                return
+            reporter = getattr(service, 'report', None)
+            if not callable(reporter):
+                return
+            worktree = self.config.local_path.parent.parent
+            memory = read_memory(worktree, job)
+            payload = {
+                'event': 'job.run.completed',
+                'job': job.name,
+                'status': run.status,
+                'duration': run.duration,
+                'reason': run.reason,
+                'session': run.session,
+                'started_at': run.started_at,
+                'finished_at': run.finished_at,
+                'content': run.content,
+                'worktree': str(worktree),
+                'memory': (' '.join(memory.split()))[:1000] if memory else '',
+            }
+            reporter(payload, self.config)
+            self._out(f'{job.name}: report dispatched')
+        except Exception as e:
+            self._out(f'{job.name}: report failed: {e}', error=True)
 
     def run_job(self, job: Job) -> JobRun:
         job.status = 'executing'
@@ -163,6 +199,7 @@ class JobScheduler:
                 self.registry.save()
                 self._finish(job, run, started)
                 self._update_memory(None, job, run)
+                self._dispatch_report(job, run)
                 return run
             if attempt > 1:
                 prompt = (f'[Previous attempt {attempt - 1} failed. Retry this '
@@ -197,11 +234,11 @@ class JobScheduler:
             if delay > 0:
                 time.sleep(delay)
         self._finish(job, run, finished)
-        memory = self._update_memory(engine, job, run)
-        self._report(engine, job, run, memory)
+        self._update_memory(engine, job, run)
+        self._dispatch_report(job, run)
         return run
 
-    def _update_memory(self, engine, job: Job, run: JobRun) -> str:
+    def _update_memory(self, engine, job: Job, run: JobRun):
         worktree = self.config.local_path.parent.parent
         summary = None
         if engine is not None:
@@ -227,32 +264,6 @@ class JobScheduler:
             summary = summary[:1500]
         write_memory(worktree, job, summary)
         self._out(f'{job.name}: run memory updated')
-        return summary
-
-    def _report(self, engine, job: Job, run: JobRun, memory: str = '') -> None:
-        manager = getattr(engine, '_plugin_manager', None) if engine is not None else None
-        if manager is None:
-            return
-        service = manager.get('report')
-        if service is None:
-            return
-        payload = {
-            'event': 'job.run.completed',
-            'job': job.name,
-            'status': run.status,
-            'duration': run.duration,
-            'reason': run.reason,
-            'session': run.session,
-            'started_at': run.started_at,
-            'finished_at': run.finished_at,
-            'content': run.content,
-            'worktree': str(self.config.local_path.parent.parent),
-            'memory': memory,
-        }
-        try:
-            service.report(payload, self.config)
-        except Exception as e:
-            self._out(f'{job.name}: report failed: {e}', error=True)
 
     def _finish(self, job: Job, run: JobRun, finished: datetime) -> JobRun:
         job.last_run_at = run.started_at

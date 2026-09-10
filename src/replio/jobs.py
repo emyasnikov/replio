@@ -493,6 +493,14 @@ def render_status(registry: JobRegistry, print=print):
                 last_error = last.reason[:70]
         print(f'  {job.name:<20} {state:<20} {runs:<28} next: {_fmt_dt(job.next_run_at)}')
         print(f'      uptime: {_uptime(job.created_at):<12} last error: {last_error}')
+        if job.history:
+            last = job.history[-1]
+            detail = f'{last.status} ({last.duration}s)'
+            if last.reason:
+                detail += f' {last.reason[:60]}'
+            if last.session:
+                detail += f' {last.session}'
+            print(f'      last run: {detail}')
         if job.require_approval:
             pending = job.approval_pending
             print('      approval: per-run - next run '

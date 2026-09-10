@@ -68,7 +68,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 | `query_refine_context`      | `4`                    | Recent-message context to inject into refinement                       |
 | `query_refine_min_words`    | `3`                    | Minimum query length before refinement applies                         |
 | `reasoning`                 | `"auto"`               | Request reasoning and control its token budget: `false`/`"off"` = none, `true`/`"on"`/`"auto"` = provider default, `"low"`/`"medium"`/`"high"` = explicit budget hint. Mapping is provider-specific (OpenAI `reasoning_effort`, Claude `thinking.budget_tokens`, Qwen `enable_thinking`) |
-| `report.webhook`            | `""`                   | Webhook URL for out-of-band job-run reports (bundled `replio-core-webhook` connector POSTs a `job.run.completed` report after each run). Empty disables |
+| `report.webhook`            | `""`                   | URL the bundled `replio-core-webhook` report connector POSTs a completed job run to (JSON). Empty = no out-of-band report. See [jobs.md](jobs.md#report-back) |
 | `search_results`            | `5`                    | Number of search results to fetch                                      |
 | `session_tool_max_chars`    | `0`                    | `0` = unlimited. Caps persisted tool-result content                    |
 | `show_context_size`         | `true`                 | Dimmed context-size line after each response                           |

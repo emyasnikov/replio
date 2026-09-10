@@ -70,7 +70,8 @@ def _sub_footer(engine, res):
     comp = usage.get('completion_tokens') if usage else None
     if isinstance(comp, int) and comp > 0:
         counts['out'] = comp
-    engine.ui.footer(res.duration, counts)
+    note = ' '.join(p for p in (getattr(res, 'status', ''), res.session) if p)
+    engine.ui.footer(res.duration, counts, note=note)
 
 
 def register_delegate_tool(registry, engine) -> Callable:

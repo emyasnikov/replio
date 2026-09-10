@@ -44,6 +44,7 @@ DEFAULT_CONFIG = {
     'query_refine': False,
     'query_refine_min_words': 3,
     'query_refine_context': 4,
+    'report.webhook': '',
     'show_thinking': False,
     'show_thought_duration': True,
     'reasoning': 'auto',
@@ -78,7 +79,7 @@ DEFAULT_CONFIG = {
     },
     'mcp.servers': [],
     'mcp_server.allow_ask': True,
-    'plugins': [
+'plugins': [
         'replio-core-anthropic',
         'replio-core-dev',
         'replio-core-edit',

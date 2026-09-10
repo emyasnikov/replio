@@ -494,6 +494,10 @@ def _jobs_run(config, registry, args) -> int:
         print(f'  reason: {run.reason}')
     if run.session:
         print(f'  session: {run.session}')
+    from .jobs import read_memory
+    memory = read_memory(config.local_path.parent.parent, job)
+    if memory:
+        print(f'  summary: {" ".join(memory.split())[:200]}')
     return 0 if run.status == 'verified' else 1
 
 

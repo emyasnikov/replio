@@ -1088,8 +1088,8 @@ def register_builtins(registry):
         ('run', 'Run a job now'),
     ])
     def jobs_cmd(arg=''):
-        from ..jobs import (Job, JobRegistry, publish, render_list, render_show,
-                            render_status, validate_schedule)
+        from ..jobs import (Job, JobRegistry, publish, read_memory, render_list,
+                            render_show, render_status, validate_schedule)
         import shlex
         registry = JobRegistry(chat.config.local_path.parent / 'jobs.json')
         tokens = shlex.split(arg)
@@ -1152,6 +1152,9 @@ def register_builtins(registry):
                 print(f'  reason: {run.reason}')
             if run.session:
                 print(f'  session: {run.session}')
+            memory = read_memory(chat.config.local_path.parent.parent, job)
+            if memory:
+                print(f'  summary: {" ".join(memory.split())[:200]}')
             return
         if action == 'add':
             if len(tokens) < 2:

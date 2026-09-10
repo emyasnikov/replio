@@ -313,35 +313,6 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(len(job.history), 1)
         self.assertTrue(job.next_run_at)
 
-    def test_report_service_receives_completed_run(self):
-        class _FakeService:
-            def __init__(self):
-                self.calls = []
-            def report(self, payload, config):
-                self.calls.append(payload)
-        service = _FakeService()
-        manager = SimpleNamespace(
-            get=lambda name: service if name == 'report' else None)
-        engine = ScriptedEngine([TurnResult(status='ok', content='done',
-                                            duration=1.0, session='job.a')])
-        engine._plugin_manager = manager
-        engine._summarize = lambda messages: 'summary'
-        engine.current_session.messages = []
-        patcher = patch('replio.scheduler._build_engine', return_value=engine)
-        patcher.start()
-        self.addCleanup(patcher.stop)
-        job = Job('a', {'interval': 3600}, prompt='work', status='approved')
-        self.registry.put(job)
-        run = self.scheduler.run_job(job)
-        self.assertEqual(run.status, 'verified')
-        self.assertEqual(len(service.calls), 1)
-        payload = service.calls[0]
-        self.assertEqual(payload['event'], 'job.run.completed')
-        self.assertEqual(payload['job'], 'a')
-        self.assertEqual(payload['status'], 'verified')
-        self.assertEqual(payload['memory'], 'summary')
-        self.assertTrue(payload['worktree'])
-
     def test_truncated_counts_as_verified(self):
         self._patch_engine([
             TurnResult(status='truncated', content='partial', duration=1.0, session='job.a'),
@@ -698,6 +669,116 @@ class TestScheduler(unittest.TestCase):
         self.assertTrue(job_session_name('!!!', when).startswith('job_20260826_103005_'))
 
 
+class _FakeReport:
+    def __init__(self):
+        self.payloads = []
+        self.configs = []
+
+    def report(self, payload, config):
+        self.payloads.append(payload)
+        self.configs.append(config)
+
+
+class _FakePM:
+    def __init__(self, service=None):
+        self._service = service
+
+    def service(self, name):
+        return self._service if name == 'report' else None
+
+
+class TestSchedulerReport(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.config = _config(self.tmp)
+        self.registry = JobRegistry(self.config.local_path.parent / 'jobs.json')
+        self.reporter = _FakeReport()
+        self.scheduler = JobScheduler(self.config, verbose=False,
+                                      plugin_manager=_FakePM(self.reporter))
+        self.scheduler.registry = self.registry
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _patch_engine(self, outcomes):
+        patcher = patch('replio.scheduler._build_engine',
+                        return_value=ScriptedEngine(outcomes))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_report_on_verified_run(self):
+        self._patch_engine([
+            TurnResult(status='ok', content='done', duration=1.5, session='job.a'),
+        ])
+        job = Job('a', {'interval': 3600}, prompt='work', status='approved')
+        self.registry.put(job)
+        self.scheduler.run_job(job)
+        self.assertEqual(len(self.reporter.payloads), 1)
+        payload = self.reporter.payloads[0]
+        self.assertEqual(payload['event'], 'job.run.completed')
+        self.assertEqual(payload['job'], 'a')
+        self.assertEqual(payload['status'], 'verified')
+        self.assertEqual(payload['duration'], 1.5)
+        self.assertEqual(payload['session'], 'job.a')
+        self.assertTrue(payload['started_at'])
+        self.assertTrue(payload['finished_at'])
+        self.assertIn('worktree', payload)
+        self.assertIn('memory', payload)
+        self.assertIs(self.reporter.configs[0], self.config)
+
+    def test_report_on_failed_run(self):
+        self._patch_engine([
+            TurnResult(status='error', errors=[{'message': 'boom'}],
+                       duration=2.0, session='job.a'),
+        ])
+        job = Job('a', {'interval': 60}, prompt='work', status='approved',
+                  retries=0)
+        self.registry.put(job)
+        self.scheduler.run_job(job)
+        self.assertEqual(len(self.reporter.payloads), 1)
+        self.assertEqual(self.reporter.payloads[0]['status'], 'failed')
+        self.assertIn('boom', self.reporter.payloads[0]['reason'])
+
+    def test_report_on_build_failure(self):
+        patcher = patch('replio.scheduler._build_engine',
+                        side_effect=ValueError('unknown type'))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        job = Job('a', {'interval': 60}, prompt='work', status='approved',
+                  type='nope')
+        self.registry.put(job)
+        run = self.scheduler.run_job(job)
+        self.assertEqual(run.status, 'failed')
+        self.assertEqual(len(self.reporter.payloads), 1)
+        self.assertEqual(self.reporter.payloads[0]['status'], 'failed')
+        self.assertIn('unknown type', self.reporter.payloads[0]['reason'])
+
+    def test_no_service_no_dispatch(self):
+        self.scheduler._pm = _FakePM(None)
+        self._patch_engine([
+            TurnResult(status='ok', content='done', duration=1.0, session='job.a'),
+        ])
+        job = Job('a', {'interval': 60}, prompt='work', status='approved')
+        self.registry.put(job)
+        run = self.scheduler.run_job(job)
+        self.assertEqual(run.status, 'verified')
+        self.assertEqual(self.reporter.payloads, [])
+
+    def test_service_exception_does_not_fail_run(self):
+        class Boom:
+            def report(self, payload, config):
+                raise RuntimeError('webhook down')
+
+        self.scheduler._pm = _FakePM(Boom())
+        self._patch_engine([
+            TurnResult(status='ok', content='done', duration=1.0, session='job.a'),
+        ])
+        job = Job('a', {'interval': 60}, prompt='work', status='approved')
+        self.registry.put(job)
+        run = self.scheduler.run_job(job)
+        self.assertEqual(run.status, 'verified')
+
+
 class TestRender(unittest.TestCase):
     def test_list_and_show(self):
         registry = JobRegistry(Path('/nonexistent/jobs.json'))
@@ -727,7 +808,7 @@ class TestRender(unittest.TestCase):
                   created_at='2026-08-26T08:00:00Z')
         job.history = [
             JobRun(status='verified', duration=1.0, content='ok'),
-            JobRun(status='failed', reason='boom'),
+            JobRun(status='failed', reason='boom', session='job.a'),
         ]
         registry._jobs['a'] = job
         with patch('sys.stdout', new=io.StringIO()) as buf:
@@ -737,6 +818,7 @@ class TestRender(unittest.TestCase):
         self.assertIn('2 run(s) (1 ok, 1 failed)', out)
         self.assertIn('boom', out)
         self.assertIn('uptime', out)
+        self.assertIn('last run: failed (0.0s) boom job.a', out)
 
 
 class TestJobsCli(unittest.TestCase):

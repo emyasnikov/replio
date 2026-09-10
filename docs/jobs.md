@@ -131,6 +131,15 @@ There are three distinct gates, from coarsest to finest:
 
 A job runs with `HeadlessUI(auto='deny')` on an unattended engine - the same posture as `replio serve`, plus parking. So until mid-run blocking is implemented, an `ask target='human'` inside a run is not paused and does not hang: it parks as a pending request in `.replio/asks.json` (returned to the agent as `[parked] Ask #<id> ...`), the run continues or finishes, and the operator answers later with `/asks answer <id> <text>` or `POST /asks/<id>/answer` on `replio serve` - which injects the answer into the run's session for the next run/continuation. Give a job its permissions up front (`--tool-permission bash=allow`, an agent type carve, or a `--tools-deny` list) and it will not need mid-run interruption. A sub-agent inside a job can still use `ask target='lead'` for a decision from the job's model mid-run. `timeout` runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so inspect a timed-out job with `replio jobs show <name>` before a manual retry.
 
+## Report-back
+
+A finished or failed run is surfaced in-band and, optionally, out-of-band, so an unattended supervisor does not have to be watched:
+
+- **`replio jobs status` / `/jobs status`** prints a `last run:` line per job (status, duration, reason, session) under the run counts.
+- **`replio jobs run` / `/jobs run`** print the run's result plus a `summary:` line from the run memory written after the run.
+- **Delegated and team runs** show their outcome in the REPL sub-footer (`status session` after the duration/token footer, when `delegate_echo` is on).
+- **Out-of-band**: after each completed run the scheduler dispatches one `job.run.completed` event to a registered `report` service. The bundled `replio-core-webhook` plugin implements it: set `report.webhook` to a URL and it POSTs the JSON payload (job, status, duration, reason, session, timestamps, content, worktree, memory summary). Empty `report.webhook` is a no-op. Service failures are logged and never fail the run. A report fires once per completed run (the final status after retries), not per attempt. Per-job destinations are future work (TODO).
+
 ## Session files per run
 
 The **compact memory** is the run-memory file ([Run memory](#run-memory)): a rolling summary injected into every run to keep the model oriented across runs. Session files are the per-run audit:

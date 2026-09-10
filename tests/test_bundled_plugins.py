@@ -21,7 +21,7 @@ BUNDLED = {
     'replio-core-opencode',
     'replio-core-web',
     'replio-core-webhook',
-    }
+}
 
 
 class TestBundledPlugins(unittest.TestCase):
@@ -71,6 +71,12 @@ class TestBundledPlugins(unittest.TestCase):
         self.assertTrue(callable(service.serve_stdio))
         self.assertTrue(callable(service.handle_http))
 
+    def test_report_service_registered(self):
+        self.pm.load()
+        service = self.pm.service('report')
+        self.assertIsNotNone(service)
+        self.assertTrue(callable(service.report))
+
     def test_bundled_cannot_uninstall(self):
         self.pm.load()
         with self.assertRaises(PluginError):
@@ -108,8 +114,7 @@ class TestBundledPlugins(unittest.TestCase):
     def test_bundled_providers_registered(self):
         self.pm.load()
         providers = set(self.pm.provider_classes())
-        self.assertTrue({'ollama', 'openai', 'groq', 'anthropic',
-                         'opencode', 'opencode-go'} <= providers)
+        self.assertTrue({'ollama', 'openai', 'groq', 'anthropic', 'opencode', 'opencode-go'} <= providers)
 
 
 if __name__ == '__main__':

@@ -251,7 +251,7 @@ class ReplUI:
                 parts.append(f'{n}t')
         return '/'.join(parts)
 
-    def footer(self, duration, counts):
+    def footer(self, duration, counts, note=''):
         self.flush()
         if not self.content_newline:
             sys.stdout.write('\n')
@@ -259,9 +259,11 @@ class ReplUI:
         if self._loop.config.get('show_context_size', True):
             seg = self._footer_tokens(counts)
             body = f'({duration:.1f}s, {seg})' if seg else f'({duration:.1f}s)'
-            self._emit(body, '\033[90m')
         else:
-            self._emit(f'({duration:.1f}s)', '\033[90m')
+            body = f'({duration:.1f}s)'
+        if note:
+            body += f'  {note}'
+        self._emit(body, '\033[90m')
         self.content_newline = True
 
     def info(self, msg):
@@ -358,7 +360,7 @@ class NullUI:
     def tool_refine(self, old, new):
         pass
 
-    def footer(self, duration, counts):
+    def footer(self, duration, counts, note=''):
         pass
 
     def info(self, msg):
@@ -442,7 +444,7 @@ class HeadlessUI:
         if self.verbose:
             sys.stderr.write(f'[refine: "{old}" → "{new}"]\n')
 
-    def footer(self, duration, counts):
+    def footer(self, duration, counts, note=''):
         if self.stream:
             parts = []
             for key in self.footer_tokens:
@@ -451,10 +453,11 @@ class HeadlessUI:
                     continue
                 parts.append(f'{n:,} tokens' if key == 'context' else f'{n}t')
             seg = '/'.join(parts)
+            tail = f'  {note}' if note else ''
             if seg:
-                sys.stderr.write(f'({duration:.1f}s, {seg})\n')
+                sys.stderr.write(f'({duration:.1f}s, {seg}){tail}\n')
             else:
-                sys.stderr.write(f'({duration:.1f}s)\n')
+                sys.stderr.write(f'({duration:.1f}s){tail}\n')
 
     def info(self, msg):
         if self.verbose:
