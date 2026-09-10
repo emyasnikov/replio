@@ -113,6 +113,8 @@ A tool call and its result:
 {"role": "tool", "tool_call_id": "call_xxx", "content": "Web search results...", "timestamp": "2026-08-17T12:01:03+00:00", "tool": "web_search", "analysis": "Pages about recent Python releases - 3.13 is the latest."}
 ```
 
+Answering a parked ask (`/asks answer <id> <text>` or `POST /asks/<id>/answer` on `replio serve`) appends a `user` message `[answer to parked ask #<id>] <answer>` to the ask's origin session, so the next turn on that session resumes with the operator's decision in context. See [config.md](config.md#unattended-mode).
+
 A command and a compaction record:
 
 ```json

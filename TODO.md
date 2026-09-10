@@ -38,7 +38,6 @@
 - [ ] Per-task decide-vs-park for `direction` asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator
 - [ ] Autonomous supervisor track - compose the delegate loop turn + ask routing + jobs daemon + report-back so a supervisor task started once runs unattended and reports back
 - [ ] Supervisor report-back - finished/failed supervisor runs surface a per-run summary (interactive session result footer + `replio jobs status`), delivered out-of-band via the job event hooks + connectors when the terminal is closed
-- [ ] Pending-ask inbox - an unattended run's `ask target='human'` parks as a pending request (persisted, listed in the REPL + serve API) instead of failing, and answering resumes the run from its session (resumable mid-run state shared with the mid-run blocking job approval item)
 - [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
 - [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
 - [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`web_fetch` guidance to tool descriptions
@@ -111,6 +110,7 @@
 
 ## Done
 
+- [x] Pending-ask inbox - unattended human asks park in `.replio/asks.json`, answered via `/asks`
 - [x] Unattended mode - no stdin at any depth, confirms auto-deny, `confirm_timeout`
 - [x] `team` tool - model-invokable team pipeline, per-stage permission + ceiling/depth guards
 - [x] Delegation permission ceiling + `ask` permission grants - `grant_permission`, `ask_policy`

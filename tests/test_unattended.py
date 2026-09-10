@@ -117,30 +117,29 @@ class TestUnattendedNonBlocking(unittest.TestCase):
         self.assertFalse(engine._confirm_tool('run_command', {'command': 'ls'}))
         engine.ui.confirm.assert_not_called()
 
-    def test_root_human_ask_nonblocking_when_unattended(self):
+    def test_root_human_ask_parks_when_unattended(self):
         chat = make_chat({'unattended': True})
         try:
             chat._init_tooling()
             with patch('builtins.input', side_effect=self._no_input):
                 out = chat._run_tool('ask', {'question': 'which port?'})
-            self.assertIn('Error: ask has no one to answer', out)
+            self.assertIn('[parked]', out)
+            self.assertEqual(len(chat.asks.list()), 1)
         finally:
             chat._tmp.cleanup()
 
-    def test_subagent_human_ask_routes_to_lead_when_unattended(self):
+    def test_subagent_human_ask_parks_when_unattended(self):
         from replio.types import AgentType
         chat = make_chat({'unattended': True})
         try:
             chat.types.put(AgentType(name='w', system_prompt='Writer'),
                            scope='local')
-            chat.provider.chat_nonstreaming.return_value = {
-                'content': 'Decide yourself'}
             sub = chat._new_sub_engine('w')
             sub._init_tooling()
             with patch('builtins.input', side_effect=self._no_input):
                 out = sub._run_tool('ask', {'question': 'which port?'})
-            self.assertEqual(out, 'Decide yourself')
-            chat.provider.chat_nonstreaming.assert_called_once()
+            self.assertIn('[parked]', out)
+            chat.provider.chat_nonstreaming.assert_not_called()
         finally:
             chat._tmp.cleanup()
 

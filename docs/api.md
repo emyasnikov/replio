@@ -4,7 +4,7 @@
 
 ```bash
 replio serve
-# replio serve - http://127.0.0.1:8787 (POST /chat, POST /mcp, GET /sessions, GET /health, GET /version)
+# replio serve - http://127.0.0.1:8787 (POST /chat, POST /mcp, GET /sessions, GET /asks, POST /asks/<id>/answer, GET /health, GET /version)
 ```
 
 All responses are JSON with `Content-Type: application/json`.
@@ -36,6 +36,29 @@ curl localhost:8787/sessions
 # {"sessions": ["20260814_192251_hi", "api"]}
 ```
 
+## GET /asks
+
+Lists parked asks (unattended runs park `ask target='human'` instead of blocking or erroring - see [config.md](config.md#unattended-mode)). Each entry carries `id`, `question`, `context`, `options`, `origin` (the session that parked it), `kind` (`direction`/`permission`), `permission`, `status` (`pending`/`answered`), `answer`, and timestamps.
+
+```bash
+curl localhost:8787/asks
+# {"asks": [{"id": 1, "question": "which port?", "origin": "sub_20260910_...", "kind": "direction", "status": "pending", ...}]}
+```
+
+## POST /asks/<id>/answer
+
+Answers a parked ask. Marks it `answered`, injects a `user` message `[answer to parked ask #<id>] <answer>` into the origin session (so the next turn on that session sees it), and returns the ask plus a resume hint.
+
+```bash
+curl localhost:8787/asks/1/answer -X POST -H 'Content-Type: application/json' \
+  -d '{"answer": "use port 8080"}'
+# {"ask": {"id": 1, ..., "status": "answered", "answer": "use port 8080"},
+#  "session": "sub_20260910_...", "resume": "replio run --session-id sub_... \"continue\"",
+#  "injected": true}
+```
+
+Errors: `400` for a missing/empty `answer` or invalid JSON body, `404` for an unknown ask id.
+
 ## GET /health
 
 Liveness check.
@@ -51,7 +74,7 @@ Returns the installed version.
 
 ```bash
 curl localhost:8787/version
-# {"version": "0.29.0"}
+# {"version": "0.31.0"}
 ```
 
 Unknown routes return `404 {"error": "not found"}`.

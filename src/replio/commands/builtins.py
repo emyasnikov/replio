@@ -917,6 +917,81 @@ def register_builtins(registry):
         else:
             _render_commands(registry, ['sessions'])
 
+    @registry.register('asks', description='List parked asks and answer them', subcommands=[
+        ('list', 'List parked asks (list [all|pending|answered])'),
+        ('show', 'Show a parked ask in full (show <id>)'),
+        ('answer', 'Answer a parked ask (answer <id> <text>)'),
+    ])
+    def asks_cmd(arg=''):
+        store = chat.asks
+        parts = arg.strip().split(maxsplit=1)
+        action = parts[0] if parts else ''
+        rest = parts[1].strip() if len(parts) > 1 else ''
+
+        if not action or action == 'list':
+            scope = (rest or 'pending').lower()
+            if scope not in ('pending', 'answered', 'all'):
+                print('Usage: /asks list [all|pending|answered]')
+                return
+            asks = store.list(None if scope == 'all' else scope)
+            if not asks:
+                print(f'  No {scope} asks')
+                return
+            for a in asks:
+                mark = '' if a.status == 'pending' else f'  ({a.status})'
+                preview = a.question.replace('\n', ' ')[:70]
+                print(f'  #{a.id}  {preview}{mark}')
+            return
+        if action == 'show':
+            if not rest:
+                print('Usage: /asks show <id>')
+                return
+            try:
+                a = store.find(int(rest))
+            except ValueError:
+                print('Usage: /asks show <id>')
+                return
+            if a is None:
+                print(f'Ask not found: {rest}')
+                return
+            print(f'#{a.id}  [{a.kind}{(": " + a.permission) if a.permission else ""}]'
+                  f'  {a.status}')
+            print(f'  origin:    {a.origin}')
+            print(f'  question:  {a.question}')
+            if a.context:
+                print(f'  context:   {a.context}')
+            if a.options:
+                print('  options:   ' + ' / '.join(a.options))
+            if a.answer:
+                print(f'  answer:    {a.answer}')
+            return
+        if action == 'answer':
+            aid, _, text = rest.partition(' ')
+            if not aid or not text.strip():
+                print('Usage: /asks answer <id> <text>')
+                return
+            try:
+                target = store.find(int(aid))
+            except ValueError:
+                print('Usage: /asks answer <id> <text>')
+                return
+            if target is None:
+                print(f'Ask not found: {aid}')
+                return
+            answered = store.answer(int(aid), text.strip())
+            if answered is None:
+                print(f'Ask not found: {aid}')
+                return
+            from ..asks import inject_answer
+            injected = inject_answer(store, answered)
+            if injected and chat.current_session.name == answered.origin:
+                chat.load_or_create_session(answered.origin)
+            note = f' -> resumed in session {answered.origin}' if injected \
+                else ' (origin session missing)'
+            print(f'Answered ask #{answered.id}{note}')
+            return
+        _render_commands(registry, ['asks'])
+
     @registry.register('compact', aliases=['c'],
                        description='Summarize the conversation and trim the context')
     def compact_cmd(_=None):

@@ -147,6 +147,13 @@ class Engine:
         return self._models
 
     @property
+    def asks(self):
+        if getattr(self, '_asks', None) is None:
+            from .asks import AskStore
+            self._asks = AskStore(self.config.local_path.parent / 'asks.json')
+        return self._asks
+
+    @property
     def providers(self):
         if getattr(self, '_providers', None) is None:
             from .providers.registry import ProviderRegistry

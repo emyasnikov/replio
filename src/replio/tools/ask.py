@@ -21,6 +21,22 @@ _NO_ONE = ('Error: ask has no one to answer (no lead agent and no interactive '
            'terminal) - decide autonomously or return the question as an open item')
 
 
+def _park(engine, question: str, context: str, options: list,
+          kind: str, permission: str) -> str:
+    store = getattr(engine, 'asks', None)
+    if store is None:
+        return _NO_ONE
+    try:
+        ask = store.add(question, engine.current_session.name,
+                        context=context, options=options,
+                        kind=kind, permission=permission)
+    except Exception:
+        return _NO_ONE
+    return (f'[parked] Ask #{ask.id} parked for the operator '
+            f'(session {ask.origin}); continue or return the question '
+            'as an open item')
+
+
 def _task_preview(engine) -> str:
     for m in engine.current_session.messages:
         if m.get('role') == 'user' and m.get('content'):
@@ -101,6 +117,9 @@ def _ask_permission(engine, question: str, context: str, options: list,
                 return f'[granted] Permission "{permission}" approved ({scope}).'
             return (f'[denied] Permission "{permission}" declined by the '
                     'operator.')
+        if engine._is_unattended():
+            return _park(engine, question, context or '', options or [],
+                         'permission', permission)
     lead = getattr(engine, '_lead', None)
     if lead is not None:
         answer = _lead_answer(engine, question, context, options,
@@ -190,12 +209,18 @@ def register_ask_tool(registry, engine) -> Callable:
                 answer = _lead_answer(engine, question, context or '', options or [])
                 if answer is not None:
                     return answer
+            if engine._is_unattended():
+                return _park(engine, question, context or '', options or [],
+                             'direction', '')
             if ui is not None:
                 answer = ui.ask(question, context=context or '',
                                 options=options or [],
                                 origin=engine.current_session.name)
                 return answer or _NO_ANSWER
             return _NO_ONE
+        if engine._is_unattended():
+            return _park(engine, question, context or '', options or [],
+                         'direction', '')
         if ui is not None:
             answer = ui.ask(question, context=context or '',
                             options=options or [],

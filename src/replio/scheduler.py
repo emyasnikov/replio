@@ -62,6 +62,7 @@ def _build_engine(config: Config, job: Job, verbose: bool,
         if section:
             system_text = system_text.rstrip() + '\n\n' + section
     sub_config.apply('system_prompt', system_text)
+    sub_config.apply('unattended', True)
     if job.mode:
         sub_config.apply('mode', job.mode)
     if job.provider:

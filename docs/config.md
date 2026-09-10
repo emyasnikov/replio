@@ -87,7 +87,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 | `tool_status_visible`       | `true`                 | Show dimmed tool status in the REPL                                    |
 | `tools.allow`               | `[]`                   | Name-level allowlist. Empty means no restriction                       |
 | `tools.deny`                | `[]`                   | Name-level deny list (takes precedence over allow)                     |
-| `unattended`                | `false`                | Unattended mode: no stdin is read at any depth. Confirms auto-deny, `ask target='human'` routes to the lead agent or returns without pausing. See [Unattended mode](#unattended-mode) |
+| `unattended`                | `false`                | Unattended mode: no stdin is read at any depth. Confirms auto-deny and `ask target='human'` parks as a pending request (`.replio/asks.json`) instead of prompting. See [Unattended mode](#unattended-mode) |
 | `web_search`                | `false`                | Auto-search mode: search the web before answering                       |
 | `word_streaming`            | `true`                 | Buffer REPL output to word boundaries so words render fully formed (no mid-word pauses). `false` streams character-by-character |
 
@@ -162,10 +162,10 @@ An approved permission request creates a one-shot grant on the asking sub-agent 
 `unattended: true` guarantees that nothing in a turn reads stdin, at any depth - an overnight REPL run cannot freeze on a prompt. It applies to the whole sub-agent tree:
 
 - **Confirms auto-deny.** A tool whose policy action is `ask` (e.g. `run_command` with `bash: ask`) returns `[cancelled] User declined the <name> call` instead of prompting.
-- **`ask target='human'` never reaches the terminal.** The root engine drops its terminal UI (`_ask_ui` is not propagated down the tree), so a root ask returns the non-blocking "no one to answer" error and a sub-agent's human ask routes to its lead agent instead.
+- **`ask target='human'` parks instead of prompting.** The root engine drops its terminal UI (`_ask_ui` is not propagated down the tree), and any human-routed ask becomes a pending request persisted in `.replio/asks.json`, returned to the agent as `[parked] Ask #<id> ...` so it continues or finishes. A sub-agent's human ask parks rather than falling back to its lead - the operator should decide. Permission asks routed `human` park the same way. Routed `auto` still go to the lead (a one-shot grant).
 - **Model approval is not prompted.** An unapproved type/team model is denied (the run reports the error) unless the headless `approve_models` flag was passed - launch with `--approve-model` if the run needs to approve one itself.
 
-Enable it per run with `replio --unattended` (not persisted), in config with `unattended: true`, or live with `/unattended`. `confirm_timeout` (seconds, default `0` = forever) additionally makes attended confirm/ask prompts self-limiting, so a prompt left unanswered auto-denies instead of hanging.
+Enable it per run with `replio --unattended` (not persisted), in config with `unattended: true`, or live with `/unattended`. Parked asks are listed and answered with `/asks` or the serve API (`GET /asks`, `POST /asks/<id>/answer`). Answering marks the ask answered and injects the answer into the origin session, so the next turn on that session resumes with the operator's decision in context. Scheduled/durable job engines run unattended, so a job parks its human asks the same way. `confirm_timeout` (seconds, default `0` = forever) additionally makes attended confirm/ask prompts self-limiting, so a prompt left unanswered auto-denies instead of hanging.
 
 ### `bash_allow` - command allowlist for `run_command`
 

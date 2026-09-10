@@ -6,6 +6,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 
 | Command                 | Aliases        | Description                                                    |
 |-------------------------|----------------|----------------------------------------------------------------|
+| `/asks`                 |                | List and answer parked asks from unattended runs (`/asks list [all|pending|answered]`, `/asks show <id>`, `/asks answer <id> <text>`). Answering resumes the origin session. See [config.md](config.md#unattended-mode) |
 | `/compact`              | `/c`           | Summarize the conversation and trim the provider context       |
 | `/config`              |                | Show, get, set, or unset config values (`/config <key> <value>`, `/config unset <key>`, `/config --global <key> <value>` for a global line). The listing appends each key's origin: `(default)`, `(global)`, or `(local)` |
 | `/connect`              |                | Connect a provider. `/connect` picks interactively from the known providers. `/connect <name>` presets a known provider's defaults and (re)enters its API key. `/connect <url>` detects a known host or creates a named custom provider (derived from the host, or `/connect <url> <name>` to name it). Tests the connection before saving, stores the API key + base URL in global `providers.json`, and writes `provider`/`base_url` into config - the model is picked separately with `/model` |
