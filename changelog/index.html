@@ -404,6 +404,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0310-2026-09-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.31.0 - 2026-09-12
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0300-2026-09-10" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1438,6 +1449,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0310-2026-09-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.31.0 - 2026-09-12
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0300-2026-09-10" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1785,6 +1807,16 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v0310-2026-09-12">v0.31.0 - 2026-09-12<a class="headerlink" href="#v0310-2026-09-12" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Assistant root role - the REPL root now binds to a bundled <code>assistant</code> type on startup, so a plain <code>replio</code> session is the operator's single point of contact: it answers small tasks inline and delegates bigger work (use <code>composer</code> to design a team, then run it with <code>team</code>, or <code>leader</code> to supervise). New config keys <code>assistant</code> (default true, REPL only) and <code>assistant_type</code> (default <code>assistant</code>) rebind the root to any type without code changes, and a non-empty <code>system_prompt</code> or a local override of the type always wins. <code>Engine.bind_root_agent</code> resolves the type and merges its prompt and skills, plus its model/permissions/ask policy only when the user has not set them. Headless <code>run</code>/<code>serve</code>/jobs are unchanged and keep using <code>--type</code>. Docs synced (<code>config.md</code>, <code>types.md</code>). Tests: <code>tests/test_assistant.py</code></li>
+<li>Team permission category - the <code>team</code> tool gains its own <code>team</code> permission category (default <code>allow</code>), separate from <code>delegate</code>, so a type can be a delegation target yet be barred from running pipelines. The composer now sets <code>team: deny</code> instead of <code>delegate: deny</code>, which had made <code>_delegate_action</code> refuse delegation to the composer entirely (the <code>delegate</code> category on a target also gates delegation to it). Docs synced (<code>config.md</code>, <code>tools.md</code>, <code>teams.md</code>, <code>types.md</code>). Tests: <code>tests/test_team_tool.py</code>, <code>tests/test_composer.py</code></li>
+<li>Composer role - a bundled agent type that designs and persists a complete team for a task without running it. The composer reads the task and the existing catalog, decides the stages and the specialist types and skills each needs, saves the team (including per-stage skills and an optional review loop) through the <code>catalog</code> tool, and reports the team so the caller can run it. It carries <code>catalog</code> allow with <code>edit</code>, <code>bash</code>, and <code>team</code> denied, so it can shape the catalog but cannot write project files, run shell, or start the team itself. To make that carve effective, the default <code>tool_permission.catalog</code> is now <code>allow</code> (it writes only to <code>.replio/</code>, like the default <code>edit</code>), and setting it to <code>ask</code> confirm-gates catalog changes. <code>management</code> joins the bundled type tag vocabulary. Docs synced (<code>config.md</code>, <code>types.md</code>). Tests: <code>tests/test_composer.py</code>, plus bundled-type and catalog updates</li>
+<li>Team review loop - a team's <code>loop</code> config (<code>from</code>, <code>until</code>, <code>max_iterations</code>, <code>verdict</code>) iterates a producer/reviewer block until the reviewer's result contains the verdict marker followed by <code>PASS</code> or the iteration cap is reached, the generate &gt; check &gt; correct pattern. Stages before <code>from</code> and after <code>until</code> run once. The producer's brief carries the previous review and its warm session, so it revises with its own context, and its session is forced warm for the run even when the team does not set <code>warm_sessions</code>. <code>from</code>/<code>until</code> accept a stage type name or index, the marker defaults to <code>VERDICT:</code>, and reaching the cap without a pass is still a successful run. The <code>catalog</code> tool saves <code>loop</code>. Docs synced (<code>swarm.md</code>, <code>teams.md</code>). Tests: <code>tests/test_team_loop.py</code></li>
+<li>Warm member sessions - <code>delegate</code> and team stages can resume a persistent sub-agent session so a role keeps its context across calls while per-run skills extend it. <code>run_subagent</code>/<code>_new_sub_engine</code> take a <code>session_key</code> that loads or creates <code>sub_&lt;key&gt;</code> and appends the new task, and the <code>delegate</code> tool exposes it. Teams gain <code>warm_sessions</code> (each stage keyed <code>&lt;team&gt;__&lt;stage-type&gt;</code>) and a per-stage <code>session_key</code>, and the <code>team</code> tool's <code>warm</code> argument overrides the team setting for one run. Without a key the fresh <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code> behavior is unchanged. The <code>catalog</code> tool saves <code>warm_sessions</code> and stage <code>session_key</code>. Docs synced (<code>session.md</code>, <code>swarm.md</code>, <code>teams.md</code>). Tests: <code>tests/test_warm_sessions.py</code></li>
+<li>Agent catalog management - a new core <code>catalog</code> tool (category and permission <code>catalog</code>) lets a model list, show, save, and remove agent types, teams, and skills, and reload the catalog, so a composing agent can build a team and use it in the same run. Saves write to the local project catalog (<code>.replio/types.json</code>, <code>.replio/teams.json</code>, <code>.replio/skills/&lt;name&gt;.md</code>). Catalog changes are versioned on the shared plugin manager, and every engine reloads its registries at the start of the next agent-loop round through <code>Engine.reload_catalogs</code>/<code>touch_catalogs</code>, so a team composed by a sub-agent is visible to the root engine that delegated it. Because it writes only to <code>.replio/</code>, a composing agent can be granted catalog management without general <code>edit</code> power. The default <code>tool_permission.catalog</code> is <code>allow</code>, and setting it to <code>ask</code> confirm-gates catalog changes. Docs synced (<code>config.md</code>, <code>tools.md</code>). Tests: <code>tests/test_catalog.py</code></li>
+<li>Per-invocation skills - a caller can extend an agent type for one run instead of defining a new type. <code>delegate</code> and the <code>team</code> tool accept a <code>skills</code> array, and a team stage may set <code>skills</code>, all layered over the type's standing <code>AgentType.skills</code>. Resolution order is standing skills first, then invocation skills (task-wide before stage-specific), deduplicated by name, with unknown names skipped silently. Layering never changes a type's tool carve, so a reusable agent keeps its identity while a task adds its own technology, stack, or framework instructions. Docs synced (<code>skills.md</code>, <code>swarm.md</code>, <code>teams.md</code>, <code>types.md</code>). Tests: <code>test_delegate.py</code>, <code>test_subagent.py</code>, <code>test_team_run.py</code>, <code>test_teams.py</code></li>
+</ul>
 <h2 id="v0300-2026-09-10">v0.30.0 - 2026-09-10<a class="headerlink" href="#v0300-2026-09-10" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Autonomous supervisor end-to-end verification - the last work package of the autonomous supervisor track. A deterministic governance-loop test (<code>tests/test_autonomous_supervisor.py</code>) drives a <code>leader</code>-typed supervisor job through the whole loop under a mock provider: it runs a <code>team</code>, a stage's <code>ask</code> parks under unattended mode, the run verifies, the <code>job.run.completed</code> report payload carries the parked ask, and answering via the asks store injects into the origin session so a resumed turn sees the decision. The report payload and <code>replio jobs status</code>/<code>replio jobs run</code> output now flag parked asks from the run (<code>parked_asks_for_run</code> walks the run session's <code>sub_sessions</code>). New <code>replio jobs add-supervisor</code> (and <code>/jobs add-supervisor</code>) scaffolds a <code>leader</code>-typed supervisor job from a supervisor task template, approved by default, one command away from the daemon. Docs synced (<code>jobs.md</code> Supervisor overnight run runbook, <code>testing.md</code> coverage + live run, <code>PLAN.md</code>, <code>TODO.md</code>). The bundled <code>leader</code> type gains <code>grant_permission</code>/<code>ask_policy</code> and a team-aware prompt, so it delegates <code>bash</code>/<code>web</code> it denies itself to team stages. Tests: <code>tests/test_autonomous_supervisor.py</code> + <code>test_jobs.py</code> parked-ask report + <code>render_status</code> assertions</li>

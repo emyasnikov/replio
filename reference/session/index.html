@@ -1434,7 +1434,7 @@
 </tr>
 </tbody>
 </table>
-<p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code>, where the suffix is the calling (parent) session id (<code>sub_20260817_120100_ses_20260817_120000_what_is_oee</code>). These live in the same <code>.replio/sessions/</code> directory and are regular sessions - listed by <code>/sessions list</code> (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.</p>
+<p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code>, where the suffix is the calling (parent) session id (<code>sub_20260817_120100_ses_20260817_120000_what_is_oee</code>). A warm member session (<code>delegate</code>/team <code>session_key</code>, or a team's <code>warm_sessions</code>) is named <code>sub_&lt;key&gt;</code> instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same <code>.replio/sessions/</code> directory and are regular sessions - listed by <code>/sessions list</code> (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.</p>
 <h2 id="managing-sessions">Managing sessions<a class="headerlink" href="#managing-sessions" title="Permanent link">&para;</a></h2>
 <p>The active session is handled by <code>/session</code> (like <code>/model</code> for the model). The catalog of saved sessions lives under <code>/sessions</code> (like <code>/models</code>).</p>
 <table>

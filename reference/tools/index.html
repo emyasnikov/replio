@@ -1404,6 +1404,13 @@
 <td>Ask the human or the lead agent for a decision, pausing until answered</td>
 </tr>
 <tr>
+<td><code>catalog</code></td>
+<td>core</td>
+<td><code>catalog</code></td>
+<td><code>catalog</code></td>
+<td>Manage agent types, teams, and skills: list/show/save/remove, plus reload</td>
+</tr>
+<tr>
 <td><code>code_format</code></td>
 <td>replio-core-dev</td>
 <td><code>exec</code></td>
@@ -1498,7 +1505,7 @@
 <td><code>team</code></td>
 <td>core</td>
 <td><code>delegate</code></td>
-<td><code>delegate</code></td>
+<td><code>team</code></td>
 <td>Run a named team (an ordered chain of agent-type stages) and return the final stage's answer</td>
 </tr>
 <tr>
@@ -1554,11 +1561,11 @@
 </tr>
 <tr>
 <td><code>category</code></td>
-<td><code>search</code> / <code>read</code> / <code>write</code> / <code>exec</code> / <code>ask</code> / <code>todo</code> / <code>delegate</code> / <code>mcp</code> - drives the default activity glyph and verb</td>
+<td><code>ask</code> / <code>catalog</code> / <code>delegate</code> / <code>exec</code> / <code>mcp</code> / <code>read</code> / <code>search</code> / <code>todo</code> / <code>write</code> - drives the default activity glyph and verb</td>
 </tr>
 <tr>
 <td><code>permission</code></td>
-<td>The <code>tool_permission</code> key that gates the tool: <code>read</code> / <code>list</code> / <code>edit</code> / <code>bash</code> / <code>web</code> / <code>mcp</code></td>
+<td>The <code>tool_permission</code> key that gates the tool: <code>bash</code> / <code>catalog</code> / <code>edit</code> / <code>list</code> / <code>mcp</code> / <code>read</code> / <code>team</code> / <code>web</code></td>
 </tr>
 <tr>
 <td><code>permission_fn</code></td>

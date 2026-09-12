@@ -1410,6 +1410,16 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </thead>
 <tbody>
 <tr>
+<td><code>assistant</code></td>
+<td><code>true</code></td>
+<td>Bind the REPL root to the <code>assistant_type</code> identity on startup. <code>false</code> leaves the root untyped (no injected identity). A non-empty <code>system_prompt</code> always wins over the type prompt</td>
+</tr>
+<tr>
+<td><code>assistant_type</code></td>
+<td><code>"assistant"</code></td>
+<td>Agent type the REPL root binds to when <code>assistant</code> is on. Rebind to any type (e.g. <code>leader</code>, <code>composer</code>) or a local override of <code>assistant</code></td>
+</tr>
+<tr>
 <td><code>ask_policy</code></td>
 <td><em>(see below)</em></td>
 <td>Routing for the <code>ask</code> tool by kind (<code>permission</code>/<code>direction</code>)</td>
@@ -1690,15 +1700,17 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <span class="w">  </span><span class="nt">"ask"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"bash"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ask"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"bash_allow"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"pytest"</span><span class="p">,</span><span class="w"> </span><span class="s2">"python -m unittest"</span><span class="p">,</span><span class="w"> </span><span class="s2">"ruff"</span><span class="p">,</span><span class="w"> </span><span class="s2">"git"</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"catalog"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"delegate"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"edit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"list"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"mcp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ask"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"read"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"team"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"web"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (y/N confirm), <code>deny</code> (tool hidden/refused). Read/write/list outside the worktree escalate to <code>ask</code> automatically. The <code>delegate</code> category gates the <code>delegate</code> tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaulting to <code>allow</code>), while an agent type not in the registry defaults to <code>deny</code> (see <a href="../types/">types.md</a>). The <code>ask</code> category gates the <code>ask</code> tool (default <code>allow</code> - the interaction itself, answered by the human or the lead agent, see <a href="../tools/">tools.md</a>).</p>
+<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (y/N confirm), <code>deny</code> (tool hidden/refused). Read/write/list outside the worktree escalate to <code>ask</code> automatically. The <code>delegate</code> category gates the <code>delegate</code> tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaulting to <code>allow</code>), while an agent type not in the registry defaults to <code>deny</code> (see <a href="../types/">types.md</a>). The <code>team</code> category gates the <code>team</code> tool (default <code>allow</code>), separate from <code>delegate</code> so a type can be a delegation target yet be barred from running pipelines. The <code>ask</code> category gates the <code>ask</code> tool (default <code>allow</code> - the interaction itself, answered by the human or the lead agent, see <a href="../tools/">tools.md</a>). The <code>catalog</code> category gates the <code>catalog</code> tool (default <code>allow</code>) - it writes only to the project catalog in <code>.replio/</code>, so a team-composing agent can manage types, teams, and skills without general file edits. Set it to <code>ask</code> to confirm every catalog change.</p>
 <h3 id="ask_policy"><code>ask_policy</code><a class="headerlink" href="#ask_policy" title="Permanent link">&para;</a></h3>
 <p>Routes the <code>ask</code> tool by kind:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>

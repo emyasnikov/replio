@@ -372,6 +372,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#session-turns-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session turns &amp; history
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#control-governance" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1306,6 +1317,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#session-turns-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session turns &amp; history
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#control-governance" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1486,7 +1508,7 @@
 <li>Provides: the capability the task delivers</li>
 </ul>
 <h2 id="assistant-roles-team-orchestration">Assistant roles &amp; team orchestration<a class="headerlink" href="#assistant-roles-team-orchestration" title="Permanent link">&para;</a></h2>
-<p>The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate &gt; check &gt; correct, and focus can hand off between roles. This is the current track and the top priority, ordered by dependency.</p>
+<p>The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate &gt; check &gt; correct, and focus follows the call tree of runs. This is the current track and the top priority, ordered by dependency.</p>
 <table>
 <thead>
 <tr>
@@ -1497,39 +1519,34 @@
 </thead>
 <tbody>
 <tr>
-<td>Per-invocation skills - <code>delegate</code>/<code>team</code> and team stages layer skills over a type's standing skills</td>
+<td>Session role metadata - persist the agent role on each session at creation</td>
 <td>S</td>
-<td>reusable agents extended per task</td>
+<td>runs are reconstructable from their logs</td>
 </tr>
 <tr>
-<td>Catalog management + reload - model-facing tools to create, update, and remove types, teams, and skills, with a live reload</td>
+<td>Run registry and call tree - in-process runs with parent/children and a flat call log</td>
 <td>M</td>
-<td>agents that build their own catalog</td>
+<td>see and traverse the runs</td>
 </tr>
 <tr>
-<td>Warm member sessions - keyed sub-sessions that resume so a role keeps context across invocations</td>
-<td>M</td>
-<td>continuity across invocations</td>
-</tr>
-<tr>
-<td>Team review loop - a producer/reviewer block repeats until the review passes or a cap is reached</td>
-<td>M</td>
-<td>generate &gt; check &gt; correct</td>
-</tr>
-<tr>
-<td>Composer role - designs and persists a team (specialists, skills, stages) for a task without running it</td>
-<td>M</td>
-<td>a task becomes a working team</td>
-</tr>
-<tr>
-<td>Assistant role - a delegation-first root identity that answers simple tasks inline and hands off bigger work</td>
-<td>S-M</td>
-<td>a clear entry point</td>
-</tr>
-<tr>
-<td>Focus handoff - switch the active agent in the REPL with a visible indicator and <code>/agent</code>, resuming each role's session</td>
+<td>Focus manager and role engines - route turns and commands to the active role, stable role sessions, <code>prompt_role</code></td>
 <td>M</td>
 <td>talk to the active agent directly</td>
+</tr>
+<tr>
+<td><code>/focus</code> command - show, navigate, and attach to runs</td>
+<td>M</td>
+<td>jump between runs</td>
+</tr>
+<tr>
+<td><code>handoff</code> tool - an agent hands control to another run and focus follows</td>
+<td>S-M</td>
+<td>agents pass control</td>
+</tr>
+<tr>
+<td><code>focus_on_delegate</code> config - off, ask, or on for offering sub-run focus</td>
+<td>S</td>
+<td>choose how focus follows delegation</td>
 </tr>
 <tr>
 <td>Provider session binding - bind the provider session id to the logical role session</td>
@@ -1555,6 +1572,39 @@
 <td>Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO</td>
 <td>S</td>
 <td>documented direction</td>
+</tr>
+</tbody>
+</table>
+<h2 id="session-turns-history">Session turns &amp; history<a class="headerlink" href="#session-turns-history" title="Permanent link">&para;</a></h2>
+<p>Session logs become turn-structured, so history and reprint work on the units the agent actually ran. This follows the focus work.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Session turn cutover - turn model with typed parts, tool calls and results co-located, flat <code>messages</code> removed, legacy logs no longer load</td>
+<td>M-L</td>
+<td>a turn-shaped session log</td>
+</tr>
+<tr>
+<td><code>/history</code> - list the active run's turns with a limit, <code>all</code>, <code>--thoughts</code>, and a run selector</td>
+<td>S-M</td>
+<td>read back the run</td>
+</tr>
+<tr>
+<td><code>/print</code> - reprint a turn or part in full, capped</td>
+<td>S</td>
+<td>recover scrolled-away output</td>
+</tr>
+<tr>
+<td>Stable short run code - persisted per-session code for ids across restarts</td>
+<td>S</td>
+<td>durable run handles</td>
 </tr>
 </tbody>
 </table>
@@ -1603,19 +1653,14 @@
 </thead>
 <tbody>
 <tr>
-<td>Non-blocking delegation + progress - the assistant starts sub-agents or whole teams for bigger tasks and reports their status instead of blocking the current run. Live status of which sub-agent is working, read out of the sub-engine loop the single blocking <code>Engine.chat()</code> does not expose today</td>
-<td>M</td>
-<td>the current run keeps flowing</td>
+<td>Concurrent runs and live focus - background execution, per-run output and input routing, live status and progress, cancellation and thread safety</td>
+<td>L</td>
+<td>watch and join running agents</td>
 </tr>
 <tr>
 <td>Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style)</td>
 <td>M</td>
 <td>current state of a delegation</td>
-</tr>
-<tr>
-<td>Interactive delegation focus - jump in/out of the active sub-agent, arrows switch between concurrent sub-agent session logs rendered from their own saved logs (opencode-style sub-agent views)</td>
-<td>M</td>
-<td>focus a running sub-agent</td>
 </tr>
 <tr>
 <td>Auto team selection - the assistant composes the team (types + order + briefs) for a task and delegates in sequence</td>
@@ -1983,11 +2028,6 @@
 <td>Command palette / fuzzy history - CTRL-P style history search</td>
 <td>M</td>
 <td>fast history search</td>
-</tr>
-<tr>
-<td>Session log full-restructuring (deferred) - typed <code>parts</code> model (OpenCode-style) replacing flat role-attribute messages, no migration of existing logs</td>
-<td>M</td>
-<td>ecosystem-aligned session format</td>
 </tr>
 </tbody>
 </table>
