@@ -31,6 +31,10 @@ Providers (`src/replio/providers/`) are OpenAI-compatible `/v1/chat/completions`
 
 Every engine instance is a run, tracked in a process-local `RunRegistry` (`src/replio/runs.py`) shared across the delegation tree. A run records a numeric `id`, the agent `role`, the `session`, the `parent` run id and its ordered `children`, a `status` (`running`, `done`, or `error`), the `task` brief, and timestamps. Delegated and team-stage engines register as children of the caller (`_new_sub_engine` passes the registry and parent id) and are finished when their `chat` returns. `RunRegistry.runs()` is the flat creation-order call log, and `children(id)` walks the tree. This is the data model the focus and handoff command surface builds on.
 
+## Focus
+
+`FocusManager` (`src/replio/focus.py`) owns the REPL's focus stack: the root assistant plus a role engine per focused role. `ChatLoop.active()` returns the focused engine and `ChatLoop.run()` routes turns and slash commands to it, so the operator talks to whichever agent is in focus. A role engine is built by `Engine.focused_engine(role)` with the same type resolution, skills, and permission carve as a delegation sub-agent, but with the REPL UI and a stable `agent_<role>` session that resumes on re-focus. `FocusManager.back()` walks the stack back and `reset()` returns to the root, repointing `ReplUI._loop` so rendering and confirms follow the active engine. The `prompt_role` config (default false) prefixes the prompt with the active role (e.g. `Assistant >>>`).
+
 ## One stream, one round trip
 
 When no tools are used, a turn is a single streaming request - no separate non-streaming decision round. `chat_nonstreaming()` is reserved for auxiliary decisions: query refinement, tool-result analysis, compaction. The `<thinking>` marker split lives in the engine so thinking stays separate from content in JSON results and session logs.

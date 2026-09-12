@@ -82,6 +82,7 @@ def _build_engine(config: Config, job: Job, verbose: bool,
     engine = Engine(sub_config, ui=ui,
                     approve_models=job.approve_model or bool(job.model))
     engine.role = job.type or ''
+    engine.current_run.role = engine.role
     if grant_ceiling is not None:
         engine._grant_ceiling = grant_ceiling
     engine.load_or_create_session(session_name or job.session or f'job.{job.name}')

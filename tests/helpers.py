@@ -7,6 +7,7 @@ from replio.config import Config
 from replio.chat import ChatLoop
 from replio.sessions.manager import SessionManager
 from replio.runs import RunRegistry
+from replio.focus import FocusManager
 from replio.commands.registry import CommandRegistry
 from replio.commands.builtins import register_builtins
 from replio.plugins.manager import PluginManager
@@ -48,7 +49,8 @@ def make_chat(config_data: dict | None = None) -> ChatLoop:
     chat._lead = None
     chat.role = ''
     chat.runs = RunRegistry()
-    chat.run = chat.runs.start(role='', session=chat.current_session.name)
+    chat.current_run = chat.runs.start(role='', session=chat.current_session.name)
+    chat.focus = FocusManager(chat)
 
     chat._plugin_manager = PluginManager(config)
     chat._plugin_manager.load()

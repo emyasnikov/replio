@@ -43,7 +43,7 @@ def make_engine(config_data: dict | None = None) -> Engine:
     engine._lead = None
     engine.role = ''
     engine.runs = RunRegistry()
-    engine.run = engine.runs.start(role='', session=engine.current_session.name)
+    engine.current_run = engine.runs.start(role='', session=engine.current_session.name)
     engine._plugin_manager = PluginManager(config)
     engine._plugin_manager.load()
     engine._tmp = temp_dir

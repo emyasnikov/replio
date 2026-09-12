@@ -105,6 +105,10 @@ def _warm_session_name(key: str) -> str:
     return f'sub_{_sanitize_session(key, limit=48)}'
 
 
+def _agent_session_name(role: str) -> str:
+    return f'agent_{_sanitize_session(role, limit=48)}'
+
+
 class Engine:
     def __init__(self, config: Config, ui=None, plugin_manager=None,
                  provider=None, approve_models: bool = False,
@@ -134,7 +138,7 @@ class Engine:
         self.sessions = SessionManager(sessions_dir)
         self.current_session = self.sessions.create(role=self.role)
         self.runs = runs if runs is not None else RunRegistry()
-        self.run: Run = self.runs.start(
+        self.current_run: Run = self.runs.start(
             role=self.role, session=self.current_session.name, parent=parent_run)
         self.registry = CommandRegistry(self)
         register_builtins(self.registry)
@@ -214,7 +218,7 @@ class Engine:
             return False
         self.role = name
         self.current_session.role = name
-        self.run.role = name
+        self.current_run.role = name
         if self.config.origin('system_prompt') == 'default':
             prompt = agent_type.system_prompt
             if agent_type.skills:
@@ -434,7 +438,7 @@ class Engine:
             self.current_session = self.sessions.create(name, role=self.role)
         else:
             self.current_session = self.sessions.create(role=self.role)
-        self.run.session = self.current_session.name
+        self.current_run.session = self.current_session.name
         return self.current_session
 
     def _grant(self) -> dict:
@@ -466,7 +470,9 @@ class Engine:
 
     def _new_sub_engine(self, type_name: str, provider=None, mode: str = '',
                         skills: list | None = None,
-                        session_key: str = '', task: str = '') -> 'Engine':
+                        session_key: str = '', task: str = '',
+                        session_name: str | None = None, ui=None,
+                        link_parent: bool = True) -> 'Engine':
         agent_type = self.types.find(type_name)
         if agent_type is None:
             raise ValueError(f'Unknown agent type: {type_name}')
@@ -508,12 +514,12 @@ class Engine:
             sub_config.apply('ask_policy', ask_policy)
         if provider is None and not agent_type.model:
             provider = self.provider
-        sub = Engine(sub_config, ui=NullUI(),
+        sub = Engine(sub_config, ui=ui if ui is not None else NullUI(),
                      plugin_manager=self._plugin_manager, provider=provider,
-                     runs=self.runs, parent_run=self.run.id)
+                     runs=self.runs, parent_run=self.current_run.id)
         sub.role = type_name
-        sub.run.role = type_name
-        sub.run.task = task
+        sub.current_run.role = type_name
+        sub.current_run.task = task
         sub._lead = self
         sub._ask_ui = getattr(self, '_ask_ui', None)
         sub._grant_ceiling = resolve_grant_ceiling(
@@ -521,13 +527,23 @@ class Engine:
         sub._team_depth = getattr(self, '_team_depth', 0)
         sub._team_stack = list(getattr(self, '_team_stack', []))
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-        if session_key:
+        if session_name:
+            sub.load_or_create_session(session_name)
+        elif session_key:
             sub.load_or_create_session(_warm_session_name(session_key))
         else:
             sub.load_or_create_session(_sub_session_name(
                 ts, self.current_session.name, self.sessions.sessions_dir))
-        sub.current_session.parent_id = self.current_session.name
+        if link_parent:
+            sub.current_session.parent_id = self.current_session.name
         return sub
+
+    def focused_engine(self, role: str, ui=None) -> 'Engine':
+        engine = self._new_sub_engine(
+            role, session_name=_agent_session_name(role), ui=ui,
+            link_parent=False)
+        engine.current_session.parent_id = ''
+        return engine
 
     def run_subagent(self, type_name: str, task: str, mode: str = '',
                      skills: list | None = None,
@@ -548,10 +564,10 @@ class Engine:
         try:
             result = sub.chat(task, autoname=False)
         except Exception:
-            self.runs.finish(sub.run.id, 'error')
+            self.runs.finish(sub.current_run.id, 'error')
             raise
         status = 'done' if result.status in ('ok', 'truncated') else 'error'
-        self.runs.finish(sub.run.id, status)
+        self.runs.finish(sub.current_run.id, status)
         if result.session and result.session not in self.current_session.sub_sessions:
             self.current_session.sub_sessions.append(result.session)
             self.session_auto_save()

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .config import Config
 from .engine import Engine
+from .focus import FocusManager
 from .ui import ReplUI
 from . import get_version
 
@@ -44,8 +45,15 @@ class ChatLoop(Engine):
         ui = ReplUI(self)
         super().__init__(config, ui=ui)
         self._bind_assistant()
+        self.focus = FocusManager(self)
         self._load_history(config)
         self._setup_readline()
+
+    def active(self) -> Engine:
+        focus = getattr(self, 'focus', None)
+        if focus is None:
+            return self
+        return focus.active
 
     def _bind_assistant(self):
         if not self.config.get('assistant', True):
@@ -152,7 +160,7 @@ class ChatLoop(Engine):
 
     def _read_line(self) -> str | None:
         try:
-            line = input(MAIN_PROMPT).strip()
+            line = input(self._prompt()).strip()
         except (EOFError, KeyboardInterrupt):
             print()
             return None
@@ -175,6 +183,15 @@ class ChatLoop(Engine):
                     pass
                 return composed
 
+    def _prompt(self) -> str:
+        role = ''
+        if self.config.get('prompt_role', False):
+            role = str(getattr(self.active(), 'role', '') or '')
+        if not role:
+            return MAIN_PROMPT
+        label = role[:1].upper() + role[1:]
+        return f'\001\033[36m\002{label} >>>\001\033[0m\002 '
+
     def run(self):
         if self.config.get('clear_screen', True):
             sys.stdout.write('\033[3J\033[2J\033[H')
@@ -192,22 +209,29 @@ class ChatLoop(Engine):
         while True:
             line = self._read_line()
             if line is None:
-                self.session_auto_save()
+                self._save_sessions()
                 self._save_history()
                 break
 
             if not line:
                 continue
 
+            engine = self.active()
             try:
                 if line.startswith('/'):
-                    self.current_session.add_message('command', line)
-                    self.registry.dispatch(line)
-                    self.session_auto_save()
+                    engine.current_session.add_message('command', line)
+                    engine.registry.dispatch(line)
+                    engine.session_auto_save()
                 else:
-                    self.chat(line)
+                    engine.chat(line)
             except Exception as e:
-                self.current_session.add_error(0, str(e))
+                engine.current_session.add_error(0, str(e))
                 print(f'\001\033[91m\002[Error]\001\033[0m\002 {e}')
 
         self._save_history()
+
+    def _save_sessions(self):
+        focus = getattr(self, 'focus', None)
+        engines = focus.engines() if focus is not None else [self]
+        for engine in engines:
+            engine.session_auto_save()

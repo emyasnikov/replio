@@ -65,6 +65,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 | `noise_tools`               | `["web_fetch", "open", "fetch_page"]` | Tool results replaced by a marker in persisted sessions                |
 | `plugins`                   | *(bundled)*            | Plugins to load. Empty = all discovered plugins load                   |
 | `project_instructions`     | `"AGENTS.md"`          | Per-worktree instructions file auto-loaded into the system prompt (e.g. `AGENTS.md`, `CLAUDE.md`). `""` disables. Absent files skipped, content capped at 20000 chars |
+| `prompt_role`               | `false`                | Prefix the REPL prompt with the active role when focus is not the root (e.g. `Assistant >>>`). `false` keeps the plain `>>>` |
 | `provider`                  | `"ollama"`             | Provider name. Bundled provider plugins (`replio-core-ollama`, `-openai`, `-groq`, `-anthropic`, `-opencode`) register `ollama`, `openai`, `groq`, `anthropic`, `opencode`, `opencode-go`. `openai-compatible` is the generic fallback. External plugins can register more |
 | `query_refine`              | `false`                | Auto-refine short web-search queries via a lightweight model call      |
 | `query_refine_context`      | `4`                    | Recent-message context to inject into refinement                       |

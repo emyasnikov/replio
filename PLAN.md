@@ -17,7 +17,6 @@ The assistant is the operator's entry point. A composer turns a task into a team
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Focus manager and role engines - route turns and commands to the active role, stable role sessions, `prompt_role` | M | talk to the active agent directly |
 | `/focus` command - show, navigate, and attach to runs | M | jump between runs |
 | `handoff` tool - an agent hands control to another run and focus follows | S-M | agents pass control |
 | `focus_on_delegate` config - off, ask, or on for offering sub-run focus | S | choose how focus follows delegation |

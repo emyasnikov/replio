@@ -15,6 +15,7 @@ DEFAULT_CONFIG = {
     'system_prompt': '',
     'assistant': True,
     'assistant_type': 'assistant',
+    'prompt_role': False,
     'mode': 'build',
     'modes': {
         'build': {'system_prompt': '', 'tool_permission': {}},

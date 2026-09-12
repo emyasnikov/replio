@@ -62,24 +62,24 @@ class TestEngineRuns(unittest.TestCase):
         self.chat._tmp.cleanup()
 
     def test_root_run_registered(self):
-        self.assertEqual(self.chat.run.id, 1)
-        self.assertIs(self.chat.runs.get(1), self.chat.run)
-        self.assertEqual(self.chat.run.session, self.chat.current_session.name)
-        self.assertIsNone(self.chat.run.parent)
+        self.assertEqual(self.chat.current_run.id, 1)
+        self.assertIs(self.chat.runs.get(1), self.chat.current_run)
+        self.assertEqual(self.chat.current_run.session, self.chat.current_session.name)
+        self.assertIsNone(self.chat.current_run.parent)
 
     def test_bind_assistant_updates_run_role(self):
         self.chat._bind_assistant()
-        self.assertEqual(self.chat.run.role, 'assistant')
+        self.assertEqual(self.chat.current_run.role, 'assistant')
         self.assertEqual(self.chat.current_session.role, 'assistant')
 
     def test_sub_engine_shares_registry_and_links_parent(self):
         sub = self.chat._new_sub_engine('writer', task='draft')
         self.assertIs(sub.runs, self.chat.runs)
-        self.assertEqual(sub.run.parent, self.chat.run.id)
-        self.assertEqual(sub.run.role, 'writer')
-        self.assertEqual(sub.run.task, 'draft')
-        self.assertIn(sub.run.id, self.chat.run.children)
-        self.assertEqual(sub.run.session, sub.current_session.name)
+        self.assertEqual(sub.current_run.parent, self.chat.current_run.id)
+        self.assertEqual(sub.current_run.role, 'writer')
+        self.assertEqual(sub.current_run.task, 'draft')
+        self.assertIn(sub.current_run.id, self.chat.current_run.children)
+        self.assertEqual(sub.current_run.session, sub.current_session.name)
 
     def test_run_subagent_finishes_child_run(self):
         self.chat.provider.chat.side_effect = [
@@ -95,7 +95,7 @@ class TestEngineRuns(unittest.TestCase):
 
     def test_load_or_create_session_updates_run_session(self):
         self.chat.load_or_create_session('named_session')
-        self.assertEqual(self.chat.run.session, 'named_session')
+        self.assertEqual(self.chat.current_run.session, 'named_session')
 
 
 if __name__ == '__main__':
