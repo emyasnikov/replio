@@ -13,6 +13,8 @@ DEFAULT_CONFIG = {
     'unattended': False,
     'confirm_timeout': 0,
     'system_prompt': '',
+    'assistant': True,
+    'assistant_type': 'assistant',
     'mode': 'build',
     'modes': {
         'build': {'system_prompt': '', 'tool_permission': {}},
@@ -76,6 +78,7 @@ DEFAULT_CONFIG = {
         'list': 'allow',
         'mcp': 'ask',
         'read': 'allow',
+        'team': 'allow',
         'web': 'allow',
     },
     'mcp.servers': [],

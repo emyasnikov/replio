@@ -43,8 +43,16 @@ class ChatLoop(Engine):
     def __init__(self, config: Config):
         ui = ReplUI(self)
         super().__init__(config, ui=ui)
+        self._bind_assistant()
         self._load_history(config)
         self._setup_readline()
+
+    def _bind_assistant(self):
+        if not self.config.get('assistant', True):
+            return
+        name = str(self.config.get('assistant_type') or '').strip()
+        if name:
+            self.bind_root_agent(name)
 
     def _load_history(self, config):
         hist = config.local_path.parent / HISTFILE

@@ -42,7 +42,7 @@ class TestTeamTool(unittest.TestCase):
         self.assertIn('team', names)
         entry = self.chat._tool_registry.info('team')
         self.assertEqual(entry['category'], 'delegate')
-        self.assertEqual(entry['permission'], 'delegate')
+        self.assertEqual(entry['permission'], 'team')
         self.assertTrue(self.chat._tool_registry.loop_for('team'))
         self.assertIn('name', entry['parameters']['properties'])
         self.assertIn('task', entry['parameters']['properties'])

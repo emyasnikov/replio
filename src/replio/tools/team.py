@@ -113,7 +113,7 @@ def register_team_tool(registry, engine) -> Callable:
             'required': ['name', 'task'],
         },
         category='delegate',
-        permission='delegate',
+        permission='team',
         key_arg='name',
         short='Run a named team pipeline',
         glyph='↳',

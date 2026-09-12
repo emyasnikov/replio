@@ -198,6 +198,40 @@ class Engine:
             self._plugin_manager.register_skills(self._skills)
         return self._skills
 
+    def bind_root_agent(self, name: str) -> bool:
+        name = str(name or '').strip()
+        if not name:
+            return False
+        agent_type = self.types.find(name)
+        if agent_type is None:
+            return False
+        if self.config.origin('system_prompt') == 'default':
+            prompt = agent_type.system_prompt
+            if agent_type.skills:
+                from .skills import skills_section
+                section = skills_section(self.skills, agent_type.skills)
+                if section:
+                    if prompt.strip():
+                        prompt = prompt.rstrip() + '\n\n' + section
+                    else:
+                        prompt = section
+            if prompt:
+                self.config.apply('system_prompt', prompt)
+        if agent_type.model and self.config.origin('model') == 'default':
+            self.config.apply('model', agent_type.model)
+            self._reinit_provider()
+        if (agent_type.tool_permission
+                and self.config.origin('tool_permission') == 'default'):
+            permissions = dict(self.config.get('tool_permission') or {})
+            permissions.update(agent_type.tool_permission)
+            self.config.apply('tool_permission', permissions)
+        if (agent_type.ask_policy
+                and self.config.origin('ask_policy') == 'default'):
+            policy = dict(self.config.get('ask_policy') or {})
+            policy.update(agent_type.ask_policy)
+            self.config.apply('ask_policy', policy)
+        return True
+
     def _catalog_version(self) -> int:
         return int(getattr(self._plugin_manager, '_catalog_version', 0))
 

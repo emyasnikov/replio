@@ -25,7 +25,7 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 | `grep` | replio-core-fs | `search` | `read` | Regex content search (`file:line:` results, alias `find`) |
 | `list_dir` | replio-core-fs | `read` | `list` | List a directory (`depth` for trees, alias `ls`) |
 | `run_command` | replio-core-exec | `exec` | `bash` | Run a shell command with timeout (aliases `bash`, `exec`). Restricted by `tool_permission.bash_allow` |
-| `team` | core | `delegate` | `delegate` | Run a named team (an ordered chain of agent-type stages) and return the final stage's answer |
+| `team` | core | `delegate` | `team` | Run a named team (an ordered chain of agent-type stages) and return the final stage's answer |
 | `web_fetch` | replio-core-web | `read` | `read` | Fetch a page by URL or by `web_search` result `id` (aliases `open`, `fetch_page`) |
 | `web_search` | replio-core-web | `search` | `web` | Web search (aliases `search`, `web`) |
 
@@ -64,7 +64,7 @@ Tools are registered with `@registry.register(name, description, parameters)` pl
 |-----|-------------|
 | `refine` | Auto-refine short `query` args via a lightweight model call, gated by `query_refine` |
 | `category` | `ask` / `catalog` / `delegate` / `exec` / `mcp` / `read` / `search` / `todo` / `write` - drives the default activity glyph and verb |
-| `permission` | The `tool_permission` key that gates the tool: `bash` / `catalog` / `edit` / `list` / `mcp` / `read` / `web` |
+| `permission` | The `tool_permission` key that gates the tool: `bash` / `catalog` / `edit` / `list` / `mcp` / `read` / `team` / `web` |
 | `permission_fn` | Optional `Callable[[dict], str]` resolving the action (`allow`/`ask`/`deny`) from the current arguments - refines a non-`deny` base action at call time (see `delegate`) |
 | `path_arg` | Which parameter is a filesystem path, for worktree scope checks |
 | `key_arg` | Which argument appears in status/confirm labels and glyph activity lines |

@@ -15,12 +15,13 @@ A type is a single reusable profile carrying several distinct axes of an agent. 
 | **Expertise** | The domains it is tagged for, used for grouping and filtering | `tags` |
 | **Archetype** | A stored, reusable pattern that teams reference as a stage | the registry entry itself |
 
-The bundled catalog ships two pre-carved teams plus a `composer` and a `leader` type, useful as delegation targets and as templates (see [teams.md](teams.md)). The composer designs and persists teams, the leader supervises them. All leave `model` and `skills` empty (inheriting the caller's model) and differ mainly in `tool_permission` (`leader` also sets `grant_permission`/`ask_policy`, `composer` sets `ask_policy`):
+The bundled catalog ships two pre-carved teams plus an `assistant`, a `composer`, and a `leader` type, useful as delegation targets and as templates (see [teams.md](teams.md)). The assistant is the REPL's default root identity, the composer designs and persists teams, and the leader supervises them. All leave `model` and `skills` empty (inheriting the caller's model) and differ mainly in `tool_permission` (`leader` also sets `grant_permission`/`ask_policy`, `composer` sets `ask_policy`):
 
 | type | function | tags | edit | bash | web | read |
 |---|---|---|---|---|---|---|
+| `assistant` | REPL root: answers small tasks, delegates bigger work to a composer/leader | management | - | - | - | - |
 | `code-reviewer` | auditor: reviews a change, returns findings | programming, review | deny | allow | deny | allow |
-| `composer` | team composer: designs and persists a team (`catalog` allow, no delegation) | management | deny | deny | allow | allow |
+| `composer` | team composer: designs and persists a team (`catalog` allow, `team` deny) | management | deny | deny | allow | allow |
 | `editor` | auditor: checks a document against the prompt and sources | writing, review | deny | deny | deny | allow |
 | `leader` | supervisor: coordinates teams and agents, delegates, parks asks | research, writing, programming, review | allow | deny | deny | allow |
 | `planner` | decomposes a task into an ordered, verifiable plan | programming | deny | deny | allow | allow |
@@ -30,7 +31,7 @@ The bundled catalog ships two pre-carved teams plus a `composer` and a `leader` 
 | `tester` | writes and runs tests, reports failures | programming | allow | allow | deny | allow |
 | `writer` | turns a findings brief into a document, returns file path | writing | allow | deny | deny | allow |
 
-`allow` echoes the caller's category default, `deny` is explicit. Override any type by creating a local (or global) entry with the same `name`.
+`allow` echoes the caller's category default, `deny` is explicit, and `-` sets no carve (the caller's config applies unchanged). Override any type by creating a local (or global) entry with the same `name`.
 
 ## Why "type" and not the alternatives
 
@@ -95,7 +96,7 @@ Fields:
 
 `delegate` resolves its permission from the target type rather than from a single tool-level default:
 
-- A configured type uses its own `tool_permission` overrides. The default for the `delegate` category is `allow` (delegation runs without a prompt). Set `delegate: "ask"` on a type to confirm each delegation to it.
+- A configured type uses its own `tool_permission` overrides. The default for the `delegate` category is `allow` (delegation runs without a prompt). Set `delegate: "ask"` on a type to confirm each delegation to it. A type with `delegate: "deny"` is refused as a delegation target and is not offered the `delegate` tool itself. To bar a type from running team pipelines without blocking delegation to it, set `team: "deny"` instead (the `team` category gates only the `team` tool).
 - A temporary type created only to run a task in parallel defaults to `deny` until you opt in.
 
 Sub-agent permissions are bounded by the caller: the effective carve is the caller's `tool_permission`, narrowed by the type's carve and capped by the caller's `grant_permission` ceiling (see [config.md](config.md#permission-authority)). `grant_permission` defaults to the caller's own `tool_permission`, so a type can never grant a sub-agent more than the caller holds. A type that sets `grant_permission` may delegate categories it does not use itself - e.g. a supervisor that denies `edit`/`bash` for itself but allows them in its ceiling can hand them to an `implementer` while never running them. An approved `ask(kind="permission")` request creates a one-shot grant on the asking sub-agent, consumed by the next matching call. The operator may grant `always` for the rest of that sub-agent's run.

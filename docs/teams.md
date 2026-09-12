@@ -112,7 +112,7 @@ The loop's producer is forced onto a warm session for the run, so its iterations
 
 `team(name, task)` is the model-facing entry point (core, like `delegate` and `ask`), so a lead agent can orchestrate a whole pipeline in one call instead of delegating each stage itself. It runs `Engine.run_team` and returns the final stage's answer (or `Error: team "<name>" failed: <reason>`).
 
-- **Permission**: category `delegate`, resolved per invocation like `delegate` - a stage type that sets `delegate: "deny"` disables the team, `"ask"` confirms it, otherwise it runs. Unknown teams and stages with unknown types return a clear error.
+- **Permission**: the `team` category gates the tool (default `allow`), separate from `delegate` so a type can be a delegation target but not run pipelines. On top of that, a per-invocation resolver reads the stage types like `delegate` - a stage type that sets `delegate: "deny"` disables the team, `"ask"` confirms it, otherwise it runs. Unknown teams and stages with unknown types return a clear error.
 - **Ceiling**: each stage's carve is still capped by the caller's `grant_permission` (see [config.md](config.md#permission-authority)). When a stage's requested permissions get clamped, the result carries a `(reduced permissions for: <type>)` note, so a silently degraded run is visible.
 - **Depth and cycles**: `run_team` refuses a team already on the current stack (`team_cycle`) and stops at `max_team_depth` nested team runs (default 2, `team_depth`), so a supervisor stage that itself runs teams cannot recurse forever. Both values propagate into sub-engines.
 

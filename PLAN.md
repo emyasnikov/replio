@@ -17,7 +17,6 @@ The assistant is the operator's entry point. A composer turns a task into a team
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Assistant role - a delegation-first root identity that answers simple tasks inline and hands off bigger work | S-M | a clear entry point |
 | Focus handoff - switch the active agent in the REPL with a visible indicator and `/agent`, resuming each role's session | M | talk to the active agent directly |
 | Provider session binding - bind the provider session id to the logical role session | S-M | context reuse across focus switches |
 | Manager role - runs one or many teams and reports, sequential first | M | one window over several teams |
