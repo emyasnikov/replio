@@ -35,6 +35,18 @@
 
 ## Open
 
+- [ ] Role-name sync - adopt assistant, composer, manager, and specialist as the canonical roles across types, prompts, and docs
+- [ ] Assistant-roles track docs - record the assistant, composer, and manager architecture and the work packages in VISION, PLAN, and TODO
+- [ ] Core dev and thesis team configuration - a bundled development team with the review loop plus the project lead/support teams and their skills
+- [ ] Manager role - a bundled agent type that runs one or many teams and reports, sequential first
+- [ ] Provider session binding - bind the provider session id (`x-opencode-session`) to the logical role session so a switched-away context is reusable
+- [ ] Focus handoff - switch the active agent in the REPL (assistant, composer, manager) with a visible indicator and `/agent`, resuming each role's session
+- [ ] Assistant role - a delegation-first root identity that answers simple tasks inline and hands larger work to a composer or manager
+- [ ] Composer role - a bundled agent type that designs and persists a team (specialists, skills, stages) for a task without running it
+- [ ] Team review loop - generate > check > correct: a team repeats a producer/reviewer block until the reviewer passes or a cap is reached
+- [ ] Warm member sessions - keyed sub-sessions that resume on the next invocation, so a role keeps its context across tasks and review rounds
+- [ ] Catalog management + reload - model-facing tools to create, update, and remove agent types, teams, and skills, with a catalog reload so a change applies in the running session
+- [ ] Per-invocation skills - `delegate`/`team` accept skills and a team stage may set `skills`, layered over an agent type's standing `AgentType.skills`
 - [ ] Per-job report destination - a `report_url` (or connector list) on a job so different jobs report to different endpoints, instead of one global `report.webhook`
 - [ ] Per-task decide-vs-park for `direction` asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator
 - [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)

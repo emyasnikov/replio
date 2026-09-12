@@ -11,6 +11,25 @@ Sourced from the use-case gap (`docs/use-cases/`), competitor parity (`docs/vs/`
 - Effort: S < M < L
 - Provides: the capability the task delivers
 
+## Assistant roles & team orchestration
+
+The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate > check > correct, and focus can hand off between roles. This is the current track and the top priority, ordered by dependency.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Per-invocation skills - `delegate`/`team` and team stages layer skills over a type's standing skills | S | reusable agents extended per task |
+| Catalog management + reload - model-facing tools to create, update, and remove types, teams, and skills, with a live reload | M | agents that build their own catalog |
+| Warm member sessions - keyed sub-sessions that resume so a role keeps context across invocations | M | continuity across invocations |
+| Team review loop - a producer/reviewer block repeats until the review passes or a cap is reached | M | generate > check > correct |
+| Composer role - designs and persists a team (specialists, skills, stages) for a task without running it | M | a task becomes a working team |
+| Assistant role - a delegation-first root identity that answers simple tasks inline and hands off bigger work | S-M | a clear entry point |
+| Focus handoff - switch the active agent in the REPL with a visible indicator and `/agent`, resuming each role's session | M | talk to the active agent directly |
+| Provider session binding - bind the provider session id to the logical role session | S-M | context reuse across focus switches |
+| Manager role - runs one or many teams and reports, sequential first | M | one window over several teams |
+| Core dev and thesis team configuration - a development team with the review loop plus the project lead/support teams and skills | S | ready-made teams and skills |
+| Role-name sync - adopt assistant, composer, manager, and specialist across types, prompts, and docs | S | one canonical vocabulary |
+| Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO | S | documented direction |
+
 ## Control & governance
 
 The assistant is the operator's single window to the machine: served agents are spawned and supervised from the REPL, unattended runs park their asks instead of failing, and finished work reports back. This is the control surface the rest of the roadmap builds on.
