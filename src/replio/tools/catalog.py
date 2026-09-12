@@ -95,7 +95,7 @@ def _save_type(engine, name: str, values: dict) -> str:
 
 def _save_team(engine, name: str, values: dict) -> str:
     data = {'name': name}
-    for field in ('description', 'tags', 'stages', 'warm_sessions'):
+    for field in ('description', 'tags', 'stages', 'warm_sessions', 'loop'):
         if values.get(field) is not None:
             data[field] = values[field]
     engine.teams.put(Team.from_dict(data), scope='local')
@@ -201,6 +201,19 @@ def register_catalog_tool(registry, engine) -> Callable:
                     'description': 'Team: keep each stage\'s member session '
                                    'across runs so a role reuses its context.',
                 },
+                'loop': {
+                    'type': 'object',
+                    'description': 'Team: generate > check > correct loop. '
+                                   'Properties: from (stage type), until '
+                                   '(stage type), max_iterations, verdict '
+                                   '(marker, default "VERDICT:").',
+                    'properties': {
+                        'from': {'type': 'string'},
+                        'until': {'type': 'string'},
+                        'max_iterations': {'type': 'integer'},
+                        'verdict': {'type': 'string'},
+                    },
+                },
             },
             'required': ['action'],
         },
@@ -219,7 +232,8 @@ def register_catalog_tool(registry, engine) -> Callable:
                 ask_policy: dict | None = None, content: str | None = None,
                 description: str | None = None,
                 stages: list | None = None,
-                warm_sessions: bool | None = None) -> str:
+                warm_sessions: bool | None = None,
+                loop: dict | None = None) -> str:
         if action == 'reload':
             reloaded = engine.touch_catalogs()
             return f'Reloaded catalogs: {", ".join(reloaded) or "(none loaded)"}'
@@ -264,7 +278,7 @@ def register_catalog_tool(registry, engine) -> Callable:
                   'grant_permission': grant_permission,
                   'ask_policy': ask_policy, 'content': content,
                   'description': description, 'stages': stages,
-                  'warm_sessions': warm_sessions}
+                  'warm_sessions': warm_sessions, 'loop': loop}
         if kind == 'type':
             result = _save_type(engine, name, values)
         elif kind == 'team':

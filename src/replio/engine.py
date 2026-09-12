@@ -66,6 +66,12 @@ CONTINUE_INSTRUCTION = ('Continue exactly where you stopped. '
                         'Do not repeat what was already written.')
 
 
+def _review_passed(content: str | None, marker: str) -> bool:
+    if not content:
+        return False
+    return f'{marker} PASS'.lower() in content.lower()
+
+
 def _resolver_takes_policy(fn: Callable) -> bool:
     try:
         import inspect
@@ -576,6 +582,115 @@ class Engine:
             self._team_stack = stack
             self._team_depth = depth
 
+    def _run_team_stage(self, team, stage, brief: str, skills: list | None,
+                        warm_sessions: bool, loop_producer: bool = False,
+                        run_id: str = '') -> TurnResult:
+        mode = stage.mode or str(self.config.get('mode') or 'build')
+        stage_skills = list(skills or [])
+        for name in (stage.skills or []):
+            if name and name not in stage_skills:
+                stage_skills.append(name)
+        stage_key = stage.session_key
+        if not stage_key:
+            if warm_sessions:
+                stage_key = f'{team.name}__{stage.type}'
+            elif loop_producer:
+                stage_key = f'{team.name}__{stage.type}__loop_{run_id}'
+        return self.run_subagent(stage.type, brief, mode=mode,
+                                 skills=stage_skills, session_key=stage_key)
+
+    def _build_iteration_brief(self, team, task: str, memory: str, stage,
+                               prior: list, iteration: int,
+                               review: str = '') -> str:
+        parts = [f'Team: {team.name}'
+                 + (f' ({team.description})' if team.description else ''),
+                 f'Original task:\n{task}']
+        if iteration > 1:
+            parts.append(f'Review loop iteration {iteration}.')
+        if review:
+            parts.append(f'## Findings from the previous review\n{review}')
+        for j, res in enumerate(prior, 1):
+            content = (res.content or '').strip()
+            if not content:
+                content = f'(no final text from {res.session or "stage"})'
+            if len(content) > 4000:
+                content = content[:4000].rsplit(' ', 1)[0] + '\n... (truncated)'
+            parts.append(f'## Iteration result {j} '
+                         f'({res.session or "stage"}):\n{content}')
+        if memory:
+            parts.append(f'## Team memory\n{memory}')
+        hint = stage.task_hint or 'Complete this stage of the task.'
+        parts.append(f'Your stage ({stage.type}):\n{hint}')
+        return '\n\n'.join(parts)
+
+    def _team_loop_plan(self, team):
+        loop = dict(team.loop or {})
+        if not loop:
+            return None
+        names = [stage.type for stage in team.stages]
+
+        def resolve(value):
+            if isinstance(value, int):
+                return value
+            if value is None:
+                return None
+            try:
+                return names.index(str(value))
+            except ValueError:
+                return None
+
+        frm = resolve(loop.get('from'))
+        until = resolve(loop.get('until'))
+        if frm is None or until is None or frm > until:
+            return None
+        max_iterations = max(1, int(loop.get('max_iterations', 3) or 3))
+        marker = str(loop.get('verdict') or 'VERDICT:')
+        return frm, until, max_iterations, marker
+
+    def _run_team_loop(self, team, task: str, skills: list | None,
+                       warm_sessions: bool, memory: str, plan,
+                       stages: list, run_id: str) -> tuple[str, list]:
+        frm, until, max_iterations, marker = plan
+        for i in range(0, frm):
+            stage = team.stages[i]
+            brief = self._build_stage_brief(team, task, stages, i, memory)
+            res = self._run_team_stage(team, stage, brief, skills, warm_sessions)
+            stages.append(res)
+            if res.status not in ('ok', 'truncated'):
+                return 'error', list(res.errors)
+        iterations = 0
+        last_review = ''
+        block: list[TurnResult] = []
+        while True:
+            iterations += 1
+            block = []
+            for i in range(frm, until + 1):
+                stage = team.stages[i]
+                review = last_review if i == frm else ''
+                brief = self._build_iteration_brief(
+                    team, task, memory, stage, block, iterations, review)
+                res = self._run_team_stage(
+                    team, stage, brief, skills, warm_sessions,
+                    loop_producer=(i == frm), run_id=run_id)
+                stages.append(res)
+                block.append(res)
+                if res.status not in ('ok', 'truncated'):
+                    return 'error', list(res.errors)
+            last_review = (block[-1].content or '') if block else ''
+            if _review_passed(last_review, marker):
+                break
+            if iterations >= max_iterations:
+                break
+        for i in range(until + 1, len(team.stages)):
+            stage = team.stages[i]
+            brief = self._build_iteration_brief(
+                team, task, memory, stage, block, iterations)
+            res = self._run_team_stage(team, stage, brief, skills, warm_sessions)
+            stages.append(res)
+            if res.status not in ('ok', 'truncated'):
+                return 'error', list(res.errors)
+        return 'ok', []
+
     def _run_team_stages(self, team, task: str, skills: list | None = None,
                          warm: bool | None = None) -> TeamRunResult:
         from .teams import read_team_memory, write_team_memory
@@ -598,25 +713,23 @@ class Engine:
         stages: list[TurnResult] = []
         errors: list = []
         status = 'ok'
+        run_id = datetime.now().strftime('%Y%m%d_%H%M%S')
         try:
-            for i, stage in enumerate(team.stages):
-                brief = self._build_stage_brief(team, task, stages, i, memory)
-                mode = stage.mode or str(self.config.get('mode') or 'build')
-                stage_skills = list(skills or [])
-                for name in (stage.skills or []):
-                    if name and name not in stage_skills:
-                        stage_skills.append(name)
-                stage_key = stage.session_key
-                if not stage_key and warm_sessions:
-                    stage_key = f'{team.name}__{stage.type}'
-                res = self.run_subagent(stage.type, brief, mode=mode,
-                                        skills=stage_skills,
-                                        session_key=stage_key)
-                stages.append(res)
-                if res.status not in ('ok', 'truncated'):
-                    status = 'error'
-                    errors.extend(res.errors)
-                    break
+            plan = self._team_loop_plan(team)
+            if plan is None:
+                for i, stage in enumerate(team.stages):
+                    brief = self._build_stage_brief(team, task, stages, i, memory)
+                    res = self._run_team_stage(team, stage, brief, skills,
+                                               warm_sessions)
+                    stages.append(res)
+                    if res.status not in ('ok', 'truncated'):
+                        status = 'error'
+                        errors.extend(res.errors)
+                        break
+            else:
+                status, errors = self._run_team_loop(
+                    team, task, skills, warm_sessions, memory, plan, stages,
+                    run_id)
         except ValueError as e:
             status = 'error'
             errors.append({'code': '', 'message': str(e)})

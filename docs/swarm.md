@@ -17,7 +17,7 @@ The two compose. A swarm can run on top of a fleet, each swarm agent a fleet pro
 - **Agent types** (`/agent`): per-agent system prompt, session namespace, and optional model override. A type makes a sub-agent specialized instead of a copy of the caller. Per-agent permission profiles build on this.
 - **`delegate(type, task)` tool**: spawns a sub-agent loop that runs a task with its own type, session, and model, and returns the result. The core swarm primitive.
 - **Auditor agents**: sub-agents that review a produced output (tests, code review, fact-checking) instead of producing content themselves.
-- **Generate to check to correct**: run a main agent, an auditor, and a fix pass in a loop until the auditor passes.
+- **Generate to check to correct**: run a main agent, an auditor, and a fix pass in a loop until the auditor passes. A team expresses this as a `loop` over a producer/reviewer stage block (see [teams.md](teams.md#review-loop)).
 - **PM/dev/tester orchestration**: multiple specialized agents cooperating on one outcome as a user-facing pattern.
 
 ## Agent types and delegation

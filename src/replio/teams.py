@@ -42,6 +42,7 @@ class Team:
     description: str = ''
     tags: list = field(default_factory=list)
     warm_sessions: bool = False
+    loop: dict = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, d: dict) -> 'Team':
@@ -54,6 +55,7 @@ class Team:
             description=str(d.get('description') or ''),
             tags=list(d.get('tags') or []),
             warm_sessions=bool(d.get('warm_sessions')),
+            loop=dict(d.get('loop') or {}),
         )
 
     def to_body(self) -> dict:

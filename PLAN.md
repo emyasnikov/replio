@@ -17,7 +17,6 @@ The assistant is the operator's entry point. A composer turns a task into a team
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Team review loop - a producer/reviewer block repeats until the review passes or a cap is reached | M | generate > check > correct |
 | Composer role - designs and persists a team (specialists, skills, stages) for a task without running it | M | a task becomes a working team |
 | Assistant role - a delegation-first root identity that answers simple tasks inline and hands off bigger work | S-M | a clear entry point |
 | Focus handoff - switch the active agent in the REPL with a visible indicator and `/agent`, resuming each role's session | M | talk to the active agent directly |

@@ -44,6 +44,7 @@ Team fields:
 - `description` - optional, shown in `/teams show`.
 - `tags` - optional list for grouping and filtering (`/teams list <tag>`), same vocabulary as types.
 - `warm_sessions` - optional boolean (default false). When true, each stage reuses a persistent member session keyed by `<team>__<stage-type>`, so a role keeps its context across runs (see [Warm member sessions](#warm-member-sessions)). The `team` tool's `warm` argument overrides it per run.
+- `loop` - optional review loop over a producer/reviewer stage block (see [Review loop](#review-loop)). Properties: `from`, `until`, `max_iterations`, `verdict`.
 
 Stage fields:
 
@@ -89,6 +90,23 @@ A stage can instead keep a persistent member session, so the role reuses its con
 - The `team` tool's `warm` argument forces warm member sessions for one run, overriding the team setting.
 
 A warm session is named `sub_<key>` and stored like any other session, so it is listed by `/sessions`, exportable, and resumable. Every call appends the new task and brief to the session, so the member sees its own history. Warm sessions are opt-in: omitting the key keeps the fresh one-off `sub_` behavior, and callers should use a stable key (one per role or per team stage) so different roles do not share a session.
+
+## Review loop
+
+A team can iterate a producer/reviewer block until the review passes or a cap is reached - the generate > check > correct pattern. The team's `loop` names the block by stage type (or zero-based index):
+
+```json
+{
+  "loop": { "from": "writer", "until": "reviewer", "max_iterations": 3, "verdict": "VERDICT:" }
+}
+```
+
+- Stages before `from` run once, then the `from..until` block repeats, then stages after `until` run once.
+- The `until` stage is the review. It passes when its result contains the verdict marker followed by `PASS` (case-insensitive). The default marker is `VERDICT:`, configurable through `loop.verdict`. A reviewer stage should be told to end with `VERDICT: PASS` or `VERDICT: CHANGES`.
+- On the next iteration the producer's brief carries a `## Findings from the previous review` block, and the producer keeps its warm session, so it revises with its own context.
+- `max_iterations` (default 3) caps the block. Reaching it without a pass is still a successful run, with the last review as the result.
+
+The loop's producer is forced onto a warm session for the run, so its iterations share context even when the team does not set `warm_sessions`. When `warm_sessions` is true the producer uses the team's persistent key instead, so context also carries across runs.
 
 ## The `team` tool
 
