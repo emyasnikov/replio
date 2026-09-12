@@ -43,6 +43,7 @@ Team fields:
 - `stages` - ordered list of stage objects. A stage may also be a plain string (`"researcher"`), shorthand for a stage with only an agent type.
 - `description` - optional, shown in `/teams show`.
 - `tags` - optional list for grouping and filtering (`/teams list <tag>`), same vocabulary as types.
+- `warm_sessions` - optional boolean (default false). When true, each stage reuses a persistent member session keyed by `<team>__<stage-type>`, so a role keeps its context across runs (see [Warm member sessions](#warm-member-sessions)). The `team` tool's `warm` argument overrides it per run.
 
 Stage fields:
 
@@ -51,6 +52,7 @@ Stage fields:
 - `task_hint` - optional guidance folded into the delegated brief for this stage.
 - `handoff_note` - optional note passed with the previous stage's result into the next stage's brief.
 - `skills` - optional list of skill names added to this stage's type for the run, layered over the type's standing skills (see [skills.md](skills.md)). The `team` tool adds task-wide skills to every stage through its own `skills` argument.
+- `session_key` - optional explicit warm-session key for this stage. Set it to pin a member's persistent session independently of `warm_sessions`.
 
 ## Managing teams
 
@@ -64,7 +66,7 @@ Plugins contribute teams through the same `register_teams` entry hook the kit ma
 
 ## Running a team
 
-`Engine.run_team(team, task)` runs the stages one after another through the same in-process sub-engine as `delegate` (`run_subagent`): each stage runs in its own fresh `sub_<ts>_<parent-session>` session with its own type prompt, skills, and permission carve, and the stage `mode` overrides the caller's when set (an empty `mode` inherits). A failed stage stops the run and the remaining stages do not execute.
+`Engine.run_team(team, task)` runs the stages one after another through the same in-process sub-engine as `delegate` (`run_subagent`): each stage runs in its own fresh `sub_<ts>_<parent-session>` session by default, with its own type prompt, skills, and permission carve, and the stage `mode` overrides the caller's when set (an empty `mode` inherits). A failed stage stops the run and the remaining stages do not execute.
 
 The brief handed to each member is built per run from:
 
@@ -78,6 +80,16 @@ After the run, the whole team run is summarized - seeded with the previous team 
 
 `/teams run <name> <task>` executes a team from the REPL and prints one line per stage (`<n>. <type> <status> <duration>s`), the final member's result, and the memory file path.
 
+## Warm member sessions
+
+A stage can instead keep a persistent member session, so the role reuses its context (its "experience") across tasks and review rounds while per-run skills extend it:
+
+- `delegate(type, task, session_key=...)` resumes the agent whose warm session carries that key.
+- A team sets `warm_sessions: true` to give every stage a persistent key of `<team>__<stage-type>`, or a stage sets an explicit `session_key`.
+- The `team` tool's `warm` argument forces warm member sessions for one run, overriding the team setting.
+
+A warm session is named `sub_<key>` and stored like any other session, so it is listed by `/sessions`, exportable, and resumable. Every call appends the new task and brief to the session, so the member sees its own history. Warm sessions are opt-in: omitting the key keeps the fresh one-off `sub_` behavior, and callers should use a stable key (one per role or per team stage) so different roles do not share a session.
+
 ## The `team` tool
 
 `team(name, task)` is the model-facing entry point (core, like `delegate` and `ask`), so a lead agent can orchestrate a whole pipeline in one call instead of delegating each stage itself. It runs `Engine.run_team` and returns the final stage's answer (or `Error: team "<name>" failed: <reason>`).
@@ -88,4 +100,4 @@ After the run, the whole team run is summarized - seeded with the previous team 
 
 The REPL `/tool team {"name": ..., "task": ...}` runs the same handler through a persisted agent-loop turn (the tool is registered `loop=True`).
 
-Recurring teams with persistent member sessions (`job`-style warm sessions) and scheduled team runs (`jobs add --team`) are later milestones.
+Scheduled team runs (`jobs add --team`) and job-style recurring member sessions are later milestones.

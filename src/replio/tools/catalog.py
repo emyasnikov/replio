@@ -95,7 +95,7 @@ def _save_type(engine, name: str, values: dict) -> str:
 
 def _save_team(engine, name: str, values: dict) -> str:
     data = {'name': name}
-    for field in ('description', 'tags', 'stages'):
+    for field in ('description', 'tags', 'stages', 'warm_sessions'):
         if values.get(field) is not None:
             data[field] = values[field]
     engine.teams.put(Team.from_dict(data), scope='local')
@@ -191,9 +191,15 @@ def register_catalog_tool(registry, engine) -> Callable:
                             'handoff_note': {'type': 'string'},
                             'skills': {'type': 'array',
                                        'items': {'type': 'string'}},
+                            'session_key': {'type': 'string'},
                         },
                         'required': ['type'],
                     },
+                },
+                'warm_sessions': {
+                    'type': 'boolean',
+                    'description': 'Team: keep each stage\'s member session '
+                                   'across runs so a role reuses its context.',
                 },
             },
             'required': ['action'],
@@ -212,7 +218,8 @@ def register_catalog_tool(registry, engine) -> Callable:
                 grant_permission: dict | None = None,
                 ask_policy: dict | None = None, content: str | None = None,
                 description: str | None = None,
-                stages: list | None = None) -> str:
+                stages: list | None = None,
+                warm_sessions: bool | None = None) -> str:
         if action == 'reload':
             reloaded = engine.touch_catalogs()
             return f'Reloaded catalogs: {", ".join(reloaded) or "(none loaded)"}'
@@ -256,7 +263,8 @@ def register_catalog_tool(registry, engine) -> Callable:
                   'tool_permission': tool_permission,
                   'grant_permission': grant_permission,
                   'ask_policy': ask_policy, 'content': content,
-                  'description': description, 'stages': stages}
+                  'description': description, 'stages': stages,
+                  'warm_sessions': warm_sessions}
         if kind == 'type':
             result = _save_type(engine, name, values)
         elif kind == 'team':

@@ -44,7 +44,6 @@
 - [ ] Assistant role - a delegation-first root identity that answers simple tasks inline and hands larger work to a composer or manager
 - [ ] Composer role - a bundled agent type that designs and persists a team (specialists, skills, stages) for a task without running it
 - [ ] Team review loop - generate > check > correct: a team repeats a producer/reviewer block until the reviewer passes or a cap is reached
-- [ ] Warm member sessions - keyed sub-sessions that resume on the next invocation, so a role keeps its context across tasks and review rounds
 - [ ] Per-job report destination - a `report_url` (or connector list) on a job so different jobs report to different endpoints, instead of one global `report.webhook`
 - [ ] Per-task decide-vs-park for `direction` asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator
 - [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
@@ -119,6 +118,7 @@
 
 ## Done
 
+- [x] Warm member sessions - delegate/team session_key, team warm_sessions reuse sub_<key>
 - [x] Agent catalog tool - list/show/save/remove types, teams, skills, plus reload
 - [x] Per-invocation skills - delegate/team/stage skills layered over a type's standing skills
 - [x] End-to-end supervisor verification - `replio jobs add-supervisor`, governance-loop test

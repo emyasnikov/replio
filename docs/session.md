@@ -16,7 +16,7 @@ Session files carry a type prefix so the three kinds stay distinguishable at a g
 | `ses_` | Interactive/auto sessions | `ses_20260817_120000_what_is_oee.json` |
 | `sub_` | Delegation sub-agents (parent session id as suffix) | `sub_20260817_120100_ses_20260817_120000_what_is_oee.json` |
 
-Delegation writes each sub-agent's log as its own session: `sub_<ts>_<parent-session>`, where the suffix is the calling (parent) session id (`sub_20260817_120100_ses_20260817_120000_what_is_oee`). These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/sessions list` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.
+Delegation writes each sub-agent's log as its own session: `sub_<ts>_<parent-session>`, where the suffix is the calling (parent) session id (`sub_20260817_120100_ses_20260817_120000_what_is_oee`). A warm member session (`delegate`/team `session_key`, or a team's `warm_sessions`) is named `sub_<key>` instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/sessions list` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.
 
 ## Managing sessions
 

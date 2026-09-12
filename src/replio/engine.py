@@ -94,6 +94,10 @@ def _sub_session_name(ts: str, parent: str, sessions_dir: Path) -> str:
     return candidate
 
 
+def _warm_session_name(key: str) -> str:
+    return f'sub_{_sanitize_session(key, limit=48)}'
+
+
 class Engine:
     def __init__(self, config: Config, ui=None, plugin_manager=None,
                  provider=None, approve_models: bool = False):
@@ -410,7 +414,8 @@ class Engine:
         return True
 
     def _new_sub_engine(self, type_name: str, provider=None, mode: str = '',
-                        skills: list | None = None) -> 'Engine':
+                        skills: list | None = None,
+                        session_key: str = '') -> 'Engine':
         agent_type = self.types.find(type_name)
         if agent_type is None:
             raise ValueError(f'Unknown agent type: {type_name}')
@@ -461,13 +466,17 @@ class Engine:
         sub._team_depth = getattr(self, '_team_depth', 0)
         sub._team_stack = list(getattr(self, '_team_stack', []))
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-        sub.load_or_create_session(_sub_session_name(
-            ts, self.current_session.name, self.sessions.sessions_dir))
+        if session_key:
+            sub.load_or_create_session(_warm_session_name(session_key))
+        else:
+            sub.load_or_create_session(_sub_session_name(
+                ts, self.current_session.name, self.sessions.sessions_dir))
         sub.current_session.parent_id = self.current_session.name
         return sub
 
     def run_subagent(self, type_name: str, task: str, mode: str = '',
-                     skills: list | None = None) -> TurnResult:
+                     skills: list | None = None,
+                     session_key: str = '') -> TurnResult:
         agent_type = self.types.find(type_name)
         if agent_type is None:
             raise ValueError(f'Unknown agent type: {type_name}')
@@ -479,7 +488,8 @@ class Engine:
                 raise ValueError(
                     f'Type "{type_name}" uses unapproved model "{model}" - '
                     'approve it first (/model, --approve-model, or /connect)')
-        sub = self._new_sub_engine(type_name, mode=mode, skills=skills)
+        sub = self._new_sub_engine(type_name, mode=mode, skills=skills,
+                                   session_key=session_key)
         result = sub.chat(task, autoname=False)
         if result.session and result.session not in self.current_session.sub_sessions:
             self.current_session.sub_sessions.append(result.session)
@@ -543,7 +553,8 @@ class Engine:
             lines.append(part)
         return '\n'.join(lines)[:1500]
 
-    def run_team(self, team, task: str, skills: list | None = None) -> TeamRunResult:
+    def run_team(self, team, task: str, skills: list | None = None,
+                 warm: bool | None = None) -> TeamRunResult:
         depth = getattr(self, '_team_depth', 0)
         max_depth = int(self.config.get('max_team_depth', 2) or 0)
         stack = list(getattr(self, '_team_stack', []))
@@ -560,13 +571,13 @@ class Engine:
         self._team_stack = stack + [team.name]
         self._team_depth = depth + 1
         try:
-            return self._run_team_stages(team, task, skills=skills)
+            return self._run_team_stages(team, task, skills=skills, warm=warm)
         finally:
             self._team_stack = stack
             self._team_depth = depth
 
-    def _run_team_stages(self, team, task: str,
-                         skills: list | None = None) -> TeamRunResult:
+    def _run_team_stages(self, team, task: str, skills: list | None = None,
+                         warm: bool | None = None) -> TeamRunResult:
         from .teams import read_team_memory, write_team_memory
         for stage in team.stages:
             agent_type = self.types.find(stage.type)
@@ -583,6 +594,7 @@ class Engine:
                         'approve it first (/model, --approve-model, or /connect)'}])
         worktree = self.config.local_path.parent.parent
         memory = read_team_memory(worktree, team.name)
+        warm_sessions = bool(team.warm_sessions) if warm is None else bool(warm)
         stages: list[TurnResult] = []
         errors: list = []
         status = 'ok'
@@ -594,8 +606,12 @@ class Engine:
                 for name in (stage.skills or []):
                     if name and name not in stage_skills:
                         stage_skills.append(name)
+                stage_key = stage.session_key
+                if not stage_key and warm_sessions:
+                    stage_key = f'{team.name}__{stage.type}'
                 res = self.run_subagent(stage.type, brief, mode=mode,
-                                        skills=stage_skills)
+                                        skills=stage_skills,
+                                        session_key=stage_key)
                 stages.append(res)
                 if res.status not in ('ok', 'truncated'):
                     status = 'error'

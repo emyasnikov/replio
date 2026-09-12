@@ -103,6 +103,14 @@ def register_delegate_tool(registry, engine) -> Callable:
                                    'with task, technology, stack, or framework '
                                    'instructions.',
                 },
+                'session_key': {
+                    'type': 'string',
+                    'description': 'Resume a persistent sub-agent session with '
+                                   'this key, so the same role keeps its context '
+                                   'across calls. Omit for a fresh one-off '
+                                   'session. Reuse the same key to continue an '
+                                   'agent after feedback.',
+                },
             },
             'required': ['type', 'task'],
         },
@@ -116,9 +124,10 @@ def register_delegate_tool(registry, engine) -> Callable:
         permission_fn=lambda args: _delegate_action(engine, args),
     )
     def delegate(type: str, task: str, skills: list | None = None,
-                 _config=None, _echo: bool = True) -> str:
+                 session_key: str = '', _config=None, _echo: bool = True) -> str:
         try:
-            res = engine.run_subagent(type, task, skills=skills)
+            res = engine.run_subagent(type, task, skills=skills,
+                                      session_key=session_key)
         except ValueError as e:
             return f'Error: {e}'
         result = _format_result(engine, type, res)

@@ -103,6 +103,12 @@ def register_team_tool(registry, engine) -> Callable:
                                    'with task, technology, stack, or framework '
                                    'instructions.',
                 },
+                'warm': {
+                    'type': 'boolean',
+                    'description': 'Force persistent member sessions for this '
+                                   'run, so each stage keeps its context across '
+                                   'runs. Default: the team\'s own setting.',
+                },
             },
             'required': ['name', 'task'],
         },
@@ -116,13 +122,14 @@ def register_team_tool(registry, engine) -> Callable:
         permission_fn=lambda args: _team_action(engine, args),
     )
     def team(name: str, task: str, skills: list | None = None,
+             warm: bool | None = None,
              _config=None, _echo: bool = True) -> str:
         team_obj = engine.teams.find(name)
         if team_obj is None:
             return f'Error: unknown team "{name}"'
         if not team_obj.stages:
             return f'Error: team "{name}" has no stages'
-        res = engine.run_team(team_obj, task, skills=skills)
+        res = engine.run_team(team_obj, task, skills=skills, warm=warm)
         result = _format_result(name, res)
         clamped = _clamped_stages(engine, team_obj)
         if clamped:
