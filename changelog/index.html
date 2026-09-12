@@ -404,6 +404,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0320" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.32.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0310-2026-09-12" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1449,6 +1460,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0320" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.32.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0310-2026-09-12" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1807,6 +1829,12 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v0320">v0.32.0<a class="headerlink" href="#v0320" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Focus manager and role engines - the REPL keeps a focus stack (<code>FocusManager</code>, <code>src/replio/focus.py</code>): the root assistant plus a role engine per focused role. <code>ChatLoop.active()</code> returns the focused engine and <code>ChatLoop.run()</code> routes turns and slash commands to it, so one window drives whichever agent is in focus. <code>Engine.focused_engine(role)</code> builds a role engine with the same type resolution, skills, and permission carve as a delegation sub-agent, but with the REPL UI and a stable <code>agent_&lt;role&gt;</code> session that resumes on re-focus, and it records a run. <code>back()</code> and <code>reset()</code> walk the stack and repoint <code>ReplUI._loop</code> so rendering and confirms follow the active engine. A new <code>prompt_role</code> config (default false) prefixes the prompt with the active role (e.g. <code>Assistant &gt;&gt;&gt;</code>). The per-engine run attribute is <code>current_run</code> so it no longer shadows <code>ChatLoop.run</code>. Docs synced (<code>architecture.md</code>, <code>config.md</code>). Tests: <code>tests/test_focus.py</code></li>
+<li>Run registry and call tree - every engine instance is a run in a process-local <code>RunRegistry</code> (<code>src/replio/runs.py</code>) shared across the delegation tree: numeric <code>id</code>, <code>role</code>, <code>session</code>, <code>parent</code> and ordered <code>children</code>, <code>status</code>, the <code>task</code> brief, and timestamps. Delegated and team-stage engines register as children of the caller and are finished when their <code>chat</code> returns, <code>RunRegistry.runs()</code> is the flat creation-order call log, and <code>children(id)</code> walks the tree. This is the data model the focus and handoff surface builds on. Docs synced (<code>architecture.md</code>). Tests: <code>tests/test_runs.py</code></li>
+<li>Session role metadata - every session records the agent type that owns it as <code>role</code>, stamped at creation: the bound root type (<code>Engine.bind_root_agent</code>), the delegated and team-stage type (<code>_new_sub_engine</code>), and the job type (<code>scheduler._build_engine</code>). <code>/session new</code> carries the current role. A plain root or a headless run with no <code>--type</code> leaves it empty, and legacy files without the key load with an empty <code>role</code> (no backfill), so a run is reconstructable from its log. Docs synced (<code>session.md</code>). Tests: <code>tests/test_session_log.py</code>, <code>tests/test_assistant.py</code>, <code>tests/test_subagent.py</code></li>
+</ul>
 <h2 id="v0310-2026-09-12">v0.31.0 - 2026-09-12<a class="headerlink" href="#v0310-2026-09-12" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Assistant root role - the REPL root now binds to a bundled <code>assistant</code> type on startup, so a plain <code>replio</code> session is the operator's single point of contact: it answers small tasks inline and delegates bigger work (use <code>composer</code> to design a team, then run it with <code>team</code>, or <code>leader</code> to supervise). New config keys <code>assistant</code> (default true, REPL only) and <code>assistant_type</code> (default <code>assistant</code>) rebind the root to any type without code changes, and a non-empty <code>system_prompt</code> or a local override of the type always wins. <code>Engine.bind_root_agent</code> resolves the type and merges its prompt and skills, plus its model/permissions/ask policy only when the user has not set them. Headless <code>run</code>/<code>serve</code>/jobs are unchanged and keep using <code>--type</code>. Docs synced (<code>config.md</code>, <code>types.md</code>). Tests: <code>tests/test_assistant.py</code></li>

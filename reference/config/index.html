@@ -1540,6 +1540,11 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td>Per-worktree instructions file auto-loaded into the system prompt (e.g. <code>AGENTS.md</code>, <code>CLAUDE.md</code>). <code>""</code> disables. Absent files skipped, content capped at 20000 chars</td>
 </tr>
 <tr>
+<td><code>prompt_role</code></td>
+<td><code>false</code></td>
+<td>Prefix the REPL prompt with the active role when focus is not the root (e.g. <code>Assistant &gt;&gt;&gt;</code>). <code>false</code> keeps the plain <code>&gt;&gt;&gt;</code></td>
+</tr>
+<tr>
 <td><code>provider</code></td>
 <td><code>"ollama"</code></td>
 <td>Provider name. Bundled provider plugins (<code>replio-core-ollama</code>, <code>-openai</code>, <code>-groq</code>, <code>-anthropic</code>, <code>-opencode</code>) register <code>ollama</code>, <code>openai</code>, <code>groq</code>, <code>anthropic</code>, <code>opencode</code>, <code>opencode-go</code>. <code>openai-compatible</code> is the generic fallback. External plugins can register more</td>

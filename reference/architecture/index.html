@@ -558,6 +558,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#focus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Focus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#one-stream-one-round-trip" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1231,6 +1253,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#focus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Focus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#one-stream-one-round-trip" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1349,6 +1393,10 @@
  <span class="n">model</span><span class="p">,</span> <span class="n">provider</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">status</span><span class="p">}</span>
 </code></pre></div>
 <p><code>status</code> is <code>ok</code>, <code>error</code>, <code>empty</code>, <code>truncated</code>, or <code>cancelled</code>. Any front-end addresses sessions via <code>Engine.load_or_create_session(name)</code>. <code>Engine.chat_tool(name, args)</code> runs a <code>loop</code>-registered tool (e.g. <code>delegate</code>) as a persisted agent-loop turn: the tool call and result land in the session, then the model streams its final answer.</p>
+<h2 id="runs">Runs<a class="headerlink" href="#runs" title="Permanent link">&para;</a></h2>
+<p>Every engine instance is a run, tracked in a process-local <code>RunRegistry</code> (<code>src/replio/runs.py</code>) shared across the delegation tree. A run records a numeric <code>id</code>, the agent <code>role</code>, the <code>session</code>, the <code>parent</code> run id and its ordered <code>children</code>, a <code>status</code> (<code>running</code>, <code>done</code>, or <code>error</code>), the <code>task</code> brief, and timestamps. Delegated and team-stage engines register as children of the caller (<code>_new_sub_engine</code> passes the registry and parent id) and are finished when their <code>chat</code> returns. <code>RunRegistry.runs()</code> is the flat creation-order call log, and <code>children(id)</code> walks the tree. This is the data model the focus and handoff command surface builds on.</p>
+<h2 id="focus">Focus<a class="headerlink" href="#focus" title="Permanent link">&para;</a></h2>
+<p><code>FocusManager</code> (<code>src/replio/focus.py</code>) owns the REPL's focus stack: the root assistant plus a role engine per focused role. <code>ChatLoop.active()</code> returns the focused engine and <code>ChatLoop.run()</code> routes turns and slash commands to it, so the operator talks to whichever agent is in focus. A role engine is built by <code>Engine.focused_engine(role)</code> with the same type resolution, skills, and permission carve as a delegation sub-agent, but with the REPL UI and a stable <code>agent_&lt;role&gt;</code> session that resumes on re-focus. <code>FocusManager.back()</code> walks the stack back and <code>reset()</code> returns to the root, repointing <code>ReplUI._loop</code> so rendering and confirms follow the active engine. The <code>prompt_role</code> config (default false) prefixes the prompt with the active role (e.g. <code>Assistant &gt;&gt;&gt;</code>).</p>
 <h2 id="one-stream-one-round-trip">One stream, one round trip<a class="headerlink" href="#one-stream-one-round-trip" title="Permanent link">&para;</a></h2>
 <p>When no tools are used, a turn is a single streaming request - no separate non-streaming decision round. <code>chat_nonstreaming()</code> is reserved for auxiliary decisions: query refinement, tool-result analysis, compaction. The <code>&lt;thinking&gt;</code> marker split lives in the engine so thinking stays separate from content in JSON results and session logs.</p>
 <h2 id="ui-sinks">UI sinks<a class="headerlink" href="#ui-sinks" title="Permanent link">&para;</a></h2>

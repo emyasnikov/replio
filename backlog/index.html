@@ -1206,9 +1206,6 @@
 </ul>
 <h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] Session role metadata - persist the agent type as <code>role</code> on every session at creation, so a focused run can be reconstructed from its log</li>
-<li>[ ] Run registry and call tree - an in-process registry of runs (numeric id, role, session, parent, ordered children, status, task) with a flat call log, shared into sub-engines</li>
-<li>[ ] Focus manager and role engines - route REPL turns and commands to the active role engine, keep stable <code>agent_&lt;role&gt;</code> sessions, keep <code>&gt;&gt;&gt;</code> by default, and show <code>Assistant &gt;&gt;&gt;</code> when <code>prompt_role</code> is on</li>
 <li>[ ] <code>/focus</code> command - show the current run, its tree, and the run log, then navigate and attach by id, role, session, parent, child, sibling, next, prev, or back</li>
 <li>[ ] <code>handoff</code> tool - an agent pauses or finishes its run and hands control to a parent, sibling, child, role, or run id, focusing the target by default</li>
 <li>[ ] <code>focus_on_delegate</code> config - off, ask, or on, so delegation can offer to focus the sub-run (off by default)</li>
@@ -1286,6 +1283,9 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] Focus manager and role engines - REPL focus stack, stable <code>agent_&lt;role&gt;</code> sessions, <code>prompt_role</code></li>
+<li>[x] Run registry and call tree - in-process runs with parent/children and a flat call log</li>
+<li>[x] Session role metadata - the owning agent type is stamped as <code>role</code> on every session at creation</li>
 <li>[x] Assistant root role - REPL binds assistant/assistant_type, delegation-first prompt</li>
 <li>[x] Composer role - bundled team composer, catalog allow, edit/team deny</li>
 <li>[x] Team review loop - team loop over producer/reviewer, VERDICT pass, max_iterations</li>

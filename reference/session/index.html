@@ -1435,6 +1435,7 @@
 </tbody>
 </table>
 <p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code>, where the suffix is the calling (parent) session id (<code>sub_20260817_120100_ses_20260817_120000_what_is_oee</code>). A warm member session (<code>delegate</code>/team <code>session_key</code>, or a team's <code>warm_sessions</code>) is named <code>sub_&lt;key&gt;</code> instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same <code>.replio/sessions/</code> directory and are regular sessions - listed by <code>/sessions list</code> (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.</p>
+<p>Each session also records the agent <code>role</code> that owns it - the bound root type, the delegated type, the team-stage type, or the job type - stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no <code>--type</code> leaves <code>role</code> empty.</p>
 <h2 id="managing-sessions">Managing sessions<a class="headerlink" href="#managing-sessions" title="Permanent link">&para;</a></h2>
 <p>The active session is handled by <code>/session</code> (like <code>/model</code> for the model). The catalog of saved sessions lives under <code>/sessions</code> (like <code>/models</code>).</p>
 <table>
@@ -1494,6 +1495,7 @@
 <span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ses_20260817_120000_what_is_oee"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"created_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:00+00:00"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:05:15+00:00"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"messages"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">  </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">  </span><span class="nt">"permissions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
@@ -1524,6 +1526,11 @@
 <td><code>updated_at</code></td>
 <td>string</td>
 <td>ISO 8601 UTC timestamp, bumped on every appended message</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td>string</td>
+<td>Agent type that owns the session, stamped at creation (empty for a plain root or a headless run with no <code>--type</code>)</td>
 </tr>
 <tr>
 <td><code>messages</code></td>
