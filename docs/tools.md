@@ -11,6 +11,7 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 | Tool | Plugin | Category | Permission | Purpose |
 |------|--------|----------|------------|---------|
 | `ask` | core | `ask` | `ask` | Ask the human or the lead agent for a decision, pausing until answered |
+| `catalog` | core | `catalog` | `catalog` | Manage agent types, teams, and skills: list/show/save/remove, plus reload |
 | `code_format` | replio-core-dev | `exec` | `bash` | Run the project formatter (`dev.format_cmd`, default `ruff format .`) |
 | `code_lint` | replio-core-dev | `exec` | `bash` | Run the project linter (`dev.lint_cmd`, default `ruff check .`) |
 | `code_test` | replio-core-dev | `exec` | `bash` | Run the project test suite (`dev.test_cmd`, default `python -m unittest discover`, resolved to the current interpreter) |
@@ -62,8 +63,8 @@ Tools are registered with `@registry.register(name, description, parameters)` pl
 | Key | Description |
 |-----|-------------|
 | `refine` | Auto-refine short `query` args via a lightweight model call, gated by `query_refine` |
-| `category` | `search` / `read` / `write` / `exec` / `ask` / `todo` / `delegate` / `mcp` - drives the default activity glyph and verb |
-| `permission` | The `tool_permission` key that gates the tool: `read` / `list` / `edit` / `bash` / `web` / `mcp` |
+| `category` | `ask` / `catalog` / `delegate` / `exec` / `mcp` / `read` / `search` / `todo` / `write` - drives the default activity glyph and verb |
+| `permission` | The `tool_permission` key that gates the tool: `bash` / `catalog` / `edit` / `list` / `mcp` / `read` / `web` |
 | `permission_fn` | Optional `Callable[[dict], str]` resolving the action (`allow`/`ask`/`deny`) from the current arguments - refines a non-`deny` base action at call time (see `delegate`) |
 | `path_arg` | Which parameter is a filesystem path, for worktree scope checks |
 | `key_arg` | Which argument appears in status/confirm labels and glyph activity lines |

@@ -115,6 +115,7 @@ class Engine:
             self._reinit_provider()
         else:
             self.provider = provider
+        self._seen_catalog_version = self._catalog_version()
         sessions_dir = config.local_path.parent / 'sessions'
         self.sessions = SessionManager(sessions_dir)
         self.current_session = self.sessions.create()
@@ -186,6 +187,29 @@ class Engine:
                 local_dir=self.config.local_path.parent / 'skills')
             self._plugin_manager.register_skills(self._skills)
         return self._skills
+
+    def _catalog_version(self) -> int:
+        return int(getattr(self._plugin_manager, '_catalog_version', 0))
+
+    def reload_catalogs(self) -> list[str]:
+        reloaded: list[str] = []
+        for attr, label in (('_types', 'types'), ('_teams', 'teams'),
+                            ('_skills', 'skills')):
+            registry = getattr(self, attr, None)
+            if registry is None:
+                continue
+            registry.reload(self._plugin_manager)
+            reloaded.append(label)
+        self._seen_catalog_version = self._catalog_version()
+        return reloaded
+
+    def touch_catalogs(self) -> list[str]:
+        self._plugin_manager._catalog_version = self._catalog_version() + 1
+        return self.reload_catalogs()
+
+    def _reload_catalogs_if_changed(self) -> None:
+        if getattr(self, '_seen_catalog_version', None) != self._catalog_version():
+            self.reload_catalogs()
 
     def _resolve_provider_factory(self, provider: str, base_url: str):
         from .providers import PROVIDERS, detect_provider
@@ -681,6 +705,7 @@ class Engine:
                     [{'function': {'name': name, 'arguments': json.dumps(args)},
                       'id': 'call_seed'}])
             while True:
+                self._reload_catalogs_if_changed()
                 think_start: datetime | None = None
 
                 def feed_thinking(text):
@@ -986,11 +1011,13 @@ class Engine:
         from .tools.delegate import register_delegate_tool
         from .tools.team import register_team_tool
         from .tools.ask import register_ask_tool
+        from .tools.catalog import register_catalog_tool
         from .modes import merge_policy
         self._tool_registry = ToolRegistry()
         register_delegate_tool(self._tool_registry, self)
         register_team_tool(self._tool_registry, self)
         register_ask_tool(self._tool_registry, self)
+        register_catalog_tool(self._tool_registry, self)
         plugin_manager = getattr(self, '_plugin_manager', None)
         if plugin_manager is not None:
             plugin_manager.register_tools(self._tool_registry)

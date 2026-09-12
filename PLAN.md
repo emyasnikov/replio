@@ -17,7 +17,6 @@ The assistant is the operator's entry point. A composer turns a task into a team
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Catalog management + reload - model-facing tools to create, update, and remove types, teams, and skills, with a live reload | M | agents that build their own catalog |
 | Warm member sessions - keyed sub-sessions that resume so a role keeps context across invocations | M | continuity across invocations |
 | Team review loop - a producer/reviewer block repeats until the review passes or a cap is reached | M | generate > check > correct |
 | Composer role - designs and persists a team (specialists, skills, stages) for a task without running it | M | a task becomes a working team |
