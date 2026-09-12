@@ -36,7 +36,6 @@
 
 ## Open
 
-- [ ] Session role metadata - persist the agent type as `role` on every session at creation, so a focused run can be reconstructed from its log
 - [ ] Run registry and call tree - an in-process registry of runs (numeric id, role, session, parent, ordered children, status, task) with a flat call log, shared into sub-engines
 - [ ] Focus manager and role engines - route REPL turns and commands to the active role engine, keep stable `agent_<role>` sessions, keep `>>>` by default, and show `Assistant >>>` when `prompt_role` is on
 - [ ] `/focus` command - show the current run, its tree, and the run log, then navigate and attach by id, role, session, parent, child, sibling, next, prev, or back
@@ -116,6 +115,7 @@
 
 ## Done
 
+- [x] Session role metadata - the owning agent type is stamped as `role` on every session at creation
 - [x] Assistant root role - REPL binds assistant/assistant_type, delegation-first prompt
 - [x] Composer role - bundled team composer, catalog allow, edit/team deny
 - [x] Team review loop - team loop over producer/reviewer, VERDICT pass, max_iterations

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.32.0
+
+- Session role metadata - every session records the agent type that owns it as `role`, stamped at creation: the bound root type (`Engine.bind_root_agent`), the delegated and team-stage type (`_new_sub_engine`), and the job type (`scheduler._build_engine`). `/session new` carries the current role. A plain root or a headless run with no `--type` leaves it empty, and legacy files without the key load with an empty `role` (no backfill), so a run is reconstructable from its log. Docs synced (`session.md`). Tests: `tests/test_session_log.py`, `tests/test_assistant.py`, `tests/test_subagent.py`
+
 ## v0.31.0 - 2026-09-12
 
 - Assistant root role - the REPL root now binds to a bundled `assistant` type on startup, so a plain `replio` session is the operator's single point of contact: it answers small tasks inline and delegates bigger work (use `composer` to design a team, then run it with `team`, or `leader` to supervise). New config keys `assistant` (default true, REPL only) and `assistant_type` (default `assistant`) rebind the root to any type without code changes, and a non-empty `system_prompt` or a local override of the type always wins. `Engine.bind_root_agent` resolves the type and merges its prompt and skills, plus its model/permissions/ask policy only when the user has not set them. Headless `run`/`serve`/jobs are unchanged and keep using `--type`. Docs synced (`config.md`, `types.md`). Tests: `tests/test_assistant.py`

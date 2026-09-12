@@ -11,7 +11,8 @@ class Session:
                  created_at: str | None = None,
                  updated_at: str | None = None,
                  parent_id: str = '',
-                 sub_sessions: list | None = None):
+                 sub_sessions: list | None = None,
+                 role: str = ''):
         now = datetime.now(timezone.utc).isoformat(timespec='seconds')
         self.name = name
         self.messages = messages or []
@@ -21,6 +22,7 @@ class Session:
         self.updated_at = updated_at or now
         self.parent_id = parent_id or ''
         self.sub_sessions = sub_sessions or []
+        self.role = role or ''
 
     def _touch(self):
         self.updated_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
@@ -79,6 +81,7 @@ class Session:
             'updated_at': self.updated_at,
             'parent_id': self.parent_id,
             'sub_sessions': self.sub_sessions,
+            'role': self.role,
         }
 
     @classmethod
@@ -92,6 +95,7 @@ class Session:
             data.get('updated_at'),
             data.get('parent_id', ''),
             data.get('sub_sessions', []),
+            data.get('role', ''),
         )
 
 
@@ -101,10 +105,10 @@ class SessionManager:
         self.sessions_dir.mkdir(parents=True, exist_ok=True)
         self.current: Session | None = None
 
-    def create(self, name: str | None = None) -> Session:
+    def create(self, name: str | None = None, role: str = '') -> Session:
         if not name:
             name = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.current = Session(name)
+        self.current = Session(name, role=role)
         return self.current
 
     def load(self, name: str) -> Session | None:

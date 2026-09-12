@@ -819,7 +819,8 @@ def register_builtins(registry):
             return
 
         if action == 'new':
-            chat.current_session = chat.sessions.create()
+            chat.current_session = chat.sessions.create(
+                role=getattr(chat, 'role', ''))
             print(f'New session: {chat.current_session.name}')
         elif action == 'load':
             name = parts[1] if len(parts) > 1 else ''

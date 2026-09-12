@@ -17,7 +17,6 @@ The assistant is the operator's entry point. A composer turns a task into a team
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Session role metadata - persist the agent role on each session at creation | S | runs are reconstructable from their logs |
 | Run registry and call tree - in-process runs with parent/children and a flat call log | M | see and traverse the runs |
 | Focus manager and role engines - route turns and commands to the active role, stable role sessions, `prompt_role` | M | talk to the active agent directly |
 | `/focus` command - show, navigate, and attach to runs | M | jump between runs |

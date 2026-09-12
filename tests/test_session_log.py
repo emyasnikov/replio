@@ -47,6 +47,25 @@ class TestSessionModel(unittest.TestCase):
         self.assertIn('updated_at', d)
         self.assertEqual(d['errors'], [])
 
+    def test_role_defaults_empty_and_round_trips(self):
+        s = Session('s1')
+        self.assertEqual(s.role, '')
+        s.role = 'assistant'
+        d = s.to_dict()
+        self.assertEqual(d['role'], 'assistant')
+        self.assertEqual(Session.from_dict(d).role, 'assistant')
+
+    def test_create_stamps_role(self):
+        tmp = tempfile.TemporaryDirectory()
+        try:
+            sm = SessionManager(Path(tmp.name))
+            s = sm.create('writer_run', role='writer')
+            self.assertEqual(s.role, 'writer')
+            sm.save(s)
+            self.assertEqual(sm.read('writer_run').role, 'writer')
+        finally:
+            tmp.cleanup()
+
     def test_errors_round_trip(self):
         s = Session('s1')
         s.add_error(401, 'Unauthorized')
@@ -130,6 +149,7 @@ class TestSessionModel(unittest.TestCase):
             self.assertEqual(loaded.errors, [])
             self.assertTrue(loaded.created_at)
             self.assertTrue(loaded.updated_at)
+            self.assertEqual(loaded.role, '')
         finally:
             tmp.cleanup()
 
@@ -268,6 +288,12 @@ class TestSessionLogLoop(unittest.TestCase):
         self._run()
         self.chat.provider.chat_nonstreaming.assert_not_called()
         self.assertIsNone(self._tool_msgs()[0]['analysis'])
+
+    def test_session_new_stamps_current_role(self):
+        self.chat.role = 'assistant'
+        with patch('sys.stdout', new=io.StringIO()):
+            self.chat.registry.dispatch('/session new role_test')
+        self.assertEqual(self.chat.current_session.role, 'assistant')
 
 
 class TestCompactSession(unittest.TestCase):

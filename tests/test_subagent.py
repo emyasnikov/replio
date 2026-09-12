@@ -37,6 +37,8 @@ class TestSubAgentEngine(unittest.TestCase):
 
     def test_subagent_inherits_provider_and_plugins(self):
         sub = self.chat._new_sub_engine('writer')
+        self.assertEqual(sub.role, 'writer')
+        self.assertEqual(sub.current_session.role, 'writer')
         self.assertIs(sub.provider, self.chat.provider)
         self.assertIs(sub._plugin_manager, self.chat._plugin_manager)
         self.assertTrue(sub.current_session.name.startswith('sub_'))

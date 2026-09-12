@@ -45,6 +45,7 @@ def make_chat(config_data: dict | None = None) -> ChatLoop:
     chat._ui = ReplUI(chat)
     chat._ask_ui = None if config.get('unattended') else chat._ui
     chat._lead = None
+    chat.role = ''
 
     chat._plugin_manager = PluginManager(config)
     chat._plugin_manager.load()

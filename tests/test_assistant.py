@@ -22,6 +22,8 @@ class TestAssistantRoot(unittest.TestCase):
 
     def test_repl_binds_assistant_by_default(self):
         self.chat._bind_assistant()
+        self.assertEqual(self.chat.role, 'assistant')
+        self.assertEqual(self.chat.current_session.role, 'assistant')
         prompt = self.chat.config.get('system_prompt')
         self.assertIn('single point of contact', prompt)
         messages = self.chat._provider_messages()
@@ -34,6 +36,7 @@ class TestAssistantRoot(unittest.TestCase):
         try:
             chat._bind_assistant()
             self.assertEqual(chat.config.get('system_prompt'), '')
+            self.assertEqual(chat.role, '')
         finally:
             chat._tmp.cleanup()
 
@@ -50,6 +53,8 @@ class TestAssistantRoot(unittest.TestCase):
         chat = make_chat({'assistant_type': 'composer'})
         try:
             chat._bind_assistant()
+            self.assertEqual(chat.role, 'composer')
+            self.assertEqual(chat.current_session.role, 'composer')
             self.assertIn('composer', chat.config.get('system_prompt').lower())
             permissions = chat.config.get('tool_permission')
             self.assertEqual(permissions['edit'], 'deny')
@@ -62,6 +67,7 @@ class TestAssistantRoot(unittest.TestCase):
         try:
             chat._bind_assistant()
             self.assertEqual(chat.config.get('system_prompt'), '')
+            self.assertEqual(chat.role, '')
         finally:
             chat._tmp.cleanup()
 

@@ -18,6 +18,8 @@ Session files carry a type prefix so the three kinds stay distinguishable at a g
 
 Delegation writes each sub-agent's log as its own session: `sub_<ts>_<parent-session>`, where the suffix is the calling (parent) session id (`sub_20260817_120100_ses_20260817_120000_what_is_oee`). A warm member session (`delegate`/team `session_key`, or a team's `warm_sessions`) is named `sub_<key>` instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/sessions list` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.
 
+Each session also records the agent `role` that owns it - the bound root type, the delegated type, the team-stage type, or the job type - stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no `--type` leaves `role` empty.
+
 ## Managing sessions
 
 The active session is handled by `/session` (like `/model` for the model). The catalog of saved sessions lives under `/sessions` (like `/models`).
@@ -53,6 +55,7 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
   "name": "ses_20260817_120000_what_is_oee",
   "created_at": "2026-08-17T12:00:00+00:00",
   "updated_at": "2026-08-17T12:05:15+00:00",
+  "role": "",
   "messages": [],
   "errors": [],
   "permissions": [],
@@ -66,6 +69,7 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 | `name` | string | Session name, matches the filename |
 | `created_at` | string | ISO 8601 UTC timestamp of creation |
 | `updated_at` | string | ISO 8601 UTC timestamp, bumped on every appended message |
+| `role` | string | Agent type that owns the session, stamped at creation (empty for a plain root or a headless run with no `--type`) |
 | `messages` | array | The conversation log, append-only |
 | `errors` | array | Turn-level errors (provider, network, agent loop) |
 | `permissions` | array | Audit log of tool permission decisions (see below) |

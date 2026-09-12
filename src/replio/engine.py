@@ -109,6 +109,7 @@ class Engine:
                  provider=None, approve_models: bool = False):
         self.config = config
         self.approve_models = approve_models
+        self.role = ''
         self._provider_error = None
         self._ui = ui
         self._unattended = bool(config.get('unattended'))
@@ -128,7 +129,7 @@ class Engine:
         self._seen_catalog_version = self._catalog_version()
         sessions_dir = config.local_path.parent / 'sessions'
         self.sessions = SessionManager(sessions_dir)
-        self.current_session = self.sessions.create()
+        self.current_session = self.sessions.create(role=self.role)
         self.registry = CommandRegistry(self)
         register_builtins(self.registry)
         self._plugin_manager.register_commands(self.registry)
@@ -205,6 +206,8 @@ class Engine:
         agent_type = self.types.find(name)
         if agent_type is None:
             return False
+        self.role = name
+        self.current_session.role = name
         if self.config.origin('system_prompt') == 'default':
             prompt = agent_type.system_prompt
             if agent_type.skills:
@@ -421,9 +424,9 @@ class Engine:
         if name and self.sessions.read(name) is not None:
             self.current_session = self.sessions.load(name)
         elif name:
-            self.current_session = self.sessions.create(name)
+            self.current_session = self.sessions.create(name, role=self.role)
         else:
-            self.current_session = self.sessions.create()
+            self.current_session = self.sessions.create(role=self.role)
         return self.current_session
 
     def _grant(self) -> dict:
@@ -499,6 +502,7 @@ class Engine:
             provider = self.provider
         sub = Engine(sub_config, ui=NullUI(),
                      plugin_manager=self._plugin_manager, provider=provider)
+        sub.role = type_name
         sub._lead = self
         sub._ask_ui = getattr(self, '_ask_ui', None)
         sub._grant_ceiling = resolve_grant_ceiling(
