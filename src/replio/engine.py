@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Callable
 
 from .config import Config
+from .runs import Run, RunRegistry
 from .sessions.manager import SessionManager
 from .commands.registry import CommandRegistry
 from .commands.builtins import register_builtins
@@ -106,7 +107,9 @@ def _warm_session_name(key: str) -> str:
 
 class Engine:
     def __init__(self, config: Config, ui=None, plugin_manager=None,
-                 provider=None, approve_models: bool = False):
+                 provider=None, approve_models: bool = False,
+                 runs: RunRegistry | None = None,
+                 parent_run: int | None = None):
         self.config = config
         self.approve_models = approve_models
         self.role = ''
@@ -130,6 +133,9 @@ class Engine:
         sessions_dir = config.local_path.parent / 'sessions'
         self.sessions = SessionManager(sessions_dir)
         self.current_session = self.sessions.create(role=self.role)
+        self.runs = runs if runs is not None else RunRegistry()
+        self.run: Run = self.runs.start(
+            role=self.role, session=self.current_session.name, parent=parent_run)
         self.registry = CommandRegistry(self)
         register_builtins(self.registry)
         self._plugin_manager.register_commands(self.registry)
@@ -208,6 +214,7 @@ class Engine:
             return False
         self.role = name
         self.current_session.role = name
+        self.run.role = name
         if self.config.origin('system_prompt') == 'default':
             prompt = agent_type.system_prompt
             if agent_type.skills:
@@ -427,6 +434,7 @@ class Engine:
             self.current_session = self.sessions.create(name, role=self.role)
         else:
             self.current_session = self.sessions.create(role=self.role)
+        self.run.session = self.current_session.name
         return self.current_session
 
     def _grant(self) -> dict:
@@ -458,7 +466,7 @@ class Engine:
 
     def _new_sub_engine(self, type_name: str, provider=None, mode: str = '',
                         skills: list | None = None,
-                        session_key: str = '') -> 'Engine':
+                        session_key: str = '', task: str = '') -> 'Engine':
         agent_type = self.types.find(type_name)
         if agent_type is None:
             raise ValueError(f'Unknown agent type: {type_name}')
@@ -501,8 +509,11 @@ class Engine:
         if provider is None and not agent_type.model:
             provider = self.provider
         sub = Engine(sub_config, ui=NullUI(),
-                     plugin_manager=self._plugin_manager, provider=provider)
+                     plugin_manager=self._plugin_manager, provider=provider,
+                     runs=self.runs, parent_run=self.run.id)
         sub.role = type_name
+        sub.run.role = type_name
+        sub.run.task = task
         sub._lead = self
         sub._ask_ui = getattr(self, '_ask_ui', None)
         sub._grant_ceiling = resolve_grant_ceiling(
@@ -533,8 +544,14 @@ class Engine:
                     f'Type "{type_name}" uses unapproved model "{model}" - '
                     'approve it first (/model, --approve-model, or /connect)')
         sub = self._new_sub_engine(type_name, mode=mode, skills=skills,
-                                   session_key=session_key)
-        result = sub.chat(task, autoname=False)
+                                   session_key=session_key, task=task)
+        try:
+            result = sub.chat(task, autoname=False)
+        except Exception:
+            self.runs.finish(sub.run.id, 'error')
+            raise
+        status = 'done' if result.status in ('ok', 'truncated') else 'error'
+        self.runs.finish(sub.run.id, status)
         if result.session and result.session not in self.current_session.sub_sessions:
             self.current_session.sub_sessions.append(result.session)
             self.session_auto_save()

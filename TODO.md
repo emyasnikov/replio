@@ -36,7 +36,6 @@
 
 ## Open
 
-- [ ] Run registry and call tree - an in-process registry of runs (numeric id, role, session, parent, ordered children, status, task) with a flat call log, shared into sub-engines
 - [ ] Focus manager and role engines - route REPL turns and commands to the active role engine, keep stable `agent_<role>` sessions, keep `>>>` by default, and show `Assistant >>>` when `prompt_role` is on
 - [ ] `/focus` command - show the current run, its tree, and the run log, then navigate and attach by id, role, session, parent, child, sibling, next, prev, or back
 - [ ] `handoff` tool - an agent pauses or finishes its run and hands control to a parent, sibling, child, role, or run id, focusing the target by default
@@ -115,6 +114,7 @@
 
 ## Done
 
+- [x] Run registry and call tree - in-process runs with parent/children and a flat call log
 - [x] Session role metadata - the owning agent type is stamped as `role` on every session at creation
 - [x] Assistant root role - REPL binds assistant/assistant_type, delegation-first prompt
 - [x] Composer role - bundled team composer, catalog allow, edit/team deny

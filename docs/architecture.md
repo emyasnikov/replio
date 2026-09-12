@@ -27,6 +27,10 @@ Providers (`src/replio/providers/`) are OpenAI-compatible `/v1/chat/completions`
 
 `status` is `ok`, `error`, `empty`, `truncated`, or `cancelled`. Any front-end addresses sessions via `Engine.load_or_create_session(name)`. `Engine.chat_tool(name, args)` runs a `loop`-registered tool (e.g. `delegate`) as a persisted agent-loop turn: the tool call and result land in the session, then the model streams its final answer.
 
+## Runs
+
+Every engine instance is a run, tracked in a process-local `RunRegistry` (`src/replio/runs.py`) shared across the delegation tree. A run records a numeric `id`, the agent `role`, the `session`, the `parent` run id and its ordered `children`, a `status` (`running`, `done`, or `error`), the `task` brief, and timestamps. Delegated and team-stage engines register as children of the caller (`_new_sub_engine` passes the registry and parent id) and are finished when their `chat` returns. `RunRegistry.runs()` is the flat creation-order call log, and `children(id)` walks the tree. This is the data model the focus and handoff command surface builds on.
+
 ## One stream, one round trip
 
 When no tools are used, a turn is a single streaming request - no separate non-streaming decision round. `chat_nonstreaming()` is reserved for auxiliary decisions: query refinement, tool-result analysis, compaction. The `<thinking>` marker split lives in the engine so thinking stays separate from content in JSON results and session logs.

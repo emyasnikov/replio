@@ -2,6 +2,7 @@
 
 ## v0.32.0
 
+- Run registry and call tree - every engine instance is a run in a process-local `RunRegistry` (`src/replio/runs.py`) shared across the delegation tree: numeric `id`, `role`, `session`, `parent` and ordered `children`, `status`, the `task` brief, and timestamps. Delegated and team-stage engines register as children of the caller and are finished when their `chat` returns, `RunRegistry.runs()` is the flat creation-order call log, and `children(id)` walks the tree. This is the data model the focus and handoff surface builds on. Docs synced (`architecture.md`). Tests: `tests/test_runs.py`
 - Session role metadata - every session records the agent type that owns it as `role`, stamped at creation: the bound root type (`Engine.bind_root_agent`), the delegated and team-stage type (`_new_sub_engine`), and the job type (`scheduler._build_engine`). `/session new` carries the current role. A plain root or a headless run with no `--type` leaves it empty, and legacy files without the key load with an empty `role` (no backfill), so a run is reconstructable from its log. Docs synced (`session.md`). Tests: `tests/test_session_log.py`, `tests/test_assistant.py`, `tests/test_subagent.py`
 
 ## v0.31.0 - 2026-09-12
