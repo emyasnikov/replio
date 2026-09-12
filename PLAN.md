@@ -13,16 +13,32 @@ Sourced from the use-case gap (`docs/use-cases/`), competitor parity (`docs/vs/`
 
 ## Assistant roles & team orchestration
 
-The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate > check > correct, and focus can hand off between roles. This is the current track and the top priority, ordered by dependency.
+The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate > check > correct, and focus follows the call tree of runs. This is the current track and the top priority, ordered by dependency.
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Focus handoff - switch the active agent in the REPL with a visible indicator and `/agent`, resuming each role's session | M | talk to the active agent directly |
+| Session role metadata - persist the agent role on each session at creation | S | runs are reconstructable from their logs |
+| Run registry and call tree - in-process runs with parent/children and a flat call log | M | see and traverse the runs |
+| Focus manager and role engines - route turns and commands to the active role, stable role sessions, `prompt_role` | M | talk to the active agent directly |
+| `/focus` command - show, navigate, and attach to runs | M | jump between runs |
+| `handoff` tool - an agent hands control to another run and focus follows | S-M | agents pass control |
+| `focus_on_delegate` config - off, ask, or on for offering sub-run focus | S | choose how focus follows delegation |
 | Provider session binding - bind the provider session id to the logical role session | S-M | context reuse across focus switches |
 | Manager role - runs one or many teams and reports, sequential first | M | one window over several teams |
 | Core dev and thesis team configuration - a development team with the review loop plus the project lead/support teams and skills | S | ready-made teams and skills |
 | Role-name sync - adopt assistant, composer, manager, and specialist across types, prompts, and docs | S | one canonical vocabulary |
 | Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO | S | documented direction |
+
+## Session turns & history
+
+Session logs become turn-structured, so history and reprint work on the units the agent actually ran. This follows the focus work.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Session turn cutover - turn model with typed parts, tool calls and results co-located, flat `messages` removed, legacy logs no longer load | M-L | a turn-shaped session log |
+| `/history` - list the active run's turns with a limit, `all`, `--thoughts`, and a run selector | S-M | read back the run |
+| `/print` - reprint a turn or part in full, capped | S | recover scrolled-away output |
+| Stable short run code - persisted per-session code for ids across restarts | S | durable run handles |
 
 ## Control & governance
 
@@ -41,9 +57,8 @@ Agents cooperate through types, delegation, and team stages. Sub-agents use the 
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Non-blocking delegation + progress - the assistant starts sub-agents or whole teams for bigger tasks and reports their status instead of blocking the current run. Live status of which sub-agent is working, read out of the sub-engine loop the single blocking `Engine.chat()` does not expose today | M | the current run keeps flowing |
+| Concurrent runs and live focus - background execution, per-run output and input routing, live status and progress, cancellation and thread safety | L | watch and join running agents |
 | Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style) | M | current state of a delegation |
-| Interactive delegation focus - jump in/out of the active sub-agent, arrows switch between concurrent sub-agent session logs rendered from their own saved logs (opencode-style sub-agent views) | M | focus a running sub-agent |
 | Auto team selection - the assistant composes the team (types + order + briefs) for a task and delegates in sequence | M | team orchestration as a user-facing pattern |
 | `/agent` types - interactive type selection/run UX (type registry, sub-engine, and `delegate` landed) | M | pick a type and run with it |
 | Auditor agents + generate > check > correct orchestration - run a main agent, an auditor, and a fix pass in a loop until passing | M-L | review-and-fix loops (later phase, listed in VISION.md out-of-scope) |
@@ -157,7 +172,6 @@ Session artifacts become portable and navigable.
 | Session import from Markdown/JSON | M | round-trip session exchange |
 | Bookmarks (`/bookmark`) | S | session pinning |
 | Command palette / fuzzy history - CTRL-P style history search | M | fast history search |
-| Session log full-restructuring (deferred) - typed `parts` model (OpenCode-style) replacing flat role-attribute messages, no migration of existing logs | M | ecosystem-aligned session format |
 
 ## Enterprise operations & data
 

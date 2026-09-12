@@ -1,6 +1,7 @@
 # TODO
 
 - First-run onboarding - the assistant introduces itself, explains what it can do, and asks what to do. No system-level configuration for simple users
+  - Also ask how agent focus should behave (`focus_on_delegate`: off/ask/on) and whether the prompt names the active role (`prompt_role`), both off by default
 - One-window status - `/status` shows sessions, running agents, and configured jobs on the current machine, with logs reachable from the same place (the journalctl-style alternative)
 - Agent health monitoring - the assistant watches endpoints (e.g. the `/health` of agents running as web APIs) and warns when an agent stops responding
 - Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style)
@@ -35,12 +36,27 @@
 
 ## Open
 
+- [ ] Session role metadata - persist the agent type as `role` on every session at creation, so a focused run can be reconstructed from its log
+- [ ] Run registry and call tree - an in-process registry of runs (numeric id, role, session, parent, ordered children, status, task) with a flat call log, shared into sub-engines
+- [ ] Focus manager and role engines - route REPL turns and commands to the active role engine, keep stable `agent_<role>` sessions, keep `>>>` by default, and show `Assistant >>>` when `prompt_role` is on
+- [ ] `/focus` command - show the current run, its tree, and the run log, then navigate and attach by id, role, session, parent, child, sibling, next, prev, or back
+- [ ] `handoff` tool - an agent pauses or finishes its run and hands control to a parent, sibling, child, role, or run id, focusing the target by default
+- [ ] `focus_on_delegate` config - off, ask, or on, so delegation can offer to focus the sub-run (off by default)
+- [ ] Session turn cutover - rewrite session storage to turns of typed parts with tool calls and results co-located, remove the flat `messages` format, and update the engine, renderer, export, and tests. Old `.replio/sessions/*.json` files are not converted and no longer load
+  - Turn format - `{turns: [{index, started_at, ended_at, status, parts: [...]}]}` where a part is `user`, `text`, `thinking`, `tool`, `command`, or `system`, and `tool` co-locates `name`/`input`/`output`/`is_error`
+  - Touch points - `sessions/manager.py`, `engine.py` persistence and `_provider_messages`, `compact_session`, `preview_session`, `sessions/render.py`, `cli export`, `docs/session.md`
+- [ ] `/history` - list the active run's turns with a limit (`/history 3`), `all`, `--thoughts`, and a run selector
+- [ ] `/print` - reprint a turn or part of it in full, with a cap and `--full`
+- [ ] Stable short run code - a persisted per-session code so run ids survive a restart
+- [ ] Concurrent runs and live focus - run agents in the background, route output to per-run buffers and input to the focused run, stream live status and progress, and support cancellation and thread safety
+  - Background execution - each run's loop in a worker thread, the parent yields and joins when the sub-run finishes
+  - Output router - per-run buffers with a `[#id role]` prefix, the focused run streams, and switching shows only new output
+  - Cancellation - `/stop` interrupts the focused run, with safe shutdown and thread-safe sessions and registry
 - [ ] Role-name sync - adopt assistant, composer, manager, and specialist as the canonical roles across types, prompts, and docs
 - [ ] Assistant-roles track docs - record the assistant, composer, and manager architecture and the work packages in VISION, PLAN, and TODO
 - [ ] Core dev and thesis team configuration - a bundled development team with the review loop plus the project lead/support teams and their skills
 - [ ] Manager role - a bundled agent type that runs one or many teams and reports, sequential first
 - [ ] Provider session binding - bind the provider session id (`x-opencode-session`) to the logical role session so a switched-away context is reusable
-- [ ] Focus handoff - switch the active agent in the REPL (assistant, composer, manager) with a visible indicator and `/agent`, resuming each role's session
 - [ ] Per-job report destination - a `report_url` (or connector list) on a job so different jobs report to different endpoints, instead of one global `report.webhook`
 - [ ] Per-task decide-vs-park for `direction` asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator
 - [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
@@ -51,23 +67,8 @@
 - [ ] Job connectors - bundled `replio-core-webhook` (stdlib JSON POST, zero deps, works with n8n/IFTTT/any URL) first. External email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API so operators can react in time
 - [ ] Jobs operator API - `GET /jobs` and `POST /jobs/<name>/approve|reject|run|disable` on `replio serve`, so clients (web Control UI, connectors, fleet supervisor) can see and act per agent
 - [ ] Fleet jobs overview - `replio jobs list --root <dir>` scanning agent worktrees (agent, job, status, next run, task table), then the web Control UI on top
-- [ ] Interactive delegation focus - REPL jumps in/out of the active sub-agent (request or automatic on delegate), arrows switch between concurrent `delegate_*` session logs rendered from their own saved logs (opencode-style sub-agent views)
 - [ ] Agent type directory scan for export/import - read `.replio/types/*.md` (front-matter types) to import and export types to Markdown, paralleling the sessions Markdown export/import
-- [ ] Delegation progress in the REPL - live status of which sub-agent is working and its progress mid-run. `delegate` already surfaces the task and the final result (plus a sub footer via `delegate_echo`). The next step is a progress channel read out of the sub-engine loop, which the single blocking `Engine.chat()` does not expose today
 - [ ] Auto team selection - the assistant picks types, teams, and skills from the registries for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor)
-- [ ] Session log full-restructuring (deferred) - restructure `messages` from flat role-attribute dicts into a typed `parts` model, borrowing OpenCode's session file structure (`.opencode/sessions/ses_*.json`). Deferred: the current flat format already reconstructs every conversation element, so this is architectural polish / ecosystem alignment, not a correctness fix. See the detailed spec below. Do NOT migrate existing `.replio/sessions/*.json` - they are historical and remain readable as-is
-  - Reference - OpenCode stores each turn as `{role, messageId, timestamp, parts[]}` where `parts` are typed objects:
-    - `{"type": "text", "text": ...}` - assistant/user content
-    - `{"type": "thinking", "text": ...}` - reasoning as its own part (not an attribute of the message)
-    - `{"type": "tool", "toolName, toolInput, toolOutput, isError}` - tool call and result co-located in one object
-    - `[step-start]` / `[step-finish]` text parts delimit steps within a turn
-    - Top-level: `{_id, title, startedAt, updatedAt, compactedAt, parentId, subSessions[], turns[], permissions[], errors[]}`
-  - Recommended target (role-level parts + co-located tool part):
-    - Each message becomes `{"id": "msg_<hex>", "role": ..., "timestamp": ..., <role meta>, "parts": [...]}`
-    - Part types: `text`, `thinking`, and `tool` (co-locating `id`/`tool`/`input`/`output`/`is_error`/`analysis`) so a single assistant message holds thinking + answer + each tool step, dropping the separate `tool`-role messages
-    - `_provider_messages()` reconstructs the OpenAI payload (`assistant.tool_calls` + `tool`-role results) from the parts (engine.py `_provider_messages`/`_clean_messages`)
-  - Optional, larger alternative - full turn-level parts + `[step-start]`/`[step-finish]` markers aggregating the multi-round tool loop into one assistant message per user turn (larger agent-loop change)
-  - Touch points: `sessions/manager.py` (part-building helpers, `to_dict`/`from_dict`), `engine.py` (`_agent_loop` persistence, `_execute_tool_calls`, `_provider_messages`, `_clean_messages`, `compact_session`, `preview_session`, `_auto_name_session`), `sessions/render.py`, `docs/session.md`. Server `/sessions` + `/chat` are unaffected (names + `TurnResult` only)
 - [ ] Thinking visibility - `/thinking on` + `reasoning` config documented, per-provider `reasoning_content` check so reasoning shows in the REPL
 - [ ] `/spawn` command - launch a scoped `replio serve` agent from the REPL (home -> project path), supervise (health/list/stop) and delegate to it (`docs/fleet.md`)
 - [ ] Remote channels - command agents from messaging apps (OpenClaw channels parity):

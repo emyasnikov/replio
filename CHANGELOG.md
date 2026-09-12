@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.31.0
+## v0.31.0 - 2026-09-12
 
 - Assistant root role - the REPL root now binds to a bundled `assistant` type on startup, so a plain `replio` session is the operator's single point of contact: it answers small tasks inline and delegates bigger work (use `composer` to design a team, then run it with `team`, or `leader` to supervise). New config keys `assistant` (default true, REPL only) and `assistant_type` (default `assistant`) rebind the root to any type without code changes, and a non-empty `system_prompt` or a local override of the type always wins. `Engine.bind_root_agent` resolves the type and merges its prompt and skills, plus its model/permissions/ask policy only when the user has not set them. Headless `run`/`serve`/jobs are unchanged and keep using `--type`. Docs synced (`config.md`, `types.md`). Tests: `tests/test_assistant.py`
 - Team permission category - the `team` tool gains its own `team` permission category (default `allow`), separate from `delegate`, so a type can be a delegation target yet be barred from running pipelines. The composer now sets `team: deny` instead of `delegate: deny`, which had made `_delegate_action` refuse delegation to the composer entirely (the `delegate` category on a target also gates delegation to it). Docs synced (`config.md`, `tools.md`, `teams.md`, `types.md`). Tests: `tests/test_team_tool.py`, `tests/test_composer.py`
