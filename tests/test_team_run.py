@@ -104,6 +104,24 @@ class TestTeamRun(unittest.TestCase):
             json.loads(f.read_text())['messages'][-1]['mode'] for f in subs)
         self.assertEqual(modes, ['build', 'plan'])
 
+    def test_run_team_stage_and_task_skills(self):
+        from replio.skills import Skill
+        self.chat.skills.put(Skill(name='stage-skill', content='Stage skill body.'))
+        self.chat.skills.put(Skill(name='task-skill', content='Task skill body.'))
+        self.chat.skills.put(Skill(name='base-skill', content='Base skill body.'))
+        self.chat.types.put(
+            AgentType(name='writer', system_prompt='You are the writer.',
+                      skills=['base-skill']), scope='local')
+        self.chat.provider.chat.side_effect = [self._result('done')]
+        self.chat.run_team(
+            self._team(TeamStage(type='writer', skills=['stage-skill'])),
+            'task', skills=['task-skill'])
+        messages = self.chat.provider.chat.call_args[0][0]
+        system = next(m for m in messages if m.get('role') == 'system')
+        self.assertIn('Base skill body.', system['content'])
+        self.assertIn('Stage skill body.', system['content'])
+        self.assertIn('Task skill body.', system['content'])
+
     def test_run_team_stops_on_failure(self):
         self.chat.provider.chat.side_effect = [
             [{'type': 'error', 'code': 0, 'message': 'boom'}],

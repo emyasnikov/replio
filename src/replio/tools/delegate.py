@@ -94,6 +94,15 @@ def register_delegate_tool(registry, engine) -> Callable:
                     'type': 'string',
                     'description': 'Task for the sub-agent to complete',
                 },
+                'skills': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'description': 'Skill names to add to the agent type for '
+                                   'this run, layered over the type\'s own '
+                                   'skills. Use it to extend a reusable agent '
+                                   'with task, technology, stack, or framework '
+                                   'instructions.',
+                },
             },
             'required': ['type', 'task'],
         },
@@ -106,9 +115,10 @@ def register_delegate_tool(registry, engine) -> Callable:
         loop=True,
         permission_fn=lambda args: _delegate_action(engine, args),
     )
-    def delegate(type: str, task: str, _config=None, _echo: bool = True) -> str:
+    def delegate(type: str, task: str, skills: list | None = None,
+                 _config=None, _echo: bool = True) -> str:
         try:
-            res = engine.run_subagent(type, task)
+            res = engine.run_subagent(type, task, skills=skills)
         except ValueError as e:
             return f'Error: {e}'
         result = _format_result(engine, type, res)

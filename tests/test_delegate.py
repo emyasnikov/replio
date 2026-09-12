@@ -198,6 +198,21 @@ class TestDelegateTool(unittest.TestCase):
         self.assertTrue(final)
         self.assertEqual(final[-1]['content'], 'Root summary.')
 
+    def test_forwards_skills_to_subagent(self):
+        from types import SimpleNamespace
+        self.chat.types.put(
+            AgentType(name='dev', system_prompt='Dev',
+                      tool_permission={'delegate': 'allow'}), scope='local')
+        with patch.object(self.chat, 'run_subagent', return_value=SimpleNamespace(
+                status='ok', content='done', errors=[], session='sub_x',
+                duration=0.0, usage=None)) as run:
+            self.chat._init_tooling()
+            self.chat._tool_registry.execute(
+                'delegate', {'type': 'dev', 'task': 't',
+                             'skills': ['django']})
+        run.assert_called_once()
+        self.assertEqual(run.call_args.kwargs.get('skills'), ['django'])
+
     def test_resolver_actions(self):
         self._allow_delegate()
         self.chat._init_tooling()

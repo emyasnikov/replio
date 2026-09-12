@@ -50,6 +50,7 @@ Stage fields:
 - `mode` - optional agent mode override for the stage. Empty inherits the caller. With the sequential stage loop, an explicit mode applies to that stage's sub-engine while the rest of the team follows the caller.
 - `task_hint` - optional guidance folded into the delegated brief for this stage.
 - `handoff_note` - optional note passed with the previous stage's result into the next stage's brief.
+- `skills` - optional list of skill names added to this stage's type for the run, layered over the type's standing skills (see [skills.md](skills.md)). The `team` tool adds task-wide skills to every stage through its own `skills` argument.
 
 ## Managing teams
 

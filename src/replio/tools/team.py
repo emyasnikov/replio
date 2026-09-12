@@ -94,6 +94,15 @@ def register_team_tool(registry, engine) -> Callable:
                     'type': 'string',
                     'description': 'Task for the team to complete',
                 },
+                'skills': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'description': 'Skill names to add to every stage for this '
+                                   'run, layered over each stage type\'s own '
+                                   'skills. Use it to extend the whole team '
+                                   'with task, technology, stack, or framework '
+                                   'instructions.',
+                },
             },
             'required': ['name', 'task'],
         },
@@ -106,13 +115,14 @@ def register_team_tool(registry, engine) -> Callable:
         loop=True,
         permission_fn=lambda args: _team_action(engine, args),
     )
-    def team(name: str, task: str, _config=None, _echo: bool = True) -> str:
+    def team(name: str, task: str, skills: list | None = None,
+             _config=None, _echo: bool = True) -> str:
         team_obj = engine.teams.find(name)
         if team_obj is None:
             return f'Error: unknown team "{name}"'
         if not team_obj.stages:
             return f'Error: team "{name}" has no stages'
-        res = engine.run_team(team_obj, task)
+        res = engine.run_team(team_obj, task, skills=skills)
         result = _format_result(name, res)
         clamped = _clamped_stages(engine, team_obj)
         if clamped:

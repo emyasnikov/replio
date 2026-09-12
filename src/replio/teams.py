@@ -14,6 +14,7 @@ class TeamStage:
     mode: str = ''
     task_hint: str = ''
     handoff_note: str = ''
+    skills: list = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, d) -> 'TeamStage':
@@ -24,6 +25,7 @@ class TeamStage:
             mode=str(d.get('mode') or ''),
             task_hint=str(d.get('task_hint') or ''),
             handoff_note=str(d.get('handoff_note') or ''),
+            skills=list(d.get('skills') or []),
         )
 
     def to_body(self) -> dict:

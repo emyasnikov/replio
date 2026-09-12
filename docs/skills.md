@@ -34,6 +34,15 @@ def register_skills(registry):
     registry.add_plugin({'name': 'finders', 'content': '# finders\n\n...'})
 ```
 
+## Standing and per-invocation skills
+
+`AgentType.skills` are a type's standing skills - the experience a role always carries. A caller may extend a type for one run with additional skills, so the same reusable agent gains task, technology, stack, or framework instructions without defining a new type:
+
+- `delegate(type, task, skills=[...])` appends the named skills after the type's standing skills.
+- A team stage may set `skills`, and `team(name, task, skills=[...])` adds task-wide skills to every stage.
+
+Resolution order is standing skills first, then invocation skills (task-wide before stage-specific), deduplicated by name. Unknown names are skipped silently. Layering skills never changes a type's tool carve.
+
 ## Injection
 
 When an agent type with `skills` runs as a sub-agent (`delegate`), each registered skill's content is appended to the agent type's system prompt:

@@ -385,15 +385,20 @@ class Engine:
             permission, 'grant', 'granted', scope=scope, granted_by=origin)
         return True
 
-    def _new_sub_engine(self, type_name: str, provider=None, mode: str = '') -> 'Engine':
+    def _new_sub_engine(self, type_name: str, provider=None, mode: str = '',
+                        skills: list | None = None) -> 'Engine':
         agent_type = self.types.find(type_name)
         if agent_type is None:
             raise ValueError(f'Unknown agent type: {type_name}')
         sub_config = Config(path=str(self.config.local_path.parent.parent))
         from .skills import skills_section
         system_prompt = agent_type.system_prompt
-        if agent_type.skills:
-            section = skills_section(self.skills, agent_type.skills)
+        names = list(agent_type.skills or [])
+        for name in (skills or []):
+            if name and name not in names:
+                names.append(name)
+        if names:
+            section = skills_section(self.skills, names)
             if section:
                 if system_prompt.strip():
                     system_prompt = system_prompt.rstrip() + '\n\n' + section
@@ -437,7 +442,8 @@ class Engine:
         sub.current_session.parent_id = self.current_session.name
         return sub
 
-    def run_subagent(self, type_name: str, task: str, mode: str = '') -> TurnResult:
+    def run_subagent(self, type_name: str, task: str, mode: str = '',
+                     skills: list | None = None) -> TurnResult:
         agent_type = self.types.find(type_name)
         if agent_type is None:
             raise ValueError(f'Unknown agent type: {type_name}')
@@ -449,7 +455,7 @@ class Engine:
                 raise ValueError(
                     f'Type "{type_name}" uses unapproved model "{model}" - '
                     'approve it first (/model, --approve-model, or /connect)')
-        sub = self._new_sub_engine(type_name, mode=mode)
+        sub = self._new_sub_engine(type_name, mode=mode, skills=skills)
         result = sub.chat(task, autoname=False)
         if result.session and result.session not in self.current_session.sub_sessions:
             self.current_session.sub_sessions.append(result.session)
@@ -513,7 +519,7 @@ class Engine:
             lines.append(part)
         return '\n'.join(lines)[:1500]
 
-    def run_team(self, team, task: str) -> TeamRunResult:
+    def run_team(self, team, task: str, skills: list | None = None) -> TeamRunResult:
         depth = getattr(self, '_team_depth', 0)
         max_depth = int(self.config.get('max_team_depth', 2) or 0)
         stack = list(getattr(self, '_team_stack', []))
@@ -530,12 +536,13 @@ class Engine:
         self._team_stack = stack + [team.name]
         self._team_depth = depth + 1
         try:
-            return self._run_team_stages(team, task)
+            return self._run_team_stages(team, task, skills=skills)
         finally:
             self._team_stack = stack
             self._team_depth = depth
 
-    def _run_team_stages(self, team, task: str) -> TeamRunResult:
+    def _run_team_stages(self, team, task: str,
+                         skills: list | None = None) -> TeamRunResult:
         from .teams import read_team_memory, write_team_memory
         for stage in team.stages:
             agent_type = self.types.find(stage.type)
@@ -559,7 +566,12 @@ class Engine:
             for i, stage in enumerate(team.stages):
                 brief = self._build_stage_brief(team, task, stages, i, memory)
                 mode = stage.mode or str(self.config.get('mode') or 'build')
-                res = self.run_subagent(stage.type, brief, mode=mode)
+                stage_skills = list(skills or [])
+                for name in (stage.skills or []):
+                    if name and name not in stage_skills:
+                        stage_skills.append(name)
+                res = self.run_subagent(stage.type, brief, mode=mode,
+                                        skills=stage_skills)
                 stages.append(res)
                 if res.status not in ('ok', 'truncated'):
                     status = 'error'

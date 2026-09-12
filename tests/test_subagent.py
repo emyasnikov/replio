@@ -124,6 +124,55 @@ class TestSubAgentEngine(unittest.TestCase):
         prompt = sub.config.get('system_prompt')
         self.assertEqual(prompt, '## Skills\n\n### one\n\nSkill only body.')
 
+    def test_subagent_merges_invocation_skills(self):
+        from replio.skills import Skill
+        self.chat.types.put(
+            AgentType(name='dev', system_prompt='You are a developer.',
+                      skills=['base']),
+            scope='local')
+        self.chat.skills.put(Skill(name='base', content='Base experience.'))
+        self.chat.skills.put(Skill(name='django', content='Use Django.'))
+        sub = self.chat._new_sub_engine('dev', skills=['django'])
+        prompt = sub.config.get('system_prompt')
+        self.assertIn('You are a developer.', prompt)
+        self.assertIn('Base experience.', prompt)
+        self.assertIn('Use Django.', prompt)
+        self.assertLess(prompt.index('Base experience.'),
+                        prompt.index('Use Django.'))
+
+    def test_subagent_invocation_skills_dedupe(self):
+        from replio.skills import Skill
+        self.chat.types.put(
+            AgentType(name='dev', system_prompt='p', skills=['base']),
+            scope='local')
+        self.chat.skills.put(Skill(name='base', content='Base experience.'))
+        sub = self.chat._new_sub_engine('dev', skills=['base', 'base'])
+        prompt = sub.config.get('system_prompt')
+        self.assertEqual(prompt.count('### base'), 1)
+
+    def test_subagent_invocation_skills_ignores_empty_names(self):
+        from replio.skills import Skill
+        self.chat.types.put(
+            AgentType(name='dev', system_prompt='p'), scope='local')
+        self.chat.skills.put(Skill(name='extra', content='Extra skill body.'))
+        sub = self.chat._new_sub_engine('dev', skills=['', None, 'extra'])
+        self.assertIn('Extra skill body.', sub.config.get('system_prompt'))
+
+    def test_run_subagent_passes_invocation_skills(self):
+        from replio.skills import Skill
+        self.chat.types.put(
+            AgentType(name='plain2', system_prompt='plain prompt'),
+            scope='local')
+        self.chat.skills.put(Skill(name='extra', content='Extra skill body.'))
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'token', 'content': 'ok'},
+             {'type': 'done', 'reason': 'stop'}],
+        ]
+        self.chat.run_subagent('plain2', 'do it', skills=['extra'])
+        messages = self.chat.provider.chat.call_args[0][0]
+        system = next(m for m in messages if m.get('role') == 'system')
+        self.assertIn('Extra skill body.', system['content'])
+
     def test_subagent_uses_null_ui(self):
         sub = self.chat._new_sub_engine('writer')
         self.assertIsInstance(sub.ui, NullUI)

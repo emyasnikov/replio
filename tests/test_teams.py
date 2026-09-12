@@ -82,6 +82,13 @@ class TestTeamRegistry(unittest.TestCase):
         self.assertEqual((s.type, s.mode, s.task_hint, s.handoff_note),
                          ('p', 'plan', 'h', 'n'))
 
+    def test_stage_skills_roundtrip(self):
+        reg = self.reg()
+        reg.put(Team(name='x', stages=[
+            TeamStage(type='writer', skills=['latex', 'de'])]))
+        t = reg.find('x')
+        self.assertEqual(t.stages[0].skills, ['latex', 'de'])
+
     def test_short_string_stage(self):
         reg = self.reg()
         reg.put(Team(name='x', stages=[TeamStage(type='p')]))

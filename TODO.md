@@ -46,7 +46,6 @@
 - [ ] Team review loop - generate > check > correct: a team repeats a producer/reviewer block until the reviewer passes or a cap is reached
 - [ ] Warm member sessions - keyed sub-sessions that resume on the next invocation, so a role keeps its context across tasks and review rounds
 - [ ] Catalog management + reload - model-facing tools to create, update, and remove agent types, teams, and skills, with a catalog reload so a change applies in the running session
-- [ ] Per-invocation skills - `delegate`/`team` accept skills and a team stage may set `skills`, layered over an agent type's standing `AgentType.skills`
 - [ ] Per-job report destination - a `report_url` (or connector list) on a job so different jobs report to different endpoints, instead of one global `report.webhook`
 - [ ] Per-task decide-vs-park for `direction` asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator
 - [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
@@ -121,6 +120,7 @@
 
 ## Done
 
+- [x] Per-invocation skills - delegate/team/stage skills layered over a type's standing skills
 - [x] End-to-end supervisor verification - `replio jobs add-supervisor`, governance-loop test
 - [x] Report-back - `job.run.completed` events, `last run:`/`summary:` lines, footer status
 - [x] `replio-core-webhook` - report-back connector POSTing job reports to `report.webhook`
