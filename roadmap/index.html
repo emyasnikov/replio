@@ -361,6 +361,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#assistant-roles-team-orchestration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assistant roles &amp; team orchestration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#control-governance" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1284,6 +1295,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#assistant-roles-team-orchestration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assistant roles &amp; team orchestration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#control-governance" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1463,6 +1485,79 @@
 <li>Effort: S &lt; M &lt; L</li>
 <li>Provides: the capability the task delivers</li>
 </ul>
+<h2 id="assistant-roles-team-orchestration">Assistant roles &amp; team orchestration<a class="headerlink" href="#assistant-roles-team-orchestration" title="Permanent link">&para;</a></h2>
+<p>The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate &gt; check &gt; correct, and focus can hand off between roles. This is the current track and the top priority, ordered by dependency.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Per-invocation skills - <code>delegate</code>/<code>team</code> and team stages layer skills over a type's standing skills</td>
+<td>S</td>
+<td>reusable agents extended per task</td>
+</tr>
+<tr>
+<td>Catalog management + reload - model-facing tools to create, update, and remove types, teams, and skills, with a live reload</td>
+<td>M</td>
+<td>agents that build their own catalog</td>
+</tr>
+<tr>
+<td>Warm member sessions - keyed sub-sessions that resume so a role keeps context across invocations</td>
+<td>M</td>
+<td>continuity across invocations</td>
+</tr>
+<tr>
+<td>Team review loop - a producer/reviewer block repeats until the review passes or a cap is reached</td>
+<td>M</td>
+<td>generate &gt; check &gt; correct</td>
+</tr>
+<tr>
+<td>Composer role - designs and persists a team (specialists, skills, stages) for a task without running it</td>
+<td>M</td>
+<td>a task becomes a working team</td>
+</tr>
+<tr>
+<td>Assistant role - a delegation-first root identity that answers simple tasks inline and hands off bigger work</td>
+<td>S-M</td>
+<td>a clear entry point</td>
+</tr>
+<tr>
+<td>Focus handoff - switch the active agent in the REPL with a visible indicator and <code>/agent</code>, resuming each role's session</td>
+<td>M</td>
+<td>talk to the active agent directly</td>
+</tr>
+<tr>
+<td>Provider session binding - bind the provider session id to the logical role session</td>
+<td>S-M</td>
+<td>context reuse across focus switches</td>
+</tr>
+<tr>
+<td>Manager role - runs one or many teams and reports, sequential first</td>
+<td>M</td>
+<td>one window over several teams</td>
+</tr>
+<tr>
+<td>Core dev and thesis team configuration - a development team with the review loop plus the project lead/support teams and skills</td>
+<td>S</td>
+<td>ready-made teams and skills</td>
+</tr>
+<tr>
+<td>Role-name sync - adopt assistant, composer, manager, and specialist across types, prompts, and docs</td>
+<td>S</td>
+<td>one canonical vocabulary</td>
+</tr>
+<tr>
+<td>Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO</td>
+<td>S</td>
+<td>documented direction</td>
+</tr>
+</tbody>
+</table>
 <h2 id="control-governance">Control &amp; governance<a class="headerlink" href="#control-governance" title="Permanent link">&para;</a></h2>
 <p>The assistant is the operator's single window to the machine: served agents are spawned and supervised from the REPL, unattended runs park their asks instead of failing, and finished work reports back. This is the control surface the rest of the roadmap builds on.</p>
 <table>

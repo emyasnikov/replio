@@ -1205,6 +1205,18 @@
 </ul>
 <h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[ ] Role-name sync - adopt assistant, composer, manager, and specialist as the canonical roles across types, prompts, and docs</li>
+<li>[ ] Assistant-roles track docs - record the assistant, composer, and manager architecture and the work packages in VISION, PLAN, and TODO</li>
+<li>[ ] Core dev and thesis team configuration - a bundled development team with the review loop plus the project lead/support teams and their skills</li>
+<li>[ ] Manager role - a bundled agent type that runs one or many teams and reports, sequential first</li>
+<li>[ ] Provider session binding - bind the provider session id (<code>x-opencode-session</code>) to the logical role session so a switched-away context is reusable</li>
+<li>[ ] Focus handoff - switch the active agent in the REPL (assistant, composer, manager) with a visible indicator and <code>/agent</code>, resuming each role's session</li>
+<li>[ ] Assistant role - a delegation-first root identity that answers simple tasks inline and hands larger work to a composer or manager</li>
+<li>[ ] Composer role - a bundled agent type that designs and persists a team (specialists, skills, stages) for a task without running it</li>
+<li>[ ] Team review loop - generate &gt; check &gt; correct: a team repeats a producer/reviewer block until the reviewer passes or a cap is reached</li>
+<li>[ ] Warm member sessions - keyed sub-sessions that resume on the next invocation, so a role keeps its context across tasks and review rounds</li>
+<li>[ ] Catalog management + reload - model-facing tools to create, update, and remove agent types, teams, and skills, with a catalog reload so a change applies in the running session</li>
+<li>[ ] Per-invocation skills - <code>delegate</code>/<code>team</code> accept skills and a team stage may set <code>skills</code>, layered over an agent type's standing <code>AgentType.skills</code></li>
 <li>[ ] Per-job report destination - a <code>report_url</code> (or connector list) on a job so different jobs report to different endpoints, instead of one global <code>report.webhook</code></li>
 <li>[ ] Per-task decide-vs-park for <code>direction</code> asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator</li>
 <li>[ ] Persistent member sessions for recurring teams - <code>job</code>-style warm sessions for recurring teams, one-off runs stay fresh <code>sub_</code> sessions (sequential run loop + briefs + team memory landed with <code>Engine.run_team</code>)</li>
