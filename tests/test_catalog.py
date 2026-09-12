@@ -25,10 +25,10 @@ class TestCatalogTool(unittest.TestCase):
         for key in ('action', 'kind', 'name', 'content', 'stages'):
             self.assertIn(key, params)
 
-    def test_default_permission_is_ask(self):
+    def test_default_permission_is_allow(self):
         policy = self.chat._tool_policy
         self.assertEqual(
-            policy.action('catalog', 'catalog', None, {'action': 'list'}), 'ask')
+            policy.action('catalog', 'catalog', None, {'action': 'list'}), 'allow')
         self.assertTrue(policy.allowed('catalog', 'catalog'))
 
     def test_type_override_allows(self):
@@ -67,14 +67,14 @@ class TestCatalogTool(unittest.TestCase):
             action='show', kind='team', name='ghost'))
 
     def test_save_type(self):
-        out = self._catalog(action='save', kind='type', name='composer',
-                            system_prompt='You compose teams.',
-                            skills=['composing'], tags=['management'])
-        self.assertIn('Saved agent type: composer', out)
-        saved = self.chat.types.find('composer')
-        self.assertEqual(saved.system_prompt, 'You compose teams.')
+        out = self._catalog(action='save', kind='type', name='essayist',
+                            system_prompt='You write essays.',
+                            skills=['composing'], tags=['writing'])
+        self.assertIn('Saved agent type: essayist', out)
+        saved = self.chat.types.find('essayist')
+        self.assertEqual(saved.system_prompt, 'You write essays.')
         self.assertEqual(saved.skills, ['composing'])
-        self.assertEqual(self.chat.types.origin('composer'), 'local')
+        self.assertEqual(self.chat.types.origin('essayist'), 'local')
 
     def test_save_team_with_stages(self):
         out = self._catalog(

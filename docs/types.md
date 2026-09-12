@@ -15,11 +15,12 @@ A type is a single reusable profile carrying several distinct axes of an agent. 
 | **Expertise** | The domains it is tagged for, used for grouping and filtering | `tags` |
 | **Archetype** | A stored, reusable pattern that teams reference as a stage | the registry entry itself |
 
-The bundled catalog ships two pre-carved teams plus a `leader` supervisor type, useful as delegation targets and as templates (see [teams.md](teams.md)). All leave `model` and `skills` empty (inheriting the caller's model) and differ mainly in `tool_permission` (`leader` also sets `grant_permission`/`ask_policy`):
+The bundled catalog ships two pre-carved teams plus a `composer` and a `leader` type, useful as delegation targets and as templates (see [teams.md](teams.md)). The composer designs and persists teams, the leader supervises them. All leave `model` and `skills` empty (inheriting the caller's model) and differ mainly in `tool_permission` (`leader` also sets `grant_permission`/`ask_policy`, `composer` sets `ask_policy`):
 
 | type | function | tags | edit | bash | web | read |
 |---|---|---|---|---|---|---|
 | `code-reviewer` | auditor: reviews a change, returns findings | programming, review | deny | allow | deny | allow |
+| `composer` | team composer: designs and persists a team (`catalog` allow, no delegation) | management | deny | deny | allow | allow |
 | `editor` | auditor: checks a document against the prompt and sources | writing, review | deny | deny | deny | allow |
 | `leader` | supervisor: coordinates teams and agents, delegates, parks asks | research, writing, programming, review | allow | deny | deny | allow |
 | `planner` | decomposes a task into an ordered, verifiable plan | programming | deny | deny | allow | allow |
@@ -75,7 +76,7 @@ Fields:
 - `system_prompt` - the type's system prompt, injected when it runs.
 - `model` - optional. Overrides the caller's model when the type runs, falls back to the caller's when empty. Accepts a `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) to pin provider and model together. The model must be approved before the type runs (`delegate`/`/teams run` ask interactively, or pass `--approve-model` headlessly - see [Model refs and approval](providers.md#model-refs-and-approval)).
 - `skills` - optional list of standing skill names from the [skills registry](skills.md), resolved and injected into the type's sub-agent system prompt (and jobs with `--type`). A caller may layer additional skills per run through `delegate`/`team` or a team stage, so one reusable type carries a stable identity while each task adds its own instructions.
-- `tags` - optional list of job tags for grouping and filtering (`/types list <tag>`). The bundled set uses a controlled vocabulary: `research`, `writing`, `programming`, `review`.
+- `tags` - optional list of job tags for grouping and filtering (`/types list <tag>`). The bundled set uses a controlled vocabulary: `management`, `research`, `writing`, `programming`, `review`.
 - `tool_permission` - optional per-agent overrides of `tool_permission` categories. The per-agent permission profile.
 - `grant_permission` - optional ceiling on the categories this type may hand down to sub-agents. Defaults to the type's own `tool_permission`, so it never widens delegation unless set explicitly. See [Delegation and permissions](#delegation-and-permissions).
 - `ask_policy` - optional per-type override of the `ask` routing by kind (`permission`/`direction`), merged over the config `ask_policy`. See [config.md](config.md#ask_policy).

@@ -129,9 +129,10 @@ class TestTypeRegistry(unittest.TestCase):
     def test_bundled_defaults_loaded(self):
         reg = self.bundled()
         names = reg.names()
-        self.assertEqual(len(names), 9)
-        for expected in ('leader', 'researcher', 'writer', 'referencer', 'editor',
-                         'planner', 'programmer', 'tester', 'code-reviewer'):
+        self.assertEqual(len(names), 10)
+        for expected in ('composer', 'leader', 'researcher', 'writer',
+                         'referencer', 'editor', 'planner', 'programmer',
+                         'tester', 'code-reviewer'):
             self.assertIn(expected, names)
         self.assertEqual(reg.origin('researcher'), 'bundled')
         researcher = reg.find('researcher')
@@ -139,6 +140,10 @@ class TestTypeRegistry(unittest.TestCase):
         self.assertEqual(researcher.tool_permission['web'], 'allow')
         self.assertEqual(reg.find('programmer').tool_permission['bash'], 'allow')
         self.assertEqual(reg.find('editor').tool_permission['edit'], 'deny')
+        composer = reg.find('composer')
+        self.assertEqual(composer.tool_permission['catalog'], 'allow')
+        self.assertEqual(composer.tool_permission['edit'], 'deny')
+        self.assertEqual(composer.tool_permission['delegate'], 'deny')
 
     def test_bundled_tags(self):
         reg = self.bundled()
@@ -288,7 +293,7 @@ class TestTypeCommand(unittest.TestCase):
 
     def test_list_shows_bundled(self):
         out = self._type()
-        self.assertIn('9 agent types', out)
+        self.assertIn('10 agent types', out)
         self.assertIn('researcher', out)
         self.assertIn('(bundled)', out)
 

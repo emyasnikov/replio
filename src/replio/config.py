@@ -70,7 +70,7 @@ DEFAULT_CONFIG = {
         'ask': 'allow',
         'bash': 'ask',
         'bash_allow': [],
-        'catalog': 'ask',
+        'catalog': 'allow',
         'delegate': 'allow',
         'edit': 'allow',
         'list': 'allow',
