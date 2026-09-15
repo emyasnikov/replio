@@ -118,6 +118,7 @@ class Engine:
         self.approve_models = approve_models
         self.role = ''
         self._pending_handoff = None
+        self._pending_focus = None
         self._provider_error = None
         self._ui = ui
         self._unattended = bool(config.get('unattended'))

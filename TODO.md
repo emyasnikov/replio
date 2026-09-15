@@ -36,7 +36,6 @@
 
 ## Open
 
-- [ ] `focus_on_delegate` config - off, ask, or on, so delegation can offer to focus the sub-run (off by default)
 - [ ] Session turn cutover - rewrite session storage to turns of typed parts with tool calls and results co-located, remove the flat `messages` format, and update the engine, renderer, export, and tests. Old `.replio/sessions/*.json` files are not converted and no longer load
   - Turn format - `{turns: [{index, started_at, ended_at, status, parts: [...]}]}` where a part is `user`, `text`, `thinking`, `tool`, `command`, or `system`, and `tool` co-locates `name`/`input`/`output`/`is_error`
   - Touch points - `sessions/manager.py`, `engine.py` persistence and `_provider_messages`, `compact_session`, `preview_session`, `sessions/render.py`, `cli export`, `docs/session.md`
@@ -111,6 +110,7 @@
 
 ## Done
 
+- [x] `focus_on_delegate` config - off/ask/on to focus the delegated role after the run
 - [x] `handoff` tool - pause or finish a run and hand control to a parent/sibling/child/role/#id
 - [x] `/focus` command - show the run tree/log, attach by id/role/session, navigate runs
 - [x] Focus manager and role engines - REPL focus stack, stable `agent_<role>` sessions, `prompt_role`

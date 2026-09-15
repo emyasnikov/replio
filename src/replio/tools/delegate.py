@@ -2,6 +2,8 @@ from typing import Callable
 
 _WRITE_PREFIXES = ('Created ', 'Overwritten ', 'Appended ')
 
+_FOCUS_MODES = ('off', 'ask', 'on')
+
 
 def _delegate_action(engine, args: dict) -> str:
     type_name = (args or {}).get('type', '')
@@ -10,6 +12,32 @@ def _delegate_action(engine, args: dict) -> str:
         return 'deny'
     action = (entry.tool_permission or {}).get('delegate', 'allow')
     return action if action in ('allow', 'ask', 'deny') else 'allow'
+
+
+def _focus_manager(engine):
+    return getattr(engine, '_focus', None) or getattr(engine, 'focus', None)
+
+
+def _focus_mode(config) -> str:
+    value = str((config.get('focus_on_delegate') if config else 'off') or 'off')
+    value = value.strip().lower()
+    return value if value in _FOCUS_MODES else 'off'
+
+
+def _offer_focus(engine, role: str, config) -> str:
+    mode = _focus_mode(config)
+    if mode == 'off':
+        return ''
+    focus = _focus_manager(engine)
+    if focus is None:
+        return ''
+    if mode == 'ask':
+        if engine._is_unattended():
+            return ''
+        if not engine.ui.confirm('focus_on_delegate', f'Focus on {role}'):
+            return ''
+    focus.root._pending_focus = {'role': role, 'target': role}
+    return f' [focus follows: {role}]'
 
 
 def _summarize_session(engine, result) -> str:
@@ -131,6 +159,8 @@ def register_delegate_tool(registry, engine) -> Callable:
         except ValueError as e:
             return f'Error: {e}'
         result = _format_result(engine, type, res)
+        if not result.startswith('Error'):
+            result += _offer_focus(engine, type, _config)
         if (_echo and _config is not None and _config.get('delegate_echo', True)
                 and not result.startswith('Error')):
             engine.ui.tool_result(result)

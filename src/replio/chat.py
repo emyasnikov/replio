@@ -233,10 +233,12 @@ class ChatLoop(Engine):
         self._save_history()
 
     def _apply_handoff(self):
-        pending = getattr(self, '_pending_handoff', None)
+        pending = (getattr(self, '_pending_handoff', None)
+                   or getattr(self, '_pending_focus', None))
         if not pending:
             return
         self._pending_handoff = None
+        self._pending_focus = None
         focus = getattr(self, 'focus', None)
         if focus is None:
             return

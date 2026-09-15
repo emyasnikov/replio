@@ -17,7 +17,6 @@ The assistant is the operator's entry point. A composer turns a task into a team
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| `focus_on_delegate` config - off, ask, or on for offering sub-run focus | S | choose how focus follows delegation |
 | Provider session binding - bind the provider session id to the logical role session | S-M | context reuse across focus switches |
 | Manager role - runs one or many teams and reports, sequential first | M | one window over several teams |
 | Core dev and thesis team configuration - a development team with the review loop plus the project lead/support teams and skills | S | ready-made teams and skills |

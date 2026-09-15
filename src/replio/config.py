@@ -16,6 +16,7 @@ DEFAULT_CONFIG = {
     'assistant': True,
     'assistant_type': 'assistant',
     'prompt_role': False,
+    'focus_on_delegate': 'off',
     'mode': 'build',
     'modes': {
         'build': {'system_prompt': '', 'tool_permission': {}},

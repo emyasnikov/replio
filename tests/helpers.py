@@ -49,6 +49,7 @@ def make_chat(config_data: dict | None = None) -> ChatLoop:
     chat._lead = None
     chat.role = ''
     chat._pending_handoff = None
+    chat._pending_focus = None
     chat.runs = RunRegistry()
     chat.current_run = chat.runs.start(role='', session=chat.current_session.name)
     chat.focus = FocusManager(chat)
