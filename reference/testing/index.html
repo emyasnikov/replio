@@ -1291,6 +1291,18 @@
 <td>Fleet supervisor: port allocation (preferred/bind-probe fallback/in-use skip/exhaustion), <code>/health</code> probe ok + failure, manifest/state round-trip + corrupt tolerance, spawn &gt; health &gt; crash &gt; restart &gt; down via <code>sys.executable -c</code> mock servers, <code>max_restarts</code> give-up, unhealthy-threshold restart, disabled gate, log files, env seams (<code>REPLIO_FLEET_PORT</code>), <code>replio fleet</code> CLI (init/add/remove/status/restart/config incl. type inline + unknown-type error), detached-daemon end-to-end (up --detach, status, down)</td>
 </tr>
 <tr>
+<td><code>test_focus.py</code></td>
+<td><code>FocusManager</code>: root start, role-engine creation and stability, refocus, <code>back</code>/<code>reset</code> stack walking, root-role reset, unknown-role error, <code>find</code>/<code>engines</code>, run recording. REPL routing to the active engine for turns and slash commands, role prompt (<code>prompt_role</code>) gating. <code>/focus</code> command: show, role/<code>#id</code>/session attach, <code>back</code>/<code>child</code>/<code>parent</code>/<code>sibling</code>/<code>next</code>/<code>prev</code>, unknown target, absent manager</td>
+</tr>
+<tr>
+<td><code>test_focus_on_delegate.py</code></td>
+<td><code>focus_on_delegate</code> config: default <code>off</code>, <code>off</code> leaves focus alone, <code>on</code> records a pending focus on the delegated role, <code>ask</code> prompts and focuses on yes / leaves focus on no, unattended <code>ask</code> skips the prompt, an invalid mode falls back to <code>off</code>, a sub-agent without a focus manager is a no-op. The pending focus does not stop the agent loop (the caller's answer still streams) and <code>ChatLoop</code> applies it after the turn</td>
+</tr>
+<tr>
+<td><code>test_handoff.py</code></td>
+<td><code>handoff</code> tool (core): registration + <code>handoff</code> permission, role target sets the pending handoff and pauses the run, <code>done</code> finishes it, unknown target errors without pausing, <code>parent</code> from a role engine resolves the root role, <code>child</code>/<code>sibling</code>/<code>#id</code>/role/<code>root</code> resolution, sub-agent without a focus manager errors. Agent loop stops after the handoff batch (no second provider round), <code>ChatLoop</code> applies the pending focus by role and resets on a root-role target</td>
+</tr>
+<tr>
 <td><code>test_http.py</code></td>
 <td>SSE streaming: data parsing, <code>done</code> marker, multi-byte split across chunks, HTTP errors, POST-preserving redirects (loopback server)</td>
 </tr>
@@ -1325,6 +1337,10 @@
 <tr>
 <td><code>test_repl_input.py</code></td>
 <td>REPL input: multi-line <code>"""</code>/<code>'''</code> block detection, framing strip (pure, lead-in, indentation preserved), EOF exit during an open block, slash commands single-line</td>
+</tr>
+<tr>
+<td><code>test_runs.py</code></td>
+<td><code>RunRegistry</code>: sequential ids, parent/children tree and creation-order call log, <code>finish</code> status set-once, task recording, unknown-run tolerance. Engine runs: root run registration, <code>bind_root_agent</code> updates the run role, sub-engine shares the registry and links the parent, <code>run_subagent</code> finishes the child run, <code>load_or_create_session</code> updates the run session</td>
 </tr>
 <tr>
 <td><code>test_server.py</code></td>

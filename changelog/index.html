@@ -404,10 +404,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0320" class="md-nav__link">
+  <a href="#v0320-2026-09-15" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.32.0
+        v0.32.0 - 2026-09-15
       
     </span>
   </a>
@@ -1460,10 +1460,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0320" class="md-nav__link">
+  <a href="#v0320-2026-09-15" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.32.0
+        v0.32.0 - 2026-09-15
       
     </span>
   </a>
@@ -1829,8 +1829,11 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<h2 id="v0320">v0.32.0<a class="headerlink" href="#v0320" title="Permanent link">&para;</a></h2>
+<h2 id="v0320-2026-09-15">v0.32.0 - 2026-09-15<a class="headerlink" href="#v0320-2026-09-15" title="Permanent link">&para;</a></h2>
 <ul>
+<li><code>focus_on_delegate</code> config - <code>off</code> (default), <code>ask</code>, or <code>on</code> moves the REPL focus to the delegated role's engine after a <code>delegate</code> call. With <code>on</code> the tool records a pending focus that <code>ChatLoop</code> applies after the turn, so the caller's answer still finishes and the next input goes to the specialist. With <code>ask</code> the operator is prompted first (skipped under unattended mode), and an unrecognized value falls back to <code>off</code>. Focus is REPL-only, so a sub-agent that delegates is a no-op, and a focused role engine that delegates follows too. Docs synced (<code>config.md</code>, <code>architecture.md</code>, <code>swarm.md</code>, <code>testing.md</code>). Tests: <code>tests/test_focus_on_delegate.py</code></li>
+<li><code>handoff</code> tool - a core tool (category and permission <code>handoff</code>, default <code>allow</code>) lets an agent pause or finish its run and hand control to another run, with the operator's focus following. <code>target</code> resolves against the run registry as <code>parent</code>, <code>child</code>, <code>sibling</code>, a role name, <code>root</code>, or a run id (<code>3</code> or <code>#3</code>), and <code>done</code> (default false) finishes the current run instead of leaving it <code>paused</code>. The tool records a pending handoff and the agent loop stops after the tool batch, so no further provider round runs. <code>ChatLoop</code> applies the pending handoff once the turn returns, focusing the resolved role's engine (a root-role target resets to the assistant). It is REPL-only: a delegated sub-agent has no focus manager and gets a clear error. Docs synced (<code>tools.md</code>, <code>config.md</code>, <code>architecture.md</code>, <code>testing.md</code>). Tests: <code>tests/test_handoff.py</code></li>
+<li><code>/focus</code> command - shows the current run, the run tree (indented, current marked), and the flat call log, then attaches or moves through the run registry. Attach by run id (<code>&lt;id&gt;</code>, <code>#id</code>), role (the stable <code>agent_&lt;role&gt;</code> engine), or <code>session:&lt;name&gt;</code>, and navigate with <code>parent</code>, <code>child [n]</code>, <code>sibling [n]</code>, <code>next</code>, <code>prev</code>, and <code>back</code>. Focusing a run attaches to the role engine that owns it, and a root-role run resets to the assistant. Focus is REPL-only. Docs synced (<code>commands.md</code>, <code>architecture.md</code>). Tests: <code>tests/test_focus.py</code></li>
 <li>Focus manager and role engines - the REPL keeps a focus stack (<code>FocusManager</code>, <code>src/replio/focus.py</code>): the root assistant plus a role engine per focused role. <code>ChatLoop.active()</code> returns the focused engine and <code>ChatLoop.run()</code> routes turns and slash commands to it, so one window drives whichever agent is in focus. <code>Engine.focused_engine(role)</code> builds a role engine with the same type resolution, skills, and permission carve as a delegation sub-agent, but with the REPL UI and a stable <code>agent_&lt;role&gt;</code> session that resumes on re-focus, and it records a run. <code>back()</code> and <code>reset()</code> walk the stack and repoint <code>ReplUI._loop</code> so rendering and confirms follow the active engine. A new <code>prompt_role</code> config (default false) prefixes the prompt with the active role (e.g. <code>Assistant &gt;&gt;&gt;</code>). The per-engine run attribute is <code>current_run</code> so it no longer shadows <code>ChatLoop.run</code>. Docs synced (<code>architecture.md</code>, <code>config.md</code>). Tests: <code>tests/test_focus.py</code></li>
 <li>Run registry and call tree - every engine instance is a run in a process-local <code>RunRegistry</code> (<code>src/replio/runs.py</code>) shared across the delegation tree: numeric <code>id</code>, <code>role</code>, <code>session</code>, <code>parent</code> and ordered <code>children</code>, <code>status</code>, the <code>task</code> brief, and timestamps. Delegated and team-stage engines register as children of the caller and are finished when their <code>chat</code> returns, <code>RunRegistry.runs()</code> is the flat creation-order call log, and <code>children(id)</code> walks the tree. This is the data model the focus and handoff surface builds on. Docs synced (<code>architecture.md</code>). Tests: <code>tests/test_runs.py</code></li>
 <li>Session role metadata - every session records the agent type that owns it as <code>role</code>, stamped at creation: the bound root type (<code>Engine.bind_root_agent</code>), the delegated and team-stage type (<code>_new_sub_engine</code>), and the job type (<code>scheduler._build_engine</code>). <code>/session new</code> carries the current role. A plain root or a headless run with no <code>--type</code> leaves it empty, and legacy files without the key load with an empty <code>role</code> (no backfill), so a run is reconstructable from its log. Docs synced (<code>session.md</code>). Tests: <code>tests/test_session_log.py</code>, <code>tests/test_assistant.py</code>, <code>tests/test_subagent.py</code></li>

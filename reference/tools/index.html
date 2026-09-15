@@ -1006,6 +1006,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#handing-off-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handing off control
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-tool-loop" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1259,6 +1270,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#handing-off-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handing off control
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-tool-loop" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1488,6 +1510,13 @@
 <td>Regex content search (<code>file:line:</code> results, alias <code>find</code>)</td>
 </tr>
 <tr>
+<td><code>handoff</code></td>
+<td>core</td>
+<td><code>handoff</code></td>
+<td><code>handoff</code></td>
+<td>Pause or finish this run and hand control to a parent/sibling/child/role/run id</td>
+</tr>
+<tr>
 <td><code>list_dir</code></td>
 <td>replio-core-fs</td>
 <td><code>read</code></td>
@@ -1534,6 +1563,8 @@
 <li>When no one can answer (headless <code>run</code>/<code>serve</code>/jobs: no terminal and no lead at the root), <code>ask</code> returns an <code>Error: ask has no one to answer ...</code> result and the run continues autonomously. It never blocks on stdin outside the REPL. The asynchronous "pause a job and wait for an operator reply over a connector" variant is tracked separately (see <a href="../jobs/">jobs.md</a>).</li>
 </ul>
 <p>The ask is not additionally gated - <code>tool_permission.ask</code> defaults to <code>allow</code> (the question and answer are the point). Operators can block it with <code>tools.deny: ["ask"]</code>. The question (tool arguments) and answer (tool result) persist in the asking session's log, and the call is recorded in the session <code>permissions</code> audit array like any tool call. A permission grant adds <code>scope</code> and <code>granted_by</code> fields to that audit entry.</p>
+<h2 id="handing-off-control">Handing off control<a class="headerlink" href="#handing-off-control" title="Permanent link">&para;</a></h2>
+<p>The <code>handoff</code> tool (core) pauses or finishes the current run and hands control to another run, with the operator's focus following the target. Schema: <code>target</code> (required) and <code>done</code> (default false). Targets resolve against the run registry: <code>parent</code>, <code>child</code>, <code>sibling</code>, a role name, <code>root</code>, or a run id (<code>3</code> or <code>#3</code>). The tool marks the current run <code>done</code> (when <code>done=true</code>) or <code>paused</code>, then records a pending handoff on the focus root. The turn ends immediately - the loop does not stream another round after the tool batch - and <code>ChatLoop</code> applies the pending handoff once the turn returns, focusing the resolved role's engine (a root-role target resets to the assistant). It is REPL-only: a delegated sub-agent has no focus manager and gets an <code>Error: handoff is only available in the REPL focus session ...</code> result. Gated by <code>tool_permission.handoff</code> (default <code>allow</code>).</p>
 <h2 id="the-tool-loop">The tool loop<a class="headerlink" href="#the-tool-loop" title="Permanent link">&para;</a></h2>
 <ol>
 <li>The provider's <code>chat()</code> stream yields a <code>tool_calls</code> event with the requested function calls.</li>
@@ -1561,11 +1592,11 @@
 </tr>
 <tr>
 <td><code>category</code></td>
-<td><code>ask</code> / <code>catalog</code> / <code>delegate</code> / <code>exec</code> / <code>mcp</code> / <code>read</code> / <code>search</code> / <code>todo</code> / <code>write</code> - drives the default activity glyph and verb</td>
+<td><code>ask</code> / <code>catalog</code> / <code>delegate</code> / <code>exec</code> / <code>handoff</code> / <code>mcp</code> / <code>read</code> / <code>search</code> / <code>todo</code> / <code>write</code> - drives the default activity glyph and verb</td>
 </tr>
 <tr>
 <td><code>permission</code></td>
-<td>The <code>tool_permission</code> key that gates the tool: <code>bash</code> / <code>catalog</code> / <code>edit</code> / <code>list</code> / <code>mcp</code> / <code>read</code> / <code>team</code> / <code>web</code></td>
+<td>The <code>tool_permission</code> key that gates the tool: <code>bash</code> / <code>catalog</code> / <code>edit</code> / <code>handoff</code> / <code>list</code> / <code>mcp</code> / <code>read</code> / <code>team</code> / <code>web</code></td>
 </tr>
 <tr>
 <td><code>permission_fn</code></td>
