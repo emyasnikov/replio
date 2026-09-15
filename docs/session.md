@@ -29,6 +29,7 @@ The active session is handled by `/session` (like `/model` for the model). The c
 | Command | Purpose |
 |---------|---------|
 | `/history [n\|all] [--thoughts [all]] [--run <target>]` | Numbered turn index of the active session (default last 10), with an optional dim thinking excerpt and a target selector |
+| `/print <n>[.<m>] [--full] [--run <target>]` | Reprint a turn in full, or only its m-th part, capped per part by `print_max_chars` |
 | `/session` | Show the active session (name, provider-context message count, context size) |
 | `/session new <name>` | Create and switch to a new session |
 | `/session load <name>` | Load a session (with compaction offer if it has a summary) |
@@ -42,6 +43,8 @@ The active session is handled by `/session` (like `/model` for the model). The c
 The current session auto-saves after every turn and command, so nothing is lost on exit.
 
 `/history` lists the active session's turns as a numbered index, one line per turn: `#<index>  [<status>]  <duration>  <tool count>  <prompt>`. The index is the turn's absolute `index`, so a turn can be named later regardless of the listing limit. `/history 3` shows the last three turns, `/history all` every turn, and `--thoughts` adds a dim first-line excerpt of the turn's thinking (`--thoughts all` prints the full thinking text). `/history --run <#id|role|session:name|name>` reads another run's session without switching focus or the current session: an id resolves to the live focused run when present, otherwise the saved session, a role resolves to its live `agent_<role>` engine or the saved session, and a name resolves to the saved session (legacy flat-`messages` files read as not found).
+
+`/print <n>` reprints the turn with that absolute index: the full turn metadata block (`#index`, status, duration, tool count, `started`/`ended`, model, provider, mode, reasoning - empty values shown as `-`, so even a command turn is self-describing), then each part - the operator prompt, thinking (dim), every tool call with `input` JSON, `output`, `is_error`, and `analysis`, the answer, command records (a compaction summary included), and system notes. `/print <n>.<m>` prints only the m-th part of turn n. Each part's text is capped at `print_max_chars` characters (default 4000) with `... (N more chars, use --full)` appended, and `--full` (or `print_max_chars: 0`) removes the cap. `/print` takes the same `--run <#id|role|session:name|name>` selector as `/history`, resolving through the same rules without switching focus or the current session.
 
 ## Exporting to Markdown
 

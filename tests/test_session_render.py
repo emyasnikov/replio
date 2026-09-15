@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from replio.sessions import turns
 from replio.sessions.manager import Session
-from replio.sessions.render import render_session, turn_summary
+from replio.sessions.render import render_session, render_turn, turn_summary
 from tests.helpers import make_chat
 
 
@@ -194,6 +194,96 @@ class TestTurnSummary(unittest.TestCase):
     def test_thoughts_absent_by_default(self):
         turn = self._turn(thinking='hidden')
         self.assertNotIn('hidden', turn_summary(turn))
+
+
+class TestRenderTurn(unittest.TestCase):
+
+    def _turn(self, user='hello', output='fine', is_error=False,
+              analysis=None, model='llama3.2', provider='ollama',
+              mode='build', reasoning='auto', thinking=None):
+        s = Session('s')
+        s.add_user(user, model=model, provider=provider, mode=mode,
+                   reasoning=reasoning)
+        if thinking:
+            s.add_thinking(thinking)
+        part = s.add_tool('web_search', {'query': 'x'})
+        turns.finish_tool(part, output, is_error=is_error, analysis=analysis)
+        s.add_text('answer')
+        s.end_turn('ok')
+        return s.turns[-1]
+
+    def test_header_and_metadata(self):
+        out = render_turn(self._turn())
+        self.assertIn('#1  [ok]  0.0s  1 tool', out)
+        self.assertIn('model:     llama3.2', out)
+        self.assertIn('provider:  ollama', out)
+        self.assertIn('mode:      build', out)
+        self.assertIn('reasoning: auto', out)
+
+    def test_command_turn_metadata_is_dash(self):
+        s = Session('s')
+        s.add_command('/help')
+        out = render_turn(s.turns[-1])
+        for label in ('model:', 'provider:', 'mode:', 'reasoning:'):
+            self.assertIn(f'{label}', out)
+        self.assertIn('model:     -', out)
+        self.assertIn('reasoning: -', out)
+
+    def test_all_part_types(self):
+        s = Session('s')
+        s.add_user('q')
+        s.add_thinking('think')
+        s.add_system('note')
+        s.add_text('answer')
+        s.end_turn('ok')
+        out = render_turn(s.turns[0])
+        self.assertIn('[user]', out)
+        self.assertIn('[thinking]', out)
+        self.assertIn('[system]', out)
+        self.assertIn('[assistant]', out)
+        self.assertIn('think', out)
+        self.assertIn('note', out)
+
+    def test_tool_error_and_analysis(self):
+        out = render_turn(self._turn(output='boom', is_error=True,
+                                     analysis='looks bad'))
+        self.assertIn('[tool: web_search] (error)', out)
+        self.assertIn('analysis:', out)
+        self.assertIn('looks bad', out)
+
+    def test_command_compaction(self):
+        s = Session('s')
+        s.add_user('q')
+        s.end_turn('ok')
+        s.add_command('/compact', summary='THE SUMMARY', compact_from=2)
+        out = render_turn(s.turns[-1])
+        self.assertIn('[command]', out)
+        self.assertIn('/compact', out)
+        self.assertIn('summary:', out)
+        self.assertIn('THE SUMMARY', out)
+        self.assertIn('provider context trimmed at turn 2', out)
+
+    def test_part_selection(self):
+        out = render_turn(self._turn(thinking='t'), part=2)
+        self.assertIn('[thinking]', out)
+        self.assertNotIn('[user]', out)
+        self.assertNotIn('[assistant]', out)
+
+    def test_part_out_of_range(self):
+        self.assertEqual(render_turn(self._turn(), part=99), '')
+
+    def test_cap_marker(self):
+        out = render_turn(self._turn(output='x' * 50), cap=10)
+        self.assertIn('x' * 10 + '\n... (40 more chars, use --full)', out)
+
+    def test_full_disables_cap(self):
+        out = render_turn(self._turn(output='x' * 50), full=True, cap=10)
+        self.assertIn('x' * 50, out)
+        self.assertNotIn('more chars', out)
+
+    def test_zero_cap_is_unlimited(self):
+        out = render_turn(self._turn(output='x' * 50), cap=0)
+        self.assertIn('x' * 50, out)
 
 
 class TestExportCommand(unittest.TestCase):

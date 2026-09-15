@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from .. import get_version
-from ..sessions.render import render_session, turn_summary
+from ..sessions.render import render_session, render_turn, turn_summary
 
 SUB_INDENT = 4
 
@@ -237,6 +237,57 @@ def _parse_history(arg):
         else:
             return None, None, None, f'Unknown argument: {tok}'
     return limit, thoughts, run_target, ''
+
+
+PRINT_USAGE = 'Usage: /print <n>[.<m>] [--full] [--run <target>]'
+
+
+def _parse_print(arg):
+    import shlex
+    spec = ''
+    full = False
+    run_target = ''
+    positional: list[str] = []
+    tokens = shlex.split(arg)
+    i = 0
+    while i < len(tokens):
+        tok = tokens[i]
+        if tok == '--full':
+            full = True
+            i += 1
+        elif tok == '--run':
+            if i + 1 >= len(tokens):
+                return None, None, None, PRINT_USAGE
+            run_target = tokens[i + 1]
+            i += 2
+        elif tok.startswith('--run='):
+            run_target = tok.split('=', 1)[1]
+            i += 1
+        else:
+            positional.append(tok)
+            i += 1
+    if len(positional) > 1:
+        return None, None, None, PRINT_USAGE
+    if positional:
+        spec = positional[0]
+    if not spec:
+        return None, None, None, PRINT_USAGE
+    return spec, full, run_target, ''
+
+
+def _parse_turn_ref(spec):
+    token = spec[1:] if spec.startswith('#') else spec
+    pieces = token.split('.', 1)
+    n_str = pieces[0]
+    m_str = pieces[1] if len(pieces) > 1 else ''
+    if not n_str.isdigit() or int(n_str) <= 0:
+        return None, None, f'Invalid turn: {spec}'
+    m = None
+    if m_str:
+        if not m_str.isdigit() or int(m_str) <= 0:
+            return None, None, f'Invalid part: {spec}'
+        m = int(m_str)
+    return int(n_str), m, ''
 
 
 def _render_known_models(chat):
@@ -1162,6 +1213,36 @@ def register_builtins(registry):
         for turn in shown:
             print(turn_summary(turn, thoughts=thoughts))
         print('/print <n> reprints a turn')
+
+    @registry.register('print',
+                       description='Reprint a turn (or one part) in full - '
+                                   '/print <n>[.<m>] [--full] [--run <target>]')
+    def print_cmd(arg=''):
+        spec, full, run_target, error = _parse_print(arg)
+        if error:
+            print(error)
+            return
+        n, m, error = _parse_turn_ref(spec)
+        if error:
+            print(error)
+            return
+        session = chat.current_session
+        if run_target:
+            session, error = _target_session(chat, run_target)
+            if session is None:
+                print(error)
+                return
+        turn = next((t for t in (session.turns or [])
+                     if t.get('index') == n), None)
+        if turn is None:
+            print(f'Turn not found: {n}')
+            return
+        parts = turn.get('parts') or []
+        if m is not None and m > len(parts):
+            print(f'Turn {n} has no part {m} (1-{len(parts)})')
+            return
+        cap = chat.config.get('print_max_chars', 4000)
+        print(render_turn(turn, part=m, full=full, cap=cap))
 
     @registry.register('asks', description='List parked asks and answer them', subcommands=[
         ('list', 'List parked asks (list [all|pending|answered])'),

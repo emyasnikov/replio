@@ -38,6 +38,7 @@ DEFAULT_CONFIG = {
     'show_notes': True,
     'tool_analysis': False,
     'session_tool_max_chars': 0,
+    'print_max_chars': 4000,
     'tool_max_result_chars': 100000,
     'list_dir_max_entries': 200,
     'connect_check': True,
