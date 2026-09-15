@@ -404,6 +404,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0330" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.33.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0320-2026-09-15" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1460,6 +1471,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0330" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.33.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0320-2026-09-15" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1829,6 +1851,13 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v0330">v0.33.0<a class="headerlink" href="#v0330" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>/print</code> command - reprints a listed turn in full or one part of it. <code>/print &lt;n&gt;</code> shows the turn's full metadata block (<code>#index</code>, status, duration, tool count, <code>started</code>/<code>ended</code>, model, provider, mode, reasoning - empty values as <code>-</code>, so a command turn is self-describing), then each part in order: the operator prompt, thinking (dim), every tool call with <code>input</code> JSON, <code>output</code>, <code>is_error</code>, and <code>analysis</code>, the answer, command records (compaction summary included), and system notes. <code>/print &lt;n&gt;.&lt;m&gt;</code> prints only the m-th part. Each part's text is capped per part by the new <code>print_max_chars</code> config (default 4000, <code>0</code> = unlimited) with <code>... (N more chars, use --full)</code> appended, and <code>--full</code> drops it for one call. <code>--run &lt;#id|role|session:name|name&gt;</code> reuses the <code>/history</code> target resolver to read another run without switching focus or the current session. The line renderer <code>render_turn</code> lives in <code>sessions/render.py</code>. Docs synced (<code>commands.md</code>, <code>session.md</code>, <code>config.md</code>, <code>testing.md</code>). Tests: <code>tests/test_print.py</code>, <code>tests/test_session_render.py</code></li>
+<li><code>/history</code> command - lists the active session's turns as a numbered, printable index, one line per turn: <code>#&lt;index&gt;  [&lt;status&gt;]  &lt;duration&gt;  &lt;tool count&gt;  &lt;prompt&gt;</code>. The index is the turn's absolute <code>index</code>, so a turn can be named later regardless of the listing limit. <code>/history 3</code> shows the last three turns (default 10), <code>/history all</code> every turn, and <code>--thoughts</code> adds a dim first-line excerpt of the turn's thinking (<code>--thoughts all</code> prints the full text). <code>/history --run &lt;#id|role|session:name|name&gt;</code> reads another run's session without switching focus or the current session: an id resolves to the live focused run when present, otherwise the saved session, a role resolves to its live <code>agent_&lt;role&gt;</code> engine or the saved session, and a bare name resolves to the saved session (legacy flat-<code>messages</code> files read as not found). The line renderer <code>turn_summary</code> lives in <code>sessions/render.py</code> and the target resolver <code>_target_session</code> in <code>commands/builtins.py</code>, shared with the upcoming <code>/print</code>. Docs synced (<code>commands.md</code>, <code>session.md</code>, <code>testing.md</code>). Tests: <code>tests/test_history.py</code>, <code>tests/test_session_render.py</code></li>
+<li>Session turn cutover - session logs now store turns only, and the flat <code>messages</code> format is removed everywhere. A turn is one operator prompt (or one slash command) and the agent's response: <code>{index, started_at, ended_at, status, model, provider, mode, reasoning, parts}</code>. Parts are typed (<code>user</code>, <code>text</code>, <code>thinking</code>, <code>tool</code>, <code>command</code>, <code>system</code>), and a <code>tool</code> part co-locates a call with its result (<code>name</code>, <code>input</code>, <code>output</code>, <code>is_error</code>, optional <code>analysis</code>). <code>Session</code> exposes an explicit turn/part API (<code>start_turn</code>/<code>end_turn</code>/<code>add_part</code> and <code>add_user</code>/<code>add_system</code>/<code>add_thinking</code>/<code>add_text</code>/<code>add_tool</code>/<code>add_command</code>) that replaces <code>add_message</code>. The engine opens a turn with the user part, co-locates each tool call with its result, closes the turn with its status, and rebuilds the provider context from turns through <code>turns.provider_messages</code> (assistant text plus consecutive tool parts grouped into one <code>tool_calls</code> message with its results, thinking attached, command parts dropped, compaction summary plus turn-index boundary). The renderer, Markdown export, <code>/sessions</code> preview, and the secondary readers (<code>delegate</code> result summary, <code>ask</code> task preview, run and team memory summarization, eval error count) all read turns. <code>compact_keep</code> now counts turns. Existing <code>.replio/sessions/*.json</code> files with <code>messages</code> are left untouched and no longer load (<code>read()</code> returns nothing, the name stays listed). Docs synced (<code>session.md</code>, <code>architecture.md</code>, <code>config.md</code>, <code>security.md</code>, <code>testing.md</code>, <code>writing-tools.md</code>, <code>AGENTS.md</code>). Tests: <code>tests/test_session_log.py</code>, <code>tests/test_session_render.py</code>, plus turn-model migrations across the suite</li>
+<li>Session turn model - a new <code>src/replio/sessions/turns.py</code> defines the turn/part shape for the session rewrite. A turn holds <code>index</code>, <code>started_at</code>, <code>ended_at</code>, <code>status</code>, the turn-level <code>model</code>/<code>provider</code>/<code>mode</code>/<code>reasoning</code>, and an ordered <code>parts</code> list. Builders cover the six part types (<code>user</code>, <code>text</code>, <code>thinking</code>, <code>tool</code>, <code>command</code>, <code>system</code>), a <code>tool</code> part co-locates <code>name</code>/<code>input</code>/<code>output</code>/<code>is_error</code>/<code>analysis</code>, and <code>provider_messages</code> rebuilds the OpenAI-compatible context by grouping a turn's text and consecutive tool parts back into one assistant <code>tool_calls</code> message plus its tool results, dropping command parts and applying the compaction summary and turn-index boundary. The module is wired into <code>Session</code> and the engine by the turn cutover above. Docs synced (<code>testing.md</code>). Tests: <code>tests/test_turns.py</code></li>
+</ul>
 <h2 id="v0320-2026-09-15">v0.32.0 - 2026-09-15<a class="headerlink" href="#v0320-2026-09-15" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>focus_on_delegate</code> config - <code>off</code> (default), <code>ask</code>, or <code>on</code> moves the REPL focus to the delegated role's engine after a <code>delegate</code> call. With <code>on</code> the tool records a pending focus that <code>ChatLoop</code> applies after the turn, so the caller's answer still finishes and the next input goes to the specialist. With <code>ask</code> the operator is prompted first (skipped under unattended mode), and an unrecognized value falls back to <code>off</code>. Focus is REPL-only, so a sub-agent that delegates is a no-op, and a focused role engine that delegates follows too. Docs synced (<code>config.md</code>, <code>architecture.md</code>, <code>swarm.md</code>, <code>testing.md</code>). Tests: <code>tests/test_focus_on_delegate.py</code></li>

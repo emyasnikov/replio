@@ -1450,6 +1450,11 @@
 <td>Show available commands and tools (<code>/help &lt;cmd|tool&gt;</code> for detail)</td>
 </tr>
 <tr>
+<td><code>/history</code></td>
+<td></td>
+<td>List the active session's turns as a numbered index: <code>/history [n|all] [--thoughts [all]] [--run &lt;target&gt;]</code>. Default last 10, <code>--thoughts</code> adds a dim thinking excerpt (<code>all</code> prints it in full), and <code>--run</code> reads another run's session without switching focus. See <a href="../session/">session.md</a></td>
+</tr>
+<tr>
 <td><code>/jobs</code></td>
 <td></td>
 <td>Manage scheduled and durable jobs: <code>list</code>, <code>status</code>, <code>show</code>, <code>add</code>, <code>add-supervisor</code>, <code>approve</code>, <code>reject</code>, <code>enable</code>, <code>disable</code>, <code>stop</code>, <code>remove</code>, <code>run</code>. See <a href="../jobs/">jobs.md</a></td>
@@ -1473,6 +1478,11 @@
 <td><code>/plugins</code></td>
 <td><code>/plugin</code></td>
 <td>Manage plugins: <code>list</code>, <code>enable</code>, <code>disable</code>, <code>install</code>, <code>update</code>, <code>uninstall</code></td>
+</tr>
+<tr>
+<td><code>/print</code></td>
+<td></td>
+<td>Reprint a turn (or one part) in full: <code>/print &lt;n&gt;[.&lt;m&gt;] [--full] [--run &lt;target&gt;]</code>. Shows the turn metadata, prompt, thinking, each tool call with input/output, and the answer; capped per part by <code>print_max_chars</code>, <code>--full</code> drops the cap. See <a href="../session/">session.md</a></td>
 </tr>
 <tr>
 <td><code>/provider</code></td>

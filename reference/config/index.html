@@ -1447,7 +1447,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <tr>
 <td><code>compact_keep</code></td>
 <td><code>4</code></td>
-<td>Messages to keep when compacting the provider context</td>
+<td>Turns to keep when compacting the provider context</td>
 </tr>
 <tr>
 <td><code>confirm_timeout</code></td>
@@ -1538,6 +1538,11 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td><code>plugins</code></td>
 <td><em>(bundled)</em></td>
 <td>Plugins to load. Empty = all discovered plugins load</td>
+</tr>
+<tr>
+<td><code>print_max_chars</code></td>
+<td><code>4000</code></td>
+<td>Cap characters <code>/print</code> shows per part (<code>... (N more chars, use --full)</code> appended). <code>0</code> = unlimited, <code>--full</code> overrides for one call</td>
 </tr>
 <tr>
 <td><code>project_instructions</code></td>
@@ -1704,7 +1709,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Each mode may define <code>system_prompt</code> (instructions), <code>tool_permission</code> (category actions merged over the base, mode wins per key), <code>tools.deny</code> (appended to the base deny list), and <code>tools.allow</code> (replaces the base allowlist when non-empty). An unknown <code>mode</code> falls back to <code>build</code>. Switch live with <code>/mode &lt;name&gt;</code> or <code>--mode &lt;name&gt;</code> on <code>replio run</code> / <code>replio serve</code>. The mode instruction and <code>system_prompt</code> are injected as a system message for every front-end, and the active mode is recorded on each assistant message in the session log.</p>
+<p>Each mode may define <code>system_prompt</code> (instructions), <code>tool_permission</code> (category actions merged over the base, mode wins per key), <code>tools.deny</code> (appended to the base deny list), and <code>tools.allow</code> (replaces the base allowlist when non-empty). An unknown <code>mode</code> falls back to <code>build</code>. Switch live with <code>/mode &lt;name&gt;</code> or <code>--mode &lt;name&gt;</code> on <code>replio run</code> / <code>replio serve</code>. The mode instruction and <code>system_prompt</code> are injected as a system message for every front-end, and the active mode is recorded on each turn in the session log.</p>
 <h3 id="tool_permission"><code>tool_permission</code><a class="headerlink" href="#tool_permission" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">"ask"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span><span class="p">,</span>

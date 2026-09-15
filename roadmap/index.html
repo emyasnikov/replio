@@ -372,10 +372,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#session-turns-history" class="md-nav__link">
+  <a href="#session-history-reprint" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Session turns &amp; history
+        Session history &amp; reprint
       
     </span>
   </a>
@@ -1317,10 +1317,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#session-turns-history" class="md-nav__link">
+  <a href="#session-history-reprint" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Session turns &amp; history
+        Session history &amp; reprint
       
     </span>
   </a>
@@ -1508,7 +1508,7 @@
 <li>Provides: the capability the task delivers</li>
 </ul>
 <h2 id="assistant-roles-team-orchestration">Assistant roles &amp; team orchestration<a class="headerlink" href="#assistant-roles-team-orchestration" title="Permanent link">&para;</a></h2>
-<p>The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate &gt; check &gt; correct, and focus follows the call tree of runs. This is the current track and the top priority, ordered by dependency.</p>
+<p>The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate &gt; check &gt; correct, and focus follows the call tree of runs. This track resumes after the session history and reprint work, ordered by dependency.</p>
 <table>
 <thead>
 <tr>
@@ -1545,8 +1545,8 @@
 </tr>
 </tbody>
 </table>
-<h2 id="session-turns-history">Session turns &amp; history<a class="headerlink" href="#session-turns-history" title="Permanent link">&para;</a></h2>
-<p>Session logs become turn-structured, so history and reprint work on the units the agent actually ran. This follows the focus work.</p>
+<h2 id="session-history-reprint">Session history &amp; reprint<a class="headerlink" href="#session-history-reprint" title="Permanent link">&para;</a></h2>
+<p>Session logs are turn-structured, so history and reprint operate on the units the agent actually ran. This is the current track. Read back what a run did, including after focus moved away and the terminal no longer shows it. <code>/history</code> numbers each turn in a printable index, so <code>/print &lt;n&gt;</code> reprints that turn in full - the user prompt, its thinking, every tool call with output, and the answer. Both take <code>--run &lt;#code|role|session:name&gt;</code> to read another run without switching focus, and <code>/print --full</code> drops the default output cap.</p>
 <table>
 <thead>
 <tr>
@@ -1557,22 +1557,7 @@
 </thead>
 <tbody>
 <tr>
-<td>Session turn cutover - turn model with typed parts, tool calls and results co-located, flat <code>messages</code> removed, legacy logs no longer load</td>
-<td>M-L</td>
-<td>a turn-shaped session log</td>
-</tr>
-<tr>
-<td><code>/history</code> - list the active run's turns with a limit, <code>all</code>, <code>--thoughts</code>, and a run selector</td>
-<td>S-M</td>
-<td>read back the run</td>
-</tr>
-<tr>
-<td><code>/print</code> - reprint a turn or part in full, capped</td>
-<td>S</td>
-<td>recover scrolled-away output</td>
-</tr>
-<tr>
-<td>Stable short run code - persisted per-session code for ids across restarts</td>
+<td>Stable run code - a short per-session code (base36 hash of <code>created_at</code> + session name, so it does not collide) persisted on the session and shown for the run, so <code>/focus</code> and <code>handoff</code> can name a run across restarts</td>
 <td>S</td>
 <td>durable run handles</td>
 </tr>

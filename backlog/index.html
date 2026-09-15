@@ -1206,11 +1206,6 @@
 </ul>
 <h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] Session turn cutover - rewrite session storage to turns of typed parts with tool calls and results co-located, remove the flat <code>messages</code> format, and update the engine, renderer, export, and tests. Old <code>.replio/sessions/*.json</code> files are not converted and no longer load</li>
-<li>Turn format - <code>{turns: [{index, started_at, ended_at, status, parts: [...]}]}</code> where a part is <code>user</code>, <code>text</code>, <code>thinking</code>, <code>tool</code>, <code>command</code>, or <code>system</code>, and <code>tool</code> co-locates <code>name</code>/<code>input</code>/<code>output</code>/<code>is_error</code></li>
-<li>Touch points - <code>sessions/manager.py</code>, <code>engine.py</code> persistence and <code>_provider_messages</code>, <code>compact_session</code>, <code>preview_session</code>, <code>sessions/render.py</code>, <code>cli export</code>, <code>docs/session.md</code></li>
-<li>[ ] <code>/history</code> - list the active run's turns with a limit (<code>/history 3</code>), <code>all</code>, <code>--thoughts</code>, and a run selector</li>
-<li>[ ] <code>/print</code> - reprint a turn or part of it in full, with a cap and <code>--full</code></li>
 <li>[ ] Stable short run code - a persisted per-session code so run ids survive a restart</li>
 <li>[ ] Concurrent runs and live focus - run agents in the background, route output to per-run buffers and input to the focused run, stream live status and progress, and support cancellation and thread safety</li>
 <li>Background execution - each run's loop in a worker thread, the parent yields and joins when the sub-run finishes</li>
@@ -1280,6 +1275,10 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] <code>/print</code> - reprint a turn (or one part) in full, cap via <code>print_max_chars</code>, <code>--full</code>, <code>--run</code></li>
+<li>[x] <code>/history</code> - numbered turn index with <code>n</code>/<code>all</code>, <code>--thoughts [all]</code>, and a <code>--run</code> selector</li>
+<li>[x] Session turn cutover - turn/part storage, co-located tool calls, flat messages removed</li>
+<li>[x] Session turn model - <code>turns.py</code> turn/part shape, builders, and provider conversion</li>
 <li>[x] <code>focus_on_delegate</code> config - off/ask/on to focus the delegated role after the run</li>
 <li>[x] <code>handoff</code> tool - pause or finish a run and hand control to a parent/sibling/child/role/#id</li>
 <li>[x] <code>/focus</code> command - show the run tree/log, attach by id/role/session, navigate runs</li>

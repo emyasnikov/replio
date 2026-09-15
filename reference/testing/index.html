@@ -1240,11 +1240,11 @@
 </tr>
 <tr>
 <td><code>test_ask.py</code></td>
-<td><code>ask</code> tool (core): schema/registration (<code>category ask</code>, <code>permission ask</code>, <code>key_arg question</code>, <code>tool_permission.ask</code> default allow), human answer / empty-cancelled / context+options rendering, no-channel error (headless), <code>target='lead'</code> lead-model consultation (question + delegated task in the prompt) + silent-lead fallback to human + root-fallback, sub-engine <code>_lead</code>/<code>_ask_ui</code> inheritance, full-loop ask -&gt; answer tool message -&gt; continue</td>
+<td><code>ask</code> tool (core): schema/registration (<code>category ask</code>, <code>permission ask</code>, <code>key_arg question</code>, <code>tool_permission.ask</code> default allow), human answer / empty-cancelled / context+options rendering, no-channel error (headless), <code>target='lead'</code> lead-model consultation (question + delegated task in the prompt) + silent-lead fallback to human + root-fallback, sub-engine <code>_lead</code>/<code>_ask_ui</code> inheritance, full-loop ask -&gt; answer tool part -&gt; continue</td>
 </tr>
 <tr>
 <td><code>test_asks.py</code></td>
-<td>Pending-ask inbox: <code>AskStore</code> add/find/list/status-filter/answer round-trip + persistence + incrementing ids + unknown/empty answer, <code>inject_answer</code> appends the <code>user</code> message to the origin session (+ missing-session skip), parking (unattended root/sub-agent human ask -&gt; <code>[parked]</code> + record with no stdin, <code>target='lead'</code> lead-less root parks, attended still prompts, permission-ask <code>human</code> route parks with <code>kind=permission</code> while <code>auto</code> route still grants <code>once</code> to the lead), resume-in-context after reload, <code>/asks</code> command (list/show/answer/usage/unknown-id, answer reloads a current origin session), serve <code>GET /asks</code> + <code>POST /asks/&lt;id&gt;/answer</code> (200/404/400)</td>
+<td>Pending-ask inbox: <code>AskStore</code> add/find/list/status-filter/answer round-trip + persistence + incrementing ids + unknown/empty answer, <code>inject_answer</code> appends the <code>user</code> part to the origin session (+ missing-session skip), parking (unattended root/sub-agent human ask -&gt; <code>[parked]</code> + record with no stdin, <code>target='lead'</code> lead-less root parks, attended still prompts, permission-ask <code>human</code> route parks with <code>kind=permission</code> while <code>auto</code> route still grants <code>once</code> to the lead), resume-in-context after reload, <code>/asks</code> command (list/show/answer/usage/unknown-id, answer reloads a current origin session), serve <code>GET /asks</code> + <code>POST /asks/&lt;id&gt;/answer</code> (200/404/400)</td>
 </tr>
 <tr>
 <td><code>test_autonomous_supervisor.py</code></td>
@@ -1280,7 +1280,7 @@
 </tr>
 <tr>
 <td><code>test_engine.py</code></td>
-<td><code>Engine.chat</code> turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-message <code>mode</code>, glyph param suffix gating, <code>!</code> error-line rendering and <code>show_errors</code> gating, soft-result note-line rendering and <code>show_notes</code> gating, <code>check_connection</code>/<code>list_models</code> probe resolution and overrides without state mutation, <code>_reinit_provider</code> provider-registry API key resolution (no config fallback, registry custom base_url fallback when config empty), model-ref unfold + approval gate (unfolded provider/base_url/model, headless deny, <code>approve_models</code> grant, chat short-circuit, subagent type-model unfold + gate, team-run pre-check deny)</td>
+<td><code>Engine.chat</code> turn result, thinking/content separation, load-or-create sessions, ASCII auto session naming, plan-mode schema filtering, instruction injection, per-turn <code>mode</code>, glyph param suffix gating, <code>!</code> error-line rendering and <code>show_errors</code> gating, soft-result note-line rendering and <code>show_notes</code> gating, <code>check_connection</code>/<code>list_models</code> probe resolution and overrides without state mutation, <code>_reinit_provider</code> provider-registry API key resolution (no config fallback, registry custom base_url fallback when config empty), model-ref unfold + approval gate (unfolded provider/base_url/model, headless deny, <code>approve_models</code> grant, chat short-circuit, subagent type-model unfold + gate, team-run pre-check deny)</td>
 </tr>
 <tr>
 <td><code>test_eval.py</code></td>
@@ -1301,6 +1301,10 @@
 <tr>
 <td><code>test_handoff.py</code></td>
 <td><code>handoff</code> tool (core): registration + <code>handoff</code> permission, role target sets the pending handoff and pauses the run, <code>done</code> finishes it, unknown target errors without pausing, <code>parent</code> from a role engine resolves the root role, <code>child</code>/<code>sibling</code>/<code>#id</code>/role/<code>root</code> resolution, sub-agent without a focus manager errors. Agent loop stops after the handoff batch (no second provider round), <code>ChatLoop</code> applies the pending focus by role and resets on a root-role target</td>
+</tr>
+<tr>
+<td><code>test_history.py</code></td>
+<td><code>/history</code> command: default last-10 / <code>n</code> / <code>all</code> listings by absolute turn index, header with total turns and role, line fields (status, duration, tool count, prompt), command-only turns, prompt first-line clip, <code>--thoughts</code> excerpt vs <code>--thoughts all</code>, <code>--run</code> target resolution (session name, bare name, live <code>#id</code>, saved-run <code>#id</code>, live role engine, saved <code>agent_&lt;role&gt;</code> fallback) without switching focus or current session, unknown target and usage errors, empty-session and no-focus-manager cases</td>
 </tr>
 <tr>
 <td><code>test_http.py</code></td>
@@ -1327,6 +1331,10 @@
 <td>Plugin manager: manifest compat ranges, discovery precedence, registration hooks (tools/providers/commands/services/types/teams/skills + hook-failure status), <code>_bundled_dir</code> fallback (source layout + forced import failure), install/update/uninstall, <code>replio plugins test</code> (+ <code>load_plugin_test_suite</code>)</td>
 </tr>
 <tr>
+<td><code>test_print.py</code></td>
+<td><code>/print</code> command: whole-turn reprint with the full metadata block (empty fields as <code>-</code>, including a command turn), part-only <code>&lt;n&gt;.&lt;m&gt;</code>, out-of-range part, unknown turn, <code>print_max_chars</code> cap vs <code>--full</code>, <code>--run</code> targets (session name, bare name, live role engine, saved <code>agent_&lt;role&gt;</code> fallback, live <code>#id</code>) without switching focus, unknown target and usage/invalid-spec errors</td>
+</tr>
+<tr>
 <td><code>test_providers.py</code></td>
 <td>Core provider substrate: <code>OpenAICompatibleProvider</code> defaults/headers/endpoints, POST-preserving redirects, <code>check_connection</code> probe (success/empty/model note/HTTP/network), <code>list_models</code> silent-on-error, base reasoning payload, host-pattern <code>detect_provider</code> (known hosts, longest-pattern precedence, empty/unknown fallback), core <code>PROVIDERS</code> registry (generic fallback only) and <code>merged_providers</code> (bundled providers included). Vendor provider defaults/endpoints/reasoning/headers live in the per-plugin suites (<code>replio-core-ollama</code>, <code>-openai</code>, <code>-groq</code>, <code>-anthropic</code>, <code>-opencode</code>)</td>
 </tr>
@@ -1348,11 +1356,11 @@
 </tr>
 <tr>
 <td><code>test_session_log.py</code></td>
-<td>Session model: append-only serialization, <code>tool_max_chars</code> truncation, metadata</td>
+<td>Session model: turn/part storage and the explicit turn/part API, turn index/status/metadata, append-only serialization, <code>tool_max_chars</code>/<code>noise_tools</code> transforms on tool-part output, errors/permissions round-trip, legacy flat-<code>messages</code> files do not load (and stay listed), compaction boundary and provider reconstruction, agent-loop turn persistence (thinking, tool parts, analysis)</td>
 </tr>
 <tr>
 <td><code>test_session_render.py</code></td>
-<td>Session Markdown export: renderer output per role, error section, <code>/sessions export</code> dispatch and file/stdout targets</td>
+<td>Session Markdown export: turn/part renderer (user, assistant, thinking, tool call arguments + result + analysis, command + compaction, system), error section, <code>/sessions export</code> dispatch and file/stdout targets. Also the terminal <code>turn_summary</code> (line fields, tool count, prompt clip, command turn, dim thinking excerpt vs full <code>all</code>) and <code>render_turn</code> (metadata block incl. empty-as-<code>-</code>, all part types, tool error + analysis, compaction, part selection, cap vs <code>--full</code>)</td>
 </tr>
 <tr>
 <td><code>test_skills.py</code></td>
@@ -1385,6 +1393,10 @@
 <tr>
 <td><code>test_tool_registry.py</code></td>
 <td>Tool registration metadata, schema, refine flags, note-result predicates, <code>_config</code> pass-through, activity params strings, fs tool glyphs (<code>* List</code> / <code>* Grep</code>), <code>permission_fn</code> storage + <code>resolver_for</code></td>
+</tr>
+<tr>
+<td><code>test_turns.py</code></td>
+<td>Turn model (<code>src/replio/sessions/turns.py</code>): turn/part shape and builders for the six part types, <code>finish_turn</code>/<code>finish_tool</code>, <code>tool</code> co-location, provider reconstruction (a turn's text plus consecutive tool parts grouped into one assistant <code>tool_calls</code> message followed by its tool results, thinking attached to the answer or tool round, reasoning-only turns, command parts dropped, system passthrough, deterministic tool-call ids, JSON-serialized arguments), and <code>compaction</code>/<code>provider_messages</code> (summary plus turn-index boundary)</td>
 </tr>
 <tr>
 <td><code>test_unattended.py</code></td>

@@ -1374,10 +1374,10 @@
 <ol>
 <li><strong>Agent loop</strong> (<code>src/replio/engine.py</code>) - the headless core. Each turn runs a single streaming request. The provider's <code>chat()</code> is a generator yielding events the engine reacts to:</li>
 <li><code>thinking</code> / <code>token</code> - streamed to the sink (<code>UISink</code>)</li>
-<li><code>tool_calls</code> - appends the assistant message, executes each call, appends <code>tool</code> results, then continues the loop</li>
+<li><code>tool_calls</code> - appends a <code>tool</code> part per call (name/input), executes each call, fills in its result, then continues the loop</li>
 <li><code>error</code> - records and prints, then bails</li>
 <li>
-<p><code>done</code> - persists the assistant message (timestamp/duration/model) and stops</p>
+<p><code>done</code> - closes the turn (status, end timestamp) and stops</p>
 </li>
 <li>
 <p><strong>ToolRegistry</strong> (<code>src/replio/tools/registry.py</code>) - the single dispatch point. The model invokes tools via OpenAI function calling, slash commands are thin wrappers calling the same <code>execute()</code>. The loop never special-cases tool names - per-tool behavior comes from registration metadata. See <a href="../tools/">tools.md</a>.</p>

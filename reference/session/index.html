@@ -888,15 +888,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#message-schema" class="md-nav__link">
+  <a href="#turn-and-part-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Message schema
+        Turn and part schema
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Message schema">
+    <nav class="md-nav" aria-label="Turn and part schema">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1292,15 +1292,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#message-schema" class="md-nav__link">
+  <a href="#turn-and-part-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Message schema
+        Turn and part schema
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Message schema">
+    <nav class="md-nav" aria-label="Turn and part schema">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1403,7 +1403,7 @@
 
 
 <h1 id="sessions">Sessions<a class="headerlink" href="#sessions" title="Permanent link">&para;</a></h1>
-<p>Sessions are complete, append-only conversation logs. Every message, tool call and its result, reasoning, and error is persisted as JSON under the project's <code>.replio/sessions/</code> directory. Entries are never removed - compaction only trims the provider context, never the log.</p>
+<p>Sessions are complete, append-only conversation logs. Every turn - the operator prompt, the agent's thinking, each tool call with its result, and the answer - is persisted as JSON under the project's <code>.replio/sessions/</code> directory. Entries are never removed. Compaction only trims the provider context, never the log.</p>
 <h2 id="where-sessions-live">Where sessions live<a class="headerlink" href="#where-sessions-live" title="Permanent link">&para;</a></h2>
 <p>Each session is one JSON file: <code>.replio/sessions/&lt;name&gt;.json</code>, next to the local <code>.replio/config.json</code>.</p>
 <p>Names are explicit (<code>/session new &lt;name&gt;</code>, <code>/session load &lt;name&gt;</code>, <code>replio run --session-id &lt;name&gt;</code>) or auto-generated as <code>ses_&lt;timestamp&gt;_&lt;first-message-slug&gt;</code>, e.g. <code>ses_20260817_120000_what_is_oee</code>.</p>
@@ -1434,8 +1434,9 @@
 </tr>
 </tbody>
 </table>
-<p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code>, where the suffix is the calling (parent) session id (<code>sub_20260817_120100_ses_20260817_120000_what_is_oee</code>). A warm member session (<code>delegate</code>/team <code>session_key</code>, or a team's <code>warm_sessions</code>) is named <code>sub_&lt;key&gt;</code> instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same <code>.replio/sessions/</code> directory and are regular sessions - listed by <code>/sessions list</code> (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.</p>
+<p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code>, where the suffix is the calling (parent) session id (<code>sub_20260817_120100_ses_20260817_120000_what_is_oee</code>). A warm member session (<code>delegate</code>/team <code>session_key</code>, or a team's <code>warm_sessions</code>) is named <code>sub_&lt;key&gt;</code> instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same <code>.replio/sessions/</code> directory and are regular sessions - listed by <code>/sessions</code> (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.</p>
 <p>Each session also records the agent <code>role</code> that owns it - the bound root type, the delegated type, the team-stage type, or the job type - stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no <code>--type</code> leaves <code>role</code> empty.</p>
+<p>Older flat-<code>messages</code> session files are not converted and do not load: <code>read()</code> returns nothing for them, the file is left untouched on disk, and <code>/sessions</code> still lists the name. The turn format is a full cutover, not a compatibility layer.</p>
 <h2 id="managing-sessions">Managing sessions<a class="headerlink" href="#managing-sessions" title="Permanent link">&para;</a></h2>
 <p>The active session is handled by <code>/session</code> (like <code>/model</code> for the model). The catalog of saved sessions lives under <code>/sessions</code> (like <code>/models</code>).</p>
 <table>
@@ -1447,8 +1448,16 @@
 </thead>
 <tbody>
 <tr>
+<td><code>/history [n\|all] [--thoughts [all]] [--run &lt;target&gt;]</code></td>
+<td>Numbered turn index of the active session (default last 10), with an optional dim thinking excerpt and a target selector</td>
+</tr>
+<tr>
+<td><code>/print &lt;n&gt;[.&lt;m&gt;] [--full] [--run &lt;target&gt;]</code></td>
+<td>Reprint a turn in full, or only its m-th part, capped per part by <code>print_max_chars</code></td>
+</tr>
+<tr>
 <td><code>/session</code></td>
-<td>Show the active session (name, message count, context)</td>
+<td>Show the active session (name, provider-context message count, context size)</td>
 </tr>
 <tr>
 <td><code>/session new &lt;name&gt;</code></td>
@@ -1468,7 +1477,7 @@
 </tr>
 <tr>
 <td><code>/sessions preview &lt;name&gt;</code></td>
-<td>Structural preview (roles, tool names) without switching</td>
+<td>Structural preview (turn count, part kinds, tool names) without switching</td>
 </tr>
 <tr>
 <td><code>/sessions delete &lt;name&gt;</code></td>
@@ -1484,11 +1493,13 @@
 </tr>
 </tbody>
 </table>
-<p>The current session auto-saves after every message and command, so nothing is lost on exit.</p>
+<p>The current session auto-saves after every turn and command, so nothing is lost on exit.</p>
+<p><code>/history</code> lists the active session's turns as a numbered index, one line per turn: <code>#&lt;index&gt;  [&lt;status&gt;]  &lt;duration&gt;  &lt;tool count&gt;  &lt;prompt&gt;</code>. The index is the turn's absolute <code>index</code>, so a turn can be named later regardless of the listing limit. <code>/history 3</code> shows the last three turns, <code>/history all</code> every turn, and <code>--thoughts</code> adds a dim first-line excerpt of the turn's thinking (<code>--thoughts all</code> prints the full thinking text). <code>/history --run &lt;#id|role|session:name|name&gt;</code> reads another run's session without switching focus or the current session: an id resolves to the live focused run when present, otherwise the saved session, a role resolves to its live <code>agent_&lt;role&gt;</code> engine or the saved session, and a name resolves to the saved session (legacy flat-<code>messages</code> files read as not found).</p>
+<p><code>/print &lt;n&gt;</code> reprints the turn with that absolute index: the full turn metadata block (<code>#index</code>, status, duration, tool count, <code>started</code>/<code>ended</code>, model, provider, mode, reasoning - empty values shown as <code>-</code>, so even a command turn is self-describing), then each part - the operator prompt, thinking (dim), every tool call with <code>input</code> JSON, <code>output</code>, <code>is_error</code>, and <code>analysis</code>, the answer, command records (a compaction summary included), and system notes. <code>/print &lt;n&gt;.&lt;m&gt;</code> prints only the m-th part of turn n. Each part's text is capped at <code>print_max_chars</code> characters (default 4000) with <code>... (N more chars, use --full)</code> appended, and <code>--full</code> (or <code>print_max_chars: 0</code>) removes the cap. <code>/print</code> takes the same <code>--run &lt;#id|role|session:name|name&gt;</code> selector as <code>/history</code>, resolving through the same rules without switching focus or the current session.</p>
 <h2 id="exporting-to-markdown">Exporting to Markdown<a class="headerlink" href="#exporting-to-markdown" title="Permanent link">&para;</a></h2>
 <p><code>/sessions export &lt;name&gt;</code> renders any saved session as a Markdown transcript. It reads the persisted log directly (<code>read()</code>, not <code>load()</code>), so the current session is never switched and the source file is left untouched.</p>
 <p>Default output is <code>.replio/exports/&lt;name&gt;.md</code>, next to the <code>sessions/</code> directory. A second argument overrides the path (<code>/sessions export &lt;name&gt; out.md</code>). <code>-</code> prints the transcript to stdout instead of a file. The command tab-completes session names.</p>
-<p>The export is the full, auditable log: each message becomes a <code>### &lt;Role&gt;</code> section with its timestamp, assistant meta (provider/model/duration) and thinking, tool calls and results as fenced code blocks (with tool <code>analysis</code>), <code>command</code> records, compaction summaries (with the trimmed context boundary), and a final <code>## Errors</code> section. Since it renders the persisted form, serialization-time transforms (<code>noise_tools</code> markers, <code>session_tool_max_chars</code> truncation) carry through as they appear in the file.</p>
+<p>The export is the full, auditable log: user prompts, each thinking block, tool calls (arguments and result, with the optional <code>analysis</code>), plain assistant answers, <code>command</code> records, compaction summaries (with the trimmed-context boundary), system notes, and a final <code>## Errors</code> section. Since it renders the persisted form, serialization-time transforms (<code>noise_tools</code> markers, <code>session_tool_max_chars</code> truncation) carry through as they appear in the file.</p>
 <p>The headless CLI <code>replio export &lt;name&gt; [--out &lt;file&gt;]</code> reuses the same renderer for scripts and CI - <code>--out -</code> prints to stdout, the default matches the slash command (<code>.replio/exports/&lt;name&gt;.md</code>).</p>
 <h2 id="file-structure">File structure<a class="headerlink" href="#file-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1496,7 +1507,7 @@
 <span class="w">  </span><span class="nt">"created_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:00+00:00"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:05:15+00:00"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"messages"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">"turns"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">  </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">  </span><span class="nt">"permissions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">  </span><span class="nt">"parent_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
@@ -1525,7 +1536,7 @@
 <tr>
 <td><code>updated_at</code></td>
 <td>string</td>
-<td>ISO 8601 UTC timestamp, bumped on every appended message</td>
+<td>ISO 8601 UTC timestamp, bumped on every appended part</td>
 </tr>
 <tr>
 <td><code>role</code></td>
@@ -1533,9 +1544,9 @@
 <td>Agent type that owns the session, stamped at creation (empty for a plain root or a headless run with no <code>--type</code>)</td>
 </tr>
 <tr>
-<td><code>messages</code></td>
+<td><code>turns</code></td>
 <td>array</td>
-<td>The conversation log, append-only</td>
+<td>The conversation log, append-only, one entry per turn</td>
 </tr>
 <tr>
 <td><code>errors</code></td>
@@ -1559,117 +1570,127 @@
 </tr>
 </tbody>
 </table>
-<p><code>/sessions preview</code> prints the <code>parent</code> and <code>sub-sessions</code> links. <code>/sessions list</code> annotates <code>sub_*</code> children with their parent.</p>
-<h2 id="message-schema">Message schema<a class="headerlink" href="#message-schema" title="Permanent link">&para;</a></h2>
-<p>Every message has at least <code>role</code>, <code>content</code>, and <code>timestamp</code> (ISO 8601 UTC). Fields beyond those depend on the role.</p>
+<p><code>/sessions preview</code> prints the <code>parent</code> and <code>sub-sessions</code> links. <code>/sessions</code> annotates <code>sub_*</code> children with their parent.</p>
+<h2 id="turn-and-part-schema">Turn and part schema<a class="headerlink" href="#turn-and-part-schema" title="Permanent link">&para;</a></h2>
+<p>A turn is one operator prompt (or one slash command) and the agent's response to it. It holds the turn-level context and an ordered list of parts:</p>
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Applies to</th>
+<th>Turn field</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>role</code></td>
-<td>all</td>
-<td><code>user</code>, <code>assistant</code>, <code>tool</code>, <code>command</code>, or <code>system</code></td>
+<td><code>index</code></td>
+<td>1-based position in the log</td>
 </tr>
 <tr>
-<td><code>content</code></td>
-<td>all</td>
-<td>Message text, or <code>null</code> for an assistant tool-call message</td>
+<td><code>started_at</code> / <code>ended_at</code></td>
+<td>ISO 8601 UTC timestamps (duration is the difference)</td>
 </tr>
 <tr>
-<td><code>id</code></td>
-<td>all</td>
-<td>Stable message identifier (<code>msg_&lt;hex&gt;</code>), auto-assigned on creation</td>
+<td><code>status</code></td>
+<td><code>running</code>, <code>ok</code>, <code>error</code>, <code>truncated</code>, <code>empty</code>, or <code>cancelled</code></td>
 </tr>
 <tr>
-<td><code>timestamp</code></td>
-<td>all</td>
-<td>ISO 8601 UTC timestamp</td>
-</tr>
-<tr>
-<td><code>duration</code></td>
-<td><code>assistant</code></td>
-<td>Response time in seconds</td>
-</tr>
-<tr>
-<td><code>model</code></td>
-<td><code>assistant</code></td>
-<td>Model that produced the response</td>
-</tr>
-<tr>
-<td><code>provider</code></td>
-<td><code>assistant</code></td>
-<td>Provider that served it</td>
-</tr>
-<tr>
-<td><code>thinking</code></td>
-<td><code>assistant</code></td>
-<td>Reasoning text preceding the answer or tool call, excluded from <code>content</code></td>
-</tr>
-<tr>
-<td><code>reasoning</code></td>
-<td><code>assistant</code></td>
-<td>The <code>reasoning</code> config value in effect for this message (<code>false</code>/<code>"off"</code> or an effort value)</td>
+<td><code>model</code> / <code>provider</code></td>
+<td>Model and provider that served the turn</td>
 </tr>
 <tr>
 <td><code>mode</code></td>
-<td><code>assistant</code></td>
-<td>The agent <code>mode</code> config value in effect for this message (<code>build</code>, <code>plan</code>, or a custom mode)</td>
+<td>Agent <code>mode</code> in effect (<code>build</code>, <code>plan</code>, or a custom mode)</td>
 </tr>
 <tr>
-<td><code>tool_calls</code></td>
-<td><code>assistant</code></td>
-<td>OpenAI function-call objects requested by the model</td>
+<td><code>reasoning</code></td>
+<td>The <code>reasoning</code> config value in effect (<code>false</code>/<code>"off"</code> or an effort value)</td>
 </tr>
 <tr>
-<td><code>tool_call_id</code></td>
-<td><code>tool</code></td>
-<td>ID linking the result to the originating <code>tool_calls</code> entry</td>
-</tr>
-<tr>
-<td><code>tool</code></td>
-<td><code>tool</code></td>
-<td>Name of the tool that produced the result</td>
-</tr>
-<tr>
-<td><code>analysis</code></td>
-<td><code>tool</code></td>
-<td>Optional one-line model insight (<code>tool_analysis</code> config)</td>
-</tr>
-<tr>
-<td><code>result</code></td>
-<td><code>command</code></td>
-<td>Compaction summary, on the <code>/compact</code> record</td>
-</tr>
-<tr>
-<td><code>compact_from</code></td>
-<td><code>command</code></td>
-<td>Index into <code>messages</code> where the kept portion starts</td>
+<td><code>parts</code></td>
+<td>Ordered list of parts (below)</td>
 </tr>
 </tbody>
 </table>
+<p>Every part has <code>type</code> and <code>timestamp</code>. Fields beyond those depend on the type:</p>
+<table>
+<thead>
+<tr>
+<th>Part type</th>
+<th>Fields</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user</code></td>
+<td><code>text</code></td>
+<td>An operator prompt</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>text</code></td>
+<td>Assistant answer text</td>
+</tr>
+<tr>
+<td><code>thinking</code></td>
+<td><code>text</code></td>
+<td>Reasoning that preceded the answer or the tool call</td>
+</tr>
+<tr>
+<td><code>tool</code></td>
+<td><code>name</code>, <code>input</code>, <code>output</code>, <code>is_error</code>, <code>analysis</code></td>
+<td>One tool call and its result, co-located. <code>input</code> is the parsed argument object, <code>is_error</code> marks an <code>Error</code> result, <code>analysis</code> is the optional one-line model insight (<code>tool_analysis</code> config)</td>
+</tr>
+<tr>
+<td><code>command</code></td>
+<td><code>text</code></td>
+<td>A slash command. <code>summary</code> and <code>compact_from</code> are set on a <code>/compact</code> record</td>
+</tr>
+<tr>
+<td><code>system</code></td>
+<td><code>text</code></td>
+<td>An injected note (e.g. the <code>web_search: true</code> auto-search context)</td>
+</tr>
+</tbody>
+</table>
+<p>A tool call and its result never split into separate records: the <code>tool</code> part is created with <code>name</code>/<code>input</code>, the engine executes the call, and <code>output</code>/<code>is_error</code>/<code>analysis</code> fill in on the same part. Thinking recorded before a tool round becomes a <code>thinking</code> part ahead of the <code>tool</code> parts.</p>
 <h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
-<p>A plain user/assistant exchange:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"What is OEE?"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:00+00:00"</span><span class="p">},</span>
-<span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assistant"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"OEE is Overall Equipment Effectiveness..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:05+00:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mf">4.8</span><span class="p">,</span><span class="w"> </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"llama3.2"</span><span class="p">,</span><span class="w"> </span><span class="nt">"provider"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ollama"</span><span class="p">,</span><span class="w"> </span><span class="nt">"thinking"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The user asks a definitional question, answer directly."</span><span class="p">}</span>
+<p>A plain prompt and answer:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"index"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">"started_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:00+00:00"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"ended_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:05+00:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ok"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"llama3.2"</span><span class="p">,</span><span class="w"> </span><span class="nt">"provider"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ollama"</span><span class="p">,</span><span class="w"> </span><span class="nt">"mode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"build"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"parts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"What is OEE?"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:00+00:00"</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"thinking"</span><span class="p">,</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The user asks a definitional question, answer directly."</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:01+00:00"</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"text"</span><span class="p">,</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"OEE is Overall Equipment Effectiveness..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:05+00:00"</span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
 </code></pre></div>
-<p>A tool call and its result:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assistant"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="nt">"tool_calls"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"call_xxx"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"function"</span><span class="p">,</span><span class="w"> </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"web_search"</span><span class="p">,</span><span class="w"> </span><span class="nt">"arguments"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{\"query\": \"latest Python release\"}"</span><span class="p">}}],</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:01:00+00:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"thinking"</span><span class="p">:</span><span class="w"> </span><span class="s2">"I need current data, search first."</span><span class="p">},</span>
-<span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tool"</span><span class="p">,</span><span class="w"> </span><span class="nt">"tool_call_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"call_xxx"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Web search results..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:01:03+00:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"tool"</span><span class="p">:</span><span class="w"> </span><span class="s2">"web_search"</span><span class="p">,</span><span class="w"> </span><span class="nt">"analysis"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Pages about recent Python releases - 3.13 is the latest."</span><span class="p">}</span>
+<p>A tool round and the final answer:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"index"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ok"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"parts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search for the latest Python release"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"thinking"</span><span class="p">,</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"I need current data, search first."</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tool"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"web_search"</span><span class="p">,</span><span class="w"> </span><span class="nt">"input"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"query"</span><span class="p">:</span><span class="w"> </span><span class="s2">"latest Python release"</span><span class="p">},</span>
+<span class="w">     </span><span class="nt">"output"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Web search results..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"is_error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">     </span><span class="nt">"analysis"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Pages about recent Python releases - 3.13 is the latest."</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"text"</span><span class="p">,</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The latest release is 3.13..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
 </code></pre></div>
-<p>Answering a parked ask (<code>/asks answer &lt;id&gt; &lt;text&gt;</code> or <code>POST /asks/&lt;id&gt;/answer</code> on <code>replio serve</code>) appends a <code>user</code> message <code>[answer to parked ask #&lt;id&gt;] &lt;answer&gt;</code> to the ask's origin session, so the next turn on that session resumes with the operator's decision in context. See <a href="../config/#unattended-mode">config.md</a>.</p>
 <p>A command and a compaction record:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"command"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/model llama3.3"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:02:00+00:00"</span><span class="p">},</span>
-<span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"command"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/compact"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:03:00+00:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Summary of the earlier conversation..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"compact_from"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"index"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ok"</span><span class="p">,</span><span class="w"> </span><span class="nt">"parts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"command"</span><span class="p">,</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/model llama3.3"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">}]}</span>
+<span class="p">{</span><span class="nt">"index"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ok"</span><span class="p">,</span><span class="w"> </span><span class="nt">"parts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"command"</span><span class="p">,</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/compact"</span><span class="p">,</span><span class="w"> </span><span class="nt">"summary"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Summary of the earlier conversation..."</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">"compact_from"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">}]}</span>
 </code></pre></div>
-<p>A <code>command</code> message with a <code>result</code> is a compaction record: <code>result</code> holds the summary, <code>compact_from</code> the index into <code>messages</code> where the kept portion starts. A search context injected by the <code>web_search: true</code> auto-search mode is recorded as a <code>system</code> message. The configured <code>system_prompt</code> and mode instruction are injected at request time, never stored in the log.</p>
+<p>A <code>command</code> part with a <code>summary</code> is a compaction record: <code>summary</code> holds the text and <code>compact_from</code> the turn <code>index</code> where the kept portion starts. The configured <code>system_prompt</code> and mode instruction are injected at request time, never stored in the log.</p>
+<p>Answering a parked ask (<code>/asks answer &lt;id&gt; &lt;text&gt;</code> or <code>POST /asks/&lt;id&gt;/answer</code> on <code>replio serve</code>) appends a <code>user</code> part <code>[answer to parked ask #&lt;id&gt;] &lt;answer&gt;</code> to the ask's origin session, so the next turn on that session resumes with the operator's decision in context. See <a href="../config/#unattended-mode">config.md</a>.</p>
 <h2 id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">&para;</a></h2>
-<p>Turn-level failures are appended to the <code>errors</code> array, separate from the message log:</p>
+<p>Turn-level failures are appended to the <code>errors</code> array, separate from the turn log:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="mi">401</span><span class="p">,</span><span class="w"> </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unauthorized"</span><span class="p">,</span><span class="w"> </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:40:00+00:00"</span><span class="p">}</span>
 </code></pre></div>
 <p><code>code</code> is the HTTP status where one exists, otherwise <code>0</code>. Errors include provider auth/network failures, stream EOF or empty completions, <code>max_tokens</code> truncation, and unexpected agent-loop exceptions.</p>
@@ -1710,24 +1731,25 @@
 </table>
 <p>Per-invocation (resolver-based) actions are recorded the same way - e.g. <code>delegate</code> logs the action resolved from the target type, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - no config switch - so the log stays a reliable audit record.</p>
 <h2 id="append-only-semantics">Append-only semantics<a class="headerlink" href="#append-only-semantics" title="Permanent link">&para;</a></h2>
-<p>Messages and errors are only ever appended. Compaction stores the summary in a new <code>command</code> record and leaves the earlier messages in place. Loading a session never rewrites history. The only transformations happen at serialization time (below), never to the in-memory log. An <code>assistant</code> message is written whenever the turn produced content <strong>or</strong> thinking - a truncated mid-reasoning turn still persists its thinking, and a reasoning-only turn (thinking, no content) is recorded rather than lost. Empty turns (no content, no thinking) persist nothing.</p>
+<p>Turns and errors are only ever appended. Compaction stores the summary in a <code>command</code> part and leaves the earlier turns in place. Loading a session never rewrites history. The only transformations happen at serialization time (below), never to the in-memory log. A turn is written whenever it produced content or thinking - a truncated mid-reasoning turn still persists its thinking, and a reasoning-only turn (thinking, no text) is recorded rather than lost. An empty turn (no content, no thinking) still records its status and any tool results.</p>
 <h2 id="serialization-time-transforms">Serialization-time transforms<a class="headerlink" href="#serialization-time-transforms" title="Permanent link">&para;</a></h2>
-<p>Two config keys reshape <code>tool</code> message content when the session is written to disk, without touching the stored messages:</p>
+<p>Two config keys reshape <code>tool</code> part output when the session is written to disk, without touching the stored parts:</p>
 <ul>
-<li><strong><code>noise_tools</code></strong> (default <code>["web_fetch", "open", "fetch_page"]</code>) - results of the listed tools are replaced with <code>[&lt;tool&gt; result excluded from log, see tool call above for parameters]</code>, keeping noisy results out of session files while the parameters stay in the tool call above.</li>
-<li><strong><code>session_tool_max_chars</code></strong> (default <code>0</code> = unlimited) - caps persisted tool-result content to N characters, appending <code>… (truncated from &lt;len&gt; chars)</code>.</li>
+<li><strong><code>noise_tools</code></strong> (default <code>["web_fetch", "open", "fetch_page"]</code>) - output of the listed tools is replaced with <code>[&lt;tool&gt; result excluded from log, see tool call above for parameters]</code>, keeping noisy results out of session files while <code>input</code> stays on the part.</li>
+<li><strong><code>session_tool_max_chars</code></strong> (default <code>0</code> = unlimited) - caps persisted tool <code>output</code> to N characters, appending <code>… (truncated from &lt;len&gt; chars)</code>.</li>
 </ul>
 <h2 id="preparing-the-provider-context">Preparing the provider context<a class="headerlink" href="#preparing-the-provider-context" title="Permanent link">&para;</a></h2>
-<p>The provider payload is prepared from the log by <code>_provider_messages()</code>:</p>
+<p>The provider payload is prepared from the turns by <code>turns.provider_messages()</code> (via <code>Engine._provider_messages</code>):</p>
 <ul>
-<li><code>command</code> role messages are dropped.</li>
-<li>Compaction records (<code>command</code> with <code>result</code>) become a <code>system</code> summary: <code>Summary of earlier conversation:\n\n&lt;summary&gt;</code>.</li>
-<li>Dangling <code>tool</code> messages (whose <code>tool_call_id</code> no longer matches a declared <code>tool_calls</code> entry, e.g. at a <code>compact_from</code> boundary) are skipped.</li>
-<li>Everything else is passed through in order.</li>
+<li>The latest <code>command</code> part with a <code>summary</code> becomes a <code>system</code> summary: <code>Summary of earlier conversation:\n\n&lt;summary&gt;</code>, and turns before its <code>compact_from</code> index are skipped.</li>
+<li><code>command</code> parts are dropped.</li>
+<li>Within a turn, assistant text and the consecutive <code>tool</code> parts that follow become one assistant message with <code>tool_calls</code>, followed by the <code>tool</code> result messages, so a co-located tool round rebuilds to the OpenAI-compatible shape.</li>
+<li><code>thinking</code> is attached to the assistant message it preceded.</li>
+<li><code>user</code> and <code>system</code> parts pass through in order.</li>
 </ul>
-<p>For compaction, tool results fold back into the summarized context as <code>[tool result] &lt;content&gt;</code> user messages so the summary can carry forward what the tools found.</p>
+<p>For compaction, tool results fold back into the summarized context as <code>[tool result] &lt;output&gt;</code> user messages so the summary can carry forward what the tools found.</p>
 <h2 id="compaction">Compaction<a class="headerlink" href="#compaction" title="Permanent link">&para;</a></h2>
-<p><code>/compact</code> summarizes the earlier conversation and trims the provider context, controlled by <code>compact_keep</code> (default 4 = messages kept at the tail). The summary is stored in the <code>result</code> of a <code>command</code> record with a <code>compact_from</code> boundary, so the full history stays in the log while only the summary is sent to the model going forward.</p>
+<p><code>/compact</code> summarizes the earlier conversation and trims the provider context, controlled by <code>compact_keep</code> (default 4 = turns kept at the tail). The summary is stored in the <code>summary</code> of a <code>command</code> part with a <code>compact_from</code> turn index, so the full history stays in the log while only the summary plus the kept turns are sent to the model going forward.</p>
 
 
 
