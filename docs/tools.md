@@ -23,6 +23,7 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 | `git_commit` | replio-core-git | `write` | `edit` | Stage/commit git changes, always confirm-gated (alias `commit`) |
 | `glob` | replio-core-fs | `search` | `read` | Recursive pattern lookup |
 | `grep` | replio-core-fs | `search` | `read` | Regex content search (`file:line:` results, alias `find`) |
+| `handoff` | core | `handoff` | `handoff` | Pause or finish this run and hand control to a parent/sibling/child/role/run id |
 | `list_dir` | replio-core-fs | `read` | `list` | List a directory (`depth` for trees, alias `ls`) |
 | `run_command` | replio-core-exec | `exec` | `bash` | Run a shell command with timeout (aliases `bash`, `exec`). Restricted by `tool_permission.bash_allow` |
 | `team` | core | `delegate` | `team` | Run a named team (an ordered chain of agent-type stages) and return the final stage's answer |
@@ -41,6 +42,10 @@ The `ask` tool (core, like `delegate`) pauses the run and routes a decision or p
 - When no one can answer (headless `run`/`serve`/jobs: no terminal and no lead at the root), `ask` returns an `Error: ask has no one to answer ...` result and the run continues autonomously. It never blocks on stdin outside the REPL. The asynchronous "pause a job and wait for an operator reply over a connector" variant is tracked separately (see [jobs.md](jobs.md)).
 
 The ask is not additionally gated - `tool_permission.ask` defaults to `allow` (the question and answer are the point). Operators can block it with `tools.deny: ["ask"]`. The question (tool arguments) and answer (tool result) persist in the asking session's log, and the call is recorded in the session `permissions` audit array like any tool call. A permission grant adds `scope` and `granted_by` fields to that audit entry.
+
+## Handing off control
+
+The `handoff` tool (core) pauses or finishes the current run and hands control to another run, with the operator's focus following the target. Schema: `target` (required) and `done` (default false). Targets resolve against the run registry: `parent`, `child`, `sibling`, a role name, `root`, or a run id (`3` or `#3`). The tool marks the current run `done` (when `done=true`) or `paused`, then records a pending handoff on the focus root. The turn ends immediately - the loop does not stream another round after the tool batch - and `ChatLoop` applies the pending handoff once the turn returns, focusing the resolved role's engine (a root-role target resets to the assistant). It is REPL-only: a delegated sub-agent has no focus manager and gets an `Error: handoff is only available in the REPL focus session ...` result. Gated by `tool_permission.handoff` (default `allow`).
 
 ## The tool loop
 
@@ -63,8 +68,8 @@ Tools are registered with `@registry.register(name, description, parameters)` pl
 | Key | Description |
 |-----|-------------|
 | `refine` | Auto-refine short `query` args via a lightweight model call, gated by `query_refine` |
-| `category` | `ask` / `catalog` / `delegate` / `exec` / `mcp` / `read` / `search` / `todo` / `write` - drives the default activity glyph and verb |
-| `permission` | The `tool_permission` key that gates the tool: `bash` / `catalog` / `edit` / `list` / `mcp` / `read` / `team` / `web` |
+| `category` | `ask` / `catalog` / `delegate` / `exec` / `handoff` / `mcp` / `read` / `search` / `todo` / `write` - drives the default activity glyph and verb |
+| `permission` | The `tool_permission` key that gates the tool: `bash` / `catalog` / `edit` / `handoff` / `list` / `mcp` / `read` / `team` / `web` |
 | `permission_fn` | Optional `Callable[[dict], str]` resolving the action (`allow`/`ask`/`deny`) from the current arguments - refines a non-`deny` base action at call time (see `delegate`) |
 | `path_arg` | Which parameter is a filesystem path, for worktree scope checks |
 | `key_arg` | Which argument appears in status/confirm labels and glyph activity lines |

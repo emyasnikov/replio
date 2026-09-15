@@ -36,7 +36,6 @@
 
 ## Open
 
-- [ ] `handoff` tool - an agent pauses or finishes its run and hands control to a parent, sibling, child, role, or run id, focusing the target by default
 - [ ] `focus_on_delegate` config - off, ask, or on, so delegation can offer to focus the sub-run (off by default)
 - [ ] Session turn cutover - rewrite session storage to turns of typed parts with tool calls and results co-located, remove the flat `messages` format, and update the engine, renderer, export, and tests. Old `.replio/sessions/*.json` files are not converted and no longer load
   - Turn format - `{turns: [{index, started_at, ended_at, status, parts: [...]}]}` where a part is `user`, `text`, `thinking`, `tool`, `command`, or `system`, and `tool` co-locates `name`/`input`/`output`/`is_error`
@@ -112,7 +111,8 @@
 
 ## Done
 
-- [x] `/focus` command - show the run tree and log, attach by id/role/session, move via parent/child/sibling/next/prev/back
+- [x] `handoff` tool - pause or finish a run and hand control to a parent/sibling/child/role/#id
+- [x] `/focus` command - show the run tree/log, attach by id/role/session, navigate runs
 - [x] Focus manager and role engines - REPL focus stack, stable `agent_<role>` sessions, `prompt_role`
 - [x] Run registry and call tree - in-process runs with parent/children and a flat call log
 - [x] Session role metadata - the owning agent type is stamped as `role` on every session at creation

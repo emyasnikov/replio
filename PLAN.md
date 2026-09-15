@@ -17,7 +17,6 @@ The assistant is the operator's entry point. A composer turns a task into a team
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| `handoff` tool - an agent hands control to another run and focus follows | S-M | agents pass control |
 | `focus_on_delegate` config - off, ask, or on for offering sub-run focus | S | choose how focus follows delegation |
 | Provider session binding - bind the provider session id to the logical role session | S-M | context reuse across focus switches |
 | Manager role - runs one or many teams and reports, sequential first | M | one window over several teams |

@@ -124,6 +124,7 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
   "catalog": "allow",
   "delegate": "allow",
   "edit": "allow",
+  "handoff": "allow",
   "list": "allow",
   "mcp": "ask",
   "read": "allow",
@@ -132,7 +133,7 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 }
 ```
 
-Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)). The `team` category gates the `team` tool (default `allow`), separate from `delegate` so a type can be a delegation target yet be barred from running pipelines. The `ask` category gates the `ask` tool (default `allow` - the interaction itself, answered by the human or the lead agent, see [tools.md](tools.md)). The `catalog` category gates the `catalog` tool (default `allow`) - it writes only to the project catalog in `.replio/`, so a team-composing agent can manage types, teams, and skills without general file edits. Set it to `ask` to confirm every catalog change.
+Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)). The `team` category gates the `team` tool (default `allow`), separate from `delegate` so a type can be a delegation target yet be barred from running pipelines. The `ask` category gates the `ask` tool (default `allow` - the interaction itself, answered by the human or the lead agent, see [tools.md](tools.md)). The `catalog` category gates the `catalog` tool (default `allow`) - it writes only to the project catalog in `.replio/`, so a team-composing agent can manage types, teams, and skills without general file edits. Set it to `ask` to confirm every catalog change. The `handoff` category gates the `handoff` tool (default `allow`) - it only moves the REPL's focus between runs (see [tools.md](tools.md#handing-off-control)).
 
 ### `ask_policy`
 

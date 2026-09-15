@@ -228,7 +228,28 @@ class ChatLoop(Engine):
                 engine.current_session.add_error(0, str(e))
                 print(f'\001\033[91m\002[Error]\001\033[0m\002 {e}')
 
+            self._apply_handoff()
+
         self._save_history()
+
+    def _apply_handoff(self):
+        pending = getattr(self, '_pending_handoff', None)
+        if not pending:
+            return
+        self._pending_handoff = None
+        focus = getattr(self, 'focus', None)
+        if focus is None:
+            return
+        role = str(pending.get('role') or '')
+        try:
+            engine = focus.focus_role(role)
+        except ValueError as e:
+            print(f'\001\033[91m\002[Cannot focus]\001\033[0m\002 {e}')
+            return
+        run = getattr(engine, 'current_run', None)
+        prefix = f'#{run.id} ' if run is not None else ''
+        label = f'{prefix}{engine.role or "root"} ({engine.current_session.name})'
+        print(f'Focused: {label}')
 
     def _save_sessions(self):
         focus = getattr(self, 'focus', None)

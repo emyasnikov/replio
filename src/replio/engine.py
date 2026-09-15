@@ -117,6 +117,7 @@ class Engine:
         self.config = config
         self.approve_models = approve_models
         self.role = ''
+        self._pending_handoff = None
         self._provider_error = None
         self._ui = ui
         self._unattended = bool(config.get('unattended'))
@@ -889,6 +890,7 @@ class Engine:
             self.session_auto_save()
 
     def _agent_loop(self, seed_tool: tuple[str, dict] | None = None) -> TurnResult:
+        self._pending_handoff = None
         tools_schema = self._init_tooling()
         turn_start = datetime.now(timezone.utc)
         usage = None
@@ -1079,7 +1081,7 @@ class Engine:
                         self.ui.warning(msg)
                     status = 'error'
                     break
-                if aborted or not tool_calls_detected:
+                if aborted or not tool_calls_detected or self._pending_handoff:
                     break
         except KeyboardInterrupt:
             self.ui.info('(cancelled)')
@@ -1212,12 +1214,14 @@ class Engine:
         from .tools.team import register_team_tool
         from .tools.ask import register_ask_tool
         from .tools.catalog import register_catalog_tool
+        from .tools.handoff import register_handoff_tool
         from .modes import merge_policy
         self._tool_registry = ToolRegistry()
         register_delegate_tool(self._tool_registry, self)
         register_team_tool(self._tool_registry, self)
         register_ask_tool(self._tool_registry, self)
         register_catalog_tool(self._tool_registry, self)
+        register_handoff_tool(self._tool_registry, self)
         plugin_manager = getattr(self, '_plugin_manager', None)
         if plugin_manager is not None:
             plugin_manager.register_tools(self._tool_registry)

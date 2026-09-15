@@ -76,6 +76,7 @@ DEFAULT_CONFIG = {
         'catalog': 'allow',
         'delegate': 'allow',
         'edit': 'allow',
+        'handoff': 'allow',
         'list': 'allow',
         'mcp': 'ask',
         'read': 'allow',
