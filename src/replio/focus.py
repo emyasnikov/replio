@@ -42,6 +42,7 @@ class FocusManager:
         if engine is None:
             engine = self.root.focused_engine(
                 role, ui=getattr(self.root, '_ui', None))
+            engine._focus = self
             self._engines[role] = engine
         return self.enter(engine)
 

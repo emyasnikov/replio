@@ -116,5 +116,96 @@ class TestFocusRouting(unittest.TestCase):
         self.assertEqual(self.chat._prompt(), MAIN_PROMPT)
 
 
+class TestFocusCommand(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+        self.chat._bind_assistant()
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def _dispatch(self, line):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat.registry.dispatch(line)
+        return out.getvalue()
+
+    def _draft(self, type_name='writer'):
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'token', 'content': 'Draft ready.'},
+             {'type': 'done', 'reason': 'stop'}],
+        ]
+        return self.chat.run_subagent(type_name, 'draft it')
+
+    def test_show_run_tree_and_log(self):
+        self.chat.focus.focus_role('writer')
+        out = self._dispatch('/focus')
+        self.assertIn('Focused:', out)
+        self.assertIn('Runs:', out)
+        self.assertIn('Log:', out)
+        self.assertIn('writer', out)
+
+    def test_focus_role_attaches(self):
+        out = self._dispatch('/focus writer')
+        self.assertEqual(self.chat.active().role, 'writer')
+        self.assertIn('Focused:', out)
+
+    def test_focus_back_returns(self):
+        self._dispatch('/focus writer')
+        out = self._dispatch('/focus back')
+        self.assertIs(self.chat.active(), self.chat)
+        self.assertIn('Focused:', out)
+
+    def test_focus_by_root_id_resets(self):
+        self._dispatch('/focus writer')
+        self._dispatch('/focus #1')
+        self.assertIs(self.chat.active(), self.chat)
+
+    def test_focus_by_run_id_selects_role(self):
+        self._draft('writer')
+        child = [r for r in self.chat.runs.runs() if r.role == 'writer'][-1]
+        out = self._dispatch(f'/focus #{child.id}')
+        self.assertEqual(self.chat.active().role, 'writer')
+        self.assertIn('writer', out)
+
+    def test_focus_by_session(self):
+        self.chat.focus.focus_role('writer')
+        self._dispatch('/focus assistant')
+        self._dispatch('/focus session:agent_writer')
+        self.assertEqual(self.chat.active().role, 'writer')
+
+    def test_focus_child_and_parent(self):
+        self.chat.focus.focus_role('writer')
+        self._dispatch('/focus assistant')
+        self._dispatch('/focus child')
+        self.assertEqual(self.chat.active().role, 'writer')
+        self._dispatch('/focus parent')
+        self.assertIs(self.chat.active(), self.chat)
+
+    def test_focus_sibling(self):
+        self.chat.focus.focus_role('writer')
+        self.chat.focus.focus_role('editor')
+        self._dispatch('/focus sibling')
+        self.assertEqual(self.chat.active().role, 'writer')
+
+    def test_focus_next_and_prev(self):
+        self.chat.focus.focus_role('writer')
+        self.chat.focus.focus_role('editor')
+        self._dispatch('/focus assistant')
+        self._dispatch('/focus next')
+        self.assertEqual(self.chat.active().role, 'writer')
+        self._dispatch('/focus prev')
+        self.assertIs(self.chat.active(), self.chat)
+
+    def test_focus_unknown_target(self):
+        out = self._dispatch('/focus ghost')
+        self.assertIn('not found', out)
+
+    def test_focus_absent_manager(self):
+        from replio.commands.builtins import _focus_manager
+        self.assertIsNone(_focus_manager(object()))
+
+
 if __name__ == '__main__':
     unittest.main()
