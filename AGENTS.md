@@ -66,7 +66,9 @@ Replio/
 │   │   └── registry.py      # ProviderRegistry - providers.json (keys + custom base URLs)
 │   ├── sessions/
 │   │   ├── __init__.py
-│   │   └── manager.py       # Session CRUD (JSON files)
+│   │   ├── manager.py       # Session CRUD (turn/part JSON files)
+│   │   ├── render.py        # Session -> Markdown transcript
+│   │   └── turns.py         # Turn/part model + provider-context reconstruction
 │   ├── commands/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Command registration + dispatch
@@ -213,4 +215,4 @@ Run tests before committing changes to verify core logic isn't broken. The suite
 
 ## Sessions
 
-Sessions are complete, append-only logs - every message, tool call + result, reasoning, and error is persisted, and entries are **never removed** (compaction only trims the provider context). The full schema - file location, message fields per role, `errors`, serialization-time transforms (`noise_tools`, `session_tool_max_chars`), provider-context preparation, and compaction - is in `docs/session.md`.
+Sessions are complete, append-only logs - every turn (the operator prompt, thinking, each tool call with its result, and the answer) and every error is persisted, and entries are **never removed** (compaction only trims the provider context). The full schema - file location, turn and part fields, `errors`, serialization-time transforms (`noise_tools`, `session_tool_max_chars`), provider-context preparation, and compaction - is in `docs/session.md`. Older flat-`messages` files are left untouched and no longer load.

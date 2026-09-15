@@ -28,8 +28,8 @@ class TestAskTool(unittest.TestCase):
         }]
 
     def _tool_msgs(self):
-        return [m for m in self.chat.current_session.messages
-                if m['role'] == 'tool']
+        return [p for t in self.chat.current_session.turns
+                for p in t.get('parts') or [] if p['type'] == 'tool']
 
     def test_ask_registered_in_schema(self):
         schema = self.chat._init_tooling()
@@ -132,7 +132,7 @@ class TestAskTool(unittest.TestCase):
                 self.chat._agent_loop()
         tools = self._tool_msgs()
         self.assertEqual(len(tools), 1)
-        self.assertIn('Use 8080', tools[0]['content'])
+        self.assertIn('Use 8080', tools[0]['output'])
         self.assertEqual(self.chat.provider.chat.call_count, 2)
 
 

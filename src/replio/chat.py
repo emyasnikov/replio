@@ -219,7 +219,7 @@ class ChatLoop(Engine):
             engine = self.active()
             try:
                 if line.startswith('/'):
-                    engine.current_session.add_message('command', line)
+                    engine.current_session.add_command(line)
                     engine.registry.dispatch(line)
                     engine.session_auto_save()
                 else:

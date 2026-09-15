@@ -88,7 +88,7 @@ class TestTeamRun(unittest.TestCase):
             expected = self.chat._build_stage_brief(
                 self._team(TeamStage(type='researcher'), TeamStage(type='writer')),
                 'write a report', result.stages[:i], i, '')
-            self.assertEqual(data['messages'][0]['content'], expected)
+            self.assertEqual(data['turns'][0]['parts'][0]['text'], expected)
 
     def test_run_team_stage_mode_engine(self):
         self.chat.config.apply('mode', 'plan')
@@ -101,7 +101,7 @@ class TestTeamRun(unittest.TestCase):
         subs = sorted(self.sessions_dir.glob('sub_*.json'))
         self.assertEqual(len(subs), 2)
         modes = sorted(
-            json.loads(f.read_text())['messages'][-1]['mode'] for f in subs)
+            json.loads(f.read_text())['turns'][-1]['mode'] for f in subs)
         self.assertEqual(modes, ['build', 'plan'])
 
     def test_run_team_stage_and_task_skills(self):

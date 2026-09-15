@@ -316,8 +316,9 @@ class TestCliExport(unittest.TestCase):
         sessions = Path(self.path) / '.replio' / 'sessions'
         sessions.mkdir(parents=True, exist_ok=True)
         s = Session('alpha')
-        s.add_message('user', 'hello')
-        s.add_message('assistant', 'hi there')
+        s.add_user('hello')
+        s.add_text('hi there')
+        s.end_turn('ok')
         with open(sessions / 'alpha.json', 'w') as f:
             json.dump(s.to_dict(), f)
 

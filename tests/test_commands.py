@@ -102,7 +102,7 @@ class TestToolCommand(unittest.TestCase):
 
     def test_sessions_no_args_lists(self):
         s = self.chat.sessions.create('saved1')
-        s.add_message('user', 'x')
+        s.add_user('x')
         self.chat.sessions.save(s)
         output = self._dispatch('/sessions')
         self.assertIn('saved1', output)
@@ -111,26 +111,27 @@ class TestToolCommand(unittest.TestCase):
         old = self.chat.current_session
         self._dispatch('/session new')
         self.assertIsNot(self.chat.current_session, old)
-        self.assertEqual(self.chat.current_session.messages, [])
+        self.assertEqual(self.chat.current_session.turns, [])
 
     def test_session_load_switches_current_session(self):
         old = self.chat.current_session
         s = self.chat.sessions.create('saved1')
-        s.add_message('user', 'hello from saved session')
+        s.add_user('hello from saved session')
         self.chat.sessions.save(s)
         with patch('replio.commands.builtins.input', return_value='n'):
             self._dispatch('/session load saved1')
         self.assertIsNot(self.chat.current_session, old)
-        self.assertEqual([m['content'] for m in self.chat.current_session.messages],
-                         ['hello from saved session', '/session load saved1'])
+        texts = [p['text'] for t in self.chat.current_session.turns
+                 for p in t.get('parts') or []]
+        self.assertEqual(texts, ['hello from saved session', '/session load saved1'])
 
     def test_session_load_shows_context_size(self):
         s = self.chat.sessions.create('saved2')
-        s.add_message('user', 'hello world')
+        s.add_user('hello world')
         self.chat.sessions.save(s)
         with patch('replio.commands.builtins.input', return_value='n'):
             output = self._dispatch('/session load saved2')
-        self.assertIn('1 messages', output)
+        self.assertIn('messages', output)
         self.assertIn('context', output)
 
     def test_session_load_not_found(self):
@@ -139,7 +140,7 @@ class TestToolCommand(unittest.TestCase):
 
     def test_session_load_offers_compact(self):
         s = self.chat.sessions.create('big1')
-        s.add_message('user', 'x')
+        s.add_user('x')
         self.chat.sessions.save(s)
         self.chat.compact_session = unittest.mock.MagicMock()
         with patch('replio.commands.builtins.input', return_value='y'):
@@ -148,7 +149,7 @@ class TestToolCommand(unittest.TestCase):
 
     def test_session_load_declines_compact(self):
         s = self.chat.sessions.create('big2')
-        s.add_message('user', 'x')
+        s.add_user('x')
         self.chat.sessions.save(s)
         self.chat.compact_session = unittest.mock.MagicMock()
         with patch('replio.commands.builtins.input', return_value='n'):
@@ -158,15 +159,12 @@ class TestToolCommand(unittest.TestCase):
     def test_session_preview_does_not_switch_current(self):
         old = self.chat.current_session
         s = self.chat.sessions.create('pv1')
-        s.add_message('user', 'hello')
-        s.add_message('assistant', None, tool_calls=[{
-            'id': 'c1', 'type': 'function',
-            'function': {'name': 'web_search', 'arguments': '{}'},
-        }])
+        s.add_user('hello')
+        s.add_tool('web_search', {})
         self.chat.sessions.save(s)
         output = self._dispatch('/sessions preview pv1')
         self.assertIs(self.chat.current_session, old)
-        self.assertIn('2 messages', output)
+        self.assertIn('1 turns', output)
         self.assertIn('web_search', output)
 
     def test_session_preview_not_found(self):
@@ -672,7 +670,7 @@ class TestReadlineCompleter(unittest.TestCase):
     def _make_sessions(self, *names):
         for n in names:
             s = self.chat.sessions.create(n)
-            s.add_message('user', 'x')
+            s.add_user('x')
             self.chat.sessions.save(s)
 
     def test_session_load_completes_names(self):

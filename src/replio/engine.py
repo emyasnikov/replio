@@ -9,6 +9,7 @@ from typing import Callable
 from .config import Config
 from .runs import Run, RunRegistry
 from .sessions.manager import SessionManager
+from .sessions import turns
 from .commands.registry import CommandRegistry
 from .commands.builtins import register_builtins
 from .plugins.manager import PluginManager
@@ -426,7 +427,7 @@ class Engine:
         return probe._fetch_models()
 
     def session_auto_save(self):
-        if self.current_session and self.current_session.messages:
+        if self.current_session and self.current_session.turns:
             self.sessions.save(
                 self.current_session,
                 tool_max_chars=self.config.get('session_tool_max_chars', 0),
@@ -606,7 +607,7 @@ class Engine:
         for res in results:
             session = self.sessions.read(res.session) if res.session else None
             if session is not None:
-                messages += list(session.messages)
+                messages += turns.provider_messages(session.turns)
         if not messages:
             return ''
         try:
@@ -824,14 +825,22 @@ class Engine:
             errors=errors,
         )
 
+    def _turn_meta(self) -> dict:
+        return {
+            'model': self.config.get('model'),
+            'provider': self.config.get('provider'),
+            'mode': self.config.get('mode'),
+            'reasoning': self.config.get('reasoning'),
+        }
+
     def chat(self, text: str, autoname: bool = True) -> TurnResult:
         if getattr(self, '_provider_error', None):
             return TurnResult(status='error',
                               errors=[{'code': '', 'message': self._provider_error}],
                               session=self.current_session.name)
         now = datetime.now(timezone.utc)
-        self.current_session.add_message(
-            'user', text, timestamp=now.isoformat(timespec='seconds')
+        self.current_session.add_user(
+            text, timestamp=now.isoformat(timespec='seconds'), **self._turn_meta()
         )
         self.session_auto_save()
 
@@ -843,7 +852,7 @@ class Engine:
         if self.config.get('web_search'):
             context = self._perform_search(text, silent=True)
             if context:
-                self.current_session.add_message('system', context)
+                self.current_session.add_system(context)
             else:
                 self.ui.info('(Skipping AI - no search results)')
                 return TurnResult(status='empty', session=self.current_session.name)
@@ -870,8 +879,11 @@ class Engine:
         return self._agent_loop(seed_tool=(name, arguments))
 
     def _auto_name_session(self, content: str):
-        user_msgs = [m for m in self.current_session.messages if m['role'] == 'user']
-        if len(user_msgs) != 1:
+        user_turns = [
+            t for t in self.current_session.turns
+            if any(p.get('type') == 'user' for p in t.get('parts') or [])
+        ]
+        if len(user_turns) != 1:
             return
         ts = self.current_session.name
         base = f'ses_{ts}'
@@ -892,6 +904,8 @@ class Engine:
 
     def _agent_loop(self, seed_tool: tuple[str, dict] | None = None) -> TurnResult:
         self._pending_handoff = None
+        if self.current_session.open_turn() is None:
+            self.current_session.start_turn(**self._turn_meta())
         tools_schema = self._init_tooling()
         turn_start = datetime.now(timezone.utc)
         usage = None
@@ -1091,17 +1105,12 @@ class Engine:
             if content or thinking:
                 end = datetime.now(timezone.utc)
                 duration = round((end - turn_start).total_seconds(), 1)
-                self.current_session.add_message(
-                    'assistant', content,
-                    timestamp=end.isoformat(timespec='seconds'),
-                    duration=duration,
-                    model=self.config.get('model'),
-                    provider=self.config.get('provider'),
-                    thinking=thinking or None,
-                    reasoning=self.config.get('reasoning'),
-                    mode=self.config.get('mode'),
-                )
+                stamp = end.isoformat(timespec='seconds')
+                self.current_session.add_thinking(thinking, stamp)
+                if content:
+                    self.current_session.add_text(content, stamp)
                 self.ui.footer(duration, self._usage_counts(usage))
+            self.current_session.end_turn(status)
             self.session_auto_save()
 
         duration = round((datetime.now(timezone.utc) - turn_start).total_seconds(), 1)
@@ -1119,13 +1128,7 @@ class Engine:
         )
 
     def _execute_tool_calls(self, tcs: list[dict], thinking: str = '') -> list[dict]:
-        self.current_session.add_message(
-            'assistant', None,
-            tool_calls=tcs,
-            thinking=thinking or None,
-            reasoning=self.config.get('reasoning'),
-            mode=self.config.get('mode'),
-        )
+        self.current_session.add_thinking(thinking)
         executed: list[dict] = []
         for tc in tcs:
             name = tc['function']['name']
@@ -1140,6 +1143,7 @@ class Engine:
                 args['query'] = self._refine_query(args['query'])
                 if args['query'] != original:
                     self.ui.tool_refine(original, args['query'])
+            part = self.current_session.add_tool(name, args)
             output = self._run_tool(name, args)
             if (self.config.get('tool_status_visible', True)
                     and self._tool_registry.echo_for(name) and output
@@ -1151,12 +1155,8 @@ class Engine:
             if (self.config.get('tool_analysis')
                     and output and not output.startswith(('[cancelled]', 'Error'))):
                 analysis = self._analyze_tool_result(name, output)
-            self.current_session.add_message(
-                'tool', output,
-                tool_call_id=tc['id'],
-                tool=name,
-                analysis=analysis,
-            )
+            turns.finish_tool(part, output, is_error=output.startswith('Error'),
+                              analysis=analysis)
         return executed
 
     def _analyze_tool_result(self, name: str, output: str) -> str | None:
@@ -1340,15 +1340,7 @@ class Engine:
 
     def _provider_messages(self) -> list[dict]:
         from .modes import system_instruction, instructions_file_section
-        msgs = self.current_session.messages
-        boundary = 0
-        summary = None
-        for m in msgs:
-            if m.get('role') == 'command' and m.get('result'):
-                summary = m['result']
-                from_idx = m.get('compact_from')
-                if isinstance(from_idx, int) and from_idx > boundary:
-                    boundary = from_idx
+        summary, boundary = turns.compaction(self.current_session.turns)
         out = []
         if summary:
             out.append({
@@ -1361,23 +1353,10 @@ class Engine:
         instruction = system_instruction(self.config)
         if instruction:
             out.append({'role': 'system', 'content': instruction})
-        declared: set[str] = set()
-        for m in msgs[boundary:]:
-            role = m.get('role')
-            if role == 'command':
+        for turn in self.current_session.turns:
+            if boundary and turn.get('index', 0) < boundary:
                 continue
-            if role == 'assistant':
-                tcs = m.get('tool_calls') or []
-                if tcs:
-                    declared.update(tc.get('id') for tc in tcs if tc.get('id'))
-                    out.append(m)
-                else:
-                    out.append(m)
-            elif role == 'tool':
-                if m.get('tool_call_id') in declared:
-                    out.append(m)
-            else:
-                out.append(m)
+            out.extend(turns.turn_to_provider(turn))
         return out
 
     def _clean_messages(self, msgs: list[dict]) -> list[dict]:
@@ -1434,26 +1413,25 @@ class Engine:
 
     def compact_session(self):
         keep = max(0, int(self.config.get('compact_keep', 4)))
-        msgs = self.current_session.messages
-        if not msgs:
+        base = list(self.current_session.turns)
+        if base and turns.command_only(base[-1]):
+            base = base[:-1]
+        if not base:
             self.ui.info('Nothing to compact')
             return
-        record_idx = len(msgs) - 1 if msgs[-1].get('role') == 'command' else None
-        base = msgs[:record_idx] if record_idx is not None else msgs
         boundary = max(0, len(base) - keep) if keep else 0
         summarize = base[:boundary]
         if not summarize:
             self.ui.info('Nothing to compact')
             return
-        summary = self._summarize(summarize)
+        summary = self._summarize(turns.provider_messages(summarize))
         if summary is None:
             return
-        if record_idx is None:
-            self.current_session.add_message('command', '/compact')
-            record_idx = len(self.current_session.messages) - 1
-        record = self.current_session.messages[record_idx]
-        record['result'] = summary
-        record['compact_from'] = boundary
+        if boundary < len(base):
+            compact_from = base[boundary]['index']
+        else:
+            compact_from = base[-1]['index'] + 1
+        self.current_session.set_compaction(summary, compact_from)
         n, chars = self._context_size()
         self.ui.info(f'Compacted - context now {n} messages ({self._human_chars(chars)})')
         self.ui.info('--- earlier conversation ---')
@@ -1504,17 +1482,18 @@ class Engine:
         if s is None:
             return None
         counts: dict[str, int] = {}
-        for m in s.messages:
-            role = m.get('role', '?')
-            counts[role] = counts.get(role, 0) + 1
-        tools = sorted({tc.get('function', {}).get('name', '?')
-                        for m in s.messages if m.get('tool_calls')
-                        for tc in m['tool_calls']})
-        self.ui.info(f'  {s.name} - {len(s.messages)} messages')
+        tools: set[str] = set()
+        for turn in s.turns:
+            for part in turn.get('parts') or []:
+                kind = part.get('type', '?')
+                counts[kind] = counts.get(kind, 0) + 1
+                if kind == 'tool' and part.get('name'):
+                    tools.add(part['name'])
+        self.ui.info(f'  {s.name} - {len(s.turns)} turns')
         self.ui.info(f'    created {s.created_at} · updated {s.updated_at}')
-        self.ui.info('    roles: ' + ' · '.join(f'{k} {v}' for k, v in counts.items()))
+        self.ui.info('    parts: ' + ' · '.join(f'{k} {v}' for k, v in counts.items()))
         if tools:
-            self.ui.info('    tools: ' + ', '.join(tools))
+            self.ui.info('    tools: ' + ', '.join(sorted(tools)))
         if s.parent_id:
             self.ui.info(f'    parent: {s.parent_id}')
         if s.sub_sessions:

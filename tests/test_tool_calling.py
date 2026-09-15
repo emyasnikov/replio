@@ -24,11 +24,13 @@ class TestToolCalling(unittest.TestCase):
         with patch('sys.stdout', new=io.StringIO()):
             self.chat._agent_loop()
 
-    def _assistant_msgs(self):
-        return [m for m in self.chat.current_session.messages if m['role'] == 'assistant']
+    def _texts(self):
+        return [p['text'] for t in self.chat.current_session.turns
+                for p in t.get('parts') or [] if p['type'] == 'text']
 
     def _tool_msgs(self):
-        return [m for m in self.chat.current_session.messages if m['role'] == 'tool']
+        return [p for t in self.chat.current_session.turns
+                for p in t.get('parts') or [] if p['type'] == 'tool']
 
     def _search_service(self):
         return self.chat._plugin_manager.service('search')
@@ -50,7 +52,7 @@ class TestToolCalling(unittest.TestCase):
         self.chat._show_tool_status.assert_called_once()
         self.chat.session_auto_save.assert_called()
         self.assertEqual(len(self._tool_msgs()), 1)
-        self.assertEqual(self._assistant_msgs()[-1]['content'], 'Final answer.')
+        self.assertEqual(self._texts()[-1], 'Final answer.')
 
     def test_multiple_tool_calls(self):
         tool_calls = [
@@ -71,7 +73,7 @@ class TestToolCalling(unittest.TestCase):
 
         self.assertEqual(self.chat._show_tool_status.call_count, 2)
         self.assertEqual(len(self._tool_msgs()), 2)
-        self.assertEqual(self._assistant_msgs()[-1]['content'], 'Combined answer.')
+        self.assertEqual(self._texts()[-1], 'Combined answer.')
 
     def test_unknown_tool_returns_error(self):
         self.chat.provider.chat.side_effect = [
@@ -85,8 +87,8 @@ class TestToolCalling(unittest.TestCase):
 
         tool_msgs = self._tool_msgs()
         self.assertEqual(len(tool_msgs), 1)
-        self.assertIn('unknown tool', tool_msgs[0]['content'].lower())
-        self.assertEqual(self._assistant_msgs()[-1]['content'], 'Recovered.')
+        self.assertIn('unknown tool', tool_msgs[0]['output'].lower())
+        self.assertEqual(self._texts()[-1], 'Recovered.')
 
     def test_query_refine_on_short_query(self):
         self.chat.config.set('query_refine', True)
@@ -106,7 +108,7 @@ class TestToolCalling(unittest.TestCase):
 
         self.chat._refine_query.assert_called_once_with('ai')
         search_mock.assert_called_once_with('latest AI news')
-        self.assertEqual(self._assistant_msgs()[-1]['content'], 'Done.')
+        self.assertEqual(self._texts()[-1], 'Done.')
 
     def test_shown_thinking_announces_and_streams(self):
         self.chat.config.data['show_thinking'] = True

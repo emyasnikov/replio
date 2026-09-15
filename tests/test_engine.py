@@ -108,8 +108,9 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(result.status, 'ok')
         self.assertEqual(result.provider, 'ollama')
         self.assertEqual(result.session, self.engine.current_session.name)
-        roles = [m['role'] for m in self.engine.current_session.messages]
-        self.assertEqual(roles, ['user', 'assistant'])
+        roles = [p['type'] for t in self.engine.current_session.turns
+                 for p in t.get('parts') or []]
+        self.assertEqual(roles, ['user', 'text'])
         self.assertEqual(result.tool_calls, [])
         self.assertEqual(result.errors, [])
 
@@ -140,10 +141,10 @@ class TestEngine(unittest.TestCase):
             {'type': 'done', 'reason': 'stop'},
         ]
         result = self.engine.chat('q')
-        assistant = [m for m in self.engine.current_session.messages
-                     if m['role'] == 'assistant'][0]
-        self.assertEqual(assistant['thinking'], 'secret reasoning')
-        self.assertEqual(assistant['reasoning'], 'high')
+        thinking = [p for t in self.engine.current_session.turns
+                    for p in t.get('parts') or [] if p['type'] == 'thinking'][0]
+        self.assertEqual(thinking['text'], 'secret reasoning')
+        self.assertEqual(self.engine.current_session.turns[0]['reasoning'], 'high')
 
     def test_reasoning_persisted_when_thinking_hidden_from_display(self):
         self.engine.config.set('show_thinking', False)
@@ -154,10 +155,10 @@ class TestEngine(unittest.TestCase):
             {'type': 'done', 'reason': 'stop'},
         ]
         self.engine.chat('q')
-        assistant = [m for m in self.engine.current_session.messages
-                     if m['role'] == 'assistant'][0]
-        self.assertEqual(assistant['thinking'], 'still logged')
-        self.assertEqual(assistant['reasoning'], 'auto')
+        thinking = [p for t in self.engine.current_session.turns
+                    for p in t.get('parts') or [] if p['type'] == 'thinking'][0]
+        self.assertEqual(thinking['text'], 'still logged')
+        self.assertEqual(self.engine.current_session.turns[0]['reasoning'], 'auto')
 
     def test_error_status_and_errors(self):
         self.engine.provider.chat.return_value = [
@@ -200,7 +201,7 @@ class TestEngine(unittest.TestCase):
         self.assertTrue((self.engine.sessions.sessions_dir / 'foo.json').exists())
         self.engine.load_or_create_session('foo')
         self.assertEqual(self.engine.current_session.name, 'foo')
-        self.assertEqual(len(self.engine.current_session.messages), 2)
+        self.assertEqual(len(self.engine.current_session.turns[0]['parts']), 2)
 
     def test_headless_confirm_policy(self):
         self.engine._init_tooling()
@@ -378,9 +379,10 @@ class TestEngine(unittest.TestCase):
              {'type': 'done', 'reason': 'stop'}],
         ]
         result = self.engine.chat('q')
-        tool_msgs = [m for m in self.engine.current_session.messages if m['role'] == 'tool']
-        self.assertEqual(len(tool_msgs), 1)
-        self.assertTrue(tool_msgs[0]['content'].startswith('[cancelled]'))
+        tool_parts = [p for t in self.engine.current_session.turns
+                      for p in t.get('parts') or [] if p['type'] == 'tool']
+        self.assertEqual(len(tool_parts), 1)
+        self.assertTrue(tool_parts[0]['output'].startswith('[cancelled]'))
         self.assertEqual(result.content, 'Final answer')
         self.assertEqual(result.tool_calls, [{'name': 'run_command', 'arguments': {'command': 'echo hi'}}])
 
@@ -680,9 +682,7 @@ class TestEngineModes(unittest.TestCase):
     def test_mode_recorded_on_assistant_message(self):
         self.engine.config.set('mode', 'plan')
         self.engine.chat('q')
-        assistant = [m for m in self.engine.current_session.messages
-                     if m['role'] == 'assistant'][0]
-        self.assertEqual(assistant['mode'], 'plan')
+        self.assertEqual(self.engine.current_session.turns[0]['mode'], 'plan')
 
     def test_mode_recorded_on_tool_call_message(self):
         self.engine.config.set('mode', 'plan')
@@ -695,9 +695,7 @@ class TestEngineModes(unittest.TestCase):
              {'type': 'done', 'reason': 'stop'}],
         ]
         self.engine.chat('q')
-        assistant = [m for m in self.engine.current_session.messages
-                     if m['role'] == 'assistant' and m.get('tool_calls')][0]
-        self.assertEqual(assistant['mode'], 'plan')
+        self.assertEqual(self.engine.current_session.turns[0]['mode'], 'plan')
 
     def test_plan_mode_run_tool_refuses_write(self):
         self.engine.config.set('mode', 'plan')

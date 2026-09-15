@@ -927,7 +927,7 @@ def register_builtins(registry):
                 print(f'Loaded session: {name} - {n} messages · '
                       f'{chat._human_chars(chars)} context')
                 chat.preview_session(name, session=s)
-                chat.current_session.add_message('command', f'/session load {name}')
+                chat.current_session.add_command(f'/session load {name}')
                 try:
                     answer = input(
                         '  Summarize & trim history before continuing? [y/N] '

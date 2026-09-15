@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import re
+import json
+from datetime import datetime
 
 from .manager import Session
 
@@ -11,110 +12,117 @@ def render_session(session: Session) -> str:
         '',
         f'- Created: {session.created_at}',
         f'- Updated: {session.updated_at}',
-        f'- Messages: {len(session.messages)}',
+        f'- Turns: {len(session.turns)}',
         '',
         '---',
         '',
     ]
-    for msg in session.messages:
-        parts = _render_message(msg)
-        if not parts:
-            continue
-        lines.extend(parts)
-        lines.append('')
+    for turn in session.turns:
+        for part in turn.get('parts') or []:
+            block = _render_part(part, turn)
+            if not block:
+                continue
+            lines.extend(block)
+            lines.append('')
     if session.errors:
         lines.extend(_render_errors(session.errors))
         lines.append('')
     return '\n'.join(lines).rstrip() + '\n'
 
 
-def _render_message(msg: dict) -> list[str]:
-    role = msg.get('role', '?')
-    ts = msg.get('timestamp', '')
-    if role == 'user':
+def _render_part(part: dict, turn: dict) -> list[str]:
+    kind = part.get('type')
+    ts = part.get('timestamp', '')
+    if kind == 'user':
+        return [f'### User - {ts}', '', str(part.get('text') or '')]
+    if kind == 'text':
+        return _render_text(part, turn, ts)
+    if kind == 'thinking':
         return [
-            f'### User - {ts}',
+            f'### Thinking - {ts}',
             '',
-            msg.get('content', ''),
+            *_blockquote(str(part.get('text') or '')),
         ]
-    if role == 'assistant':
-        return _render_assistant(msg, ts)
-    if role == 'tool':
-        return _render_tool(msg, ts)
-    if role == 'command':
-        return _render_command(msg, ts)
-    if role == 'system':
+    if kind == 'tool':
+        return _render_tool(part, ts)
+    if kind == 'command':
+        return _render_command(part, ts)
+    if kind == 'system':
         return [
             f'### System - {ts}',
             '',
-            *_blockquote(str(msg.get('content', ''))),
+            *_blockquote(str(part.get('text') or '')),
         ]
     return []
 
 
-def _render_assistant(msg: dict, ts: str) -> list[str]:
+def _render_text(part: dict, turn: dict, ts: str) -> list[str]:
     lines = [f'### Assistant - {ts}', '']
     meta_parts: list[str] = []
-    model = msg.get('model')
-    provider = msg.get('provider')
+    provider = turn.get('provider')
+    model = turn.get('model')
     if provider or model:
         meta_parts.append(':'.join(p for p in (provider, model) if p))
-    duration = msg.get('duration')
+    duration = _duration(turn)
     if duration is not None:
         meta_parts.append(f'{duration}s')
     if meta_parts:
         lines.append('*' + ' · '.join(meta_parts) + '*')
         lines.append('')
-    thinking = msg.get('thinking')
-    if thinking:
-        lines.append('> _Thinking:_')
-        lines.extend(_blockquote(thinking))
-        lines.append('')
-    content = msg.get('content')
+    content = part.get('text')
     if content:
-        lines.append(content)
-    for tc in msg.get('tool_calls') or []:
-        fn = tc.get('function', {})
-        name = fn.get('name', '?')
-        args = fn.get('arguments', '')
-        lines.extend([
-            '',
-            f'**Tool call: {name}**',
-            '',
-            _fence(args, 'json'),
-        ])
+        lines.append(str(content))
     return lines
 
 
-def _render_tool(msg: dict, ts: str) -> list[str]:
-    name = msg.get('tool', '?')
+def _render_tool(part: dict, ts: str) -> list[str]:
+    name = part.get('name', '?')
     lines = [f'### Tool: {name} - {ts}', '']
-    analysis = msg.get('analysis')
+    if part.get('input') is not None:
+        lines.extend([
+            f'**Tool call: {name}**',
+            '',
+            _fence(json.dumps(part['input']), 'json'),
+            '',
+        ])
+    analysis = part.get('analysis')
     if analysis:
         lines.append(f'> _Analysis: {analysis}_')
         lines.append('')
-    lines.append(_fence(str(msg.get('content') or ''), 'text'))
+    lines.append(_fence(str(part.get('output') or ''), 'text'))
     return lines
 
 
-def _render_command(msg: dict, ts: str) -> list[str]:
+def _render_command(part: dict, ts: str) -> list[str]:
     lines = [f'### Command - {ts}', '']
-    content = msg.get('content')
-    if content:
-        lines.append(f'`{content}`')
-    result = msg.get('result')
-    if result:
+    command = part.get('text')
+    if command:
+        lines.append(f'`{command}`')
+    summary = part.get('summary')
+    if summary:
         lines.extend([
             '',
             'Earlier conversation (summarized):',
             '',
-            *_blockquote(result),
+            *_blockquote(str(summary)),
         ])
-    compact_from = msg.get('compact_from')
+    compact_from = part.get('compact_from')
     if compact_from is not None:
         lines.append('')
-        lines.append(f'Provider context trimmed at message index {compact_from}.')
+        lines.append(f'Provider context trimmed at turn {compact_from}.')
     return lines
+
+
+def _duration(turn: dict) -> float | None:
+    start = turn.get('started_at')
+    end = turn.get('ended_at')
+    if not start or not end:
+        return None
+    try:
+        delta = datetime.fromisoformat(end) - datetime.fromisoformat(start)
+    except ValueError:
+        return None
+    return round(delta.total_seconds(), 1)
 
 
 def _render_errors(errors: list[dict]) -> list[str]:

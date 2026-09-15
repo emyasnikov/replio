@@ -35,6 +35,11 @@ def add_part(turn: dict, part: dict) -> dict:
     return part
 
 
+def command_only(turn: dict) -> bool:
+    parts = turn.get('parts') or []
+    return bool(parts) and all(p.get('type') == 'command' for p in parts)
+
+
 def _part(kind: str, timestamp: str | None = None, **fields) -> dict:
     return {'type': kind, 'timestamp': timestamp or _now(), **fields}
 

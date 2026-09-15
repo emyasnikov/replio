@@ -135,8 +135,7 @@ def inject_answer(store: AskStore, ask: Ask):
     session = manager.read(latest.origin)
     if session is None:
         return False
-    session.add_message(
-        'user',
+    session.add_user(
         f'[answer to parked ask #{latest.id}] {latest.answer}')
     manager.save(session)
     return True

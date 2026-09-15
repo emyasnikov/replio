@@ -6,9 +6,9 @@ Replio is a terminal-based agentic REPL core: the model is the planner, the tool
 
 1. **Agent loop** (`src/replio/engine.py`) - the headless core. Each turn runs a single streaming request. The provider's `chat()` is a generator yielding events the engine reacts to:
    - `thinking` / `token` - streamed to the sink (`UISink`)
-   - `tool_calls` - appends the assistant message, executes each call, appends `tool` results, then continues the loop
+   - `tool_calls` - appends a `tool` part per call (name/input), executes each call, fills in its result, then continues the loop
    - `error` - records and prints, then bails
-   - `done` - persists the assistant message (timestamp/duration/model) and stops
+   - `done` - closes the turn (status, end timestamp) and stops
 
 2. **ToolRegistry** (`src/replio/tools/registry.py`) - the single dispatch point. The model invokes tools via OpenAI function calling, slash commands are thin wrappers calling the same `execute()`. The loop never special-cases tool names - per-tool behavior comes from registration metadata. See [tools.md](tools.md).
 

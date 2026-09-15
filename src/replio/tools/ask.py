@@ -38,10 +38,11 @@ def _park(engine, question: str, context: str, options: list,
 
 
 def _task_preview(engine) -> str:
-    for m in engine.current_session.messages:
-        if m.get('role') == 'user' and m.get('content'):
-            text = str(m['content']).strip().replace('\n', ' ')
-            return text[:500]
+    for turn in engine.current_session.turns:
+        for part in turn.get('parts') or []:
+            if part.get('type') == 'user' and part.get('text'):
+                text = str(part['text']).strip().replace('\n', ' ')
+                return text[:500]
     return ''
 
 

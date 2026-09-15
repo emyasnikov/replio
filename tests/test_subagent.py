@@ -206,9 +206,10 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertTrue(result.session.startswith('sub_'))
         self.assertTrue(result.session.endswith(f'_{self.chat.current_session.name}'))
         data = self._delegate_log('writer')
-        self.assertEqual(data['messages'][0]['role'], 'user')
-        self.assertEqual(data['messages'][-1]['role'], 'assistant')
-        self.assertEqual(data['messages'][-1]['content'], 'Draft ready.')
+        parts = [p for t in data['turns'] for p in t.get('parts') or []]
+        self.assertEqual(parts[0]['type'], 'user')
+        self.assertEqual(parts[-1]['type'], 'text')
+        self.assertEqual(parts[-1]['text'], 'Draft ready.')
         self.assertEqual(data['parent_id'], self.chat.current_session.name)
         self.assertIn(result.session, self.chat.current_session.sub_sessions)
         self.chat.sessions.save(self.chat.current_session)
@@ -231,9 +232,10 @@ class TestSubAgentEngine(unittest.TestCase):
         result = self.chat.run_subagent('defaults', 'run the build')
         self.assertEqual(self.chat.provider.chat.call_count, 2)
         data = self._delegate_log('defaults')
-        tools = [m for m in data['messages'] if m['role'] == 'tool']
+        tools = [p for t in data['turns'] for p in t.get('parts') or []
+                 if p['type'] == 'tool']
         self.assertTrue(tools)
-        self.assertIn('[cancelled]', tools[0]['content'])
+        self.assertIn('[cancelled]', tools[0]['output'])
         self.assertEqual(result.content, 'final')
 
 

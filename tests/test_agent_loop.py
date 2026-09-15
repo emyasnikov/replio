@@ -18,8 +18,12 @@ class TestAgentLoop(unittest.TestCase):
         with patch('sys.stdout', new=io.StringIO()):
             self.chat._agent_loop()
 
-    def _assistant_msgs(self):
-        return [m for m in self.chat.current_session.messages if m['role'] == 'assistant']
+    def _parts(self, kind):
+        return [p for t in self.chat.current_session.turns
+                for p in t.get('parts') or [] if p['type'] == kind]
+
+    def _texts(self):
+        return [p['text'] for p in self._parts('text')]
 
     def test_no_tools_single_round_trip(self):
         self.chat.provider.chat.return_value = [
@@ -28,9 +32,7 @@ class TestAgentLoop(unittest.TestCase):
         ]
         self._run()
         self.chat.provider.chat.assert_called_once()
-        msgs = self._assistant_msgs()
-        self.assertEqual(len(msgs), 1)
-        self.assertEqual(msgs[0]['content'], 'Hello world')
+        self.assertEqual(self._texts(), ['Hello world'])
         self.chat.session_auto_save.assert_called()
 
     def test_thinking_persisted_as_metadata_not_content(self):
@@ -40,17 +42,16 @@ class TestAgentLoop(unittest.TestCase):
             {'type': 'done', 'reason': 'stop'},
         ]
         self._run()
-        msgs = self._assistant_msgs()
-        self.assertEqual(len(msgs), 1)
-        self.assertEqual(msgs[0]['content'], 'Answer')
-        self.assertEqual(msgs[0]['thinking'], 'reasoning...')
+        self.assertEqual(self._texts(), ['Answer'])
+        self.assertEqual([p['text'] for p in self._parts('thinking')],
+                         ['reasoning...'])
 
     def test_error_bails_gracefully_and_is_persisted(self):
         self.chat.provider.chat.return_value = [
             {'type': 'error', 'code': 401, 'message': 'Unauthorized'},
         ]
         self._run()
-        self.assertEqual(self._assistant_msgs(), [])
+        self.assertEqual(self._texts(), [])
         self.chat.session_auto_save.assert_called()
         errors = self.chat.current_session.errors
         self.assertEqual(len(errors), 1)
@@ -62,7 +63,7 @@ class TestAgentLoop(unittest.TestCase):
         out = io.StringIO()
         with patch('sys.stdout', new=out):
             self.chat._agent_loop()
-        self.assertEqual(self._assistant_msgs(), [])
+        self.assertEqual(self._texts(), [])
         self.chat.session_auto_save.assert_called()
         errors = self.chat.current_session.errors
         self.assertEqual(len(errors), 1)
@@ -81,7 +82,7 @@ class TestAgentLoop(unittest.TestCase):
         self._run()
         self.assertEqual(self.chat.provider.chat.call_count, 2)
         self.assertEqual(self.chat.current_session.errors, [])
-        self.assertEqual(self._assistant_msgs()[0]['content'], 'Recovered answer')
+        self.assertEqual(self._texts()[0], 'Recovered answer')
 
     def test_empty_stream_retried_twice_then_succeeds(self):
         self.chat.provider.chat.side_effect = [
@@ -95,7 +96,7 @@ class TestAgentLoop(unittest.TestCase):
         self._run()
         self.assertEqual(self.chat.provider.chat.call_count, 3)
         self.assertEqual(self.chat.current_session.errors, [])
-        self.assertEqual(self._assistant_msgs()[0]['content'], 'Recovered answer')
+        self.assertEqual(self._texts()[0], 'Recovered answer')
 
     def test_failed_follow_up_stream_hints_recovery(self):
         target = self.chat.config.local_path.parent.parent / 'a.txt'
@@ -118,7 +119,7 @@ class TestAgentLoop(unittest.TestCase):
         self.assertIn('Stream ended before a completion event', errors[0]['message'])
         self.assertIn('tool results are saved', out.getvalue())
         self.assertIn('retrying', out.getvalue())
-        tool_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'tool']
+        tool_msgs = self._parts('tool')
         self.assertEqual(len(tool_msgs), 1)
 
     def test_token_stream_then_eof_persists_content_and_logs_error(self):
@@ -126,7 +127,7 @@ class TestAgentLoop(unittest.TestCase):
             {'type': 'token', 'content': 'Partial answer'},
         ]
         self._run()
-        self.assertEqual(self._assistant_msgs()[0]['content'], 'Partial answer')
+        self.assertEqual(self._texts()[0], 'Partial answer')
         errors = self.chat.current_session.errors
         self.assertEqual(len(errors), 1)
         self.assertIn('Stream ended before a completion event', errors[0]['message'])
@@ -136,7 +137,7 @@ class TestAgentLoop(unittest.TestCase):
             {'type': 'done', 'reason': 'stop'},
         ]
         self._run()
-        self.assertEqual(self._assistant_msgs(), [])
+        self.assertEqual(self._texts(), [])
         self.assertEqual(self.chat.provider.chat.call_count, 3)
         errors = self.chat.current_session.errors
         self.assertEqual(len(errors), 1)
@@ -151,7 +152,7 @@ class TestAgentLoop(unittest.TestCase):
         self._run()
         self.assertEqual(self.chat.provider.chat.call_count, 2)
         self.assertEqual(self.chat.current_session.errors, [])
-        self.assertEqual(self._assistant_msgs()[0]['content'], 'Back on track')
+        self.assertEqual(self._texts()[0], 'Back on track')
 
     def test_mid_stream_exception_is_caught_and_logged(self):
         def _raising():
@@ -160,7 +161,7 @@ class TestAgentLoop(unittest.TestCase):
 
         self.chat.provider.chat.return_value = _raising()
         self._run()
-        self.assertEqual(self._assistant_msgs()[0]['content'], 'Partial')
+        self.assertEqual(self._texts()[0], 'Partial')
         errors = self.chat.current_session.errors
         self.assertEqual(len(errors), 1)
         self.assertIn('Agent loop failed: boom', errors[0]['message'])
@@ -196,7 +197,7 @@ class TestAgentLoop(unittest.TestCase):
             result = self.chat._agent_loop()
         self.assertEqual(result.status, 'cancelled')
         self.assertEqual(result.errors, [])
-        tool_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'tool']
+        tool_msgs = self._parts('tool')
         self.assertEqual(len(tool_msgs), 1)
 
     def test_unknown_tool_result_lists_available_tools(self):
@@ -211,10 +212,10 @@ class TestAgentLoop(unittest.TestCase):
         with patch('sys.stdout', new=out):
             result = self.chat._agent_loop()
         self.assertEqual(result.status, 'ok')
-        tool_msgs = [m for m in self.chat.current_session.messages if m['role'] == 'tool']
+        tool_msgs = self._parts('tool')
         self.assertEqual(len(tool_msgs), 1)
-        self.assertIn('Error: unknown tool "browse"', tool_msgs[0]['content'])
-        self.assertIn('web_search', tool_msgs[0]['content'])
+        self.assertIn('Error: unknown tool "browse"', tool_msgs[0]['output'])
+        self.assertIn('web_search', tool_msgs[0]['output'])
 
     def test_length_finish_logs_truncation_error(self):
         self.chat.config.set('max_tokens', 500)
@@ -227,7 +228,7 @@ class TestAgentLoop(unittest.TestCase):
         errors = self.chat.current_session.errors
         self.assertEqual(len(errors), 1)
         self.assertIn('max_tokens limit reached (500)', errors[0]['message'])
-        self.assertEqual(self._assistant_msgs()[0]['content'], 'Part of an answer')
+        self.assertEqual(self._texts()[0], 'Part of an answer')
 
     def test_length_finish_unset_limit_mentions_provider_default(self):
         self.chat.config.set('max_tokens', 0)
@@ -256,9 +257,7 @@ class TestAgentLoop(unittest.TestCase):
         self._run()
         self.assertEqual(self.chat.provider.chat.call_count, 3)
         self.assertEqual(self.chat.current_session.errors, [])
-        msgs = self._assistant_msgs()
-        self.assertEqual(len(msgs), 1)
-        self.assertEqual(msgs[0]['content'], 'Part 1 Part 2 End')
+        self.assertEqual(self._texts(), ['Part 1 Part 2 End'])
         continuation = self.chat.provider.chat.call_args_list[1].args[0][-1]
         self.assertEqual(continuation['role'], 'user')
         self.assertIn('Continue exactly where you stopped.',
@@ -280,7 +279,7 @@ class TestAgentLoop(unittest.TestCase):
         errors = self.chat.current_session.errors
         self.assertEqual(len(errors), 1)
         self.assertIn('truncated', errors[0]['message'])
-        self.assertEqual(self._assistant_msgs()[0]['content'], 'AB')
+        self.assertEqual(self._texts()[0], 'AB')
 
     def test_reasoning_only_turn_is_not_flagged_empty(self):
         self.chat.provider.chat.return_value = [
@@ -289,10 +288,9 @@ class TestAgentLoop(unittest.TestCase):
         ]
         self._run()
         self.assertEqual(self.chat.current_session.errors, [])
-        msgs = self._assistant_msgs()
-        self.assertEqual(len(msgs), 1)
-        self.assertEqual(msgs[0]['content'], '')
-        self.assertEqual(msgs[0]['thinking'], 'reasoned but did not answer')
+        self.assertEqual(self._texts(), [])
+        self.assertEqual([p['text'] for p in self._parts('thinking')],
+                         ['reasoned but did not answer'])
 
     def test_context_size_printed_after_response(self):
         self.chat.provider.chat.return_value = [

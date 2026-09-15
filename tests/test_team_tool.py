@@ -174,10 +174,10 @@ class TestTeamTool(unittest.TestCase):
         with patch('sys.stdout', new=io.StringIO()):
             self.chat._agent_loop()
         self.assertEqual(self.chat.provider.chat.call_count, 3)
-        tools = [m for m in self.chat.current_session.messages
-                 if m['role'] == 'tool']
+        tools = [p for t in self.chat.current_session.turns
+                 for p in t.get('parts') or [] if p['type'] == 'tool']
         self.assertTrue(tools)
-        self.assertIn('[team doc] Stage output.', tools[0]['content'])
+        self.assertIn('[team doc] Stage output.', tools[0]['output'])
 
 
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ The `delegate` tool runs a task under an agent type as an in-process sub-agent. 
 
 ## Modes
 
-Modes ([config.md](config.md)) are named postures combining an instruction block with tool-policy overrides. The built-in `plan` mode is read-only: it denies the `edit` and `bash` categories, so write and exec tools are filtered from the provider schema and refused on direct calls, and its system prompt instructs the model to investigate and propose rather than modify. Custom modes can express stronger postures (e.g. deny `mcp` as well) per deployment. The active mode is recorded on each assistant message in the session log, so the posture in effect for every turn is auditable. Mode switches are recorded as `command` messages.
+Modes ([config.md](config.md)) are named postures combining an instruction block with tool-policy overrides. The built-in `plan` mode is read-only: it denies the `edit` and `bash` categories, so write and exec tools are filtered from the provider schema and refused on direct calls, and its system prompt instructs the model to investigate and propose rather than modify. Custom modes can express stronger postures (e.g. deny `mcp` as well) per deployment. The active mode is recorded on each turn in the session log, so the posture in effect for every turn is auditable. Mode switches are recorded as `command` parts.
 
 ## Config-driven surface
 

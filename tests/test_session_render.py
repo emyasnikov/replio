@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from replio.sessions import turns
 from replio.sessions.manager import Session
 from replio.sessions.render import render_session
 from tests.helpers import make_chat
@@ -13,14 +14,24 @@ class TestRenderSession(unittest.TestCase):
     def _session(self):
         return Session('test_session')
 
+    def _exchange(self, s, user='Hello there', answer='Hi!', model='llama3.2',
+                  provider='ollama', duration=None):
+        s.add_user(user, model=model, provider=provider)
+        s.add_text(answer)
+        turn = s.turns[-1]
+        if duration is not None:
+            turn['started_at'] = '2026-01-01T00:00:00+00:00'
+            turn['ended_at'] = f'2026-01-01T00:00:0{duration}+00:00'
+        else:
+            s.end_turn('ok')
+        return turn
+
     def test_renders_header_and_user_assistant(self):
         s = self._session()
-        s.add_message('user', 'Hello there')
-        s.add_message('assistant', 'Hi!', model='llama3.2', provider='ollama',
-                      duration=1.5)
+        self._exchange(s, 'Hello there', 'Hi!', duration=1.5)
         md = render_session(s)
         self.assertIn('# Session: test_session', md)
-        self.assertIn('- Messages: 2', md)
+        self.assertIn('- Turns: 1', md)
         self.assertIn('### User - ', md)
         self.assertIn('Hello there', md)
         self.assertIn('### Assistant - ', md)
@@ -29,21 +40,21 @@ class TestRenderSession(unittest.TestCase):
 
     def test_renders_thinking(self):
         s = self._session()
-        s.add_message('user', 'q')
-        s.add_message('assistant', 'answer', thinking='First line\nSecond line')
+        s.add_user('q')
+        s.add_thinking('First line\nSecond line')
+        s.add_text('answer')
+        s.end_turn('ok')
         md = render_session(s)
-        self.assertIn('> _Thinking:_', md)
+        self.assertIn('### Thinking - ', md)
         self.assertIn('> First line', md)
         self.assertIn('> Second line', md)
 
     def test_renders_tool_call_and_result(self):
         s = self._session()
-        s.add_message('user', 'search for x')
-        s.add_message('assistant', None, tool_calls=[{
-            'id': 'c1', 'type': 'function',
-            'function': {'name': 'web_search', 'arguments': '{"query": "x"}'},
-        }])
-        s.add_message('tool', 'Results here', tool_call_id='c1', tool='web_search')
+        s.add_user('search for x')
+        part = s.add_tool('web_search', {'query': 'x'})
+        turns.finish_tool(part, 'Results here')
+        s.end_turn('ok')
         md = render_session(s)
         self.assertIn('**Tool call: web_search**', md)
         self.assertIn('{"query": "x"}', md)
@@ -52,38 +63,39 @@ class TestRenderSession(unittest.TestCase):
 
     def test_renders_tool_analysis(self):
         s = self._session()
-        s.add_message('user', 'q')
-        s.add_message('assistant', None, tool_calls=[{
-            'id': 'c1', 'type': 'function',
-            'function': {'name': 'web_search', 'arguments': '{}'},
-        }])
-        s.add_message('tool', 'results', tool_call_id='c1', tool='web_search',
-                      analysis='Found the answer')
+        s.add_user('q')
+        part = s.add_tool('web_search', {})
+        turns.finish_tool(part, 'results', analysis='Found the answer')
+        s.end_turn('ok')
         md = render_session(s)
         self.assertIn('> _Analysis: Found the answer_', md)
 
     def test_renders_command_and_compaction(self):
         s = self._session()
-        s.add_message('user', 'q')
-        s.add_message('command', '/compact', result='THE SUMMARY', compact_from=2)
+        s.add_user('q')
+        s.end_turn('ok')
+        s.add_command('/compact', summary='THE SUMMARY', compact_from=2)
         md = render_session(s)
         self.assertIn('### Command - ', md)
         self.assertIn('`/compact`', md)
         self.assertIn('Earlier conversation (summarized):', md)
         self.assertIn('> THE SUMMARY', md)
-        self.assertIn('trimmed at message index 2', md)
+        self.assertIn('trimmed at turn 2', md)
 
     def test_renders_system_note(self):
         s = self._session()
-        s.add_message('system', 'web_search context')
-        s.add_message('user', 'q')
+        s.add_system('web_search context')
+        s.end_turn('ok')
+        s.add_user('q')
+        s.end_turn('ok')
         md = render_session(s)
         self.assertIn('### System - ', md)
         self.assertIn('> web_search context', md)
 
     def test_renders_errors_section(self):
         s = self._session()
-        s.add_message('user', 'q')
+        s.add_user('q')
+        s.end_turn('ok')
         s.add_error(401, 'Unauthorized')
         s.add_error(0, 'network down')
         md = render_session(s)
@@ -94,24 +106,23 @@ class TestRenderSession(unittest.TestCase):
     def test_renders_empty_session_header(self):
         md = render_session(self._session())
         self.assertIn('# Session: test_session', md)
-        self.assertIn('- Messages: 0', md)
+        self.assertIn('- Turns: 0', md)
 
     def test_fence_grows_past_backticks_in_content(self):
         s = self._session()
-        s.add_message('user', 'q')
-        s.add_message('tool', 'has ``` code\nand ````` five', tool_call_id='c1',
-                      tool='web_search')
+        s.add_user('q')
+        part = s.add_tool('web_search', {})
+        turns.finish_tool(part, 'has ``` code\nand ````` five')
+        s.end_turn('ok')
         md = render_session(s)
         self.assertIn('``````text\nhas ``` code\nand ````` five\n``````', md)
 
     def test_renders_persisted_noise_transform(self):
         s = self._session()
-        s.add_message('user', 'q')
-        s.add_message('assistant', None, tool_calls=[{
-            'id': 'c1', 'type': 'function',
-            'function': {'name': 'fetch_page', 'arguments': '{"url": "x"}'},
-        }])
-        s.add_message('tool', 'page body', tool_call_id='c1', tool='fetch_page')
+        s.add_user('q')
+        part = s.add_tool('fetch_page', {'url': 'x'})
+        turns.finish_tool(part, 'page body')
+        s.end_turn('ok')
         data = s.to_dict(noise_tools=['fetch_page'])
         restored = Session.from_dict(data)
         md = render_session(restored)
@@ -128,8 +139,9 @@ class TestExportCommand(unittest.TestCase):
 
     def _make_session(self, name='alpha'):
         s = self.chat.sessions.create(name)
-        s.add_message('user', 'hello')
-        s.add_message('assistant', 'hi there')
+        s.add_user('hello')
+        s.add_text('hi there')
+        s.end_turn('ok')
         self.chat.sessions.save(s)
         return s
 
@@ -185,12 +197,9 @@ class TestExportCommand(unittest.TestCase):
 
     def test_export_carries_full_log(self):
         s = self._make_session('alpha')
-        s.add_message('user', 'q')
-        s.add_message('assistant', None, tool_calls=[{
-            'id': 'c1', 'type': 'function',
-            'function': {'name': 'web_search', 'arguments': '{"query": "x"}'},
-        }])
-        s.add_message('tool', 'results', tool_call_id='c1', tool='web_search')
+        part = s.add_tool('web_search', {'query': 'x'})
+        turns.finish_tool(part, 'results')
+        s.end_turn('ok')
         s.add_error(0, 'boom')
         self.chat.sessions.save(s)
         path = self._export_dir() / 'alpha.md'

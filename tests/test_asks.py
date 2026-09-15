@@ -78,7 +78,8 @@ class TestAskStore(unittest.TestCase):
         ask = store.add('which port?', 'ses_1')
         self.assertTrue(inject_answer(store, ask))
         session = manager.read('ses_1')
-        contents = [m['content'] for m in session.messages if m['role'] == 'user']
+        contents = [p['text'] for t in session.turns
+                    for p in t.get('parts') or [] if p['type'] == 'user']
         self.assertTrue(any('[answer to parked ask #1]' in c for c in contents))
         self.assertTrue(any('which port?' not in c for c in contents))
 
@@ -248,7 +249,8 @@ class TestAsksCommand(unittest.TestCase):
         ask = self.chat.asks.find(1)
         self.assertEqual(ask.status, 'answered')
         self.assertEqual(ask.answer, 'use 8080')
-        contents = [m.get('content', '') for m in self.chat.current_session.messages]
+        contents = [p.get('text', '') for t in self.chat.current_session.turns
+                    for p in t.get('parts') or [] if p['type'] == 'user']
         self.assertTrue(any('[answer to parked ask #1]' in c for c in contents))
 
     def test_unknown_id(self):

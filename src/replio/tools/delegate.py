@@ -44,27 +44,26 @@ def _summarize_session(engine, result) -> str:
     session = engine.sessions.read(result.session) if result.session else None
     if session is None:
         return ''
-    tools = [m for m in session.messages if m.get('tool_calls')]
-    turns = sum(1 for t in tools for _ in (t.get('tool_calls') or []))
+    tool_parts = [p for t in session.turns for p in t.get('parts') or []
+                  if p.get('type') == 'tool']
     files: list[str] = []
     last_command = ''
-    for m in session.messages:
-        if m.get('role') != 'tool':
-            continue
-        text = (m.get('content') or '').strip()
+    for part in tool_parts:
+        text = (part.get('output') or '').strip()
         if not text:
             continue
-        if m.get('tool') in ('file_write', 'write_file', 'write'):
+        name = part.get('name')
+        if name in ('file_write', 'write_file', 'write'):
             head = text.splitlines()[0]
             for prefix in _WRITE_PREFIXES:
                 if head.startswith(prefix):
                     files.append(head[len(prefix):].split(' (')[0])
                     break
-        elif m.get('tool') in ('bash', 'run_command', 'exec'):
+        elif name in ('bash', 'run_command', 'exec'):
             last_command = text.splitlines()[0][:80]
     parts = []
-    if turns:
-        parts.append(f'{turns} tool calls')
+    if tool_parts:
+        parts.append(f'{len(tool_parts)} tool calls')
     if files:
         shown = ', '.join(files[:5])
         more = f' (+{len(files) - 5} more)' if len(files) > 5 else ''

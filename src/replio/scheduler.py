@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .config import Config
 from .engine import Engine, TurnResult
+from .sessions import turns
 from .jobs import (Job, JobRun, JobRegistry, compute_next_run, job_session_name,
                    parked_asks_for_run, parse_dt, read_memory,
                    system_prompt_for, write_memory)
@@ -255,7 +256,7 @@ class JobScheduler:
                     messages.append(
                         {'role': 'system',
                          'content': f'Previous run memory:\n{prior}'})
-                messages += list(engine.current_session.messages)
+                messages += turns.provider_messages(engine.current_session.turns)
                 summary = engine._summarize(messages)
                 if summary:
                     summary = str(summary).strip()

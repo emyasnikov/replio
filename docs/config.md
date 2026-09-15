@@ -46,7 +46,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 | `auto_continue_max`         | `2`                    | Max continuation rounds per turn before reporting truncation     |
 | `base_url`                  | `"https://api.ollama.com"` | Provider endpoint                                                  |
 | `clear_screen`              | `true`                 | Clear the screen before the REPL banner                                |
-| `compact_keep`              | `4`                    | Messages to keep when compacting the provider context                  |
+| `compact_keep`              | `4`                    | Turns to keep when compacting the provider context                     |
 | `confirm_timeout`           | `0`                    | Seconds a REPL confirm/ask prompt waits for input before auto-denying (`0` = wait forever). Applies at any depth, so an unattended-but-watched run still cannot freeze on a prompt. See [Unattended mode](#unattended-mode) |
 | `connect_check`             | `true`                 | Test the provider connection on config changes: `/connect` probes before saving (broken values rejected unless confirmed), `/provider` warns on a failed probe. `false` skips all probes |
 | `delegate_echo`             | `true`                 | When `delegate` runs, show the sub-agent's final answer and a sub footer (duration + completion tokens) in the REPL. Off hides the result. The footer shows only when on, alongside the sub-agent's own output |
@@ -113,7 +113,7 @@ Modes are named postures combining an instruction block with tool-policy overrid
 }
 ```
 
-Each mode may define `system_prompt` (instructions), `tool_permission` (category actions merged over the base, mode wins per key), `tools.deny` (appended to the base deny list), and `tools.allow` (replaces the base allowlist when non-empty). An unknown `mode` falls back to `build`. Switch live with `/mode <name>` or `--mode <name>` on `replio run` / `replio serve`. The mode instruction and `system_prompt` are injected as a system message for every front-end, and the active mode is recorded on each assistant message in the session log.
+Each mode may define `system_prompt` (instructions), `tool_permission` (category actions merged over the base, mode wins per key), `tools.deny` (appended to the base deny list), and `tools.allow` (replaces the base allowlist when non-empty). An unknown `mode` falls back to `build`. Switch live with `/mode <name>` or `--mode <name>` on `replio run` / `replio serve`. The mode instruction and `system_prompt` are injected as a system message for every front-end, and the active mode is recorded on each turn in the session log.
 
 ### `tool_permission`
 

@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from replio.config import Config
 from replio.engine import TurnResult
+from replio.sessions import turns as session_turns
 from replio.jobs import (Job, JobRun, JobRegistry, compute_next_run, ensure_task_file,
                          next_run, parse_cron_field, parse_dt, read_memory,
                          render_list, render_show, render_status, describe_schedule,
@@ -18,6 +19,12 @@ from replio.scheduler import JobScheduler
 
 TZ = timezone.utc
 BASE = datetime(2026, 8, 26, 10, 0, tzinfo=TZ)
+
+
+def _turn(text):
+    turn = session_turns.new_turn(1)
+    session_turns.add_part(turn, session_turns.user_part(text))
+    return turn
 
 
 def _iso(dt):
@@ -564,7 +571,7 @@ class TestScheduler(unittest.TestCase):
         eng = ScriptedEngine([
             TurnResult(status='ok', content='raw output', duration=0.2,
                        session='job.sd')])
-        eng.current_session.messages = [{'role': 'user', 'content': 'run one'}]
+        eng.current_session.turns = [_turn('run one')]
         eng.seen = None
 
         def _summarize(msgs):
@@ -581,7 +588,7 @@ class TestScheduler(unittest.TestCase):
         eng = ScriptedEngine([
             TurnResult(status='ok', content='run two', duration=0.2,
                        session='job.seed')])
-        eng.current_session.messages = [{'role': 'user', 'content': 'run two'}]
+        eng.current_session.turns = [_turn('run two')]
         eng.seen = None
 
         def _summarize(msgs):

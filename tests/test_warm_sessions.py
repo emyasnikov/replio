@@ -46,8 +46,8 @@ class TestWarmSessions(unittest.TestCase):
                                     session_key='warm-writer')
         self.assertEqual(r1.session, 'sub_warm-writer')
         self.assertEqual(r2.session, 'sub_warm-writer')
-        users = [m['content'] for m in self._session(r1.session)['messages']
-                 if m['role'] == 'user']
+        users = [p['text'] for t in self._session(r1.session)['turns']
+                 for p in t.get('parts') or [] if p['type'] == 'user']
         self.assertEqual(users, ['task one', 'task two'])
 
     def test_default_sessions_are_fresh(self):
@@ -72,8 +72,8 @@ class TestWarmSessions(unittest.TestCase):
         names2 = [s.session for s in res2.stages]
         self.assertEqual(names1, ['sub_doc__researcher', 'sub_doc__writer'])
         self.assertEqual(names1, names2)
-        users = [m['content'] for m in self._session('sub_doc__writer')['messages']
-                 if m['role'] == 'user']
+        users = [p['text'] for t in self._session('sub_doc__writer')['turns']
+                 for p in t.get('parts') or [] if p['type'] == 'user']
         self.assertEqual(len(users), 2)
 
     def test_team_cold_sessions_without_warm(self):

@@ -163,9 +163,9 @@ def run_fixture(fixture: EvalFixture, source: Config | None = None,
         trace = list(result.tool_calls or [])
         names = [t['name'] for t in trace]
         errors = len(result.errors) + sum(
-            1 for m in engine.current_session.messages
-            if m.get('role') == 'tool'
-            and str(m.get('content', '')).startswith('Error'))
+            1 for turn in engine.current_session.turns
+            for part in turn.get('parts') or []
+            if part.get('type') == 'tool' and part.get('is_error'))
         return {
             'id': fixture.id,
             'trace': trace,

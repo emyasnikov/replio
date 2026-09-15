@@ -160,11 +160,11 @@ class TestUnattendedNonBlocking(unittest.TestCase):
             with patch('builtins.input', side_effect=self._no_input):
                 with patch('sys.stdout', new=io.StringIO()):
                     chat._agent_loop()
-            tools = [m for m in chat.current_session.messages
-                     if m['role'] == 'tool']
+            tools = [p for t in chat.current_session.turns
+                     for p in t.get('parts') or [] if p['type'] == 'tool']
             self.assertTrue(tools)
             self.assertIn('[cancelled] User declined the run_command call',
-                          tools[0]['content'])
+                          tools[0]['output'])
             self.assertEqual(chat.provider.chat.call_count, 2)
         finally:
             chat._tmp.cleanup()

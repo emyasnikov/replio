@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from replio.types import AgentType
+from replio.sessions import turns as session_turns
 
 from tests.helpers import make_chat
 
@@ -32,8 +33,8 @@ class TestDelegateTool(unittest.TestCase):
             self.chat._agent_loop()
 
     def _tool_msgs(self):
-        return [m for m in self.chat.current_session.messages
-                if m['role'] == 'tool']
+        return [p for t in self.chat.current_session.turns
+                for p in t.get('parts') or [] if p['type'] == 'tool']
 
     def _allow_delegate(self, name='writer'):
         self.chat.types.put(
@@ -67,7 +68,7 @@ class TestDelegateTool(unittest.TestCase):
         self.assertEqual(self.chat.provider.chat.call_count, 3)
         tools = self._tool_msgs()
         self.assertTrue(tools)
-        self.assertIn('[delegate writer] Draft text.', tools[0]['content'])
+        self.assertIn('[delegate writer] Draft text.', tools[0]['output'])
         self.assertTrue(self._delegate_logs('writer'))
 
     def test_echo_on_prints_result_and_footer(self):
@@ -114,7 +115,7 @@ class TestDelegateTool(unittest.TestCase):
         self.assertEqual(self.chat.provider.chat.call_count, 3)
         self.chat._ui.confirm.assert_not_called()
         self.assertIn('[delegate writer] Draft text.',
-                      self._tool_msgs()[0]['content'])
+                      self._tool_msgs()[0]['output'])
 
     def test_type_ask_requires_confirm(self):
         self.chat.types.put(
@@ -130,7 +131,7 @@ class TestDelegateTool(unittest.TestCase):
         self.assertEqual(self.chat.provider.chat.call_count, 2)
         tools = self._tool_msgs()
         self.assertTrue(tools)
-        self.assertIn('[cancelled]', tools[0]['content'])
+        self.assertIn('[cancelled]', tools[0]['output'])
         self.assertFalse(self._delegate_logs('writer'))
 
     def test_confirm_granted_runs(self):
@@ -148,7 +149,7 @@ class TestDelegateTool(unittest.TestCase):
         self._run()
         self.assertEqual(self.chat.provider.chat.call_count, 3)
         self.assertIn('[delegate writer] Draft text.',
-                      self._tool_msgs()[0]['content'])
+                      self._tool_msgs()[0]['output'])
 
     def test_unknown_type_denied(self):
         self.chat.provider.chat.side_effect = [
@@ -160,7 +161,7 @@ class TestDelegateTool(unittest.TestCase):
         self.assertEqual(self.chat.provider.chat.call_count, 2)
         tools = self._tool_msgs()
         self.assertTrue(tools)
-        self.assertIn('disabled by tool policy', tools[0]['content'])
+        self.assertIn('disabled by tool policy', tools[0]['output'])
         self.assertFalse(self._delegate_logs('ghost'))
 
     def test_tool_command_delegates_single_print(self):
@@ -189,14 +190,16 @@ class TestDelegateTool(unittest.TestCase):
         with patch('sys.stdout', new=io.StringIO()):
             self.chat.registry.dispatch(
                 '/tool delegate {"type": "writer", "task": "write"}')
-        roles = [m['role'] for m in self.chat.current_session.messages]
-        self.assertIn('assistant', roles)
+        roles = [p['type'] for t in self.chat.current_session.turns
+                 for p in t.get('parts') or []]
+        self.assertIn('text', roles)
         self.assertIn('tool', roles)
         self.assertEqual(self.chat.provider.chat.call_count, 2)
-        final = [m for m in self.chat.current_session.messages
-                 if m['role'] == 'assistant' and m.get('content')]
+        final = [p for t in self.chat.current_session.turns
+                 for p in t.get('parts') or []
+                 if p['type'] == 'text' and p.get('text')]
         self.assertTrue(final)
-        self.assertEqual(final[-1]['content'], 'Root summary.')
+        self.assertEqual(final[-1]['text'], 'Root summary.')
 
     def test_forwards_skills_to_subagent(self):
         from types import SimpleNamespace
@@ -233,15 +236,7 @@ class TestDelegateTool(unittest.TestCase):
         from replio.sessions.manager import Session
         from replio.tools.delegate import _format_result
         subname = 'sub_20260825_000000_ses_20260825_000000_parent'
-        sess = Session(subname, messages=[
-            {'role': 'user', 'content': 'build the dungeon'},
-            {'role': 'assistant', 'tool_calls': [{'id': 'c1'}]},
-            {'role': 'tool', 'content': 'Created /tmp/x/main.py (40 lines, 900 chars)',
-             'tool': 'file_write', 'tool_call_id': 'c1'},
-            {'role': 'assistant', 'tool_calls': [{'id': 'c2'}]},
-            {'role': 'tool', 'content': '$ cd /tmp/x && pytest\n1 passed',
-             'tool': 'bash', 'tool_call_id': 'c2'},
-        ])
+        sess = Session(subname, turns_list=[self._summary_turn()])
         self.chat.sessions.save(sess)
         result = SimpleNamespace(status='ok', content='', session=subname,
                                  errors=[], usage=None)
@@ -251,6 +246,17 @@ class TestDelegateTool(unittest.TestCase):
         self.assertIn('wrote:', out)
         self.assertIn('main.py', out)
         self.assertIn('last bash', out)
+
+    def _summary_turn(self):
+        turn = session_turns.new_turn(1)
+        session_turns.add_part(turn, session_turns.user_part('build the dungeon'))
+        p1 = session_turns.add_part(turn, session_turns.tool_part('file_write', {}))
+        session_turns.finish_tool(
+            p1, 'Created /tmp/x/main.py (40 lines, 900 chars)')
+        p2 = session_turns.add_part(turn, session_turns.tool_part('bash', {}))
+        session_turns.finish_tool(p2, '$ cd /tmp/x && pytest\n1 passed')
+        session_turns.finish_turn(turn, 'ok')
+        return turn
 
 
 if __name__ == '__main__':

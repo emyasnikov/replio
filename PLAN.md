@@ -13,7 +13,7 @@ Sourced from the use-case gap (`docs/use-cases/`), competitor parity (`docs/vs/`
 
 ## Assistant roles & team orchestration
 
-The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate > check > correct, and focus follows the call tree of runs. This track resumes after the session turns and history work, ordered by dependency.
+The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate > check > correct, and focus follows the call tree of runs. This track resumes after the session history and reprint work, ordered by dependency.
 
 | Task | Effort | Provides |
 |------|--------|----------|
@@ -23,17 +23,9 @@ The assistant is the operator's entry point. A composer turns a task into a team
 | Role-name sync - adopt assistant, composer, manager, and specialist across types, prompts, and docs | S | one canonical vocabulary |
 | Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO | S | documented direction |
 
-## Session turns
-
-Session logs become turn-structured so history and reprint operate on the units the agent actually ran. This is the current track. The turn shape is the foundation the history surfaces build on, and the assistant-roles work resumes after it. The cutover is one atomic task - the engine writers and every reader must switch together to keep the app runnable.
-
-| Task | Effort | Provides |
-|------|--------|----------|
-| Session turn cutover - `Session` stores turns only behind an explicit turn/part API that replaces `add_message`, the engine opens and closes turns and co-locates each tool call with its result, `_provider_messages` rebuilds tool rounds and the compaction boundary from turns, and the renderer, export, preview, and the secondary readers (`delegate` summary, `ask` preview, run/team memory, eval) migrate. Flat `messages` is removed everywhere. Existing `.replio/sessions/*.json` files are never touched or rewritten and no longer load | L | a turn-shaped log |
-
 ## Session history & reprint
 
-Read back what a run did, including after focus moved away and the terminal no longer shows it. `/history` numbers each turn in a printable index, so `/print <n>` reprints that turn in full - the user prompt, its thinking, every tool call with output, and the answer. Both take `--run <#code|role|session:name>` to read another run without switching focus, and `/print --full` drops the default output cap.
+Session logs are turn-structured, so history and reprint operate on the units the agent actually ran. This is the current track. Read back what a run did, including after focus moved away and the terminal no longer shows it. `/history` numbers each turn in a printable index, so `/print <n>` reprints that turn in full - the user prompt, its thinking, every tool call with output, and the answer. Both take `--run <#code|role|session:name>` to read another run without switching focus, and `/print --full` drops the default output cap.
 
 | Task | Effort | Provides |
 |------|--------|----------|
