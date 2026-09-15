@@ -13,7 +13,7 @@ Sourced from the use-case gap (`docs/use-cases/`), competitor parity (`docs/vs/`
 
 ## Assistant roles & team orchestration
 
-The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate > check > correct, and focus follows the call tree of runs. This is the current track and the top priority, ordered by dependency.
+The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate > check > correct, and focus follows the call tree of runs. This track resumes after the session turns and history work, ordered by dependency.
 
 | Task | Effort | Provides |
 |------|--------|----------|
@@ -23,16 +23,24 @@ The assistant is the operator's entry point. A composer turns a task into a team
 | Role-name sync - adopt assistant, composer, manager, and specialist across types, prompts, and docs | S | one canonical vocabulary |
 | Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO | S | documented direction |
 
-## Session turns & history
+## Session turns
 
-Session logs become turn-structured, so history and reprint work on the units the agent actually ran. This follows the focus work.
+Session logs become turn-structured so history and reprint operate on the units the agent actually ran. This is the current track. The turn shape is the foundation the history surfaces build on, and the assistant-roles work resumes after it. The cutover is one atomic task - the engine writers and every reader must switch together to keep the app runnable - so only the model module splits off cleanly as an independently testable first step.
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Session turn cutover - turn model with typed parts, tool calls and results co-located, flat `messages` removed, legacy logs no longer load | M-L | a turn-shaped session log |
-| `/history` - list the active run's turns with a limit, `all`, `--thoughts`, and a run selector | S-M | read back the run |
-| `/print` - reprint a turn or part in full, capped | S | recover scrolled-away output |
-| Stable short run code - persisted per-session code for ids across restarts | S | durable run handles |
+| Turn model - a `turns.py` module holding the turn/part shape, builders, and the provider-context conversion in isolation, with unit tests. An independent foundation, wired into the session and engine by the cutover | S-M | the turn data model |
+| Session turn cutover - `Session` stores turns only behind an explicit turn/part API that replaces `add_message`, the engine opens and closes turns and co-locates each tool call with its result, `_provider_messages` rebuilds tool rounds and the compaction boundary from turns, and the renderer, export, preview, and the secondary readers (`delegate` summary, `ask` preview, run/team memory, eval) migrate. Flat `messages` is removed everywhere. Existing `.replio/sessions/*.json` files are never touched or rewritten and no longer load | L | a turn-shaped log |
+
+## Session history & reprint
+
+Read back what a run did, including after focus moved away and the terminal no longer shows it. `/history` numbers each turn in a printable index, so `/print <n>` reprints that turn in full - the user prompt, its thinking, every tool call with output, and the answer. Both take `--run <#code|role|session:name>` to read another run without switching focus, and `/print --full` drops the default output cap.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| `/history` - list the active session's turns as a numbered, printable index, with a limit (`n`) or `all`, `--thoughts`, and a run selector | S-M | a printable turn list |
+| `/print` - reprint a listed turn, or one part of it, with prompt, thinking, tool calls and output, and answer, capped by default with `--full` | S | recover a turn in full |
+| Stable run code - a short per-session code (base36 hash of `created_at` + session name, so it does not collide) persisted on the session and shown for the run, so `/focus` and `handoff` can name a run across restarts | S | durable run handles |
 
 ## Control & governance
 
