@@ -29,7 +29,6 @@ Session logs are turn-structured, so history and reprint operate on the units th
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| `/history` - list the active session's turns as a numbered, printable index, with a limit (`n`) or `all`, `--thoughts`, and a run selector | S-M | a printable turn list |
 | `/print` - reprint a listed turn, or one part of it, with prompt, thinking, tool calls and output, and answer, capped by default with `--full` | S | recover a turn in full |
 | Stable run code - a short per-session code (base36 hash of `created_at` + session name, so it does not collide) persisted on the session and shown for the run, so `/focus` and `handoff` can name a run across restarts | S | durable run handles |
 

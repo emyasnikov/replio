@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from replio.sessions import turns
 from replio.sessions.manager import Session
-from replio.sessions.render import render_session
+from replio.sessions.render import render_session, turn_summary
 from tests.helpers import make_chat
 
 
@@ -127,6 +127,73 @@ class TestRenderSession(unittest.TestCase):
         restored = Session.from_dict(data)
         md = render_session(restored)
         self.assertIn('excluded from log', md)
+
+
+class TestTurnSummary(unittest.TestCase):
+
+    def _turn(self, user='hello', status='ok', duration=3.4, tools=None,
+              thinking=None):
+        s = Session('s')
+        s.add_user(user)
+        if thinking:
+            s.add_thinking(thinking)
+        for name, args in (tools or []):
+            part = s.add_tool(name, args)
+            turns.finish_tool(part, 'out')
+        s.add_text('answer')
+        s.end_turn(status)
+        turn = s.turns[-1]
+        if duration is not None:
+            turn['started_at'] = '2026-01-01T00:00:00+00:00'
+            turn['ended_at'] = f'2026-01-01T00:00:0{duration}+00:00'
+        else:
+            turn['started_at'] = ''
+            turn['ended_at'] = ''
+        return turn
+
+    def test_line_format(self):
+        line = turn_summary(self._turn())
+        self.assertEqual(line, '#1  [ok]  3.4s  0 tools  hello')
+
+    def test_tool_count(self):
+        turn = self._turn(tools=[('a', {}), ('b', {})])
+        self.assertIn('2 tools', turn_summary(turn))
+
+    def test_singular_tool(self):
+        turn = self._turn(tools=[('a', {})])
+        self.assertIn('1 tool ', turn_summary(turn))
+
+    def test_running_turn_duration_dash(self):
+        turn = self._turn(status='running', duration=None)
+        self.assertIn('[running]  -  ', turn_summary(turn))
+
+    def test_command_turn(self):
+        s = Session('s')
+        s.add_command('/model x')
+        turn = s.turns[-1]
+        self.assertIn('/model x', turn_summary(turn))
+
+    def test_prompt_first_line(self):
+        turn = self._turn(user='one\ntwo')
+        self.assertIn('one', turn_summary(turn))
+        self.assertNotIn('two', turn_summary(turn))
+
+    def test_thoughts_excerpt(self):
+        turn = self._turn(thinking='short thought\nlonger detail')
+        summary = turn_summary(turn, thoughts=True)
+        self.assertIn('short thought', summary)
+        self.assertNotIn('longer detail', summary)
+        self.assertIn('\033[90m', summary)
+
+    def test_thoughts_all(self):
+        turn = self._turn(thinking='short thought\nlonger detail')
+        summary = turn_summary(turn, thoughts='all')
+        self.assertIn('short thought', summary)
+        self.assertIn('longer detail', summary)
+
+    def test_thoughts_absent_by_default(self):
+        turn = self._turn(thinking='hidden')
+        self.assertNotIn('hidden', turn_summary(turn))
 
 
 class TestExportCommand(unittest.TestCase):

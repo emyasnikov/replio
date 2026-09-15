@@ -36,7 +36,6 @@
 
 ## Open
 
-- [ ] `/history` - list the active run's turns with a limit (`/history 3`), `all`, `--thoughts`, and a run selector
 - [ ] `/print` - reprint a turn or part of it in full, with a cap and `--full`
 - [ ] Stable short run code - a persisted per-session code so run ids survive a restart
 - [ ] Concurrent runs and live focus - run agents in the background, route output to per-run buffers and input to the focused run, stream live status and progress, and support cancellation and thread safety
@@ -107,6 +106,7 @@
 
 ## Done
 
+- [x] `/history` - numbered turn index with `n`/`all`, `--thoughts [all]`, and a `--run` selector
 - [x] Session turn cutover - turn/part storage, co-located tool calls, flat messages removed
 - [x] Session turn model - `turns.py` turn/part shape, builders, and provider conversion
 - [x] `focus_on_delegate` config - off/ask/on to focus the delegated role after the run

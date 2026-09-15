@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from .. import get_version
-from ..sessions.render import render_session
+from ..sessions.render import render_session, turn_summary
 
 SUB_INDENT = 4
 
@@ -148,6 +148,95 @@ def _focus_show(focus, runs):
     print('Log:')
     for run in runs.runs():
         print('  ' + _focus_run_line(run, current_id))
+
+
+def _live_session_for_run(chat, run_id):
+    focus = _focus_manager(chat)
+    engines = focus.engines() if focus is not None else [chat]
+    for engine in engines:
+        run = getattr(engine, 'current_run', None)
+        if run is not None and run.id == run_id:
+            return engine.current_session
+    return None
+
+
+def _target_session(chat, target):
+    target = (target or '').strip()
+    if not target:
+        return None, 'Target not found: (empty)'
+    if target.lower().startswith('session:'):
+        name = target.split(':', 1)[1].strip()
+        session = chat.sessions.read(name)
+        return (session, '') if session is not None else _target_error(target)
+    token = target[1:] if target.startswith('#') else target
+    if token.isdigit():
+        run = chat.runs.get(int(token))
+        if run is None:
+            return _target_error(target)
+        session = _live_session_for_run(chat, run.id) or \
+            chat.sessions.read(run.session)
+        return (session, '') if session is not None else _target_error(target)
+    focus = _focus_manager(chat)
+    if focus is not None and (focus.find(target) is not None
+                              or focus.root.types.find(target) is not None):
+        engine = focus.find(target)
+        if engine is not None:
+            return engine.current_session, ''
+        from ..engine import _agent_session_name
+        session = chat.sessions.read(_agent_session_name(target))
+        return (session, '') if session is not None else _target_error(target)
+    session = chat.sessions.read(target)
+    return (session, '') if session is not None else _target_error(target)
+
+
+def _target_error(target):
+    return None, f'Target not found: {target}'
+
+
+HISTORY_DEFAULT_LIMIT = 10
+HISTORY_USAGE = ('Usage: /history [n|all] [--thoughts [all]] '
+                 '[--run <target>]')
+
+
+def _parse_history(arg):
+    import shlex
+    limit = HISTORY_DEFAULT_LIMIT
+    thoughts: bool | str = False
+    run_target = ''
+    positional: list[str] = []
+    tokens = shlex.split(arg)
+    i = 0
+    while i < len(tokens):
+        tok = tokens[i]
+        if tok == '--thoughts':
+            thoughts = True
+            if i + 1 < len(tokens) and tokens[i + 1] == 'all':
+                thoughts = 'all'
+                i += 2
+                continue
+            i += 1
+        elif tok == '--run':
+            if i + 1 >= len(tokens):
+                return None, None, None, HISTORY_USAGE
+            run_target = tokens[i + 1]
+            i += 2
+        elif tok.startswith('--run='):
+            run_target = tok.split('=', 1)[1]
+            i += 1
+        else:
+            positional.append(tok)
+            i += 1
+    if len(positional) > 1:
+        return None, None, None, HISTORY_USAGE
+    if positional:
+        tok = positional[0]
+        if tok == 'all':
+            limit = 0
+        elif tok.isdigit() and int(tok) > 0:
+            limit = int(tok)
+        else:
+            return None, None, None, f'Unknown argument: {tok}'
+    return limit, thoughts, run_target, ''
 
 
 def _render_known_models(chat):
@@ -1051,6 +1140,28 @@ def register_builtins(registry):
             print(f'Exported session: {name} -> {path}')
         else:
             _render_commands(registry, ['sessions'])
+
+    @registry.register('history',
+                       description='List the session turns as a numbered index '
+                                   '(/history [n|all] [--thoughts [all]] [--run <target>])')
+    def history_cmd(arg=''):
+        limit, thoughts, run_target, error = _parse_history(arg)
+        if error:
+            print(error)
+            return
+        session = chat.current_session
+        if run_target:
+            session, error = _target_session(chat, run_target)
+            if session is None:
+                print(error)
+                return
+        turns = session.turns or []
+        shown = turns if limit == 0 else turns[-limit:]
+        role = f' [{session.role}]' if session.role else ''
+        print(f'{session.name} - {len(turns)} turns{role}')
+        for turn in shown:
+            print(turn_summary(turn, thoughts=thoughts))
+        print('/print <n> reprints a turn')
 
     @registry.register('asks', description='List parked asks and answer them', subcommands=[
         ('list', 'List parked asks (list [all|pending|answered])'),

@@ -5,6 +5,18 @@ from datetime import datetime
 
 from .manager import Session
 
+SUMMARY_PROMPT_CHARS = 80
+THOUGHTS_CHARS = 100
+DIM = '\033[90m'
+RESET = '\033[0m'
+
+
+def turn_summary(turn: dict, thoughts: bool | str = False) -> str:
+    lines = [_turn_line(turn)]
+    if thoughts:
+        lines.extend(_thought_lines(turn, full=(thoughts == 'all')))
+    return '\n'.join(lines)
+
 
 def render_session(session: Session) -> str:
     lines = [
@@ -111,6 +123,63 @@ def _render_command(part: dict, ts: str) -> list[str]:
         lines.append('')
         lines.append(f'Provider context trimmed at turn {compact_from}.')
     return lines
+
+
+def _turn_line(turn: dict) -> str:
+    index = turn.get('index', 0)
+    status = turn.get('status', '')
+    duration = _duration(turn)
+    duration_str = f'{duration}s' if duration is not None else '-'
+    count = _turn_tool_count(turn)
+    tools = f'{count} tool' + ('' if count == 1 else 's')
+    prompt = _clip(_turn_prompt(turn), SUMMARY_PROMPT_CHARS)
+    return f'#{index}  [{status}]  {duration_str}  {tools}  {prompt}'
+
+
+def _turn_prompt(turn: dict) -> str:
+    parts = turn.get('parts') or []
+    for kind in ('user', 'command'):
+        for part in parts:
+            if part.get('type') == kind:
+                text = _first_line(str(part.get('text') or ''))
+                if text:
+                    return text
+    return '(no prompt)'
+
+
+def _turn_tool_count(turn: dict) -> int:
+    return sum(1 for p in (turn.get('parts') or [])
+               if p.get('type') == 'tool')
+
+
+def _thought_lines(turn: dict, full: bool) -> list[str]:
+    lines: list[str] = []
+    for part in turn.get('parts') or []:
+        if part.get('type') != 'thinking':
+            continue
+        text = str(part.get('text') or '')
+        if not text.strip():
+            continue
+        if full:
+            body = text.splitlines()
+        else:
+            body = [_clip(_first_line(text), THOUGHTS_CHARS)]
+        for line in body:
+            lines.append(f'{DIM}    {line}{RESET}')
+    return lines
+
+
+def _first_line(text: str) -> str:
+    for line in text.splitlines():
+        if line.strip():
+            return line.strip()
+    return ''
+
+
+def _clip(text: str, limit: int) -> str:
+    if len(text) <= limit:
+        return text
+    return text[:limit].rstrip() + '...'
 
 
 def _duration(turn: dict) -> float | None:

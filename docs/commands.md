@@ -13,6 +13,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/exit`                 | `/quit`, `/q`  | Save and exit                                                  |
 | `/focus`                |                | Show and switch the focused agent run. No args shows the current run, the run tree, and the call log. Attach by `<id|#id>`, `<role>`, or `session:<name>`, and navigate with `parent`, `child [n]`, `sibling [n]`, `next`, `prev`, or `back`. See [architecture.md](architecture.md#focus) |
 | `/help`                 | `/h`           | Show available commands and tools (`/help <cmd|tool>` for detail) |
+| `/history`              |                | List the active session's turns as a numbered index: `/history [n|all] [--thoughts [all]] [--run <target>]`. Default last 10, `--thoughts` adds a dim thinking excerpt (`all` prints it in full), and `--run` reads another run's session without switching focus. See [session.md](session.md) |
 | `/jobs`                 |                | Manage scheduled and durable jobs: `list`, `status`, `show`, `add`, `add-supervisor`, `approve`, `reject`, `enable`, `disable`, `stop`, `remove`, `run`. See [jobs.md](jobs.md) |
 | `/mode`                 |                | Show or switch the agent mode (`/mode plan` = read-only, `/mode build`, or a custom mode) |
 | `/model`                 |                | Show or switch the active model. `/model <name>` sets it on the current provider. `/model <provider>/<model>` switches provider and model together, approving the model on confirm |
