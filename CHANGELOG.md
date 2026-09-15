@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.33.0
+
+- Session turn model - a new `src/replio/sessions/turns.py` defines the turn/part shape for the session rewrite. A turn holds `index`, `started_at`, `ended_at`, `status`, the turn-level `model`/`provider`/`mode`/`reasoning`, and an ordered `parts` list. Builders cover the six part types (`user`, `text`, `thinking`, `tool`, `command`, `system`), a `tool` part co-locates `name`/`input`/`output`/`is_error`/`analysis`, and `provider_messages` rebuilds the OpenAI-compatible context by grouping a turn's text and consecutive tool parts back into one assistant `tool_calls` message plus its tool results, dropping command parts and applying the compaction summary and turn-index boundary. The module is a standalone foundation, unused until the cutover wires it into `Session` and the engine. Docs synced (`testing.md`). Tests: `tests/test_turns.py`
+
 ## v0.32.0 - 2026-09-15
 
 - `focus_on_delegate` config - `off` (default), `ask`, or `on` moves the REPL focus to the delegated role's engine after a `delegate` call. With `on` the tool records a pending focus that `ChatLoop` applies after the turn, so the caller's answer still finishes and the next input goes to the specialist. With `ask` the operator is prompted first (skipped under unattended mode), and an unrecognized value falls back to `off`. Focus is REPL-only, so a sub-agent that delegates is a no-op, and a focused role engine that delegates follows too. Docs synced (`config.md`, `architecture.md`, `swarm.md`, `testing.md`). Tests: `tests/test_focus_on_delegate.py`

@@ -37,7 +37,6 @@
 ## Open
 
 - [ ] Session turn cutover - rewrite session storage to turns of typed parts with tool calls and results co-located, remove the flat `messages` format, and update the engine, renderer, export, and tests. Existing `.replio/sessions/*.json` files are left as-is and no longer load
-  - Foundation - `turns.py` turn/part model and provider-context conversion, unit-tested before the cutover
   - Turn format - `{turns: [{index, started_at, ended_at, status, parts: [...]}]}` where a part is `user`, `text`, `thinking`, `tool`, `command`, or `system`, and `tool` co-locates `name`/`input`/`output`/`is_error`
   - Touch points - `sessions/manager.py`, `engine.py` persistence and `_provider_messages`, `compact_session`, `preview_session`, `sessions/render.py`, `cli export`, `docs/session.md`
 - [ ] `/history` - list the active run's turns with a limit (`/history 3`), `all`, `--thoughts`, and a run selector
@@ -111,6 +110,7 @@
 
 ## Done
 
+- [x] Session turn model - `turns.py` turn/part shape, builders, and provider conversion
 - [x] `focus_on_delegate` config - off/ask/on to focus the delegated role after the run
 - [x] `handoff` tool - pause or finish a run and hand control to a parent/sibling/child/role/#id
 - [x] `/focus` command - show the run tree/log, attach by id/role/session, navigate runs

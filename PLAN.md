@@ -25,11 +25,10 @@ The assistant is the operator's entry point. A composer turns a task into a team
 
 ## Session turns
 
-Session logs become turn-structured so history and reprint operate on the units the agent actually ran. This is the current track. The turn shape is the foundation the history surfaces build on, and the assistant-roles work resumes after it. The cutover is one atomic task - the engine writers and every reader must switch together to keep the app runnable - so only the model module splits off cleanly as an independently testable first step.
+Session logs become turn-structured so history and reprint operate on the units the agent actually ran. This is the current track. The turn shape is the foundation the history surfaces build on, and the assistant-roles work resumes after it. The cutover is one atomic task - the engine writers and every reader must switch together to keep the app runnable.
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Turn model - a `turns.py` module holding the turn/part shape, builders, and the provider-context conversion in isolation, with unit tests. An independent foundation, wired into the session and engine by the cutover | S-M | the turn data model |
 | Session turn cutover - `Session` stores turns only behind an explicit turn/part API that replaces `add_message`, the engine opens and closes turns and co-locates each tool call with its result, `_provider_messages` rebuilds tool rounds and the compaction boundary from turns, and the renderer, export, preview, and the secondary readers (`delegate` summary, `ask` preview, run/team memory, eval) migrate. Flat `messages` is removed everywhere. Existing `.replio/sessions/*.json` files are never touched or rewritten and no longer load | L | a turn-shaped log |
 
 ## Session history & reprint
