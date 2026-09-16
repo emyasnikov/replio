@@ -1206,7 +1206,10 @@
 </ul>
 <h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] Stable short run code - a persisted per-session code so run ids survive a restart</li>
+<li>[ ] Warm-session naming - decide what a <code>session_key</code> warm delegation session is named (<code>sub_&lt;key&gt;</code> today vs <code>sub_&lt;code(key)&gt;</code>)</li>
+<li>[ ] Role-session naming - decide how <code>agent_&lt;role&gt;</code> role-engine sessions are named</li>
+<li>[ ] Remove <code>--session-id</code> - explicit session naming is no longer needed now that auto sessions are named <code>ses_&lt;ts&gt;_&lt;code&gt;</code></li>
+<li>[ ] Relocate job run sessions under <code>.replio/jobs/&lt;name&gt;/</code> (kept in <code>sessions/</code> for now)</li>
 <li>[ ] Concurrent runs and live focus - run agents in the background, route output to per-run buffers and input to the focused run, stream live status and progress, and support cancellation and thread safety</li>
 <li>Background execution - each run's loop in a worker thread, the parent yields and joins when the sub-run finishes</li>
 <li>Output router - per-run buffers with a <code>[#id role]</code> prefix, the focused run streams, and switching shows only new output</li>
@@ -1275,6 +1278,8 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] Job and delegation names - <code>job_&lt;ts&gt;_&lt;code&gt;</code> and <code>sub_&lt;ts&gt;_&lt;code&gt;</code></li>
+<li>[x] Stable run code - six-char session <code>code</code>, <code>ses_&lt;ts&gt;_&lt;code&gt;</code> names, and <code>#code</code> handles</li>
 <li>[x] <code>/print</code> - reprint a turn (or one part) in full, cap via <code>print_max_chars</code>, <code>--full</code>, <code>--run</code></li>
 <li>[x] <code>/history</code> - numbered turn index with <code>n</code>/<code>all</code>, <code>--thoughts [all]</code>, and a <code>--run</code> selector</li>
 <li>[x] Session turn cutover - turn/part storage, co-located tool calls, flat messages removed</li>

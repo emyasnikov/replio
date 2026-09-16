@@ -372,10 +372,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#session-history-reprint" class="md-nav__link">
+  <a href="#session-naming" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Session history &amp; reprint
+        Session naming
       
     </span>
   </a>
@@ -1317,10 +1317,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#session-history-reprint" class="md-nav__link">
+  <a href="#session-naming" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Session history &amp; reprint
+        Session naming
       
     </span>
   </a>
@@ -1545,8 +1545,8 @@
 </tr>
 </tbody>
 </table>
-<h2 id="session-history-reprint">Session history &amp; reprint<a class="headerlink" href="#session-history-reprint" title="Permanent link">&para;</a></h2>
-<p>Session logs are turn-structured, so history and reprint operate on the units the agent actually ran. This is the current track. Read back what a run did, including after focus moved away and the terminal no longer shows it. <code>/history</code> numbers each turn in a printable index, so <code>/print &lt;n&gt;</code> reprints that turn in full - the user prompt, its thinking, every tool call with output, and the answer. Both take <code>--run &lt;#code|role|session:name&gt;</code> to read another run without switching focus, and <code>/print --full</code> drops the default output cap.</p>
+<h2 id="session-naming">Session naming<a class="headerlink" href="#session-naming" title="Permanent link">&para;</a></h2>
+<p>Interactive, job, and delegation sessions are turn-structured and end in a durable code, so <code>/history</code>, <code>/print</code>, <code>/focus</code>, and <code>handoff</code> can name a run across restarts. The two remaining stable-name kinds - warm <code>session_key</code> delegations and <code>agent_&lt;role&gt;</code> role engines - still carry no code. This package settles their naming.</p>
 <table>
 <thead>
 <tr>
@@ -1557,9 +1557,9 @@
 </thead>
 <tbody>
 <tr>
-<td>Stable run code - a short per-session code (base36 hash of <code>created_at</code> + session name, so it does not collide) persisted on the session and shown for the run, so <code>/focus</code> and <code>handoff</code> can name a run across restarts</td>
+<td>Warm-session and role-session naming - settle how <code>session_key</code> warm sessions and <code>agent_&lt;role&gt;</code> role engines are named, then apply it</td>
 <td>S</td>
-<td>durable run handles</td>
+<td>settled naming policy</td>
 </tr>
 </tbody>
 </table>

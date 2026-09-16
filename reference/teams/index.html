@@ -1340,7 +1340,7 @@
 </ul>
 <p>Plugins contribute teams through the same <code>register_teams</code> entry hook the kit machine (templates, recipes) uses - see <a href="../plugins/">plugins.md</a>.</p>
 <h2 id="running-a-team">Running a team<a class="headerlink" href="#running-a-team" title="Permanent link">&para;</a></h2>
-<p><code>Engine.run_team(team, task)</code> runs the stages one after another through the same in-process sub-engine as <code>delegate</code> (<code>run_subagent</code>): each stage runs in its own fresh <code>sub_&lt;ts&gt;_&lt;parent-session&gt;</code> session by default, with its own type prompt, skills, and permission carve, and the stage <code>mode</code> overrides the caller's when set (an empty <code>mode</code> inherits). A failed stage stops the run and the remaining stages do not execute.</p>
+<p><code>Engine.run_team(team, task)</code> runs the stages one after another through the same in-process sub-engine as <code>delegate</code> (<code>run_subagent</code>): each stage runs in its own fresh <code>sub_&lt;ts&gt;_&lt;code&gt;</code> session by default, with its own type prompt, skills, and permission carve, and the stage <code>mode</code> overrides the caller's when set (an empty <code>mode</code> inherits). A failed stage stops the run and the remaining stages do not execute.</p>
 <p>The brief handed to each member is built per run from:</p>
 <ul>
 <li>the team name (and description) plus the original task,</li>
