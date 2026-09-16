@@ -7,7 +7,28 @@
 - Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style)
 - Non-blocking delegation - the assistant starts sub-agents or whole teams for bigger tasks and reports their status instead of blocking the current run
 - Recurring tasks carry their own role - each job carries its own type and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time
-- Auto-improving skills - a role refines its skills from experience and keeps them alongside its memory, so recurring work gets better without re-prompting
+- Auto-improving skills (autogen/autolearn) - a role refines its skills from experience and keeps them alongside its memory, so recurring work gets better without re-prompting
+- Runtime pluginization - make models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI replaceable plugins, and move the REPL to a plugin. Five replaceable layers: access, orchestration, capability, model, storage
+- One runtime, many agents - position Replio as an agent harness for fleets, not a single assistant
+- ACP inward and outward - speak the Agent Client Protocol so Replio can host and be hosted by other harnesses, alongside MCP
+- Commands as tools - expose slash commands to the model as permission-gated tools to configure types, teams, and skills, with command access limited per permission
+- Markdown catalogue - store types, teams, and skills as Markdown files (front matter) referenced from JSON, and move the bundled data files (`src/replio/*.json`) into one catalogue directory near `src`
+- Hidden files and allowed paths - hide secrets and config from tools by default, and restrict visible paths to allowed roots
+- Context policy - keep user prompts until the task is done, cut unused references and tool results immediately, add a recall tool for role and team memory, enforce a configurable context limit, and offload large tool results to `.replio/tmp/` referenced from the session log
+- Context UI polish - auto-compaction, context trim, highlighting, and context desaturation
+- Research cache - store web and PDF results under `.replio/files` for later reuse, with a PDF-to-text tool
+- Fleet awareness - the supervisor always knows which agents and teams run on a machine, with oversight across multiple machines
+- Open WebUI and OpenTUI connectors - drive Replio from external chat and terminal UIs
+- Tool-call quality enhancer - steer tool calling toward correct, cheaper calls (for example web-search parameters that find the right references) and better results
+- PlantUML plugin - an external plugin that draws configurations and workflows as node diagrams instead of ASCII
+- UI commands - `/clear`, `/new`, `/providers`, `/providers list`, `/thinking [hide|show]`, hide tool errors and show the call in red, and persist error logs
+- Feedback - capture operator feedback on a run or answer and feed it back into memory and skills
+- Inbound webhooks - accept inbound events to start a run or answer a parked ask
+- Plugin management UI - list, enable, disable, install, and update plugins from a UI surface, not only slash commands
+- Model picker - `/models` autocomplete and a direct numeric selection of a model
+- One agent, many heads - the Polyglav positioning variant
+- Centralized static strings - move hardcoded prompts and static strings into one module
+- Code cleanup pass - a dedicated pass over the core for dead code, naming, and rough edges
 - Report-back connectors - job summaries delivered out-of-band (email first, idea only) when the terminal is closed
 - Remove the legacy provider-plugin backfill migration (`Config._migrate_plugins`) once a stable replio release has shipped with the externalized providers - existing `plugins` lists no longer need the automatic append, and the migration code is dead weight
 - Human-in-the-loop channels - job events outbound (`proposed`, `will_run`, `failed`, `waiting_approval`) plus inbound actions (`approve`/`reject`/`run`/`disable`) over configurable connectors (webhook first, then email, then Telegram), so a job can reach an operator who is not on the box
@@ -37,6 +58,10 @@
 
 ## Open
 
+- [ ] Fix the PyPI long-description screenshot - the image fails to load on the package page
+- [ ] Fix opencode permission rejection - the provider stops when a permission is rejected instead of continuing
+- [ ] Exact-args permission grants - approve the specific command (not just the tool), and let an `always` grant live beyond the current sub-agent run
+- [ ] REPL UI colors and prompts - Actions/Asks orange, errored tool calls red, Thinking/Thought blue, output and reasoning dimmed, `[Y/n]` enter-to-continue, and an option to hide input for prompts
 - [ ] Runs, focus, and memory redesign (see PLAN.md `Runs, focus, and memory`):
   - [ ] Run-centric focus - attach to a run's own session and role, remove `agent_<role>`
   - [ ] Run tree navigation - `/focus` tree with `↔ Switch to <role>` lines and jump by run/session
@@ -46,7 +71,7 @@
   - [ ] Memory scopes - automatic and configurable role/team/job memory, plus manual memorize
   - [ ] Non-blocking runs and live focus - background execution, output/input routing, spinner, cancellation
   - [ ] Provider session binding - bind the provider session id to the run's session
-  - [ ] VISION and docs revision
+  - [ ] Sync architecture, swarm, session, and command docs
 - [ ] Remove `--session-id` - explicit session naming is no longer needed now that auto sessions are named `ses_<ts>_<id>`
 - [ ] Relocate job run sessions under `.replio/jobs/<name>/` (kept in `sessions/` for now)
 - [ ] Role-name sync - adopt assistant, composer, manager, and specialist as the canonical roles across types, prompts, and docs

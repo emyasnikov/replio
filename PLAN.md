@@ -2,9 +2,7 @@
 
 Groups the next tasks from `TODO.md` (`## Open`) into work packages, each providing a distinct next-level capability. Packages are ordered top-to-bottom by urgency and importance, vision-first. Re-rank the packages against the backlog before starting each next step (docs-first for the roadmap phases).
 
-Finished tasks are removed from this file - they live as one-liners in `TODO.md` `## Done` and in detail under the matching version in `CHANGELOG.md`. `VISION.md` holds the why (vision, decisions, architecture). This file holds the what. The roles and sync rules of all four planning files are in `AGENTS.md`.
-
-Sourced from the use-case gap (`docs/use-cases/`), competitor parity (`docs/vs/`), or TODO items.
+Finished tasks are removed from this file - they live as one-liners in `TODO.md` `## Done` and in detail under the matching version in `CHANGELOG.md`.
 
 ## Method
 
@@ -33,9 +31,9 @@ Decisions: remove `agent_<role>` and `sub_<key>` (every session is ordinary, own
 | Memory scopes - a bounded memory summary per role, team, and job (automatic and configurable on/off, plus a manual memorize action), injected into briefs and written after runs | M | cheap long-horizon continuity |
 | Non-blocking runs and live focus - background execution, per-run output buffers and input routing, a status spinner, cancellation, and thread safety | L | watch or join a running agent |
 | Provider session binding - bind the provider session id to the run's session | S | cache and context reuse across switches |
-| VISION and docs revision - make run-owned sessions and bounded memory the continuity model in VISION, and sync architecture, swarm, session, and command docs | S | aligned direction |
+| Sync architecture, swarm, session, and command docs - align the behavior docs with run-owned sessions and bounded memory | S | aligned reference docs |
 
-Step order: run-centric focus and removing `agent_<role>`, then run tree navigation, then handoff and `focus_on_delegate`, then continuation and compaction, then memory scopes, then non-blocking runs and live focus, then provider session binding, then the VISION and docs revision.
+Step order: run-centric focus and removing `agent_<role>`, then run tree navigation, then handoff and `focus_on_delegate`, then continuation and compaction, then memory scopes, then non-blocking runs and live focus, then provider session binding, then sync the architecture, swarm, session, and command docs.
 
 ## Assistant roles & team orchestration
 

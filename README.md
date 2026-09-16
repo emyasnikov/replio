@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
 </p>
 
-Replio is a deliberately small, auditable, zero-dependency agentic core. The model plans, the tool registry acts, and a single streaming loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability. All layers share one API and compose: a supervised fleet agent can delegate by type, a job can drive a team.
+An agent is a model plus a harness. Replio is a deliberately small, auditable, zero-dependency agentic core for harness. The model plans, the tool registry acts, and a single streaming loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types, skills, teams, and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability. All layers share one API and compose: a supervised fleet agent can delegate by type, a job can drive a team.
 
 <p align="center"><img src="replio.svg" alt="Replio terminal session"></p>
 
@@ -28,12 +28,13 @@ Replio is a deliberately small, auditable, zero-dependency agentic core. The mod
 - **Permissions** - every tool gated by `allow` / `ask` / `deny`, with path-scoped confirmation outside your worktree and an audit trail in session logs
 - **Modes** - named postures with their own instructions and permissions: `plan` (read-only) vs `build`, or custom modes, switchable live with `/mode` or `--mode`
 - **Sessions** - complete append-only conversation logs capturing every tool call, result, and error, plus `/compact` and Markdown export
+- **Evaluation** - `replio eval` runs task fixtures through the headless agent loop and reports tool-use metrics (call accuracy, redundant calls, errors, tokens)
 - **Plugins** - external repositories register tools, providers, slash commands, services, agent types, teams, skills, and eval fixtures. The core stays zero-dependency. Plugin deps are imported lazily
 
 ### Orchestration
 
-- **Swarm** - make agents cooperate. A type catalog (bundled defaults plus global/local `.replio/types.json`) and the `delegate` tool run a task under an agent type as an in-process sub-agent with its own `sub_*` session log, prompt, model override, and tool permissions. Manage types with `/types` (tag-filterable)
-- **Jobs** - scheduled, durable workflows. Cron / interval / one-shot schedules, retries with exponential backoff, per-run timeouts, linked Markdown task files, a rolling run-memory summary, and human-in-the-loop approvals. Managed by `replio jobs`, `/jobs`, and the `replio jobs daemon`
+- **Swarm** - make agents cooperate. A type catalog (bundled defaults plus global/local `.replio/types.json`), skills, and named teams. The `delegate` tool runs a task under an agent type as an in-process sub-agent with its own `sub_*` session log, prompt, model override, and tool permissions, and the `team` tool runs a named pipeline stage-by-stage with per-stage skills, shared memory, and an optional review loop. The root `assistant`, the `composer` type, and the `/types`, `/teams`, and `/skills` catalogs round it out
+- **Jobs** - scheduled, durable workflows. Cron / interval / one-shot schedules, retries with exponential backoff, per-run timeouts, linked Markdown task files, a rolling run-memory summary, and human-in-the-loop approvals. Managed by `replio jobs`, `/jobs`, and the `replio jobs daemon`, with a `--type` supervisor recipe (`replio jobs add-supervisor`) for unattended overnight runs
 - **Fleet** - run many scoped agents under one supervisor. `replio fleet` allocates conflict-free ports, health-checks every `replio serve` child, restarts failures with a bounded backoff, and generates per-agent configs, with `status`, `logs`, and `restart` for ops, foreground or detached
 - **MCP (Model Context Protocol)** - work alongside other AI tools. Import external MCP servers' tools, or expose Replio's policy-filtered tools and session resources to other agents over `replio mcp` or `POST /mcp`
 
@@ -70,7 +71,7 @@ Connected to ollama (https://api.ollama.com)
 
 ### CLI
 
-Stream plain text with `--output text` or return JSON. Log tool status and diagnostics to stderr with `--verbose`. Address a persistent session with `--session-id <id>`. Tools that require confirmation auto-deny by default. Pass `--yes` to approve them.
+Stream plain text with `--output text` or return JSON. Log tool status and diagnostics to stderr with `--verbose`. Address a persistent session by name with `--session-id <name>`. Tools that require confirmation auto-deny by default. Pass `--yes` to approve them.
 
 ```bash
 replio run --prompt "Hi"
@@ -80,7 +81,7 @@ replio run --prompt "Hi"
   "errors": [],
   "model": "gpt-oss:20b-cloud",
   "provider": "ollama",
-  "session": "ses_20260814_192251_hi",
+  "session": "ses_20260814_192251_ab12cd",
   "status": "ok"
   "thinking": null,
   "tool_calls": [],
@@ -90,25 +91,27 @@ replio run --prompt "Hi"
 
 ### API
 
-`replio serve` exposes JSON endpoints. `POST /chat {"prompt": "..."}` (optionally with `"session_id"`) returns the same turn result as the CLI.
+`replio serve` exposes JSON endpoints. `POST /chat {"prompt": "..."}` (optionally with `"session"` to load or create a session by name) returns the same turn result as the CLI.
 
 ```bash
 replio serve &
 curl localhost:8787/chat -X POST -d '{"prompt": "Hi"}'
-{"content": "Hello! How can I help you today?", "thinking": null, "tool_calls": [], "errors": [], "duration": 7.0, "usage": null, "model": "gpt-oss:20b-cloud", "provider": "ollama", "session": "ses_20260814_192711_hi", "status": "ok"}
+{"content": "Hello! How can I help you today?", "thinking": null, "tool_calls": [], "errors": [], "duration": 7.0, "usage": null, "model": "gpt-oss:20b-cloud", "provider": "ollama", "session": "ses_20260814_192711_ab12cd", "status": "ok"}
 ```
 
-### Swarm - delegation by type
+### Swarm - types, skills, and teams
 
-A lead agent (or you) hands a task to a specialized type. The sub-agent runs in-process, writes its own session log, and returns its final answer. The REPL shows its dimmed activity and a duration footer while it works. Agent types are model- and permission-scoped: a researcher is read-only, a programmer may run shell.
+A lead agent (or you) hands a task to a specialized type, or runs a named team stage-by-stage. Each sub-agent runs in-process, writes its own session log, and returns its final answer. The REPL shows its dimmed activity and a duration footer while it works. Agent types are model- and permission-scoped: a researcher is read-only, a programmer may run shell. A team adds order, per-stage skills, a shared memory file, and an optional review loop.
 
 ```
 >>> /types list
 >>> /tool delegate {"type": "researcher", "task": "Summarize docs/ and cite sources"}
 [delegate researcher] <final answer of the research sub-agent, sources cited>
+>>> /tool team {"name": "writing", "task": "Draft the release notes"}
+[team writing] <final stage answer>
 ```
 
-See [docs/swarm.md](docs/swarm.md) and [docs/types.md](docs/types.md).
+See [docs/swarm.md](docs/swarm.md), [docs/teams.md](docs/teams.md), and [docs/types.md](docs/types.md).
 
 ### Jobs - scheduled durable work
 
@@ -147,7 +150,7 @@ On `replio serve`, the same is available at `POST /mcp`. See [docs/mcp.md](docs/
 
 ## Roadmap
 
-Fleet orchestration, scheduled and durable jobs, and the swarm foundations - bundled types, in-process sub-agents, the `delegate` tool, team pipelines (`/teams run`), and the `ask` tool - are live. Next: the governance track (first-run assistant introduction, one-window status over sessions, running agents, and jobs, agent health monitoring, per-agent todo lists), report-back connectors (webhook/email), the jobs operator API, non-blocking delegation with progress, the interactive `/agent` command, and remote channels. See [docs/swarm.md](docs/swarm.md), [docs/jobs.md](docs/jobs.md), and the open tasks in [TODO.md](TODO.md).
+Fleet orchestration, scheduled and durable jobs, and the swarm foundations - bundled types, in-process sub-agents, the `delegate` and `team` tools, team pipelines, skills, the review loop, the `assistant` root and `composer` roles, and the `ask` tool - are live. Next: the runs, focus, and memory redesign (run-owned sessions, focus that only navigates, handoff between runs, bounded memory per role/team/job, and non-blocking runs with live focus), the governance track (first-run onboarding, one-window status over sessions, running agents, and jobs, agent health monitoring, per-agent todo lists), report-back connectors, the jobs operator API, the interactive `/agent` command, and remote channels. See [docs/swarm.md](docs/swarm.md), [docs/jobs.md](docs/jobs.md), and the open tasks in [TODO.md](TODO.md).
 
 ## Contributing
 
