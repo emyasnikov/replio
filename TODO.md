@@ -49,7 +49,7 @@
 - Command palette / fuzzy search - CTRL-P style history search
 - Topic-aware ranking - classifier for query intent to weight search results
 - Naming / positioning decision - "Replio" collides with commercial SaaS products (`replio.chat`, `repliohq.com`, `replio.eu`), kept for now (PyPI + repo claimed), revisit before any promotion push. Candidate free names: `pypelio`, `replcore`, `replkit`
-- Competitor research - validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products. Comparison notes now live in `docs/vs/` and feed the feature backlog (Plan/Build modes, Web Control UI, plugin marketplace, telemetry, binary builds, sharing)
+- Competitor research - validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products. Comparison notes now live in `docs/compare/` and feed the feature backlog (Plan/Build modes, Web Control UI, plugin marketplace, telemetry, binary builds, sharing)
 - Self-update - `replio update` (Pi `pi update --self` analogue)
 - Standalone binary build - Pi-style release script producing a single executable (contentious for a zero-dep Python package)
 - Opt-in telemetry contracts - vendor-neutral event schema (OpenCode, Pi `@earendil-works/pi-telemetry`). Decide whether it fits the no-telemetry stance
