@@ -1281,7 +1281,7 @@
 <td><strong>Required.</strong> The user message</td>
 </tr>
 <tr>
-<td><code>session_id</code></td>
+<td><code>session</code></td>
 <td>string</td>
 <td>Optional. Load or create a persistent session by name</td>
 </tr>
@@ -1289,7 +1289,7 @@
 </table>
 <p>Example:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>localhost:8787/chat<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"prompt": "Hi", "session_id": "api"}'</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"prompt": "Hi", "session": "api"}'</span>
 </code></pre></div>
 <p>Response is the same <code>TurnResult</code> the CLI returns (see the README). <code>session</code> is the resolved session name. Errors: <code>400</code> for a missing/empty <code>prompt</code> or invalid JSON body.</p>
 <h2 id="get-sessions">GET /sessions<a class="headerlink" href="#get-sessions" title="Permanent link">&para;</a></h2>

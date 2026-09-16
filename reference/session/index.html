@@ -1406,7 +1406,7 @@
 <p>Sessions are complete, append-only conversation logs. Every turn - the operator prompt, the agent's thinking, each tool call with its result, and the answer - is persisted as JSON under the project's <code>.replio/sessions/</code> directory. Entries are never removed. Compaction only trims the provider context, never the log.</p>
 <h2 id="where-sessions-live">Where sessions live<a class="headerlink" href="#where-sessions-live" title="Permanent link">&para;</a></h2>
 <p>Each session is one JSON file: <code>.replio/sessions/&lt;name&gt;.json</code>, next to the local <code>.replio/config.json</code>.</p>
-<p>Names are explicit (<code>/session new &lt;name&gt;</code>, <code>/session load &lt;name&gt;</code>, <code>replio run --session-id &lt;name&gt;</code>) or auto-generated as <code>ses_&lt;timestamp&gt;_&lt;code&gt;</code>, e.g. <code>ses_20260817_120000_ab12cd</code>. The <code>&lt;code&gt;</code> is a six-character base36 hash minted at creation and embedded in the name, so an auto session is fully named from the start (no prompt-slug rename).</p>
+<p>Names are explicit (<code>/session new &lt;name&gt;</code>, <code>/session load &lt;name&gt;</code>, <code>replio run --session-id &lt;name&gt;</code>) or auto-generated as <code>ses_&lt;timestamp&gt;_&lt;id&gt;</code>, e.g. <code>ses_20260817_120000_ab12cd</code>. The <code>&lt;id&gt;</code> is a six-character base36 hash minted at creation and embedded in the name, so an auto session is fully named from the start (no prompt-slug rename).</p>
 <p>Session files carry a type prefix so the kinds stay distinguishable at a glance:</p>
 <table>
 <thead>
@@ -1439,10 +1439,10 @@
 </tr>
 </tbody>
 </table>
-<p>The trailing <code>&lt;code&gt;</code> is a six-character base36 hash minted at creation and embedded in the name, so a generated session is fully named from the start (no prompt-slug rename). The code is the stable run handle: each run mirrors it as <code>Run.code</code>, <code>/focus</code> and <code>/history</code> show it, and commands accept it as <code>#code</code> (<code>/focus #ab12cd</code>, <code>handoff</code> target <code>#ab12cd</code>, <code>/history --run #ab12cd</code>, <code>/print --run #ab12cd</code>). Resolution is a direct filename glob for <code>*_&lt;code&gt;.json</code>, so a code is found without reading every session. The <code>ses_</code>, <code>job_</code>, and <code>sub_</code> kinds carry a code. <code>agent_</code> role sessions and warm <code>sub_&lt;key&gt;</code> member sessions are stable, deterministic names with no code yet. Explicit names carry no code and are referenced by <code>session:&lt;name&gt;</code>. Legacy files predate the code and resolve by name only.</p>
-<p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;code&gt;</code> (<code>sub_20260817_120100_cd34ef</code>), with the calling session recorded as <code>parent_id</code> rather than in the filename. Job runs use <code>job_&lt;ts&gt;_&lt;code&gt;</code>, with the job name still recorded in the job registry and each run's <code>JobRun.session</code>. A warm member session (<code>delegate</code>/team <code>session_key</code>, or a team's <code>warm_sessions</code>) is named <code>sub_&lt;key&gt;</code> instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same <code>.replio/sessions/</code> directory and are regular sessions - listed by <code>/sessions</code> (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.</p>
+<p>The trailing <code>&lt;id&gt;</code> is a six-character base36 hash minted at creation and embedded in the name, so a generated session is fully named from the start (no prompt-slug rename). The <code>session_id</code> is the stable run handle: each run mirrors it as <code>Run.session_id</code>, <code>/focus</code> and <code>/history</code> show it, and commands accept it as <code>#&lt;id&gt;</code> (<code>/focus #ab12cd</code>, <code>handoff</code> target <code>#ab12cd</code>, <code>/history --run #ab12cd</code>, <code>/print --run #ab12cd</code>). Resolution is a direct filename glob for <code>*_&lt;id&gt;.json</code>, so an id is found without reading every session. The <code>ses_</code>, <code>job_</code>, and <code>sub_</code> kinds carry an id. <code>agent_</code> role sessions and warm <code>sub_&lt;key&gt;</code> member sessions are stable, deterministic names with no id yet. Explicit names carry no id and are referenced by <code>session:&lt;name&gt;</code>. Files written before the <code>session_name</code>/<code>session_id</code> fields were introduced no longer load (the file is left on disk and stays listed).</p>
+<p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;id&gt;</code> (<code>sub_20260817_120100_cd34ef</code>), with the calling session recorded as <code>parent_id</code> rather than in the filename. Job runs use <code>job_&lt;ts&gt;_&lt;id&gt;</code>, with the job name still recorded in the job registry and each run's <code>JobRun.session</code>. A warm member session (<code>delegate</code>/team <code>session_key</code>, or a team's <code>warm_sessions</code>) is named <code>sub_&lt;key&gt;</code> instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same <code>.replio/sessions/</code> directory and are regular sessions - listed by <code>/sessions</code> (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.</p>
 <p>Each session also records the agent <code>role</code> that owns it - the bound root type, the delegated type, the team-stage type, or the job type - stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no <code>--type</code> leaves <code>role</code> empty.</p>
-<p>Older flat-<code>messages</code> session files are not converted and do not load: <code>read()</code> returns nothing for them, the file is left untouched on disk, and <code>/sessions</code> still lists the name. The turn format is a full cutover, not a compatibility layer.</p>
+<p>Session files written before the turn format (flat <code>messages</code>) and files written before the <code>session_name</code>/<code>session_id</code> rename do not load: <code>read()</code> returns nothing for them, the file is left untouched on disk, and <code>/sessions</code> still lists the name. The turn format is a full cutover, not a compatibility layer.</p>
 <h2 id="managing-sessions">Managing sessions<a class="headerlink" href="#managing-sessions" title="Permanent link">&para;</a></h2>
 <p>The active session is handled by <code>/session</code> (like <code>/model</code> for the model). The catalog of saved sessions lives under <code>/sessions</code> (like <code>/models</code>).</p>
 <table>
@@ -1500,8 +1500,8 @@
 </tbody>
 </table>
 <p>The current session auto-saves after every turn and command, so nothing is lost on exit.</p>
-<p><code>/history</code> lists the active session's turns as a numbered index, one line per turn: <code>#&lt;index&gt;  [&lt;status&gt;]  &lt;duration&gt;  &lt;tool count&gt;  &lt;prompt&gt;</code>. The index is the turn's absolute <code>index</code>, so a turn can be named later regardless of the listing limit. <code>/history 3</code> shows the last three turns, <code>/history all</code> every turn, and <code>--thoughts</code> adds a dim first-line excerpt of the turn's thinking (<code>--thoughts all</code> prints the full thinking text). <code>/history --run &lt;#code|#id|role|session:name|name&gt;</code> reads another run's session without switching focus or the current session: a code resolves to a live run first, otherwise the saved <code>ses_</code> session, an id resolves to the live focused run when present, otherwise the saved session, a role resolves to its live <code>agent_&lt;role&gt;</code> engine or the saved session, and a name resolves to the saved session (legacy flat-<code>messages</code> files read as not found).</p>
-<p><code>/print &lt;n&gt;</code> reprints the turn with that absolute index: the full turn metadata block (<code>#index</code>, status, duration, tool count, <code>started</code>/<code>ended</code>, model, provider, mode, reasoning - empty values shown as <code>-</code>, so even a command turn is self-describing), then each part - the operator prompt, thinking (dim), every tool call with <code>input</code> JSON, <code>output</code>, <code>is_error</code>, and <code>analysis</code>, the answer, command records (a compaction summary included), and system notes. <code>/print &lt;n&gt;.&lt;m&gt;</code> prints only the m-th part of turn n. Each part's text is capped at <code>print_max_chars</code> characters (default 4000) with <code>... (N more chars, use --full)</code> appended, and <code>--full</code> (or <code>print_max_chars: 0</code>) removes the cap. <code>/print</code> takes the same <code>--run &lt;#code|#id|role|session:name|name&gt;</code> selector as <code>/history</code>, resolving through the same rules without switching focus or the current session.</p>
+<p><code>/history</code> lists the active session's turns as a numbered index, one line per turn: <code>#&lt;index&gt;  [&lt;status&gt;]  &lt;duration&gt;  &lt;tool count&gt;  &lt;prompt&gt;</code>. The index is the turn's absolute <code>index</code>, so a turn can be named later regardless of the listing limit. <code>/history 3</code> shows the last three turns, <code>/history all</code> every turn, and <code>--thoughts</code> adds a dim first-line excerpt of the turn's thinking (<code>--thoughts all</code> prints the full thinking text). <code>/history --run &lt;#id|#run|role|session:name|name&gt;</code> reads another run's session without switching focus or the current session: a session id (<code>#ab12cd</code>) resolves to a live run first, otherwise the saved <code>ses_</code> session, a numeric run id (<code>#3</code>) resolves to the live focused run when present, otherwise the saved session, a role resolves to its live <code>agent_&lt;role&gt;</code> engine or the saved session, and a name resolves to the saved session (files without the current turn format read as not found).</p>
+<p><code>/print &lt;n&gt;</code> reprints the turn with that absolute index: the full turn metadata block (<code>#index</code>, status, duration, tool count, <code>started</code>/<code>ended</code>, model, provider, mode, reasoning - empty values shown as <code>-</code>, so even a command turn is self-describing), then each part - the operator prompt, thinking (dim), every tool call with <code>input</code> JSON, <code>output</code>, <code>is_error</code>, and <code>analysis</code>, the answer, command records (a compaction summary included), and system notes. <code>/print &lt;n&gt;.&lt;m&gt;</code> prints only the m-th part of turn n. Each part's text is capped at <code>print_max_chars</code> characters (default 4000) with <code>... (N more chars, use --full)</code> appended, and <code>--full</code> (or <code>print_max_chars: 0</code>) removes the cap. <code>/print</code> takes the same <code>--run &lt;#id|#run|role|session:name|name&gt;</code> selector as <code>/history</code>, resolving through the same rules without switching focus or the current session.</p>
 <h2 id="exporting-to-markdown">Exporting to Markdown<a class="headerlink" href="#exporting-to-markdown" title="Permanent link">&para;</a></h2>
 <p><code>/sessions export &lt;name&gt;</code> renders any saved session as a Markdown transcript. It reads the persisted log directly (<code>read()</code>, not <code>load()</code>), so the current session is never switched and the source file is left untouched.</p>
 <p>Default output is <code>.replio/exports/&lt;name&gt;.md</code>, next to the <code>sessions/</code> directory. A second argument overrides the path (<code>/sessions export &lt;name&gt; out.md</code>). <code>-</code> prints the transcript to stdout instead of a file. The command tab-completes session names.</p>
@@ -1509,16 +1509,16 @@
 <p>The headless CLI <code>replio export &lt;name&gt; [--out &lt;file&gt;]</code> reuses the same renderer for scripts and CI - <code>--out -</code> prints to stdout, the default matches the slash command (<code>.replio/exports/&lt;name&gt;.md</code>).</p>
 <h2 id="file-structure">File structure<a class="headerlink" href="#file-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ses_20260817_120000_ab12cd"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ab12cd"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"created_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:00:00+00:00"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:05:15+00:00"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"turns"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">  </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="w">  </span><span class="nt">"permissions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">  </span><span class="nt">"parent_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"sub_sessions"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">  </span><span class="nt">"permissions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"session_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ab12cd"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"session_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ses_20260817_120000_ab12cd"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"sub_sessions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">"turns"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:05:15+00:00"</span>
 <span class="p">}</span>
 </code></pre></div>
 <table>
@@ -1531,34 +1531,9 @@
 </thead>
 <tbody>
 <tr>
-<td><code>name</code></td>
-<td>string</td>
-<td>Session name, matches the filename</td>
-</tr>
-<tr>
-<td><code>code</code></td>
-<td>string</td>
-<td>Six-character base36 run handle, embedded in an auto name's trailing component (empty for explicit names and legacy files)</td>
-</tr>
-<tr>
 <td><code>created_at</code></td>
 <td>string</td>
 <td>ISO 8601 UTC timestamp of creation</td>
-</tr>
-<tr>
-<td><code>updated_at</code></td>
-<td>string</td>
-<td>ISO 8601 UTC timestamp, bumped on every appended part</td>
-</tr>
-<tr>
-<td><code>role</code></td>
-<td>string</td>
-<td>Agent type that owns the session, stamped at creation (empty for a plain root or a headless run with no <code>--type</code>)</td>
-</tr>
-<tr>
-<td><code>turns</code></td>
-<td>array</td>
-<td>The conversation log, append-only, one entry per turn</td>
 </tr>
 <tr>
 <td><code>errors</code></td>
@@ -1566,19 +1541,44 @@
 <td>Turn-level errors (provider, network, agent loop)</td>
 </tr>
 <tr>
-<td><code>permissions</code></td>
-<td>array</td>
-<td>Audit log of tool permission decisions (see below)</td>
-</tr>
-<tr>
 <td><code>parent_id</code></td>
 <td>string</td>
 <td>Name of the session this one was spawned from (sub-agent sessions set it, empty otherwise)</td>
 </tr>
 <tr>
+<td><code>permissions</code></td>
+<td>array</td>
+<td>Audit log of tool permission decisions (see below)</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td>string</td>
+<td>Agent type that owns the session, stamped at creation (empty for a plain root or a headless run with no <code>--type</code>)</td>
+</tr>
+<tr>
+<td><code>session_id</code></td>
+<td>string</td>
+<td>Six-character base36 session id, embedded in an auto name's trailing component (empty for explicit names)</td>
+</tr>
+<tr>
+<td><code>session_name</code></td>
+<td>string</td>
+<td>Session name, matches the filename</td>
+</tr>
+<tr>
 <td><code>sub_sessions</code></td>
 <td>array</td>
 <td>Names of sessions spawned from this one (delegations - the delegate sets the sub-agent's <code>parent_id</code>)</td>
+</tr>
+<tr>
+<td><code>turns</code></td>
+<td>array</td>
+<td>The conversation log, append-only, one entry per turn</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>string</td>
+<td>ISO 8601 UTC timestamp, bumped on every appended part</td>
 </tr>
 </tbody>
 </table>

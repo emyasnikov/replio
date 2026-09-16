@@ -1177,6 +1177,28 @@
 <li>Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style)</li>
 <li>Non-blocking delegation - the assistant starts sub-agents or whole teams for bigger tasks and reports their status instead of blocking the current run</li>
 <li>Recurring tasks carry their own role - each job carries its own type and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time</li>
+<li>Auto-improving skills (autogen/autolearn) - a role refines its skills from experience and keeps them alongside its memory, so recurring work gets better without re-prompting</li>
+<li>Runtime pluginization - make models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI replaceable plugins, and move the REPL to a plugin. Five replaceable layers: access, orchestration, capability, model, storage</li>
+<li>One runtime, many agents - position Replio as an agent harness for fleets, not a single assistant</li>
+<li>ACP inward and outward - speak the Agent Client Protocol so Replio can host and be hosted by other harnesses, alongside MCP</li>
+<li>Commands as tools - expose slash commands to the model as permission-gated tools to configure types, teams, and skills, with command access limited per permission</li>
+<li>Markdown catalogue - store types, teams, and skills as Markdown files (front matter) referenced from JSON, and move the bundled data files (<code>src/replio/*.json</code>) into one catalogue directory near <code>src</code></li>
+<li>Hidden files and allowed paths - hide secrets and config from tools by default, and restrict visible paths to allowed roots</li>
+<li>Context policy - keep user prompts until the task is done, cut unused references and tool results immediately, add a recall tool for role and team memory, enforce a configurable context limit, and offload large tool results to <code>.replio/tmp/</code> referenced from the session log</li>
+<li>Context UI polish - auto-compaction, context trim, highlighting, and context desaturation</li>
+<li>Research cache - store web and PDF results under <code>.replio/files</code> for later reuse, with a PDF-to-text tool</li>
+<li>Fleet awareness - the supervisor always knows which agents and teams run on a machine, with oversight across multiple machines</li>
+<li>Open WebUI and OpenTUI connectors - drive Replio from external chat and terminal UIs</li>
+<li>Tool-call quality enhancer - steer tool calling toward correct, cheaper calls (for example web-search parameters that find the right references) and better results</li>
+<li>PlantUML plugin - an external plugin that draws configurations and workflows as node diagrams instead of ASCII</li>
+<li>UI commands - <code>/clear</code>, <code>/new</code>, <code>/providers</code>, <code>/providers list</code>, <code>/thinking [hide|show]</code>, hide tool errors and show the call in red, and persist error logs</li>
+<li>Feedback - capture operator feedback on a run or answer and feed it back into memory and skills</li>
+<li>Inbound webhooks - accept inbound events to start a run or answer a parked ask</li>
+<li>Plugin management UI - list, enable, disable, install, and update plugins from a UI surface, not only slash commands</li>
+<li>Model picker - <code>/models</code> autocomplete and a direct numeric selection of a model</li>
+<li>One agent, many heads - the Polyglav positioning variant</li>
+<li>Centralized static strings - move hardcoded prompts and static strings into one module</li>
+<li>Code cleanup pass - a dedicated pass over the core for dead code, naming, and rough edges</li>
 <li>Report-back connectors - job summaries delivered out-of-band (email first, idea only) when the terminal is closed</li>
 <li>Remove the legacy provider-plugin backfill migration (<code>Config._migrate_plugins</code>) once a stable replio release has shipped with the externalized providers - existing <code>plugins</code> lists no longer need the automatic append, and the migration code is dead weight</li>
 <li>Human-in-the-loop channels - job events outbound (<code>proposed</code>, <code>will_run</code>, <code>failed</code>, <code>waiting_approval</code>) plus inbound actions (<code>approve</code>/<code>reject</code>/<code>run</code>/<code>disable</code>) over configurable connectors (webhook first, then email, then Telegram), so a job can reach an operator who is not on the box</li>
@@ -1197,7 +1219,7 @@
 <li>Command palette / fuzzy search - CTRL-P style history search</li>
 <li>Topic-aware ranking - classifier for query intent to weight search results</li>
 <li>Naming / positioning decision - "Replio" collides with commercial SaaS products (<code>replio.chat</code>, <code>repliohq.com</code>, <code>replio.eu</code>), kept for now (PyPI + repo claimed), revisit before any promotion push. Candidate free names: <code>pypelio</code>, <code>replcore</code>, <code>replkit</code></li>
-<li>Competitor research - validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products. Comparison notes now live in <code>docs/vs/</code> and feed the feature backlog (Plan/Build modes, Web Control UI, plugin marketplace, telemetry, binary builds, sharing)</li>
+<li>Competitor research - validate USPs against actual peers (OpenClaw, Claude Code, opencode, agentic-infra services) rather than the unrelated SaaS "Replio" products. Comparison notes now live in <code>docs/compare/</code> and feed the feature backlog (Plan/Build modes, Web Control UI, plugin marketplace, telemetry, binary builds, sharing)</li>
 <li>Self-update - <code>replio update</code> (Pi <code>pi update --self</code> analogue)</li>
 <li>Standalone binary build - Pi-style release script producing a single executable (contentious for a zero-dep Python package)</li>
 <li>Opt-in telemetry contracts - vendor-neutral event schema (OpenCode, Pi <code>@earendil-works/pi-telemetry</code>). Decide whether it fits the no-telemetry stance</li>
@@ -1206,22 +1228,28 @@
 </ul>
 <h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] Warm-session naming - decide what a <code>session_key</code> warm delegation session is named (<code>sub_&lt;key&gt;</code> today vs <code>sub_&lt;code(key)&gt;</code>)</li>
-<li>[ ] Role-session naming - decide how <code>agent_&lt;role&gt;</code> role-engine sessions are named</li>
-<li>[ ] Remove <code>--session-id</code> - explicit session naming is no longer needed now that auto sessions are named <code>ses_&lt;ts&gt;_&lt;code&gt;</code></li>
+<li>[ ] Fix the PyPI long-description screenshot - the image fails to load on the package page</li>
+<li>[ ] Fix opencode permission rejection - the provider stops when a permission is rejected instead of continuing</li>
+<li>[ ] Exact-args permission grants - approve the specific command (not just the tool), and let an <code>always</code> grant live beyond the current sub-agent run</li>
+<li>[ ] REPL UI colors and prompts - Actions/Asks orange, errored tool calls red, Thinking/Thought blue, output and reasoning dimmed, <code>[Y/n]</code> enter-to-continue, and an option to hide input for prompts</li>
+<li>[ ] Runs, focus, and memory redesign (see PLAN.md <code>Runs, focus, and memory</code>):</li>
+<li>[ ] Run-centric focus - attach to a run's own session and role, remove <code>agent_&lt;role&gt;</code></li>
+<li>[ ] Run tree navigation - <code>/focus</code> tree with <code>↔ Switch to &lt;role&gt;</code> lines and jump by run/session</li>
+<li>[ ] Handoff as run-to-run control - target runs, preserve the target session</li>
+<li>[ ] <code>focus_on_delegate</code> targets the child run</li>
+<li>[ ] Run continuation and compaction - resume a run/session, or compact/drop its context</li>
+<li>[ ] Memory scopes - automatic and configurable role/team/job memory, plus manual memorize</li>
+<li>[ ] Non-blocking runs and live focus - background execution, output/input routing, spinner, cancellation</li>
+<li>[ ] Provider session binding - bind the provider session id to the run's session</li>
+<li>[ ] Sync architecture, swarm, session, and command docs</li>
+<li>[ ] Remove <code>--session-id</code> - explicit session naming is no longer needed now that auto sessions are named <code>ses_&lt;ts&gt;_&lt;id&gt;</code></li>
 <li>[ ] Relocate job run sessions under <code>.replio/jobs/&lt;name&gt;/</code> (kept in <code>sessions/</code> for now)</li>
-<li>[ ] Concurrent runs and live focus - run agents in the background, route output to per-run buffers and input to the focused run, stream live status and progress, and support cancellation and thread safety</li>
-<li>Background execution - each run's loop in a worker thread, the parent yields and joins when the sub-run finishes</li>
-<li>Output router - per-run buffers with a <code>[#id role]</code> prefix, the focused run streams, and switching shows only new output</li>
-<li>Cancellation - <code>/stop</code> interrupts the focused run, with safe shutdown and thread-safe sessions and registry</li>
 <li>[ ] Role-name sync - adopt assistant, composer, manager, and specialist as the canonical roles across types, prompts, and docs</li>
 <li>[ ] Assistant-roles track docs - record the assistant, composer, and manager architecture and the work packages in VISION, PLAN, and TODO</li>
-<li>[ ] Core dev and thesis team configuration - a bundled development team with the review loop plus the project lead/support teams and their skills</li>
+<li>[ ] Core dev team configuration - a bundled development team with the review loop plus the project lead/support teams and their skills</li>
 <li>[ ] Manager role - a bundled agent type that runs one or many teams and reports, sequential first</li>
-<li>[ ] Provider session binding - bind the provider session id (<code>x-opencode-session</code>) to the logical role session so a switched-away context is reusable</li>
 <li>[ ] Per-job report destination - a <code>report_url</code> (or connector list) on a job so different jobs report to different endpoints, instead of one global <code>report.webhook</code></li>
 <li>[ ] Per-task decide-vs-park for <code>direction</code> asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator</li>
-<li>[ ] Persistent member sessions for recurring teams - <code>job</code>-style warm sessions for recurring teams, one-off runs stay fresh <code>sub_</code> sessions (sequential run loop + briefs + team memory landed with <code>Engine.run_team</code>)</li>
 <li>[ ] Full <code>file_*</code> namespace extension - if <code>file_glob</code>/<code>file_grep</code> prove better with most models, extend the prefix to <code>list_dir</code>/<code>glob</code>/<code>grep</code> (old names stay aliases)</li>
 <li>[ ] Tool spec polish - rename <code>grep.glob</code> -&gt; <code>include</code> (alias <code>glob</code>), add examples and prefer-<code>web_fetch</code> guidance to tool descriptions</li>
 <li>[ ] Mid-run blocking job approval - an <code>ask</code> tool inside a running job pauses the run in place (per-tool-call <code>waiting_approval</code>), notifies via a connector, and resumes the same session when the operator replies. Needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run <code>--require-approval</code> gate)</li>
@@ -1278,8 +1306,9 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[x] Job and delegation names - <code>job_&lt;ts&gt;_&lt;code&gt;</code> and <code>sub_&lt;ts&gt;_&lt;code&gt;</code></li>
-<li>[x] Stable run code - six-char session <code>code</code>, <code>ses_&lt;ts&gt;_&lt;code&gt;</code> names, and <code>#code</code> handles</li>
+<li>[x] Session log fields - <code>name</code> -&gt; <code>session_name</code>, <code>code</code> -&gt; <code>session_id</code></li>
+<li>[x] Job and delegation names - <code>job_&lt;ts&gt;_&lt;id&gt;</code> and <code>sub_&lt;ts&gt;_&lt;id&gt;</code></li>
+<li>[x] Stable session id - six-char <code>session_id</code>, <code>ses_&lt;ts&gt;_&lt;id&gt;</code> names, and <code>#id</code> handles</li>
 <li>[x] <code>/print</code> - reprint a turn (or one part) in full, cap via <code>print_max_chars</code>, <code>--full</code>, <code>--run</code></li>
 <li>[x] <code>/history</code> - numbered turn index with <code>n</code>/<code>all</code>, <code>--thoughts [all]</code>, and a <code>--run</code> selector</li>
 <li>[x] Session turn cutover - turn/part storage, co-located tool calls, flat messages removed</li>

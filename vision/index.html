@@ -323,6 +323,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#what-replio-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Replio is
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The runtime
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-the-assistant-works" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1174,6 +1196,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#what-replio-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Replio is
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The runtime
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-the-assistant-works" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1257,8 +1301,54 @@
 
 
 <h1 id="vision">Vision<a class="headerlink" href="#vision" title="Permanent link">&para;</a></h1>
-<p><strong>One window to access and control all agents</strong></p>
-<p>Replio is the single window to your agents. The main agent, <strong>assistant</strong>, is the point of contact: it greets you on first run and asks what you want to do, answers small tasks inline in the current run, delegates bigger tasks to sub-agents or whole teams instead of blocking, runs recurring work in the background, watches your other agents for health, and reports back. Everything you need to see - sessions, running agents, and configured jobs on the machine - is reachable from one place. Users never see the machinery. They feel supported and do less work.</p>
+<p><strong>One runtime, many agents</strong></p>
+<p>Replio is an agent harness: the runtime that turns a language model into an agent that can act. The model plans, the harness executes, and one streaming loop drives an interactive REPL, a headless CLI, and an HTTP API. Replio is deliberately small, zero-dependency, and auditable, so the whole runtime fits in one review.</p>
+<p>The main agent, <strong>assistant</strong>, is the point of contact: it greets you on first run and asks what you want to do, answers small tasks inline in the current run, delegates bigger tasks to sub-agents or whole teams instead of blocking, runs recurring work in the background, watches your other agents for health, and reports back. Everything you need to see - sessions, running agents, and configured jobs on the machine - is reachable from one place. Users never see the machinery. They feel supported and do less work.</p>
+<h2 id="what-replio-is">What Replio is<a class="headerlink" href="#what-replio-is" title="Permanent link">&para;</a></h2>
+<p>An agent is a model plus a harness:</p>
+<ul>
+<li><strong>Execution loop</strong> - one SSE stream per turn. The model either emits content or requests tool calls, which the loop runs and feeds back until the answer is complete.</li>
+<li><strong>Tool dispatch</strong> - one registry with one OpenAI-compatible function-calling contract. Tools carry their own permissions, path scoping, and status rendering.</li>
+<li><strong>Context management</strong> - session logs, compaction, and bounded memory keep the provider context honest.</li>
+<li><strong>State and memory</strong> - complete append-only session logs, run-owned continuity, and compacted memory per role, team, and job.</li>
+<li><strong>Sandboxing and permissions</strong> - <code>allow</code> / <code>ask</code> / <code>deny</code> per tool, path-scoped confirmation outside the worktree, and an audit trail in the session log.</li>
+<li><strong>Observability</strong> - every prompt, thought, tool call, result, and error is persisted.</li>
+<li><strong>Orchestration</strong> - one agent or many: types and delegation (swarm), scheduled durable work (jobs), and a supervisor for many scoped agents (fleet).</li>
+</ul>
+<h2 id="the-runtime">The runtime<a class="headerlink" href="#the-runtime" title="Permanent link">&para;</a></h2>
+<p>Replio assembles five replaceable layers. Each can be swapped without touching the others:</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>What it holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Access</td>
+<td>the front-ends: REPL, CLI, HTTP API, MCP, and ACP</td>
+</tr>
+<tr>
+<td>Orchestration</td>
+<td>runs, focus, delegation, teams, jobs, and the fleet supervisor</td>
+</tr>
+<tr>
+<td>Capability</td>
+<td>tools, skills, types, and permissions</td>
+</tr>
+<tr>
+<td>Model</td>
+<td>providers and the model catalog</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>sessions, memory, and the catalog</td>
+</tr>
+</tbody>
+</table>
+<p>The direction is <strong>everything is a plugin</strong>. Models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI become replaceable plugins around a thin core. The REPL itself moves to a plugin, so the same runtime can be driven by a terminal, a web UI, or another agent. The core keeps the loop and the registry contracts, and nothing customer-specific.</p>
+<p>Interop is part of the same idea. MCP connects tools and sessions today. ACP, inward and outward, is the direction: Replio hosts other harnesses and can be hosted by them.</p>
 <h2 id="how-the-assistant-works">How the assistant works<a class="headerlink" href="#how-the-assistant-works" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Onboarding</strong> - on first run the assistant introduces itself, explains what it can do, and asks what the user wants to do. No system-level configuration is required of simple users.</li>
@@ -1267,38 +1357,42 @@
 <li><strong>Recurring tasks carry their own role</strong> - each job carries its own type and skills, so behavior is encoded once instead of re-prompted. A recurring task that maintains docs "per AGENTS.md" keeps that convention in its own skill, not in every prompt.</li>
 <li><strong>Health monitoring</strong> - the assistant can watch endpoints (for example the <code>/health</code> of agents running as web APIs) and warn when an agent stops responding.</li>
 <li><strong>One-window status</strong> - sessions, running agents, and configured jobs on the current machine are visible with commands, without a separate CLI. Logs are reachable from the same surface.</li>
-<li><strong>Report-back</strong> - finished or failed runs surface a summary, and are delivered out-of-band over connectors (email first, an idea, not yet built) when the terminal is closed.</li>
+<li><strong>Report-back</strong> - finished or failed runs surface a summary, and are delivered out-of-band over connectors (webhook first, email later) when the terminal is closed.</li>
 <li><strong>Governance mode</strong> - when needed, the full control surface is available. For small tasks the assistant simply responds in the current run. The user does not see the complexity of the whole, only the reduced workload.</li>
 </ul>
 <h2 id="decisions">Decisions<a class="headerlink" href="#decisions" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Assistant is the single point of contact</strong> - the main agent is named <code>assistant</code>. Delegation and team composition are assistant-driven, using the types, teams, and skills registries (bundled, global, local, and plugin layers).</li>
-<li><strong>Sequential-first</strong> - team stages run one member after another via <code>run_subagent</code> (existing, battle-tested). No concurrency in the first iteration. In-process threaded concurrency is a later milestone (cuts wall-clock, not tokens).</li>
+<li><strong>Run-owned sessions</strong> - a session belongs to a run. Whoever starts a run creates its session: the root at startup, <code>delegate</code>/<code>team</code> at delegation, the scheduler per job run. A role is an identity a run borrows, never a session owner, so there is no <code>agent_&lt;role&gt;</code> and no <code>sub_&lt;key&gt;</code>.</li>
+<li><strong>Focus navigates, handoff moves</strong> - <code>/focus</code> shows the run tree and jumps into existing runs, and never creates a session. <code>handoff</code> moves focus between runs and pauses or finishes the current one, without creating or naming a session.</li>
+<li><strong>Memory, not replay</strong> - continuity has two scales. Within a run, the run's own session is the context, so a planner giving a developer another task sees its recent work. Across runs, continuity is bounded memory: a compacted Markdown summary per role, team, and job, injected into briefs and refreshed after runs, so recurring work does not replay an ever-growing session.</li>
+<li><strong>Sequential-first</strong> - team stages run one member after another via <code>run_subagent</code> (existing, battle-tested). In-process threaded concurrency is the later milestone for watching and joining a live run (cuts wall-clock and lets the operator jump in, not tokens).</li>
 <li><strong>No pre-saved run prompts</strong> - briefs, handoff, and memory are generated per run. Stored artifacts are types, teams, and skills in the registries.</li>
-<li><strong>Cache model</strong> - persistent member sessions for recurring teams (<code>job</code>-style warm sessions), shared team memory file, and per-run briefs carrying facts. One-off runs get fresh <code>sub_</code> sessions.</li>
-<li><strong>Core stays thin and publishable</strong> - registries plus the sequential runner plus plugin hooks. Everything customer-specific lives in local <code>types.json</code>, <code>teams.json</code>, <code>skills/</code>, or plugins.</li>
+<li><strong>Core stays thin and publishable</strong> - registries plus the sequential runner plus plugin hooks. Everything customer-specific lives in local <code>types.json</code>, <code>teams.json</code>, <code>skills/</code>, or plugins, and moves toward plugins entirely.</li>
 </ul>
 <h2 id="context-economics-why-this-costs-what-it-costs">Context economics (why this costs what it costs)<a class="headerlink" href="#context-economics-why-this-costs-what-it-costs" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Sub-engines are separate <code>Engine</code>s - no in-memory context sharing exists. The persistence channel is session + memory files.</li>
-<li>Cold starts cost: file re-reads by multiple members, brief duplication. Mitigations: facts-in-briefs (not just paths), research stages summarizing into team memory (<code>.replio/teams/&lt;name&gt;/memory.md</code>), recurring teams keep member sessions warm, one-off teams stay fresh and clean.</li>
-<li>Honest limit: per-run redundancy will not go to zero. Sequential wall-clock is accepted.</li>
+<li>Sub-engines are separate <code>Engine</code>s, with no in-memory context sharing. The persistence channels are session logs and memory files.</li>
+<li>Cold starts cost: file re-reads by multiple members and brief duplication. Mitigations are facts-in-briefs (not just paths), research stages summarizing into team memory (<code>.replio/teams/&lt;name&gt;/memory.md</code>), and bounded role/team/job memory, so recurring work never replays a whole session.</li>
+<li>Honest limit: per-run redundancy will not go to zero. Sequential wall-clock is accepted until concurrent runs land.</li>
 </ul>
 <h2 id="phases">Phases<a class="headerlink" href="#phases" title="Permanent link">&para;</a></h2>
-<p>The task mapping lives in <code>PLAN.md</code> (work packages). The phases below name the verifiable stages of the assistant track, ordered by dependency:</p>
+<p>The task mapping lives in <code>PLAN.md</code> (work packages). The phases below name the verifiable stages, ordered by dependency:</p>
 <ul>
+<li><strong>Runtime and docs</strong> - one runtime for many agents, the five replaceable layers, and the plugin direction, reflected in VISION, README, and the site.</li>
+<li><strong>Runs, focus, and memory</strong> - run-owned sessions, focus that only navigates, handoff between runs, bounded memory per role/team/job, and non-blocking runs with live focus.</li>
 <li><strong>Onboarding</strong> - the assistant introduces itself on first run and asks what to do. Defaults and docs for simple users.</li>
 <li><strong>One-window status</strong> - <code>/status</code> shows sessions, running agents, and configured jobs on the machine. Logs are reachable from the same surface.</li>
 <li><strong>Non-blocking delegation</strong> - the assistant delegates big tasks to sub-agents or teams without blocking, with progress reporting, jump-into-session, and per-agent todo lists that can be marked done.</li>
 <li><strong>Recurring tasks with roles</strong> - jobs carry their own type and skills, so recurring behavior is encoded per task.</li>
 <li><strong>Health monitoring</strong> - the assistant watches agent endpoints and warns on failures.</li>
-<li><strong>Report-back connectors</strong> - job summaries delivered out-of-band (email first).</li>
+<li><strong>Report-back connectors</strong> - job summaries delivered out-of-band.</li>
 <li><strong>Governance mode</strong> - the full control surface when needed, invisible otherwise.</li>
 </ul>
 <h2 id="todomd-placement">TODO.md placement<a class="headerlink" href="#todomd-placement" title="Permanent link">&para;</a></h2>
-<p>The assistant track is tracked as open tasks at the top of <code>TODO.md</code> (onboarding, one-window status, health monitoring, per-agent todo lists, non-blocking delegation, recurring tasks with roles, report-back connectors) and as work packages in <code>PLAN.md</code> (Control &amp; governance, Delegation &amp; swarm, Jobs operations + report-back).</p>
+<p>The vision, runtime, and docs track is at the top of <code>TODO.md</code> and <code>PLAN.md</code> (Vision, positioning, and docs). The runs, focus, and memory redesign is the next package (Runs, focus, and memory). The assistant track is tracked as open tasks and as work packages in <code>PLAN.md</code> (Control &amp; governance, Delegation &amp; swarm, Jobs operations + report-back).</p>
 <h2 id="out-of-scope-later-milestones-listed-not-planned">Out of scope (later milestones, listed not planned)<a class="headerlink" href="#out-of-scope-later-milestones-listed-not-planned" title="Permanent link">&para;</a></h2>
-<p>In-process threaded team concurrency and a live progress channel, war-room focus view, lead-grant approvals, generate &gt; check &gt; correct loop, fleet-backed teams, and report-back connectors beyond email.</p>
+<p>Remote messaging channels (Telegram, WhatsApp, Discord, and more), multi-machine fleet orchestration, sandboxed execution with namespace or container isolation, and a plugin registry or marketplace.</p>
 
 
 

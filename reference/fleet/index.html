@@ -1337,7 +1337,7 @@ replio<span class="w"> </span>serve<span class="w"> </span>--path<span class="w"
 </code></pre></div>
 <p>Launch it, and peers talk to it over the same <code>POST /chat</code> API used everywhere:</p>
 <div class="highlight"><pre><span></span><code>replio<span class="w"> </span>serve<span class="w"> </span>--path<span class="w"> </span>agents/docs<span class="w"> </span>--port<span class="w"> </span><span class="m">8781</span><span class="w"> </span><span class="p">&amp;</span>
-curl<span class="w"> </span>localhost:8781/chat<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>-d<span class="w"> </span><span class="s1">'{"prompt": "What does spec-42.pdf say?", "session_id": "docs-pool"}'</span>
+curl<span class="w"> </span>localhost:8781/chat<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>-d<span class="w"> </span><span class="s1">'{"prompt": "What does spec-42.pdf say?", "session": "docs-pool"}'</span>
 </code></pre></div>
 <h2 id="supervisor">Supervisor<a class="headerlink" href="#supervisor" title="Permanent link">&para;</a></h2>
 <p><code>replio fleet</code> supervises the agents from the terminal: port allocation, health checks, a restart policy, and per-agent config generation. It is the systemd/Compose-shaped layer for a single host, so Docker is not needed. A fleet root is a directory holding the agents, typically one folder each, with two files in its <code>.replio/</code>:</p>

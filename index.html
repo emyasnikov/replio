@@ -1278,17 +1278,19 @@
 
 <h1 id="replio">Replio<a class="headerlink" href="#replio" title="Permanent link">&para;</a></h1>
 <p><strong>A lightweight, zero-dependency agentic core for fleets of single-purpose agents.</strong></p>
-<p>Current version: <strong>v0.26.0</strong> (Python &gt;= 3.10, MIT, zero external dependencies)</p>
-<p>Replio is a deliberately small, auditable, zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability.</p>
+<p>Current version: <strong>v0.33.0</strong> (Python &gt;= 3.10, MIT, zero external dependencies)</p>
+<p>An agent is a model plus a harness. Replio is a deliberately small, auditable, zero-dependency agentic core. The model plans, the tool registry acts, and a single streaming loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types, skills, teams, and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability.</p>
 <h2 id="vision">Vision<a class="headerlink" href="#vision" title="Permanent link">&para;</a></h2>
-<p><strong>One terminal, whole teams.</strong> One REPL. One prompt. The lead agent composes a specialized team - types and skills instantiated from a private template library matching the project description and request - runs the team stage-by-stage, each member working under its own type, skills, and permissions, with generated briefs, handoff, and shared memory. Teams are stored, reused, extended per customer, and scheduled.</p>
+<p><strong>One runtime, many agents</strong></p>
+<p>Replio assembles five replaceable layers - access, orchestration, capability, model, and storage - around a thin core. The direction is everything is a plugin: models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI become replaceable plugins, and the REPL itself moves to a plugin. The operator sees one window: the <code>assistant</code> agent greets you, answers small tasks inline, delegates bigger work to sub-agents or teams, runs recurring work in the background, watches your agents for health, and reports back.</p>
 <p>Read the full vision, decisions, and context economics in <a href="vision/">Vision</a>.</p>
 <h2 id="current-state">Current state<a class="headerlink" href="#current-state" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Core</strong> - one SSE-stream agent loop, multi-provider (Ollama, OpenAI, Groq, Anthropic, OpenCode Zen/Go, any OpenAI-compatible endpoint), tool calling with per-tool permissions and an audit trail, plan/build modes, complete append-only session logs, plugins, <code>replio run</code> + <code>replio serve</code></li>
-<li><strong>Orchestration</strong> - swarm (types, delegation), jobs (cron/interval/one-shot, retries, approvals, run memory), fleet (supervisor with ports, health, restart), MCP client and server</li>
-<li><strong>Latest</strong> - v0.26 in progress: tool-use evaluation harness (<code>replio eval</code>), OpenCode Zen/Go providers. See <a href="changelog/">Changelog</a></li>
-<li><strong>Tooling</strong> - bundled plugins for web search, filesystem, shell, edit, git, and dev wrappers (test/lint/format), all with path-scoped policies</li>
+<li><strong>Orchestration</strong> - swarm (types, skills, named teams, the <code>team</code> tool, the review loop, the <code>assistant</code> root and <code>composer</code>), jobs (cron/interval/one-shot, retries, approvals, run memory, supervisor recipe), fleet (supervisor with ports, health, restart), MCP client and server</li>
+<li><strong>Sessions</strong> - turn/part logs, <code>/history</code> and <code>/print</code>, stable per-session ids, <code>/compact</code>, Markdown export</li>
+<li><strong>Latest</strong> - v0.33: the session turn cutover, <code>/history</code> and <code>/print</code>, stable session ids and coded session names, <code>/focus</code> and <code>handoff</code>, <code>focus_on_delegate</code>. See <a href="changelog/">Changelog</a></li>
+<li><strong>Tooling</strong> - bundled plugins for web search, filesystem, shell, edit, git, and dev wrappers (test/lint/format), all with path-scoped policies. <code>replio eval</code> runs fixtures through the headless loop and reports tool-use metrics</li>
 </ul>
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1297,11 +1299,12 @@
 <li><strong>Local-first</strong> - config and session logs live on your disk. Bring your own provider key, or run fully local</li>
 <li><strong>Agentic REPL</strong> - streaming output, dimmed thinking, markdown-aware rendering, readline history, tab completion</li>
 <li><strong>Permissions</strong> - every tool is gated by <code>allow</code> / <code>ask</code> / <code>deny</code>, with path-scoped confirmation outside your worktree and an audit trail in session logs</li>
-<li><strong>Sessions</strong> - complete append-only conversation logs plus <code>/compact</code> and Markdown export</li>
-<li><strong>Plugins</strong> - external repositories register tools, providers, slash commands, and services. The core stays zero-dependency</li>
+<li><strong>Sessions</strong> - complete append-only turn/part logs, <code>/history</code> and <code>/print</code>, <code>/compact</code>, and Markdown export</li>
+<li><strong>Agent types, skills, and teams</strong> - reusable agents with per-invocation skills, and named pipelines with shared memory and a review loop</li>
+<li><strong>Plugins</strong> - external repositories register tools, providers, slash commands, services, types, teams, skills, and eval fixtures. The core stays zero-dependency</li>
 </ul>
 <h2 id="development-plan">Development plan<a class="headerlink" href="#development-plan" title="Permanent link">&para;</a></h2>
-<p>The work packages and milestones live in <a href="roadmap/">Roadmap</a>. The full task backlog (open work, newest first) is in <a href="backlog/">Backlog</a>. The swarm/team track is the current priority - one terminal, whole teams - with the composition machinery kept in a movable private plugin, never in the core.</p>
+<p>The work packages and milestones live in <a href="roadmap/">Roadmap</a>. The full task backlog (open work, newest first) is in <a href="backlog/">Backlog</a>. The current priority is the runs, focus, and memory redesign - run-owned sessions, focus that only navigates, handoff between runs, bounded memory per role/team/job, and non-blocking runs with live focus - followed by the assistant governance track.</p>
 <h2 id="reference-docs">Reference docs<a class="headerlink" href="#reference-docs" title="Permanent link">&para;</a></h2>
 <p>The detailed reference is organized in the <a href="reference/">Reference index</a>, covering architecture, commands, configuration, providers, tools, security, sessions, jobs, fleet, swarm, plugins, and more.</p>
 <h2 id="getting-started">Getting started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
