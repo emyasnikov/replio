@@ -1,5 +1,6 @@
 import io
 import unittest
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -7,6 +8,11 @@ from replio.sessions import turns
 from replio.sessions.manager import Session
 from replio.sessions.render import render_session, render_turn, turn_summary
 from tests.helpers import make_chat
+
+
+def _timestamps(duration):
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    return start.isoformat(), (start + timedelta(seconds=duration)).isoformat()
 
 
 class TestRenderSession(unittest.TestCase):
@@ -20,8 +26,7 @@ class TestRenderSession(unittest.TestCase):
         s.add_text(answer)
         turn = s.turns[-1]
         if duration is not None:
-            turn['started_at'] = '2026-01-01T00:00:00+00:00'
-            turn['ended_at'] = f'2026-01-01T00:00:0{duration}+00:00'
+            turn['started_at'], turn['ended_at'] = _timestamps(duration)
         else:
             s.end_turn('ok')
         return turn
@@ -144,8 +149,7 @@ class TestTurnSummary(unittest.TestCase):
         s.end_turn(status)
         turn = s.turns[-1]
         if duration is not None:
-            turn['started_at'] = '2026-01-01T00:00:00+00:00'
-            turn['ended_at'] = f'2026-01-01T00:00:0{duration}+00:00'
+            turn['started_at'], turn['ended_at'] = _timestamps(duration)
         else:
             turn['started_at'] = ''
             turn['ended_at'] = ''
