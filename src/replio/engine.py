@@ -1,6 +1,5 @@
 import json
 import time
-import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -142,7 +141,8 @@ class Engine:
         self.current_session = self.sessions.create(role=self.role)
         self.runs = runs if runs is not None else RunRegistry()
         self.current_run: Run = self.runs.start(
-            role=self.role, session=self.current_session.name, parent=parent_run)
+            role=self.role, session=self.current_session.name,
+            parent=parent_run, code=self.current_session.code)
         self.registry = CommandRegistry(self)
         register_builtins(self.registry)
         self._plugin_manager.register_commands(self.registry)
@@ -442,6 +442,7 @@ class Engine:
         else:
             self.current_session = self.sessions.create(role=self.role)
         self.current_run.session = self.current_session.name
+        self.current_run.code = self.current_session.code
         return self.current_session
 
     def _grant(self) -> dict:
@@ -565,7 +566,7 @@ class Engine:
         sub = self._new_sub_engine(type_name, mode=mode, skills=skills,
                                    session_key=session_key, task=task)
         try:
-            result = sub.chat(task, autoname=False)
+            result = sub.chat(task)
         except Exception:
             self.runs.finish(sub.current_run.id, 'error')
             raise
@@ -833,7 +834,7 @@ class Engine:
             'reasoning': self.config.get('reasoning'),
         }
 
-    def chat(self, text: str, autoname: bool = True) -> TurnResult:
+    def chat(self, text: str) -> TurnResult:
         if getattr(self, '_provider_error', None):
             return TurnResult(status='error',
                               errors=[{'code': '', 'message': self._provider_error}],
@@ -843,9 +844,6 @@ class Engine:
             text, timestamp=now.isoformat(timespec='seconds'), **self._turn_meta()
         )
         self.session_auto_save()
-
-        if autoname:
-            self._auto_name_session(text)
 
         if self.config.get('tool_calling'):
             return self._agent_loop()
@@ -877,30 +875,6 @@ class Engine:
                               errors=[{'code': '', 'message': f'Unknown tool "{name}"'}],
                               session=self.current_session.name)
         return self._agent_loop(seed_tool=(name, arguments))
-
-    def _auto_name_session(self, content: str):
-        user_turns = [
-            t for t in self.current_session.turns
-            if any(p.get('type') == 'user' for p in t.get('parts') or [])
-        ]
-        if len(user_turns) != 1:
-            return
-        ts = self.current_session.name
-        base = f'ses_{ts}'
-        truncated = content[:40]
-        space = truncated.rfind(' ')
-        if space > 0:
-            truncated = truncated[:space]
-        msg_part = ''.join(c for c in unicodedata.normalize('NFKD', truncated)
-                           if c.isascii() and (c.isalnum() or c in '-_ ')).strip().replace(' ', '_')
-        if not msg_part:
-            return
-        old = self.sessions.sessions_dir / f'{self.current_session.name}.json'
-        self.current_session.name = f'{base}_{msg_part.lower()}'
-        new = self.sessions.sessions_dir / f'{self.current_session.name}.json'
-        if old.exists() and old != new:
-            old.rename(new)
-            self.session_auto_save()
 
     def _agent_loop(self, seed_tool: tuple[str, dict] | None = None) -> TurnResult:
         self._pending_handoff = None

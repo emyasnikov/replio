@@ -51,7 +51,9 @@ def make_chat(config_data: dict | None = None) -> ChatLoop:
     chat._pending_handoff = None
     chat._pending_focus = None
     chat.runs = RunRegistry()
-    chat.current_run = chat.runs.start(role='', session=chat.current_session.name)
+    chat.current_run = chat.runs.start(
+        role='', session=chat.current_session.name,
+        code=chat.current_session.code)
     chat.focus = FocusManager(chat)
 
     chat._plugin_manager = PluginManager(config)

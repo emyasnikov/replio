@@ -6,17 +6,20 @@ Sessions are complete, append-only conversation logs. Every turn - the operator 
 
 Each session is one JSON file: `.replio/sessions/<name>.json`, next to the local `.replio/config.json`.
 
-Names are explicit (`/session new <name>`, `/session load <name>`, `replio run --session-id <name>`) or auto-generated as `ses_<timestamp>_<first-message-slug>`, e.g. `ses_20260817_120000_what_is_oee`.
+Names are explicit (`/session new <name>`, `/session load <name>`, `replio run --session-id <name>`) or auto-generated as `ses_<timestamp>_<code>`, e.g. `ses_20260817_120000_ab12cd`. The `<code>` is a six-character base36 hash minted at creation and embedded in the name, so an auto session is fully named from the start (no prompt-slug rename).
 
-Session files carry a type prefix so the three kinds stay distinguishable at a glance:
+Session files carry a type prefix so the kinds stay distinguishable at a glance:
 
 | Prefix | Kind | Example |
 |--------|------|---------|
+| `agent_` | REPL role engines - one stable session per focused role | `agent_writer.json` |
 | `job_` | Jobs - one fresh file per run | `job_20260826_110230_nightly_report.json` |
-| `ses_` | Interactive/auto sessions | `ses_20260817_120000_what_is_oee.json` |
-| `sub_` | Delegation sub-agents (parent session id as suffix) | `sub_20260817_120100_ses_20260817_120000_what_is_oee.json` |
+| `ses_` | Interactive/auto sessions | `ses_20260817_120000_ab12cd.json` |
+| `sub_` | Delegation sub-agents (parent session id as suffix) | `sub_20260817_120100_ses_20260817_120000_ab12cd.json` |
 
-Delegation writes each sub-agent's log as its own session: `sub_<ts>_<parent-session>`, where the suffix is the calling (parent) session id (`sub_20260817_120100_ses_20260817_120000_what_is_oee`). A warm member session (`delegate`/team `session_key`, or a team's `warm_sessions`) is named `sub_<key>` instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/sessions` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.
+The `ses_` code is the stable run handle. Each run mirrors it as `Run.code`, `/focus` and `/history` show it, and commands accept it as `#code` (`/focus #ab12cd`, `handoff` target `#ab12cd`, `/history --run #ab12cd`, `/print --run #ab12cd`). Resolution is a direct filename glob for `*_<code>.json`, so a code is found without reading every session. Explicit names carry no code and are referenced by `session:<name>`. Legacy files predate the code and resolve by name only.
+
+Delegation writes each sub-agent's log as its own session: `sub_<ts>_<parent-session>`, where the suffix is the calling (parent) session id (`sub_20260817_120100_ses_20260817_120000_ab12cd`). A warm member session (`delegate`/team `session_key`, or a team's `warm_sessions`) is named `sub_<key>` instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/sessions` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.
 
 Each session also records the agent `role` that owns it - the bound root type, the delegated type, the team-stage type, or the job type - stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no `--type` leaves `role` empty.
 
@@ -42,9 +45,9 @@ The active session is handled by `/session` (like `/model` for the model). The c
 
 The current session auto-saves after every turn and command, so nothing is lost on exit.
 
-`/history` lists the active session's turns as a numbered index, one line per turn: `#<index>  [<status>]  <duration>  <tool count>  <prompt>`. The index is the turn's absolute `index`, so a turn can be named later regardless of the listing limit. `/history 3` shows the last three turns, `/history all` every turn, and `--thoughts` adds a dim first-line excerpt of the turn's thinking (`--thoughts all` prints the full thinking text). `/history --run <#id|role|session:name|name>` reads another run's session without switching focus or the current session: an id resolves to the live focused run when present, otherwise the saved session, a role resolves to its live `agent_<role>` engine or the saved session, and a name resolves to the saved session (legacy flat-`messages` files read as not found).
+`/history` lists the active session's turns as a numbered index, one line per turn: `#<index>  [<status>]  <duration>  <tool count>  <prompt>`. The index is the turn's absolute `index`, so a turn can be named later regardless of the listing limit. `/history 3` shows the last three turns, `/history all` every turn, and `--thoughts` adds a dim first-line excerpt of the turn's thinking (`--thoughts all` prints the full thinking text). `/history --run <#code|#id|role|session:name|name>` reads another run's session without switching focus or the current session: a code resolves to a live run first, otherwise the saved `ses_` session, an id resolves to the live focused run when present, otherwise the saved session, a role resolves to its live `agent_<role>` engine or the saved session, and a name resolves to the saved session (legacy flat-`messages` files read as not found).
 
-`/print <n>` reprints the turn with that absolute index: the full turn metadata block (`#index`, status, duration, tool count, `started`/`ended`, model, provider, mode, reasoning - empty values shown as `-`, so even a command turn is self-describing), then each part - the operator prompt, thinking (dim), every tool call with `input` JSON, `output`, `is_error`, and `analysis`, the answer, command records (a compaction summary included), and system notes. `/print <n>.<m>` prints only the m-th part of turn n. Each part's text is capped at `print_max_chars` characters (default 4000) with `... (N more chars, use --full)` appended, and `--full` (or `print_max_chars: 0`) removes the cap. `/print` takes the same `--run <#id|role|session:name|name>` selector as `/history`, resolving through the same rules without switching focus or the current session.
+`/print <n>` reprints the turn with that absolute index: the full turn metadata block (`#index`, status, duration, tool count, `started`/`ended`, model, provider, mode, reasoning - empty values shown as `-`, so even a command turn is self-describing), then each part - the operator prompt, thinking (dim), every tool call with `input` JSON, `output`, `is_error`, and `analysis`, the answer, command records (a compaction summary included), and system notes. `/print <n>.<m>` prints only the m-th part of turn n. Each part's text is capped at `print_max_chars` characters (default 4000) with `... (N more chars, use --full)` appended, and `--full` (or `print_max_chars: 0`) removes the cap. `/print` takes the same `--run <#code|#id|role|session:name|name>` selector as `/history`, resolving through the same rules without switching focus or the current session.
 
 ## Exporting to Markdown
 
@@ -60,7 +63,8 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 
 ```json
 {
-  "name": "ses_20260817_120000_what_is_oee",
+  "name": "ses_20260817_120000_ab12cd",
+  "code": "ab12cd",
   "created_at": "2026-08-17T12:00:00+00:00",
   "updated_at": "2026-08-17T12:05:15+00:00",
   "role": "",
@@ -75,6 +79,7 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 | Key | Type | Description |
 |-----|------|-------------|
 | `name` | string | Session name, matches the filename |
+| `code` | string | Six-character base36 run handle, embedded in an auto name's trailing component (empty for explicit names and legacy files) |
 | `created_at` | string | ISO 8601 UTC timestamp of creation |
 | `updated_at` | string | ISO 8601 UTC timestamp, bumped on every appended part |
 | `role` | string | Agent type that owns the session, stamped at creation (empty for a plain root or a headless run with no `--type`) |

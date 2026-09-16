@@ -1,8 +1,28 @@
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from uuid import uuid4
 
 from . import turns
+
+_BASE36 = '0123456789abcdefghijklmnopqrstuvwxyz'
+CODE_LEN = 6
+
+
+def run_code(*parts, length: int = CODE_LEN) -> str:
+    digest = hashlib.blake2b(digest_size=8)
+    for part in parts:
+        digest.update(str(part).encode())
+        digest.update(b'\n')
+    n = int.from_bytes(digest.digest(), 'big')
+    if n == 0:
+        return '0' * length
+    out = ''
+    while n and len(out) < length:
+        n, rem = divmod(n, 36)
+        out = _BASE36[rem] + out
+    return out.rjust(length, '0')
 
 
 class Session:
@@ -13,9 +33,11 @@ class Session:
                  updated_at: str | None = None,
                  parent_id: str = '',
                  sub_sessions: list | None = None,
-                 role: str = ''):
+                 role: str = '',
+                 code: str = ''):
         now = datetime.now(timezone.utc).isoformat(timespec='seconds')
         self.name = name
+        self.code = code or ''
         self.turns = turns_list or []
         self.errors = errors or []
         self.permissions = permissions or []
@@ -139,6 +161,7 @@ class Session:
             out_turns.append(serialized)
         return {
             'name': self.name,
+            'code': self.code,
             'turns': out_turns,
             'errors': self.errors,
             'permissions': self.permissions,
@@ -163,6 +186,7 @@ class Session:
             data.get('parent_id', ''),
             data.get('sub_sessions', []),
             data.get('role', ''),
+            data.get('code', ''),
         )
 
 
@@ -173,10 +197,29 @@ class SessionManager:
         self.current: Session | None = None
 
     def create(self, name: str | None = None, role: str = '') -> Session:
+        code = ''
         if not name:
-            name = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.current = Session(name, role=role)
+            name, code = self._new_name(role)
+        self.current = Session(name, code=code, role=role)
         return self.current
+
+    def _new_name(self, role: str) -> tuple[str, str]:
+        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+        while True:
+            code = run_code(ts, role, uuid4().hex)
+            name = f'ses_{ts}_{code}'
+            if not (self.sessions_dir / f'{name}.json').exists():
+                return name, code
+
+    def find_by_code(self, code: str) -> Session | None:
+        code = (code or '').strip().lower()
+        if not code:
+            return None
+        for path in sorted(self.sessions_dir.glob(f'*_{code}.json')):
+            session = self.read(path.stem)
+            if session is not None:
+                return session
+        return None
 
     def load(self, name: str) -> Session | None:
         s = self.read(name)

@@ -36,7 +36,11 @@
 
 ## Open
 
-- [ ] Stable short run code - a persisted per-session code so run ids survive a restart
+- [ ] Session naming, jobs and delegation - `job_<ts>_<code>` and `sub_<ts>_<code>`, dropping the job name and parent session from the filename
+- [ ] Warm-session naming - decide what a `session_key` warm delegation session is named (`sub_<key>` today vs `sub_<code(key)>`)
+- [ ] Role-session naming - decide how `agent_<role>` role-engine sessions are named
+- [ ] Remove `--session-id` - explicit session naming is no longer needed now that auto sessions are named `ses_<ts>_<code>`
+- [ ] Relocate job run sessions under `.replio/jobs/<name>/` (kept in `sessions/` for now)
 - [ ] Concurrent runs and live focus - run agents in the background, route output to per-run buffers and input to the focused run, stream live status and progress, and support cancellation and thread safety
   - Background execution - each run's loop in a worker thread, the parent yields and joins when the sub-run finishes
   - Output router - per-run buffers with a `[#id role]` prefix, the focused run streams, and switching shows only new output
@@ -105,6 +109,7 @@
 
 ## Done
 
+- [x] Stable run code - six-char session `code`, `ses_<ts>_<code>` names, and `#code` handles
 - [x] `/print` - reprint a turn (or one part) in full, cap via `print_max_chars`, `--full`, `--run`
 - [x] `/history` - numbered turn index with `n`/`all`, `--thoughts [all]`, and a `--run` selector
 - [x] Session turn cutover - turn/part storage, co-located tool calls, flat messages removed

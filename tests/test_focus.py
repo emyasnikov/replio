@@ -162,6 +162,11 @@ class TestFocusCommand(unittest.TestCase):
         self._dispatch('/focus #1')
         self.assertIs(self.chat.active(), self.chat)
 
+    def test_focus_by_run_code_resets(self):
+        self._dispatch('/focus writer')
+        self._dispatch(f'/focus #{self.chat.current_run.code}')
+        self.assertIs(self.chat.active(), self.chat)
+
     def test_focus_by_run_id_selects_role(self):
         self._draft('writer')
         child = [r for r in self.chat.runs.runs() if r.role == 'writer'][-1]

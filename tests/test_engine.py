@@ -170,24 +170,26 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(result.errors[0]['code'], 401)
         self.assertEqual(result.errors[0]['message'], 'Unauthorized')
 
-    def test_auto_name_session_transliterates_non_ascii(self):
-        self.engine.provider.chat.return_value = [
-            {'type': 'token', 'content': 'Answer'},
-            {'type': 'done', 'reason': 'stop'},
-        ]
-        self.engine.chat('Lies die Datei und prüfe sie')
+    def test_auto_session_name_embeds_code(self):
         name = self.engine.current_session.name
-        self.assertIn('_lies_die_datei_und_prufe', name)
-        self.assertTrue(all(ord(c) < 128 for c in name))
+        code = self.engine.current_session.code
+        self.assertTrue(name.startswith('ses_'))
+        self.assertTrue(name.endswith(f'_{code}'))
+        self.assertEqual(len(code), 6)
+        self.assertTrue(all(c in '0123456789abcdefghijklmnopqrstuvwxyz'
+                            for c in code))
+        self.assertIn('_', name)
 
-    def test_auto_name_session_drops_non_alnum(self):
+    def test_session_name_stable_across_turns(self):
         self.engine.provider.chat.return_value = [
             {'type': 'token', 'content': 'Answer'},
             {'type': 'done', 'reason': 'stop'},
         ]
-        self.engine.chat('what is 2+2? and <b>html</b>')
         name = self.engine.current_session.name
-        self.assertIn('_what_is_22_and', name)
+        code = self.engine.current_session.code
+        self.engine.chat('what is 2+2? and <b>html</b>')
+        self.assertEqual(self.engine.current_session.name, name)
+        self.assertEqual(self.engine.current_session.code, code)
 
     def test_load_or_create_session_persists_and_reloads(self):
         self.engine.load_or_create_session('foo')
@@ -196,7 +198,7 @@ class TestEngine(unittest.TestCase):
             {'type': 'token', 'content': 'Answer'},
             {'type': 'done', 'reason': 'stop'},
         ]
-        self.engine.chat('q', autoname=False)
+        self.engine.chat('q')
         self.assertEqual(self.engine.current_session.name, 'foo')
         self.assertTrue((self.engine.sessions.sessions_dir / 'foo.json').exists())
         self.engine.load_or_create_session('foo')

@@ -151,6 +151,18 @@ class TestHistoryCommand(unittest.TestCase):
         self.assertIn('live run prompt', out)
         self.assertIs(self.chat.current_session, before)
 
+    def test_run_code_uses_live_session(self):
+        add_turn(self.chat.current_session, user='coded prompt')
+        out = self._dispatch(f'/history --run #{self.chat.current_run.code}')
+        self.assertIn('coded prompt', out)
+
+    def test_run_code_reads_saved_session(self):
+        s = self.chat.sessions.create()
+        add_turn(s, user='saved coded prompt')
+        self.chat.sessions.save(s)
+        out = self._dispatch(f'/history --run #{s.code}')
+        self.assertIn('saved coded prompt', out)
+
     def test_run_id_falls_back_to_saved_session(self):
         run = self.chat.runs.start(role='', session='saved_run')
         self._saved('saved_run', user='saved run prompt')

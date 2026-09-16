@@ -23,13 +23,14 @@ The assistant is the operator's entry point. A composer turns a task into a team
 | Role-name sync - adopt assistant, composer, manager, and specialist across types, prompts, and docs | S | one canonical vocabulary |
 | Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO | S | documented direction |
 
-## Session history & reprint
+## Session naming
 
-Session logs are turn-structured, so history and reprint operate on the units the agent actually ran. This is the current track. Read back what a run did, including after focus moved away and the terminal no longer shows it. `/history` numbers each turn in a printable index, so `/print <n>` reprints that turn in full - the user prompt, its thinking, every tool call with output, and the answer. Both take `--run <#code|role|session:name>` to read another run without switching focus, and `/print --full` drops the default output cap.
+Interactive sessions are turn-structured and end in a durable code, so `/history`, `/print`, `/focus`, and `handoff` can name a run across restarts. Job runs and delegation sub-agents still embed the job name or parent session in their filenames, and the two stable-name kinds (warm delegation, role engine) carry no code. This package finishes the naming scheme.
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Stable run code - a short per-session code (base36 hash of `created_at` + session name, so it does not collide) persisted on the session and shown for the run, so `/focus` and `handoff` can name a run across restarts | S | durable run handles |
+| Job and delegation names - `job_<ts>_<code>` and `sub_<ts>_<code>`, dropping the job name and parent session from the filename | S-M | consistent durable names |
+| Warm-session and role-session naming - settle how `session_key` warm sessions and `agent_<role>` role engines are named, then apply it | S | settled naming policy |
 
 ## Control & governance
 

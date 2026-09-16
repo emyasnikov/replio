@@ -65,7 +65,8 @@ def _focus_label(engine):
     run = getattr(engine, 'current_run', None)
     prefix = f'#{run.id} ' if run is not None else ''
     role = engine.role or 'root'
-    return f'{prefix}{role} ({engine.current_session.name})'
+    code = f' [{run.code}]' if run is not None and run.code else ''
+    return f'{prefix}{role} ({engine.current_session.name}{code})'
 
 
 def _focus_run_line(run, current_id, indent=0):
@@ -74,6 +75,8 @@ def _focus_run_line(run, current_id, indent=0):
     task = (run.task or '').strip().splitlines()
     head = task[0][:60] if task else ''
     line = f'{"  " * indent}{mark} #{run.id} {role} [{run.status}] {run.session}'
+    if run.code:
+        line += f' {run.code}'
     if head:
         line += f'  {head}'
     return line
@@ -119,9 +122,12 @@ def _focus_target(focus, runs, arg):
             return None, None
         i = ordered.index(current) + (1 if low == 'next' else -1)
         return ('run', ordered[i]) if 0 <= i < len(ordered) else (None, None)
-    token = arg[1:] if arg.startswith('#') else arg
+    explicit = arg.startswith('#')
+    token = arg[1:] if explicit else arg
     if token.isdigit():
         return 'run', runs.get(int(token))
+    if explicit:
+        return 'run', runs.find_by_code(token)
     if low.startswith('session:'):
         name = arg.split(':', 1)[1].strip()
         return 'run', next(
@@ -168,13 +174,17 @@ def _target_session(chat, target):
         name = target.split(':', 1)[1].strip()
         session = chat.sessions.read(name)
         return (session, '') if session is not None else _target_error(target)
-    token = target[1:] if target.startswith('#') else target
-    if token.isdigit():
-        run = chat.runs.get(int(token))
-        if run is None:
-            return _target_error(target)
+    explicit = target.startswith('#')
+    token = target[1:] if explicit else target
+    run = chat.runs.get(int(token)) if token.isdigit() else None
+    if run is None and explicit:
+        run = chat.runs.find_by_code(token)
+    if run is not None:
         session = _live_session_for_run(chat, run.id) or \
             chat.sessions.read(run.session)
+        return (session, '') if session is not None else _target_error(target)
+    if explicit:
+        session = chat.sessions.find_by_code(token)
         return (session, '') if session is not None else _target_error(target)
     focus = _focus_manager(chat)
     if focus is not None and (focus.find(target) is not None
@@ -1209,7 +1219,8 @@ def register_builtins(registry):
         turns = session.turns or []
         shown = turns if limit == 0 else turns[-limit:]
         role = f' [{session.role}]' if session.role else ''
-        print(f'{session.name} - {len(turns)} turns{role}')
+        code = f' [{session.code}]' if session.code else ''
+        print(f'{session.name} - {len(turns)} turns{role}{code}')
         for turn in shown:
             print(turn_summary(turn, thoughts=thoughts))
         print('/print <n> reprints a turn')

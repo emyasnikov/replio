@@ -34,7 +34,7 @@ def _engine_from_args(args) -> Engine:
 def cmd_run(args) -> int:
     engine = _engine_from_args(args)
     engine.load_or_create_session(getattr(args, 'session_id', None))
-    result = engine.chat(args.prompt, autoname=getattr(args, 'session_id', None) is None)
+    result = engine.chat(args.prompt)
     if args.output == 'json':
         sys.stdout.write(json.dumps(result.to_dict(), indent=2) + '\n')
     return 0 if result.status in ('ok', 'truncated') else 1

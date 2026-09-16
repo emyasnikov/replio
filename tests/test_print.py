@@ -131,6 +131,11 @@ class TestPrintCommand(unittest.TestCase):
         out = self._dispatch('/print 1 --run writer')
         self.assertIn('writer prompt', out)
 
+    def test_run_code_uses_live_session(self):
+        add_turn(self.chat.current_session, user='coded prompt')
+        out = self._dispatch(f'/print 1 --run #{self.chat.current_run.code}')
+        self.assertIn('coded prompt', out)
+
     def test_run_id_uses_live_session(self):
         add_turn(self.chat.current_session, user='live prompt')
         out = self._dispatch(f'/print 1 --run #{self.chat.current_run.id}')

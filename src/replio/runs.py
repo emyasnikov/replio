@@ -20,6 +20,7 @@ class Run:
     started_at: str = field(default_factory=_now)
     ended_at: str = ''
     buffer: list[str] = field(default_factory=list)
+    code: str = ''
 
 
 class RunRegistry:
@@ -29,9 +30,9 @@ class RunRegistry:
         self._next_id = 1
 
     def start(self, role: str, session: str, parent: int | None = None,
-              task: str = '') -> Run:
+              task: str = '', code: str = '') -> Run:
         run = Run(id=self._next_id, role=role, session=session,
-                  parent=parent, task=task)
+                  parent=parent, task=task, code=code or '')
         self._next_id += 1
         self._runs[run.id] = run
         self._order.append(run.id)
@@ -42,6 +43,16 @@ class RunRegistry:
 
     def get(self, run_id: int) -> Run | None:
         return self._runs.get(run_id)
+
+    def find_by_code(self, code: str) -> Run | None:
+        code = (code or '').strip().lower()
+        if not code:
+            return None
+        for run_id in self._order:
+            run = self._runs[run_id]
+            if (run.code or '').lower() == code:
+                return run
+        return None
 
     def finish(self, run_id: int, status: str = 'done') -> Run | None:
         run = self._runs.get(run_id)

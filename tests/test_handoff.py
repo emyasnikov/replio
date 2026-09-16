@@ -59,6 +59,13 @@ class TestHandoffTool(unittest.TestCase):
         self._handoff(f'#{child.id}')
         self.assertEqual(self.chat._pending_handoff['role'], 'writer')
 
+    def test_handoff_to_run_code(self):
+        code = self.chat.current_run.code
+        out = self._handoff(f'#{code}')
+        self.assertTrue(out.startswith('[handoff]'))
+        self.assertEqual(self.chat._pending_handoff['role'], 'assistant')
+        self.assertEqual(self.chat.current_run.status, 'paused')
+
     def test_handoff_to_child(self):
         self.chat.provider.chat.side_effect = [
             [{'type': 'token', 'content': 'Draft ready.'},

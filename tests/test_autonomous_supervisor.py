@@ -130,7 +130,7 @@ class TestAutonomousSupervisor(unittest.TestCase):
                         ui=HeadlessUI(auto='deny'), provider=self.provider)
         engine._summarize = MagicMock(return_value='summary')
         engine.load_or_create_session(ask.origin)
-        engine.chat('continue', autoname=False)
+        engine.chat('continue')
         sent = self.provider.chat.call_args.args[0]
         self.assertTrue(any('use port 8080' in (m.get('content') or '')
                             for m in sent))

@@ -94,7 +94,7 @@ def _attempt(engine: Engine, prompt: str, timeout: int) -> TurnResult:
     timeout = max(0, int(timeout or 0))
     if timeout <= 0:
         try:
-            return engine.chat(prompt, autoname=False)
+            return engine.chat(prompt)
         except Exception as e:
             return TurnResult(status='error',
                               errors=[{'code': 0, 'message': str(e)}],
@@ -103,7 +103,7 @@ def _attempt(engine: Engine, prompt: str, timeout: int) -> TurnResult:
 
     def target():
         try:
-            bag['value'] = engine.chat(prompt, autoname=False)
+            bag['value'] = engine.chat(prompt)
         except Exception as e:
             bag['error'] = e
 
