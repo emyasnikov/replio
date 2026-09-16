@@ -3,6 +3,9 @@ import os
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from uuid import uuid4
+
+from .sessions.manager import run_code
 
 MIN_INTERVAL = 60
 CRON_HORIZON_DAYS = 4 * 366 + 1
@@ -327,15 +330,10 @@ def validate_schedule(schedule: dict):
         raise ValueError('schedule needs one of: cron, interval, at')
 
 
-def _sanitize(name: str) -> str:
-    cleaned = ''.join(c for c in name if c.isalnum() or c in '-_ ').strip()
-    cleaned = cleaned.replace(' ', '_')
-    return cleaned or 'job'
-
-
 def job_session_name(name: str, when: datetime) -> str:
     ts = when.strftime('%Y%m%d_%H%M%S')
-    return f'job_{ts}_{_sanitize(name)}'
+    code = run_code('job', name, when.isoformat(), uuid4().hex)
+    return f'job_{ts}_{code}'
 
 
 def task_file_path(worktree: Path, job: 'Job') -> Path:
@@ -588,7 +586,7 @@ def render_show(registry: JobRegistry, name: str, print=print) -> bool:
     print(f'  schedule:   {describe_schedule(job)}')
     if job.prompt:
         print(f'  prompt:     {job.prompt}')
-    print(f'  session:    {job.session or "per-run job_<ts>_<name>"}')
+    print(f'  session:    {job.session or "per-run job_<ts>_<code>"}')
     if job.task_file:
         print(f'  task file:  {job.task_file} '
               '(edit it - changes apply on the next run)')

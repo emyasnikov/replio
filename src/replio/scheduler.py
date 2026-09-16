@@ -14,13 +14,10 @@ from .ui import HeadlessUI
 
 
 def _fresh_job_session(sessions_dir: Path, name: str, when: datetime) -> str:
-    base = job_session_name(name, when)
-    candidate = base
-    n = 1
-    while (Path(sessions_dir) / f'{candidate}.json').exists():
-        n += 1
-        candidate = f'{base}_{n}'
-    return candidate
+    while True:
+        candidate = job_session_name(name, when)
+        if not (Path(sessions_dir) / f'{candidate}.json').exists():
+            return candidate
 
 
 def _build_engine(config: Config, job: Job, verbose: bool,
@@ -86,7 +83,8 @@ def _build_engine(config: Config, job: Job, verbose: bool,
     engine.current_run.role = engine.role
     if grant_ceiling is not None:
         engine._grant_ceiling = grant_ceiling
-    engine.load_or_create_session(session_name or job.session or f'job.{job.name}')
+    fallback = job_session_name(job.name, datetime.now(timezone.utc))
+    engine.load_or_create_session(session_name or job.session or fallback)
     return engine
 
 

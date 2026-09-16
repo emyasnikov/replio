@@ -42,31 +42,28 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertIs(sub.provider, self.chat.provider)
         self.assertIs(sub._plugin_manager, self.chat._plugin_manager)
         self.assertTrue(sub.current_session.name.startswith('sub_'))
+        self.assertEqual(len(sub.current_session.code), 6)
         self.assertTrue(sub.current_session.name.endswith(
-            f'_{self.chat.current_session.name}'))
+            f'_{sub.current_session.code}'))
+        self.assertEqual(sub.current_run.code, sub.current_session.code)
         self.assertEqual(sub.current_session.parent_id,
                          self.chat.current_session.name)
 
-    def test_sub_session_name_uses_parent_id(self):
+    def test_sub_session_name_embeds_code(self):
         from replio.engine import _sub_session_name
-        name = _sub_session_name('20260825_120000',
-                                 'ses_20260825_110000_what_is_oee',
+        from replio.sessions.manager import name_code
+        name = _sub_session_name('ses_20260825_110000_ab12cd',
                                  self.sessions_dir)
-        self.assertEqual(
-            name, 'sub_20260825_120000_ses_20260825_110000_what_is_oee')
+        self.assertTrue(name.startswith('sub_'))
+        code = name_code(name)
+        self.assertEqual(len(code), 6)
+        self.assertTrue(name.endswith(f'_{code}'))
 
-    def test_sub_session_name_sanitizes_and_truncates(self):
+    def test_sub_session_name_is_unique(self):
         from replio.engine import _sub_session_name
-        name = _sub_session_name('20260825_120000', 'x' * 90, self.sessions_dir)
-        self.assertLessEqual(len(name), 5 + 1 + 15 + 1 + 64)
-        self.assertNotIn(' ', name)
-
-    def test_sub_session_name_dedupes_collision(self):
-        from replio.engine import _sub_session_name
-        parent = 'ses_parent'
-        (self.sessions_dir / 'sub_20260825_120000_ses_parent.json').write_text('{}')
-        name = _sub_session_name('20260825_120000', parent, self.sessions_dir)
-        self.assertEqual(name, 'sub_20260825_120000_ses_parent_2')
+        names = {_sub_session_name('parent', self.sessions_dir)
+                 for _ in range(10)}
+        self.assertEqual(len(names), 10)
 
     def test_subagent_applies_type_prompt_mode_permissions(self):
         sub = self.chat._new_sub_engine('writer')
@@ -204,7 +201,8 @@ class TestSubAgentEngine(unittest.TestCase):
         result = self.chat.run_subagent('writer', 'write the doc')
         self.assertEqual(result.content, 'Draft ready.')
         self.assertTrue(result.session.startswith('sub_'))
-        self.assertTrue(result.session.endswith(f'_{self.chat.current_session.name}'))
+        from replio.sessions.manager import name_code
+        self.assertEqual(len(name_code(result.session)), 6)
         data = self._delegate_log('writer')
         parts = [p for t in data['turns'] for p in t.get('parts') or []]
         self.assertEqual(parts[0]['type'], 'user')

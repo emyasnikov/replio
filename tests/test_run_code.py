@@ -4,7 +4,7 @@ from pathlib import Path
 
 from replio.runs import RunRegistry
 from replio.sessions.manager import (CODE_LEN, Session, SessionManager,
-                                     run_code)
+                                     coded_name, name_code, run_code)
 from tests.helpers import make_chat
 
 
@@ -59,6 +59,24 @@ class TestRunCode(unittest.TestCase):
         found = manager.find_by_code(s.code)
         self.assertIsNotNone(found)
         self.assertEqual(found.name, s.name)
+
+    def test_name_code_parses_coded_names(self):
+        self.assertEqual(name_code('ses_20260915_120000_ab12cd'), 'ab12cd')
+        self.assertEqual(name_code('job_20260915_120000_ab12cd'), 'ab12cd')
+        self.assertEqual(name_code('sub_20260915_120000_ab12cd'), 'ab12cd')
+
+    def test_name_code_ignores_uncoded_names(self):
+        self.assertEqual(name_code(''), '')
+        self.assertEqual(name_code('myname'), '')
+        self.assertEqual(name_code('agent_writer'), '')
+        self.assertEqual(name_code('sub_thesis__writer'), '')
+        self.assertEqual(name_code('ses_20260915_120000_slug'), '')
+
+    def test_coded_name_round_trips_code(self):
+        name = coded_name('ses', 'assistant')
+        code = name_code(name)
+        self.assertEqual(len(code), CODE_LEN)
+        self.assertTrue(name.endswith(f'_{code}'))
 
     def test_find_by_code_normalizes_and_misses(self):
         manager = SessionManager(Path(tempfile.mkdtemp()))

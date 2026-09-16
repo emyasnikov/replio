@@ -640,7 +640,7 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(len(calls), 2)
         self.assertNotEqual(calls[0], calls[1])
         for session in calls:
-            self.assertRegex(session, r'job_\d{8}_\d{6}_nightly(?:_\d+)?')
+            self.assertRegex(session, r'job_\d{8}_\d{6}_[0-9a-z]{6}')
 
     def test_explicit_session_stays_stable(self):
         calls = []
@@ -658,22 +658,26 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(calls, ['myjobby', 'myjobby'])
 
     def test_fresh_job_session_dedupes_collision(self):
-        from replio.scheduler import _fresh_job_session
+        from replio import scheduler
         from datetime import datetime
         sessions_dir = self.config.local_path.parent / 'sessions'
         sessions_dir.mkdir(parents=True, exist_ok=True)
         when = datetime(2026, 8, 26, 10, 30, 5)
-        (sessions_dir / 'job_20260826_103005_nightly.json').write_text('{}')
-        name = _fresh_job_session(sessions_dir, 'nightly', when)
-        self.assertEqual(name, 'job_20260826_103005_nightly_2')
+        (sessions_dir / 'job_fixed.json').write_text('{}')
+        with patch('replio.scheduler.job_session_name',
+                   side_effect=['job_fixed', 'job_free']):
+            name = scheduler._fresh_job_session(sessions_dir, 'nightly', when)
+        self.assertEqual(name, 'job_free')
 
     def test_job_session_name_format(self):
         from replio.jobs import job_session_name
         from datetime import datetime
         when = datetime(2026, 8, 26, 10, 30, 5)
-        self.assertEqual(job_session_name('nightly report', when),
-                         'job_20260826_103005_nightly_report')
-        self.assertTrue(job_session_name('!!!', when).startswith('job_20260826_103005_'))
+        name = job_session_name('nightly report', when)
+        self.assertTrue(name.startswith('job_20260826_103005_'))
+        self.assertEqual(len(name.rsplit('_', 1)[1]), 6)
+        self.assertNotEqual(job_session_name('a', when),
+                            job_session_name('b', when))
 
 
 class _FakeReport:

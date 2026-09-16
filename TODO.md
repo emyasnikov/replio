@@ -36,7 +36,6 @@
 
 ## Open
 
-- [ ] Session naming, jobs and delegation - `job_<ts>_<code>` and `sub_<ts>_<code>`, dropping the job name and parent session from the filename
 - [ ] Warm-session naming - decide what a `session_key` warm delegation session is named (`sub_<key>` today vs `sub_<code(key)>`)
 - [ ] Role-session naming - decide how `agent_<role>` role-engine sessions are named
 - [ ] Remove `--session-id` - explicit session naming is no longer needed now that auto sessions are named `ses_<ts>_<code>`
@@ -109,6 +108,7 @@
 
 ## Done
 
+- [x] Job and delegation names - `job_<ts>_<code>` and `sub_<ts>_<code>`
 - [x] Stable run code - six-char session `code`, `ses_<ts>_<code>` names, and `#code` handles
 - [x] `/print` - reprint a turn (or one part) in full, cap via `print_max_chars`, `--full`, `--run`
 - [x] `/history` - numbered turn index with `n`/`all`, `--thoughts [all]`, and a `--run` selector

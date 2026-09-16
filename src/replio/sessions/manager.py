@@ -1,5 +1,6 @@
 import hashlib
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -8,6 +9,7 @@ from . import turns
 
 _BASE36 = '0123456789abcdefghijklmnopqrstuvwxyz'
 CODE_LEN = 6
+_CODED_NAME = re.compile(r'^(?:ses|job|sub)_\d{8}_\d{6}_([0-9a-z]{6})$')
 
 
 def run_code(*parts, length: int = CODE_LEN) -> str:
@@ -23,6 +25,22 @@ def run_code(*parts, length: int = CODE_LEN) -> str:
         n, rem = divmod(n, 36)
         out = _BASE36[rem] + out
     return out.rjust(length, '0')
+
+
+def coded_name(prefix: str, *parts, sessions_dir: Path | None = None) -> str:
+    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+    while True:
+        code = run_code(prefix, ts, *parts, uuid4().hex)
+        name = f'{prefix}_{ts}_{code}'
+        taken = sessions_dir is not None and \
+            (Path(sessions_dir) / f'{name}.json').exists()
+        if not taken:
+            return name
+
+
+def name_code(name: str) -> str:
+    match = _CODED_NAME.match(name or '')
+    return match.group(1) if match else ''
 
 
 class Session:
@@ -197,19 +215,10 @@ class SessionManager:
         self.current: Session | None = None
 
     def create(self, name: str | None = None, role: str = '') -> Session:
-        code = ''
         if not name:
-            name, code = self._new_name(role)
-        self.current = Session(name, code=code, role=role)
+            name = coded_name('ses', role, sessions_dir=self.sessions_dir)
+        self.current = Session(name, code=name_code(name), role=role)
         return self.current
-
-    def _new_name(self, role: str) -> tuple[str, str]:
-        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-        while True:
-            code = run_code(ts, role, uuid4().hex)
-            name = f'ses_{ts}_{code}'
-            if not (self.sessions_dir / f'{name}.json').exists():
-                return name, code
 
     def find_by_code(self, code: str) -> Session | None:
         code = (code or '').strip().lower()

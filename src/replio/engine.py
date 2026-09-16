@@ -7,7 +7,7 @@ from typing import Callable
 
 from .config import Config
 from .runs import Run, RunRegistry
-from .sessions.manager import SessionManager
+from .sessions.manager import SessionManager, coded_name
 from .sessions import turns
 from .commands.registry import CommandRegistry
 from .commands.builtins import register_builtins
@@ -91,14 +91,8 @@ def _sanitize_session(name: str, limit: int = 64) -> str:
     return cleaned
 
 
-def _sub_session_name(ts: str, parent: str, sessions_dir: Path) -> str:
-    base = f'sub_{ts}_{_sanitize_session(parent)}'
-    candidate = base
-    n = 1
-    while (Path(sessions_dir) / f'{candidate}.json').exists():
-        n += 1
-        candidate = f'{base}_{n}'
-    return candidate
+def _sub_session_name(parent: str, sessions_dir: Path) -> str:
+    return coded_name('sub', parent, sessions_dir=sessions_dir)
 
 
 def _warm_session_name(key: str) -> str:
@@ -530,14 +524,13 @@ class Engine:
             parent_self, parent_grant, agent_type.grant_permission, permissions)
         sub._team_depth = getattr(self, '_team_depth', 0)
         sub._team_stack = list(getattr(self, '_team_stack', []))
-        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
         if session_name:
             sub.load_or_create_session(session_name)
         elif session_key:
             sub.load_or_create_session(_warm_session_name(session_key))
         else:
             sub.load_or_create_session(_sub_session_name(
-                ts, self.current_session.name, self.sessions.sessions_dir))
+                self.current_session.name, self.sessions.sessions_dir))
         if link_parent:
             sub.current_session.parent_id = self.current_session.name
         return sub

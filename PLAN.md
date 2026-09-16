@@ -25,11 +25,10 @@ The assistant is the operator's entry point. A composer turns a task into a team
 
 ## Session naming
 
-Interactive sessions are turn-structured and end in a durable code, so `/history`, `/print`, `/focus`, and `handoff` can name a run across restarts. Job runs and delegation sub-agents still embed the job name or parent session in their filenames, and the two stable-name kinds (warm delegation, role engine) carry no code. This package finishes the naming scheme.
+Interactive, job, and delegation sessions are turn-structured and end in a durable code, so `/history`, `/print`, `/focus`, and `handoff` can name a run across restarts. The two remaining stable-name kinds - warm `session_key` delegations and `agent_<role>` role engines - still carry no code. This package settles their naming.
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Job and delegation names - `job_<ts>_<code>` and `sub_<ts>_<code>`, dropping the job name and parent session from the filename | S-M | consistent durable names |
 | Warm-session and role-session naming - settle how `session_key` warm sessions and `agent_<role>` role engines are named, then apply it | S | settled naming policy |
 
 ## Control & governance
