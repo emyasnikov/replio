@@ -250,7 +250,7 @@ class ChatLoop(Engine):
             return
         run = getattr(engine, 'current_run', None)
         prefix = f'#{run.id} ' if run is not None else ''
-        label = f'{prefix}{engine.role or "root"} ({engine.current_session.name})'
+        label = f'{prefix}{engine.role or "root"} ({engine.current_session.session_name})'
         print(f'Focused: {label}')
 
     def _save_sessions(self):

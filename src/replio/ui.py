@@ -299,7 +299,7 @@ class ReplUI:
         self.flush()
         timeout = self._confirm_timeout()
         prefix = ''
-        if origin and origin != self._loop.current_session.name:
+        if origin and origin != self._loop.current_session.session_name:
             prefix = f'[{origin}] '
         lines = [f'{prefix}Ask: {question}']
         if context:

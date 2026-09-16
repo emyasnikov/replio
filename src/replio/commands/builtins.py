@@ -65,8 +65,8 @@ def _focus_label(engine):
     run = getattr(engine, 'current_run', None)
     prefix = f'#{run.id} ' if run is not None else ''
     role = engine.role or 'root'
-    code = f' [{run.code}]' if run is not None and run.code else ''
-    return f'{prefix}{role} ({engine.current_session.name}{code})'
+    session_id = f' [{run.session_id}]' if run is not None and run.session_id else ''
+    return f'{prefix}{role} ({engine.current_session.session_name}{session_id})'
 
 
 def _focus_run_line(run, current_id, indent=0):
@@ -75,8 +75,8 @@ def _focus_run_line(run, current_id, indent=0):
     task = (run.task or '').strip().splitlines()
     head = task[0][:60] if task else ''
     line = f'{"  " * indent}{mark} #{run.id} {role} [{run.status}] {run.session}'
-    if run.code:
-        line += f' {run.code}'
+    if run.session_id:
+        line += f' {run.session_id}'
     if head:
         line += f'  {head}'
     return line
@@ -127,7 +127,7 @@ def _focus_target(focus, runs, arg):
     if token.isdigit():
         return 'run', runs.get(int(token))
     if explicit:
-        return 'run', runs.find_by_code(token)
+        return 'run', runs.find_by_session_id(token)
     if low.startswith('session:'):
         name = arg.split(':', 1)[1].strip()
         return 'run', next(
@@ -178,13 +178,13 @@ def _target_session(chat, target):
     token = target[1:] if explicit else target
     run = chat.runs.get(int(token)) if token.isdigit() else None
     if run is None and explicit:
-        run = chat.runs.find_by_code(token)
+        run = chat.runs.find_by_session_id(token)
     if run is not None:
         session = _live_session_for_run(chat, run.id) or \
             chat.sessions.read(run.session)
         return (session, '') if session is not None else _target_error(target)
     if explicit:
-        session = chat.sessions.find_by_code(token)
+        session = chat.sessions.find_by_session_id(token)
         return (session, '') if session is not None else _target_error(target)
     focus = _focus_manager(chat)
     if focus is not None and (focus.find(target) is not None
@@ -1057,14 +1057,14 @@ def register_builtins(registry):
 
         if not action:
             n, chars = chat._context_size()
-            print(f'Current session: {chat.current_session.name} '
+            print(f'Current session: {chat.current_session.session_name} '
                   f'({n} messages · {chat._human_chars(chars)} context)')
             return
 
         if action == 'new':
             chat.current_session = chat.sessions.create(
                 role=getattr(chat, 'role', ''))
-            print(f'New session: {chat.current_session.name}')
+            print(f'New session: {chat.current_session.session_name}')
         elif action == 'load':
             name = parts[1] if len(parts) > 1 else ''
             if not name:
@@ -1149,7 +1149,7 @@ def register_builtins(registry):
         if not action or action == 'list':
             sessions = chat.sessions.list()
             if sessions:
-                current = chat.sessions.current.name if chat.sessions.current else ''
+                current = chat.sessions.current.session_name if chat.sessions.current else ''
                 for s in sessions:
                     marker = '  <-- current' if s == current else ''
                     child = ''
@@ -1219,8 +1219,8 @@ def register_builtins(registry):
         turns = session.turns or []
         shown = turns if limit == 0 else turns[-limit:]
         role = f' [{session.role}]' if session.role else ''
-        code = f' [{session.code}]' if session.code else ''
-        print(f'{session.name} - {len(turns)} turns{role}{code}')
+        session_id = f' [{session.session_id}]' if session.session_id else ''
+        print(f'{session.session_name} - {len(turns)} turns{role}{session_id}')
         for turn in shown:
             print(turn_summary(turn, thoughts=thoughts))
         print('/print <n> reprints a turn')
@@ -1322,7 +1322,7 @@ def register_builtins(registry):
                 return
             from ..asks import inject_answer
             injected = inject_answer(store, answered)
-            if injected and chat.current_session.name == answered.origin:
+            if injected and chat.current_session.session_name == answered.origin:
                 chat.load_or_create_session(answered.origin)
             note = f' -> resumed in session {answered.origin}' if injected \
                 else ' (origin session missing)'

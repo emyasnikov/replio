@@ -28,7 +28,7 @@ class TestFocusManager(unittest.TestCase):
         self.assertIs(self.focus.active, engine)
         self.assertFalse(self.focus.is_root())
         self.assertEqual(engine.role, 'writer')
-        self.assertEqual(engine.current_session.name, 'agent_writer')
+        self.assertEqual(engine.current_session.session_name, 'agent_writer')
         self.assertIs(engine._ui, self.chat._ui)
         self.assertIs(self.chat._ui._loop, engine)
 
@@ -162,9 +162,9 @@ class TestFocusCommand(unittest.TestCase):
         self._dispatch('/focus #1')
         self.assertIs(self.chat.active(), self.chat)
 
-    def test_focus_by_run_code_resets(self):
+    def test_focus_by_session_id_resets(self):
         self._dispatch('/focus writer')
-        self._dispatch(f'/focus #{self.chat.current_run.code}')
+        self._dispatch(f'/focus #{self.chat.current_run.session_id}')
         self.assertIs(self.chat.active(), self.chat)
 
     def test_focus_by_run_id_selects_role(self):

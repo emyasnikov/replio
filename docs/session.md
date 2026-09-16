@@ -6,7 +6,7 @@ Sessions are complete, append-only conversation logs. Every turn - the operator 
 
 Each session is one JSON file: `.replio/sessions/<name>.json`, next to the local `.replio/config.json`.
 
-Names are explicit (`/session new <name>`, `/session load <name>`, `replio run --session-id <name>`) or auto-generated as `ses_<timestamp>_<code>`, e.g. `ses_20260817_120000_ab12cd`. The `<code>` is a six-character base36 hash minted at creation and embedded in the name, so an auto session is fully named from the start (no prompt-slug rename).
+Names are explicit (`/session new <name>`, `/session load <name>`, `replio run --session-id <name>`) or auto-generated as `ses_<timestamp>_<id>`, e.g. `ses_20260817_120000_ab12cd`. The `<id>` is a six-character base36 hash minted at creation and embedded in the name, so an auto session is fully named from the start (no prompt-slug rename).
 
 Session files carry a type prefix so the kinds stay distinguishable at a glance:
 
@@ -17,13 +17,13 @@ Session files carry a type prefix so the kinds stay distinguishable at a glance:
 | `ses_` | Interactive/auto sessions | `ses_20260817_120000_ab12cd.json` |
 | `sub_` | Delegation sub-agents | `sub_20260817_120100_cd34ef.json` |
 
-The trailing `<code>` is a six-character base36 hash minted at creation and embedded in the name, so a generated session is fully named from the start (no prompt-slug rename). The code is the stable run handle: each run mirrors it as `Run.code`, `/focus` and `/history` show it, and commands accept it as `#code` (`/focus #ab12cd`, `handoff` target `#ab12cd`, `/history --run #ab12cd`, `/print --run #ab12cd`). Resolution is a direct filename glob for `*_<code>.json`, so a code is found without reading every session. The `ses_`, `job_`, and `sub_` kinds carry a code. `agent_` role sessions and warm `sub_<key>` member sessions are stable, deterministic names with no code yet. Explicit names carry no code and are referenced by `session:<name>`. Legacy files predate the code and resolve by name only.
+The trailing `<id>` is a six-character base36 hash minted at creation and embedded in the name, so a generated session is fully named from the start (no prompt-slug rename). The `session_id` is the stable run handle: each run mirrors it as `Run.session_id`, `/focus` and `/history` show it, and commands accept it as `#<id>` (`/focus #ab12cd`, `handoff` target `#ab12cd`, `/history --run #ab12cd`, `/print --run #ab12cd`). Resolution is a direct filename glob for `*_<id>.json`, so an id is found without reading every session. The `ses_`, `job_`, and `sub_` kinds carry an id. `agent_` role sessions and warm `sub_<key>` member sessions are stable, deterministic names with no id yet. Explicit names carry no id and are referenced by `session:<name>`. Files written before the `session_name`/`session_id` fields were introduced no longer load (the file is left on disk and stays listed).
 
-Delegation writes each sub-agent's log as its own session: `sub_<ts>_<code>` (`sub_20260817_120100_cd34ef`), with the calling session recorded as `parent_id` rather than in the filename. Job runs use `job_<ts>_<code>`, with the job name still recorded in the job registry and each run's `JobRun.session`. A warm member session (`delegate`/team `session_key`, or a team's `warm_sessions`) is named `sub_<key>` instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/sessions` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.
+Delegation writes each sub-agent's log as its own session: `sub_<ts>_<id>` (`sub_20260817_120100_cd34ef`), with the calling session recorded as `parent_id` rather than in the filename. Job runs use `job_<ts>_<id>`, with the job name still recorded in the job registry and each run's `JobRun.session`. A warm member session (`delegate`/team `session_key`, or a team's `warm_sessions`) is named `sub_<key>` instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/sessions` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.
 
 Each session also records the agent `role` that owns it - the bound root type, the delegated type, the team-stage type, or the job type - stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no `--type` leaves `role` empty.
 
-Older flat-`messages` session files are not converted and do not load: `read()` returns nothing for them, the file is left untouched on disk, and `/sessions` still lists the name. The turn format is a full cutover, not a compatibility layer.
+Session files written before the turn format (flat `messages`) and files written before the `session_name`/`session_id` rename do not load: `read()` returns nothing for them, the file is left untouched on disk, and `/sessions` still lists the name. The turn format is a full cutover, not a compatibility layer.
 
 ## Managing sessions
 
@@ -45,9 +45,9 @@ The active session is handled by `/session` (like `/model` for the model). The c
 
 The current session auto-saves after every turn and command, so nothing is lost on exit.
 
-`/history` lists the active session's turns as a numbered index, one line per turn: `#<index>  [<status>]  <duration>  <tool count>  <prompt>`. The index is the turn's absolute `index`, so a turn can be named later regardless of the listing limit. `/history 3` shows the last three turns, `/history all` every turn, and `--thoughts` adds a dim first-line excerpt of the turn's thinking (`--thoughts all` prints the full thinking text). `/history --run <#code|#id|role|session:name|name>` reads another run's session without switching focus or the current session: a code resolves to a live run first, otherwise the saved `ses_` session, an id resolves to the live focused run when present, otherwise the saved session, a role resolves to its live `agent_<role>` engine or the saved session, and a name resolves to the saved session (legacy flat-`messages` files read as not found).
+`/history` lists the active session's turns as a numbered index, one line per turn: `#<index>  [<status>]  <duration>  <tool count>  <prompt>`. The index is the turn's absolute `index`, so a turn can be named later regardless of the listing limit. `/history 3` shows the last three turns, `/history all` every turn, and `--thoughts` adds a dim first-line excerpt of the turn's thinking (`--thoughts all` prints the full thinking text). `/history --run <#id|#run|role|session:name|name>` reads another run's session without switching focus or the current session: a session id (`#ab12cd`) resolves to a live run first, otherwise the saved `ses_` session, a numeric run id (`#3`) resolves to the live focused run when present, otherwise the saved session, a role resolves to its live `agent_<role>` engine or the saved session, and a name resolves to the saved session (files without the current turn format read as not found).
 
-`/print <n>` reprints the turn with that absolute index: the full turn metadata block (`#index`, status, duration, tool count, `started`/`ended`, model, provider, mode, reasoning - empty values shown as `-`, so even a command turn is self-describing), then each part - the operator prompt, thinking (dim), every tool call with `input` JSON, `output`, `is_error`, and `analysis`, the answer, command records (a compaction summary included), and system notes. `/print <n>.<m>` prints only the m-th part of turn n. Each part's text is capped at `print_max_chars` characters (default 4000) with `... (N more chars, use --full)` appended, and `--full` (or `print_max_chars: 0`) removes the cap. `/print` takes the same `--run <#code|#id|role|session:name|name>` selector as `/history`, resolving through the same rules without switching focus or the current session.
+`/print <n>` reprints the turn with that absolute index: the full turn metadata block (`#index`, status, duration, tool count, `started`/`ended`, model, provider, mode, reasoning - empty values shown as `-`, so even a command turn is self-describing), then each part - the operator prompt, thinking (dim), every tool call with `input` JSON, `output`, `is_error`, and `analysis`, the answer, command records (a compaction summary included), and system notes. `/print <n>.<m>` prints only the m-th part of turn n. Each part's text is capped at `print_max_chars` characters (default 4000) with `... (N more chars, use --full)` appended, and `--full` (or `print_max_chars: 0`) removes the cap. `/print` takes the same `--run <#id|#run|role|session:name|name>` selector as `/history`, resolving through the same rules without switching focus or the current session.
 
 ## Exporting to Markdown
 
@@ -63,31 +63,31 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 
 ```json
 {
-  "name": "ses_20260817_120000_ab12cd",
-  "code": "ab12cd",
   "created_at": "2026-08-17T12:00:00+00:00",
-  "updated_at": "2026-08-17T12:05:15+00:00",
-  "role": "",
-  "turns": [],
   "errors": [],
-  "permissions": [],
   "parent_id": "",
-  "sub_sessions": []
+  "permissions": [],
+  "role": "",
+  "session_id": "ab12cd",
+  "session_name": "ses_20260817_120000_ab12cd",
+  "sub_sessions": [],
+  "turns": [],
+  "updated_at": "2026-08-17T12:05:15+00:00"
 }
 ```
 
 | Key | Type | Description |
 |-----|------|-------------|
-| `name` | string | Session name, matches the filename |
-| `code` | string | Six-character base36 run handle, embedded in an auto name's trailing component (empty for explicit names and legacy files) |
 | `created_at` | string | ISO 8601 UTC timestamp of creation |
-| `updated_at` | string | ISO 8601 UTC timestamp, bumped on every appended part |
-| `role` | string | Agent type that owns the session, stamped at creation (empty for a plain root or a headless run with no `--type`) |
-| `turns` | array | The conversation log, append-only, one entry per turn |
 | `errors` | array | Turn-level errors (provider, network, agent loop) |
-| `permissions` | array | Audit log of tool permission decisions (see below) |
 | `parent_id` | string | Name of the session this one was spawned from (sub-agent sessions set it, empty otherwise) |
+| `permissions` | array | Audit log of tool permission decisions (see below) |
+| `role` | string | Agent type that owns the session, stamped at creation (empty for a plain root or a headless run with no `--type`) |
+| `session_id` | string | Six-character base36 session id, embedded in an auto name's trailing component (empty for explicit names) |
+| `session_name` | string | Session name, matches the filename |
 | `sub_sessions` | array | Names of sessions spawned from this one (delegations - the delegate sets the sub-agent's `parent_id`) |
+| `turns` | array | The conversation log, append-only, one entry per turn |
+| `updated_at` | string | ISO 8601 UTC timestamp, bumped on every appended part |
 
 `/sessions preview` prints the `parent` and `sub-sessions` links. `/sessions` annotates `sub_*` children with their parent.
 

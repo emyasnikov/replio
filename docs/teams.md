@@ -67,7 +67,7 @@ Plugins contribute teams through the same `register_teams` entry hook the kit ma
 
 ## Running a team
 
-`Engine.run_team(team, task)` runs the stages one after another through the same in-process sub-engine as `delegate` (`run_subagent`): each stage runs in its own fresh `sub_<ts>_<code>` session by default, with its own type prompt, skills, and permission carve, and the stage `mode` overrides the caller's when set (an empty `mode` inherits). A failed stage stops the run and the remaining stages do not execute.
+`Engine.run_team(team, task)` runs the stages one after another through the same in-process sub-engine as `delegate` (`run_subagent`): each stage runs in its own fresh `sub_<ts>_<id>` session by default, with its own type prompt, skills, and permission carve, and the stage `mode` overrides the caller's when set (an empty `mode` inherits). A failed stage stops the run and the remaining stages do not execute.
 
 The brief handed to each member is built per run from:
 

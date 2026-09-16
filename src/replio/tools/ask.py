@@ -27,7 +27,7 @@ def _park(engine, question: str, context: str, options: list,
     if store is None:
         return _NO_ONE
     try:
-        ask = store.add(question, engine.current_session.name,
+        ask = store.add(question, engine.current_session.session_name,
                         context=context, options=options,
                         kind=kind, permission=permission)
     except Exception:
@@ -108,7 +108,7 @@ def _ask_permission(engine, question: str, context: str, options: list,
         if ui is not None:
             answer = ui.ask(question, context=context or '',
                             options=options or [],
-                            origin=engine.current_session.name)
+                            origin=engine.current_session.session_name)
             if not answer:
                 return _NO_ANSWER
             if answer.strip().lower().startswith('y'):
@@ -216,7 +216,7 @@ def register_ask_tool(registry, engine) -> Callable:
             if ui is not None:
                 answer = ui.ask(question, context=context or '',
                                 options=options or [],
-                                origin=engine.current_session.name)
+                                origin=engine.current_session.session_name)
                 return answer or _NO_ANSWER
             return _NO_ONE
         if engine._is_unattended():
@@ -225,7 +225,7 @@ def register_ask_tool(registry, engine) -> Callable:
         if ui is not None:
             answer = ui.ask(question, context=context or '',
                             options=options or [],
-                            origin=engine.current_session.name)
+                            origin=engine.current_session.session_name)
             return answer or _NO_ANSWER
         if lead is not None:
             answer = _lead_answer(engine, question, context or '', options or [])

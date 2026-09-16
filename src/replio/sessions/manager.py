@@ -8,11 +8,11 @@ from uuid import uuid4
 from . import turns
 
 _BASE36 = '0123456789abcdefghijklmnopqrstuvwxyz'
-CODE_LEN = 6
-_CODED_NAME = re.compile(r'^(?:ses|job|sub)_\d{8}_\d{6}_([0-9a-z]{6})$')
+SESSION_ID_LEN = 6
+_SESSION_ID_IN_NAME = re.compile(r'^(?:ses|job|sub)_\d{8}_\d{6}_([0-9a-z]{6})$')
 
 
-def run_code(*parts, length: int = CODE_LEN) -> str:
+def session_id_hash(*parts, length: int = SESSION_ID_LEN) -> str:
     digest = hashlib.blake2b(digest_size=8)
     for part in parts:
         digest.update(str(part).encode())
@@ -27,24 +27,24 @@ def run_code(*parts, length: int = CODE_LEN) -> str:
     return out.rjust(length, '0')
 
 
-def coded_name(prefix: str, *parts, sessions_dir: Path | None = None) -> str:
+def coded_session_name(prefix: str, *parts, sessions_dir: Path | None = None) -> str:
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
     while True:
-        code = run_code(prefix, ts, *parts, uuid4().hex)
-        name = f'{prefix}_{ts}_{code}'
+        session_id = session_id_hash(prefix, ts, *parts, uuid4().hex)
+        session_name = f'{prefix}_{ts}_{session_id}'
         taken = sessions_dir is not None and \
-            (Path(sessions_dir) / f'{name}.json').exists()
+            (Path(sessions_dir) / f'{session_name}.json').exists()
         if not taken:
-            return name
+            return session_name
 
 
-def name_code(name: str) -> str:
-    match = _CODED_NAME.match(name or '')
+def session_id_from_name(session_name: str) -> str:
+    match = _SESSION_ID_IN_NAME.match(session_name or '')
     return match.group(1) if match else ''
 
 
 class Session:
-    def __init__(self, name: str, turns_list: list | None = None,
+    def __init__(self, session_name: str, turns_list: list | None = None,
                  errors: list | None = None,
                  permissions: list | None = None,
                  created_at: str | None = None,
@@ -52,10 +52,10 @@ class Session:
                  parent_id: str = '',
                  sub_sessions: list | None = None,
                  role: str = '',
-                 code: str = ''):
+                 session_id: str = ''):
         now = datetime.now(timezone.utc).isoformat(timespec='seconds')
-        self.name = name
-        self.code = code or ''
+        self.session_name = session_name
+        self.session_id = session_id or ''
         self.turns = turns_list or []
         self.errors = errors or []
         self.permissions = permissions or []
@@ -178,8 +178,8 @@ class Session:
             serialized['parts'] = parts
             out_turns.append(serialized)
         return {
-            'name': self.name,
-            'code': self.code,
+            'session_name': self.session_name,
+            'session_id': self.session_id,
             'turns': out_turns,
             'errors': self.errors,
             'permissions': self.permissions,
@@ -195,7 +195,7 @@ class Session:
         if 'turns' not in data:
             raise ValueError('legacy session format (no turns)')
         return cls(
-            data['name'],
+            data['session_name'],
             data.get('turns', []),
             data.get('errors', []),
             data.get('permissions', []),
@@ -204,7 +204,7 @@ class Session:
             data.get('parent_id', ''),
             data.get('sub_sessions', []),
             data.get('role', ''),
-            data.get('code', ''),
+            data.get('session_id', ''),
         )
 
 
@@ -214,30 +214,31 @@ class SessionManager:
         self.sessions_dir.mkdir(parents=True, exist_ok=True)
         self.current: Session | None = None
 
-    def create(self, name: str | None = None, role: str = '') -> Session:
-        if not name:
-            name = coded_name('ses', role, sessions_dir=self.sessions_dir)
-        self.current = Session(name, code=name_code(name), role=role)
+    def create(self, session_name: str | None = None, role: str = '') -> Session:
+        if not session_name:
+            session_name = coded_session_name('ses', role, sessions_dir=self.sessions_dir)
+        self.current = Session(
+            session_name, session_id=session_id_from_name(session_name), role=role)
         return self.current
 
-    def find_by_code(self, code: str) -> Session | None:
-        code = (code or '').strip().lower()
-        if not code:
+    def find_by_session_id(self, session_id: str) -> Session | None:
+        session_id = (session_id or '').strip().lower()
+        if not session_id:
             return None
-        for path in sorted(self.sessions_dir.glob(f'*_{code}.json')):
+        for path in sorted(self.sessions_dir.glob(f'*_{session_id}.json')):
             session = self.read(path.stem)
             if session is not None:
                 return session
         return None
 
-    def load(self, name: str) -> Session | None:
-        s = self.read(name)
+    def load(self, session_name: str) -> Session | None:
+        s = self.read(session_name)
         if s is not None:
             self.current = s
         return s
 
-    def read(self, name: str) -> Session | None:
-        path = self.sessions_dir / f'{name}.json'
+    def read(self, session_name: str) -> Session | None:
+        path = self.sessions_dir / f'{session_name}.json'
         if not path.exists():
             return None
         try:
@@ -255,15 +256,15 @@ class SessionManager:
         s = session or self.current
         if s is None:
             return
-        with open(self.sessions_dir / f'{s.name}.json', 'w') as f:
+        with open(self.sessions_dir / f'{s.session_name}.json', 'w') as f:
             json.dump(s.to_dict(tool_max_chars=tool_max_chars, noise_tools=noise_tools),
                       f, indent=2)
 
     def list(self) -> list[str]:
         return sorted(p.stem for p in self.sessions_dir.glob('*.json'))
 
-    def delete(self, name: str) -> bool:
-        path = self.sessions_dir / f'{name}.json'
+    def delete(self, session_name: str) -> bool:
+        path = self.sessions_dir / f'{session_name}.json'
         if path.exists():
             path.unlink()
             return True

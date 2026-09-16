@@ -36,7 +36,7 @@ def render_turn(turn: dict, part=None, full: bool = False,
 
 def render_session(session: Session) -> str:
     lines = [
-        f'# Session: {session.name}',
+        f'# Session: {session.session_name}',
         '',
         f'- Created: {session.created_at}',
         f'- Updated: {session.updated_at}',

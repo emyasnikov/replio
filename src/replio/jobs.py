@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from .sessions.manager import run_code
+from .sessions.manager import session_id_hash
 
 MIN_INTERVAL = 60
 CRON_HORIZON_DAYS = 4 * 366 + 1
@@ -332,8 +332,8 @@ def validate_schedule(schedule: dict):
 
 def job_session_name(name: str, when: datetime) -> str:
     ts = when.strftime('%Y%m%d_%H%M%S')
-    code = run_code('job', name, when.isoformat(), uuid4().hex)
-    return f'job_{ts}_{code}'
+    session_id = session_id_hash('job', name, when.isoformat(), uuid4().hex)
+    return f'job_{ts}_{session_id}'
 
 
 def task_file_path(worktree: Path, job: 'Job') -> Path:

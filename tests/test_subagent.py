@@ -23,9 +23,9 @@ class TestSubAgentEngine(unittest.TestCase):
         files = sorted(
             f for f in self.sessions_dir.glob('sub_*.json')
             if json.loads(f.read_text()).get('parent_id')
-            == self.chat.current_session.name)
+            == self.chat.current_session.session_name)
         self.assertTrue(files,
-                        f'no sub_* child of {self.chat.current_session.name} saved')
+                        f'no sub_* child of {self.chat.current_session.session_name} saved')
         return json.loads(files[-1].read_text())
 
     def _tool_call(self, name='run_command', args='{"command": "echo hi"}'):
@@ -41,21 +41,21 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertEqual(sub.current_session.role, 'writer')
         self.assertIs(sub.provider, self.chat.provider)
         self.assertIs(sub._plugin_manager, self.chat._plugin_manager)
-        self.assertTrue(sub.current_session.name.startswith('sub_'))
-        self.assertEqual(len(sub.current_session.code), 6)
-        self.assertTrue(sub.current_session.name.endswith(
-            f'_{sub.current_session.code}'))
-        self.assertEqual(sub.current_run.code, sub.current_session.code)
+        self.assertTrue(sub.current_session.session_name.startswith('sub_'))
+        self.assertEqual(len(sub.current_session.session_id), 6)
+        self.assertTrue(sub.current_session.session_name.endswith(
+            f'_{sub.current_session.session_id}'))
+        self.assertEqual(sub.current_run.session_id, sub.current_session.session_id)
         self.assertEqual(sub.current_session.parent_id,
-                         self.chat.current_session.name)
+                         self.chat.current_session.session_name)
 
-    def test_sub_session_name_embeds_code(self):
+    def test_sub_session_name_embeds_id(self):
         from replio.engine import _sub_session_name
-        from replio.sessions.manager import name_code
+        from replio.sessions.manager import session_id_from_name
         name = _sub_session_name('ses_20260825_110000_ab12cd',
                                  self.sessions_dir)
         self.assertTrue(name.startswith('sub_'))
-        code = name_code(name)
+        code = session_id_from_name(name)
         self.assertEqual(len(code), 6)
         self.assertTrue(name.endswith(f'_{code}'))
 
@@ -201,17 +201,17 @@ class TestSubAgentEngine(unittest.TestCase):
         result = self.chat.run_subagent('writer', 'write the doc')
         self.assertEqual(result.content, 'Draft ready.')
         self.assertTrue(result.session.startswith('sub_'))
-        from replio.sessions.manager import name_code
-        self.assertEqual(len(name_code(result.session)), 6)
+        from replio.sessions.manager import session_id_from_name
+        self.assertEqual(len(session_id_from_name(result.session)), 6)
         data = self._delegate_log('writer')
         parts = [p for t in data['turns'] for p in t.get('parts') or []]
         self.assertEqual(parts[0]['type'], 'user')
         self.assertEqual(parts[-1]['type'], 'text')
         self.assertEqual(parts[-1]['text'], 'Draft ready.')
-        self.assertEqual(data['parent_id'], self.chat.current_session.name)
+        self.assertEqual(data['parent_id'], self.chat.current_session.session_name)
         self.assertIn(result.session, self.chat.current_session.sub_sessions)
         self.chat.sessions.save(self.chat.current_session)
-        parent = self.chat.sessions.read(self.chat.current_session.name)
+        parent = self.chat.sessions.read(self.chat.current_session.session_name)
         self.assertIn(result.session, parent.sub_sessions)
 
     def test_run_subagent_unknown_type_raises(self):

@@ -249,7 +249,7 @@ class TestConfirmTimeout(unittest.TestCase):
         with patch('replio.ui.select.select', return_value=([], [], [])):
             with patch('sys.stdout', new=io.StringIO()):
                 self.assertIsNone(ui.ask('which?',
-                                         origin=self.chat.current_session.name))
+                                         origin=self.chat.current_session.session_name))
 
     def test_ask_returns_answer_when_ready(self):
         ui = self._ui(2)
@@ -257,7 +257,7 @@ class TestConfirmTimeout(unittest.TestCase):
                    return_value=([sys.stdin], [], [])):
             with patch('builtins.input', return_value='use 8080'):
                 self.assertEqual(
-                    ui.ask('which?', origin=self.chat.current_session.name),
+                    ui.ask('which?', origin=self.chat.current_session.session_name),
                     'use 8080')
 
 

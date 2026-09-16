@@ -203,7 +203,7 @@ class TestSessionModel(unittest.TestCase):
             sm.create('other')
             current = sm.current
             loaded = sm.read('alpha')
-            self.assertEqual(loaded.name, 'alpha')
+            self.assertEqual(loaded.session_name, 'alpha')
             self.assertIs(sm.current, current)
         finally:
             tmp.cleanup()

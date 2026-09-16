@@ -107,7 +107,7 @@ class TestParking(unittest.TestCase):
             self.assertIn('[parked]', out)
             asks = chat.asks.list()
             self.assertEqual(len(asks), 1)
-            self.assertEqual(asks[0].origin, chat.current_session.name)
+            self.assertEqual(asks[0].origin, chat.current_session.session_name)
             self.assertEqual(asks[0].kind, 'direction')
         finally:
             chat._tmp.cleanup()
@@ -125,7 +125,7 @@ class TestParking(unittest.TestCase):
             chat.provider.chat_nonstreaming.assert_not_called()
             asks = chat.asks.list()
             self.assertEqual(len(asks), 1)
-            self.assertEqual(asks[0].origin, sub.current_session.name)
+            self.assertEqual(asks[0].origin, sub.current_session.session_name)
         finally:
             chat._tmp.cleanup()
 

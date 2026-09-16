@@ -84,7 +84,7 @@ class TestTeamRun(unittest.TestCase):
                           self.chat.current_session.sub_sessions[1]])
         for i, res in enumerate(result.stages):
             data = json.loads((self.sessions_dir / f'{res.session}.json').read_text())
-            self.assertEqual(data['parent_id'], self.chat.current_session.name)
+            self.assertEqual(data['parent_id'], self.chat.current_session.session_name)
             expected = self.chat._build_stage_brief(
                 self._team(TeamStage(type='researcher'), TeamStage(type='writer')),
                 'write a report', result.stages[:i], i, '')

@@ -45,7 +45,7 @@ class TestDelegateTool(unittest.TestCase):
         return sorted(
             f for f in self.sessions_dir.glob('sub_*.json')
             if json.loads(f.read_text()).get('parent_id')
-            == self.chat.current_session.name)
+            == self.chat.current_session.session_name)
 
     def _sub_footer_called(self):
         for c in self.chat._ui.footer.call_args_list:

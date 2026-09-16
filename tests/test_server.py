@@ -39,8 +39,8 @@ class TestServer(unittest.TestCase):
         self.assertEqual(data['content'], 'server answer')
         self.assertEqual(data['status'], 'ok')
 
-    def test_chat_with_session_id(self):
-        status, data = self._post('/chat', {'prompt': 'hello', 'session_id': 'api'})
+    def test_chat_with_session(self):
+        status, data = self._post('/chat', {'prompt': 'hello', 'session': 'api'})
         self.assertEqual(status, 200)
         self.assertEqual(data['session'], 'api')
         self.assertEqual(data['status'], 'ok')
@@ -57,7 +57,7 @@ class TestServer(unittest.TestCase):
             self.assertEqual(json.loads(resp.read()), {'version': get_version()})
 
     def test_sessions_list(self):
-        self._post('/chat', {'prompt': 'hello', 'session_id': 'api'})
+        self._post('/chat', {'prompt': 'hello', 'session': 'api'})
         with urlopen(f'http://127.0.0.1:{self.port}/sessions') as resp:
             data = json.loads(resp.read())
         self.assertIn('api', data['sessions'])

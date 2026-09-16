@@ -7,7 +7,7 @@ from typing import Callable
 
 from .config import Config
 from .runs import Run, RunRegistry
-from .sessions.manager import SessionManager, coded_name
+from .sessions.manager import SessionManager, coded_session_name
 from .sessions import turns
 from .commands.registry import CommandRegistry
 from .commands.builtins import register_builtins
@@ -92,7 +92,7 @@ def _sanitize_session(name: str, limit: int = 64) -> str:
 
 
 def _sub_session_name(parent: str, sessions_dir: Path) -> str:
-    return coded_name('sub', parent, sessions_dir=sessions_dir)
+    return coded_session_name('sub', parent, sessions_dir=sessions_dir)
 
 
 def _warm_session_name(key: str) -> str:
@@ -135,8 +135,8 @@ class Engine:
         self.current_session = self.sessions.create(role=self.role)
         self.runs = runs if runs is not None else RunRegistry()
         self.current_run: Run = self.runs.start(
-            role=self.role, session=self.current_session.name,
-            parent=parent_run, code=self.current_session.code)
+            role=self.role, session=self.current_session.session_name,
+            parent=parent_run, session_id=self.current_session.session_id)
         self.registry = CommandRegistry(self)
         register_builtins(self.registry)
         self._plugin_manager.register_commands(self.registry)
@@ -435,8 +435,8 @@ class Engine:
             self.current_session = self.sessions.create(name, role=self.role)
         else:
             self.current_session = self.sessions.create(role=self.role)
-        self.current_run.session = self.current_session.name
-        self.current_run.code = self.current_session.code
+        self.current_run.session = self.current_session.session_name
+        self.current_run.session_id = self.current_session.session_id
         return self.current_session
 
     def _grant(self) -> dict:
@@ -530,9 +530,9 @@ class Engine:
             sub.load_or_create_session(_warm_session_name(session_key))
         else:
             sub.load_or_create_session(_sub_session_name(
-                self.current_session.name, self.sessions.sessions_dir))
+                self.current_session.session_name, self.sessions.sessions_dir))
         if link_parent:
-            sub.current_session.parent_id = self.current_session.name
+            sub.current_session.parent_id = self.current_session.session_name
         return sub
 
     def focused_engine(self, role: str, ui=None) -> 'Engine':
@@ -831,7 +831,7 @@ class Engine:
         if getattr(self, '_provider_error', None):
             return TurnResult(status='error',
                               errors=[{'code': '', 'message': self._provider_error}],
-                              session=self.current_session.name)
+                              session=self.current_session.session_name)
         now = datetime.now(timezone.utc)
         self.current_session.add_user(
             text, timestamp=now.isoformat(timespec='seconds'), **self._turn_meta()
@@ -846,27 +846,27 @@ class Engine:
                 self.current_session.add_system(context)
             else:
                 self.ui.info('(Skipping AI - no search results)')
-                return TurnResult(status='empty', session=self.current_session.name)
+                return TurnResult(status='empty', session=self.current_session.session_name)
         return self._agent_loop()
 
     def chat_tool(self, name: str, arguments: dict) -> TurnResult:
         if getattr(self, '_provider_error', None):
             return TurnResult(status='error',
                               errors=[{'code': '', 'message': self._provider_error}],
-                              session=self.current_session.name)
+                              session=self.current_session.session_name)
         if not self.config.get('tool_calling'):
             return TurnResult(status='error',
                               errors=[{'code': '', 'message': 'Tool calling is disabled'}],
-                              session=self.current_session.name)
+                              session=self.current_session.session_name)
         self._init_tooling()
         if not self._tool_registry or not self._tool_policy:
             return TurnResult(status='error',
                               errors=[{'code': '', 'message': 'Tool calling is disabled'}],
-                              session=self.current_session.name)
+                              session=self.current_session.session_name)
         if not self._tool_registry.is_registered(name):
             return TurnResult(status='error',
                               errors=[{'code': '', 'message': f'Unknown tool "{name}"'}],
-                              session=self.current_session.name)
+                              session=self.current_session.session_name)
         return self._agent_loop(seed_tool=(name, arguments))
 
     def _agent_loop(self, seed_tool: tuple[str, dict] | None = None) -> TurnResult:
@@ -1090,7 +1090,7 @@ class Engine:
             usage=usage,
             model=self.config.get('model'),
             provider=self.config.get('provider'),
-            session=self.current_session.name,
+            session=self.current_session.session_name,
             status=status,
         )
 
@@ -1456,7 +1456,7 @@ class Engine:
                 counts[kind] = counts.get(kind, 0) + 1
                 if kind == 'tool' and part.get('name'):
                     tools.add(part['name'])
-        self.ui.info(f'  {s.name} - {len(s.turns)} turns')
+        self.ui.info(f'  {s.session_name} - {len(s.turns)} turns')
         self.ui.info(f'    created {s.created_at} · updated {s.updated_at}')
         self.ui.info('    parts: ' + ' · '.join(f'{k} {v}' for k, v in counts.items()))
         if tools:

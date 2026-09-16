@@ -62,7 +62,7 @@ class TestAskTool(unittest.TestCase):
         with patch('builtins.input', return_value='b'):
             with patch('sys.stdout', new=io.StringIO()) as buf:
                 result = ui.ask('which?', context='ctx',
-                                options=['a', 'b'], origin=self.chat.current_session.name)
+                                options=['a', 'b'], origin=self.chat.current_session.session_name)
         self.assertEqual(result, 'b')
         out = buf.getvalue()
         self.assertIn('Ask: which?', out)

@@ -19,13 +19,13 @@ The assistant is the operator's entry point. A composer turns a task into a team
 |------|--------|----------|
 | Provider session binding - bind the provider session id to the logical role session | S-M | context reuse across focus switches |
 | Manager role - runs one or many teams and reports, sequential first | M | one window over several teams |
-| Core dev and thesis team configuration - a development team with the review loop plus the project lead/support teams and skills | S | ready-made teams and skills |
+| Core dev team configuration - a development team with the review loop plus the project lead/support teams and skills | S | ready-made teams and skills |
 | Role-name sync - adopt assistant, composer, manager, and specialist across types, prompts, and docs | S | one canonical vocabulary |
 | Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO | S | documented direction |
 
 ## Session naming
 
-Interactive, job, and delegation sessions are turn-structured and end in a durable code, so `/history`, `/print`, `/focus`, and `handoff` can name a run across restarts. The two remaining stable-name kinds - warm `session_key` delegations and `agent_<role>` role engines - still carry no code. This package settles their naming.
+Interactive, job, and delegation sessions are turn-structured and end in a durable session id, so `/history`, `/print`, `/focus`, and `handoff` can name a run across restarts. The two remaining stable-name kinds - warm `session_key` delegations and `agent_<role>` role engines - still carry no id. This package settles their naming.
 
 | Task | Effort | Provides |
 |------|--------|----------|

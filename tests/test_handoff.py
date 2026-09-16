@@ -59,9 +59,9 @@ class TestHandoffTool(unittest.TestCase):
         self._handoff(f'#{child.id}')
         self.assertEqual(self.chat._pending_handoff['role'], 'writer')
 
-    def test_handoff_to_run_code(self):
-        code = self.chat.current_run.code
-        out = self._handoff(f'#{code}')
+    def test_handoff_to_session_id(self):
+        session_id = self.chat.current_run.session_id
+        out = self._handoff(f"#{session_id}")
         self.assertTrue(out.startswith('[handoff]'))
         self.assertEqual(self.chat._pending_handoff['role'], 'assistant')
         self.assertEqual(self.chat.current_run.status, 'paused')

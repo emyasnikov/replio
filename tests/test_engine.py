@@ -43,7 +43,7 @@ def make_engine(config_data: dict | None = None) -> Engine:
     engine._lead = None
     engine.role = ''
     engine.runs = RunRegistry()
-    engine.current_run = engine.runs.start(role='', session=engine.current_session.name)
+    engine.current_run = engine.runs.start(role='', session=engine.current_session.session_name)
     engine._plugin_manager = PluginManager(config)
     engine._plugin_manager.load()
     engine._tmp = temp_dir
@@ -107,7 +107,7 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(result.content, 'Hello world')
         self.assertEqual(result.status, 'ok')
         self.assertEqual(result.provider, 'ollama')
-        self.assertEqual(result.session, self.engine.current_session.name)
+        self.assertEqual(result.session, self.engine.current_session.session_name)
         roles = [p['type'] for t in self.engine.current_session.turns
                  for p in t.get('parts') or []]
         self.assertEqual(roles, ['user', 'text'])
@@ -170,9 +170,9 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(result.errors[0]['code'], 401)
         self.assertEqual(result.errors[0]['message'], 'Unauthorized')
 
-    def test_auto_session_name_embeds_code(self):
-        name = self.engine.current_session.name
-        code = self.engine.current_session.code
+    def test_auto_session_name_embeds_id(self):
+        name = self.engine.current_session.session_name
+        code = self.engine.current_session.session_id
         self.assertTrue(name.startswith('ses_'))
         self.assertTrue(name.endswith(f'_{code}'))
         self.assertEqual(len(code), 6)
@@ -185,24 +185,24 @@ class TestEngine(unittest.TestCase):
             {'type': 'token', 'content': 'Answer'},
             {'type': 'done', 'reason': 'stop'},
         ]
-        name = self.engine.current_session.name
-        code = self.engine.current_session.code
+        name = self.engine.current_session.session_name
+        code = self.engine.current_session.session_id
         self.engine.chat('what is 2+2? and <b>html</b>')
-        self.assertEqual(self.engine.current_session.name, name)
-        self.assertEqual(self.engine.current_session.code, code)
+        self.assertEqual(self.engine.current_session.session_name, name)
+        self.assertEqual(self.engine.current_session.session_id, code)
 
     def test_load_or_create_session_persists_and_reloads(self):
         self.engine.load_or_create_session('foo')
-        self.assertEqual(self.engine.current_session.name, 'foo')
+        self.assertEqual(self.engine.current_session.session_name, 'foo')
         self.engine.provider.chat.return_value = [
             {'type': 'token', 'content': 'Answer'},
             {'type': 'done', 'reason': 'stop'},
         ]
         self.engine.chat('q')
-        self.assertEqual(self.engine.current_session.name, 'foo')
+        self.assertEqual(self.engine.current_session.session_name, 'foo')
         self.assertTrue((self.engine.sessions.sessions_dir / 'foo.json').exists())
         self.engine.load_or_create_session('foo')
-        self.assertEqual(self.engine.current_session.name, 'foo')
+        self.assertEqual(self.engine.current_session.session_name, 'foo')
         self.assertEqual(len(self.engine.current_session.turns[0]['parts']), 2)
 
     def test_headless_confirm_policy(self):

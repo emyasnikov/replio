@@ -32,7 +32,7 @@ def _target_run(runs, current, target: str):
     if token.isdigit():
         return runs.get(int(token))
     if explicit:
-        return runs.find_by_code(token)
+        return runs.find_by_session_id(token)
     return None
 
 
@@ -43,7 +43,7 @@ def register_handoff_tool(registry, engine) -> Callable:
             "Hand control of the session to another run and pause or finish the "
             "current one. Use it when the next step belongs to a different run: "
             "target is 'parent', 'child', 'sibling', a role name, 'root', a "
-            "run id like '#3', or a run code like '#ab12cd'. Set done=true to "
+            "run id like '#3', or a session id like '#ab12cd'. Set done=true to "
             "finish this run, otherwise it is left paused so the operator can "
             "resume it. The operator's focus follows the target."
         ),
@@ -54,7 +54,7 @@ def register_handoff_tool(registry, engine) -> Callable:
                     'type': 'string',
                     'description': "Where to hand control: 'parent', 'child', "
                                    "'sibling', a role name, 'root', a run id "
-                                   "('3' or '#3'), or a run code ('#ab12cd').",
+                                   "('3' or '#3'), or a session id ('#ab12cd').",
                 },
                 'done': {
                     'type': 'boolean',

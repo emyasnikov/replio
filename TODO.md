@@ -36,9 +36,9 @@
 
 ## Open
 
-- [ ] Warm-session naming - decide what a `session_key` warm delegation session is named (`sub_<key>` today vs `sub_<code(key)>`)
+- [ ] Warm-session naming - decide what a `session_key` warm delegation session is named (`sub_<key>` today vs `sub_<id(key)>`)
 - [ ] Role-session naming - decide how `agent_<role>` role-engine sessions are named
-- [ ] Remove `--session-id` - explicit session naming is no longer needed now that auto sessions are named `ses_<ts>_<code>`
+- [ ] Remove `--session-id` - explicit session naming is no longer needed now that auto sessions are named `ses_<ts>_<id>`
 - [ ] Relocate job run sessions under `.replio/jobs/<name>/` (kept in `sessions/` for now)
 - [ ] Concurrent runs and live focus - run agents in the background, route output to per-run buffers and input to the focused run, stream live status and progress, and support cancellation and thread safety
   - Background execution - each run's loop in a worker thread, the parent yields and joins when the sub-run finishes
@@ -46,7 +46,7 @@
   - Cancellation - `/stop` interrupts the focused run, with safe shutdown and thread-safe sessions and registry
 - [ ] Role-name sync - adopt assistant, composer, manager, and specialist as the canonical roles across types, prompts, and docs
 - [ ] Assistant-roles track docs - record the assistant, composer, and manager architecture and the work packages in VISION, PLAN, and TODO
-- [ ] Core dev and thesis team configuration - a bundled development team with the review loop plus the project lead/support teams and their skills
+- [ ] Core dev team configuration - a bundled development team with the review loop plus the project lead/support teams and their skills
 - [ ] Manager role - a bundled agent type that runs one or many teams and reports, sequential first
 - [ ] Provider session binding - bind the provider session id (`x-opencode-session`) to the logical role session so a switched-away context is reusable
 - [ ] Per-job report destination - a `report_url` (or connector list) on a job so different jobs report to different endpoints, instead of one global `report.webhook`
@@ -108,8 +108,9 @@
 
 ## Done
 
-- [x] Job and delegation names - `job_<ts>_<code>` and `sub_<ts>_<code>`
-- [x] Stable run code - six-char session `code`, `ses_<ts>_<code>` names, and `#code` handles
+- [x] Session log fields - `name` -> `session_name`, `code` -> `session_id`
+- [x] Job and delegation names - `job_<ts>_<id>` and `sub_<ts>_<id>`
+- [x] Stable session id - six-char `session_id`, `ses_<ts>_<id>` names, and `#id` handles
 - [x] `/print` - reprint a turn (or one part) in full, cap via `print_max_chars`, `--full`, `--run`
 - [x] `/history` - numbered turn index with `n`/`all`, `--thoughts [all]`, and a `--run` selector
 - [x] Session turn cutover - turn/part storage, co-located tool calls, flat messages removed

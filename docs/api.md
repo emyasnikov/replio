@@ -16,13 +16,13 @@ Runs one agent turn on the same engine as the REPL and CLI. Request body:
 | Field         | Type     | Description                                             |
 |---------------|----------|---------------------------------------------------------|
 | `prompt`      | string   | **Required.** The user message                          |
-| `session_id`  | string   | Optional. Load or create a persistent session by name   |
+| `session`    | string   | Optional. Load or create a persistent session by name   |
 
 Example:
 
 ```bash
 curl localhost:8787/chat -X POST -H 'Content-Type: application/json' \
-  -d '{"prompt": "Hi", "session_id": "api"}'
+  -d '{"prompt": "Hi", "session": "api"}'
 ```
 
 Response is the same `TurnResult` the CLI returns (see the README). `session` is the resolved session name. Errors: `400` for a missing/empty `prompt` or invalid JSON body.

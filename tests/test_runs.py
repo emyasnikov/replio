@@ -64,7 +64,7 @@ class TestEngineRuns(unittest.TestCase):
     def test_root_run_registered(self):
         self.assertEqual(self.chat.current_run.id, 1)
         self.assertIs(self.chat.runs.get(1), self.chat.current_run)
-        self.assertEqual(self.chat.current_run.session, self.chat.current_session.name)
+        self.assertEqual(self.chat.current_run.session, self.chat.current_session.session_name)
         self.assertIsNone(self.chat.current_run.parent)
 
     def test_bind_assistant_updates_run_role(self):
@@ -79,7 +79,7 @@ class TestEngineRuns(unittest.TestCase):
         self.assertEqual(sub.current_run.role, 'writer')
         self.assertEqual(sub.current_run.task, 'draft')
         self.assertIn(sub.current_run.id, self.chat.current_run.children)
-        self.assertEqual(sub.current_run.session, sub.current_session.name)
+        self.assertEqual(sub.current_run.session, sub.current_session.session_name)
 
     def test_run_subagent_finishes_child_run(self):
         self.chat.provider.chat.side_effect = [

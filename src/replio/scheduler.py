@@ -96,7 +96,7 @@ def _attempt(engine: Engine, prompt: str, timeout: int) -> TurnResult:
         except Exception as e:
             return TurnResult(status='error',
                               errors=[{'code': 0, 'message': str(e)}],
-                              session=engine.current_session.name)
+                              session=engine.current_session.session_name)
     bag: dict = {}
 
     def target():
@@ -106,7 +106,7 @@ def _attempt(engine: Engine, prompt: str, timeout: int) -> TurnResult:
             bag['error'] = e
 
     thread = threading.Thread(target=target,
-                              name=f'job-{engine.current_session.name}',
+                              name=f'job-{engine.current_session.session_name}',
                               daemon=True)
     thread.start()
     thread.join(timeout)
@@ -114,11 +114,11 @@ def _attempt(engine: Engine, prompt: str, timeout: int) -> TurnResult:
         return TurnResult(status='error',
                           errors=[{'code': 'timeout',
                                    'message': f'job exceeded {timeout}s timeout'}],
-                          session=engine.current_session.name)
+                          session=engine.current_session.session_name)
     if 'error' in bag:
         return TurnResult(status='error',
                           errors=[{'code': 0, 'message': str(bag['error'])}],
-                          session=engine.current_session.name)
+                          session=engine.current_session.session_name)
     return bag['value']
 
 

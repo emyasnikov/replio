@@ -52,7 +52,7 @@ Launch it, and peers talk to it over the same `POST /chat` API used everywhere:
 
 ```bash
 replio serve --path agents/docs --port 8781 &
-curl localhost:8781/chat -X POST -d '{"prompt": "What does spec-42.pdf say?", "session_id": "docs-pool"}'
+curl localhost:8781/chat -X POST -d '{"prompt": "What does spec-42.pdf say?", "session": "docs-pool"}'
 ```
 
 ## Supervisor

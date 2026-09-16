@@ -274,13 +274,13 @@ class TestJobRegistry(unittest.TestCase):
 class ScriptedEngine:
     def __init__(self, outcomes, session='job.x'):
         self.outcomes = list(outcomes)
-        self.current_session = SimpleNamespace(name=session)
+        self.current_session = SimpleNamespace(session_name=session)
         self.prompts = []
 
     def chat(self, prompt):
         self.prompts.append(prompt)
         if not self.outcomes:
-            return TurnResult(status='ok', content='', session=self.current_session.name)
+            return TurnResult(status='ok', content='', session=self.current_session.session_name)
         return self.outcomes.pop(0)
 
 
@@ -409,7 +409,7 @@ class TestScheduler(unittest.TestCase):
     def test_timeout_records_failure(self):
         class HungEngine:
             def __init__(self):
-                self.current_session = SimpleNamespace(name='job.t')
+                self.current_session = SimpleNamespace(session_name='job.t')
                 self.prompts = []
 
             def chat(self, prompt):

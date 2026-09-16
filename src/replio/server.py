@@ -69,10 +69,10 @@ class ChatHandler(BaseHTTPRequestHandler):
         if not isinstance(prompt, str) or not prompt.strip():
             self._send(400, {'error': 'missing "prompt"'})
             return
-        session_id = body.get('session_id')
+        session_name = body.get('session')
         server = self.server
         with server.lock:
-            server.engine.load_or_create_session(session_id)
+            server.engine.load_or_create_session(session_name)
             result = server.engine.chat(prompt)
         self._send(200, result.to_dict())
 

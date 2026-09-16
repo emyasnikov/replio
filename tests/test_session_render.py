@@ -354,7 +354,7 @@ class TestExportCommand(unittest.TestCase):
         before = self.chat.sessions.current
         self._dispatch('/sessions export alpha')
         self.assertIs(self.chat.sessions.current, before)
-        self.assertEqual(self.chat.sessions.current.name, 'current')
+        self.assertEqual(self.chat.sessions.current.session_name, 'current')
 
     def test_export_carries_full_log(self):
         s = self._make_session('alpha')
