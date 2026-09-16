@@ -2,22 +2,25 @@
 
 **A lightweight, zero-dependency agentic core for fleets of single-purpose agents.**
 
-Current version: **v0.26.0** (Python >= 3.10, MIT, zero external dependencies)
+Current version: **v0.33.0** (Python >= 3.10, MIT, zero external dependencies)
 
-Replio is a deliberately small, auditable, zero-dependency agentic core built on a single streaming loop. The model plans, the tool registry acts, and the same loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability.
+An agent is a model plus a harness. Replio is a deliberately small, auditable, zero-dependency agentic core. The model plans, the tool registry acts, and a single streaming loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types, skills, teams, and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability.
 
 ## Vision
 
-**One terminal, whole teams.** One REPL. One prompt. The lead agent composes a specialized team - types and skills instantiated from a private template library matching the project description and request - runs the team stage-by-stage, each member working under its own type, skills, and permissions, with generated briefs, handoff, and shared memory. Teams are stored, reused, extended per customer, and scheduled.
+**One runtime, many agents**
+
+Replio assembles five replaceable layers - access, orchestration, capability, model, and storage - around a thin core. The direction is everything is a plugin: models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI become replaceable plugins, and the REPL itself moves to a plugin. The operator sees one window: the `assistant` agent greets you, answers small tasks inline, delegates bigger work to sub-agents or teams, runs recurring work in the background, watches your agents for health, and reports back.
 
 Read the full vision, decisions, and context economics in [Vision](vision.md).
 
 ## Current state
 
 - **Core** - one SSE-stream agent loop, multi-provider (Ollama, OpenAI, Groq, Anthropic, OpenCode Zen/Go, any OpenAI-compatible endpoint), tool calling with per-tool permissions and an audit trail, plan/build modes, complete append-only session logs, plugins, `replio run` + `replio serve`
-- **Orchestration** - swarm (types, delegation), jobs (cron/interval/one-shot, retries, approvals, run memory), fleet (supervisor with ports, health, restart), MCP client and server
-- **Latest** - v0.26 in progress: tool-use evaluation harness (`replio eval`), OpenCode Zen/Go providers. See [Changelog](changelog.md)
-- **Tooling** - bundled plugins for web search, filesystem, shell, edit, git, and dev wrappers (test/lint/format), all with path-scoped policies
+- **Orchestration** - swarm (types, skills, named teams, the `team` tool, the review loop, the `assistant` root and `composer`), jobs (cron/interval/one-shot, retries, approvals, run memory, supervisor recipe), fleet (supervisor with ports, health, restart), MCP client and server
+- **Sessions** - turn/part logs, `/history` and `/print`, stable per-session ids, `/compact`, Markdown export
+- **Latest** - v0.33: the session turn cutover, `/history` and `/print`, stable session ids and coded session names, `/focus` and `handoff`, `focus_on_delegate`. See [Changelog](changelog.md)
+- **Tooling** - bundled plugins for web search, filesystem, shell, edit, git, and dev wrappers (test/lint/format), all with path-scoped policies. `replio eval` runs fixtures through the headless loop and reports tool-use metrics
 
 ## Features
 
@@ -26,12 +29,13 @@ Read the full vision, decisions, and context economics in [Vision](vision.md).
 - **Local-first** - config and session logs live on your disk. Bring your own provider key, or run fully local
 - **Agentic REPL** - streaming output, dimmed thinking, markdown-aware rendering, readline history, tab completion
 - **Permissions** - every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmation outside your worktree and an audit trail in session logs
-- **Sessions** - complete append-only conversation logs plus `/compact` and Markdown export
-- **Plugins** - external repositories register tools, providers, slash commands, and services. The core stays zero-dependency
+- **Sessions** - complete append-only turn/part logs, `/history` and `/print`, `/compact`, and Markdown export
+- **Agent types, skills, and teams** - reusable agents with per-invocation skills, and named pipelines with shared memory and a review loop
+- **Plugins** - external repositories register tools, providers, slash commands, services, types, teams, skills, and eval fixtures. The core stays zero-dependency
 
 ## Development plan
 
-The work packages and milestones live in [Roadmap](roadmap.md). The full task backlog (open work, newest first) is in [Backlog](backlog.md). The swarm/team track is the current priority - one terminal, whole teams - with the composition machinery kept in a movable private plugin, never in the core.
+The work packages and milestones live in [Roadmap](roadmap.md). The full task backlog (open work, newest first) is in [Backlog](backlog.md). The current priority is the runs, focus, and memory redesign - run-owned sessions, focus that only navigates, handoff between runs, bounded memory per role/team/job, and non-blocking runs with live focus - followed by the assistant governance track.
 
 ## Reference docs
 
