@@ -11,25 +11,42 @@ Sourced from the use-case gap (`docs/use-cases/`), competitor parity (`docs/vs/`
 - Effort: S < M < L
 - Provides: the capability the task delivers
 
-## Assistant roles & team orchestration
+## Runs, focus, and memory
 
-The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate > check > correct, and focus follows the call tree of runs. This track resumes after the session history and reprint work, ordered by dependency.
+A session belongs to a run. Whoever starts a run creates its session: the root at startup, `delegate`/`team` at delegation, the scheduler per job run. A role is an identity a run borrows (prompt, skills, carve), never a session owner, so there is no `agent_<role>` and no `sub_<key>`.
+
+`/focus` is a navigator over the run tree. It never creates a session, it makes the existing runs visible and marks the current one, and it lets the operator jump into another by `#run`, `#session_id`, `session:name`, `parent`, `child`, `sibling`, `next`, `prev`, or `back`. A delegated agent runs blocking and hidden behind a status line, and the operator may jump in to print its output instead of waiting for the result.
+
+`handoff` is run-to-run control, not session management. An agent that is done or paused hands the focus to another existing run, whose session is preserved so it continues where it stopped. Handoff never creates or names a session.
+
+Continuity has two scales. Within a run, the run's own session is the context, so a planner giving a developer another task only adds the new task and the developer still knows its recent work. Across runs, continuity is bounded memory: a compacted Markdown summary per role, team, and job, injected into briefs and refreshed after runs, so recurring work does not replay an ever-growing session.
+
+Decisions: remove `agent_<role>` and `sub_<key>` (every session is ordinary, owned by its run), focus only attaches, handoff only moves focus, a caller may resume or compact/drop a run's context, memory is automatic and configurable per role/team/job plus a manual memorize, and live runs are the enabling step for watching or joining an agent.
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Provider session binding - bind the provider session id to the logical role session | S-M | context reuse across focus switches |
+| Run-centric focus - key the focus stack by run id and attach to the run's own session and role, removing `agent_<role>`, `focused_engine`, and `_agent_session_name` | M | focus that never creates |
+| Run tree navigation - `/focus` lists the tree with `↔ Switch to <role>` lines, marks the current run, and jumps by `#run`, `#session_id`, `session:name`, `parent`, `child`, `sibling`, `next`, `prev`, or `back` | S-M | see and join existing runs |
+| Handoff as run-to-run control - target runs (not roles), move focus, pause or finish the current run, and preserve the target's session | S-M | clean run handover |
+| Focus on delegate targets the child run - `focus_on_delegate` (off/ask/on) moves focus to the run just created, not a role | S | follow delegation |
+| Run continuation and compaction - resume a specific run/session from `delegate`/`team`, and let the caller compact or drop its context when the next task does not build on the previous one | M | continue a thread, or start it clean |
+| Memory scopes - a bounded memory summary per role, team, and job (automatic and configurable on/off, plus a manual memorize action), injected into briefs and written after runs | M | cheap long-horizon continuity |
+| Non-blocking runs and live focus - background execution, per-run output buffers and input routing, a status spinner, cancellation, and thread safety | L | watch or join a running agent |
+| Provider session binding - bind the provider session id to the run's session | S | cache and context reuse across switches |
+| VISION and docs revision - make run-owned sessions and bounded memory the continuity model in VISION, and sync architecture, swarm, session, and command docs | S | aligned direction |
+
+Step order: run-centric focus and removing `agent_<role>`, then run tree navigation, then handoff and `focus_on_delegate`, then continuation and compaction, then memory scopes, then non-blocking runs and live focus, then provider session binding, then the VISION and docs revision.
+
+## Assistant roles & team orchestration
+
+The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate > check > correct, and focus follows the call tree of runs. This track resumes after the runs, focus, and memory redesign above, ordered by dependency.
+
+| Task | Effort | Provides |
+|------|--------|----------|
 | Manager role - runs one or many teams and reports, sequential first | M | one window over several teams |
 | Core dev team configuration - a development team with the review loop plus the project lead/support teams and skills | S | ready-made teams and skills |
 | Role-name sync - adopt assistant, composer, manager, and specialist across types, prompts, and docs | S | one canonical vocabulary |
 | Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO | S | documented direction |
-
-## Session naming
-
-Interactive, job, and delegation sessions are turn-structured and end in a durable session id, so `/history`, `/print`, `/focus`, and `handoff` can name a run across restarts. The two remaining stable-name kinds - warm `session_key` delegations and `agent_<role>` role engines - still carry no id. This package settles their naming.
-
-| Task | Effort | Provides |
-|------|--------|----------|
-| Warm-session and role-session naming - settle how `session_key` warm sessions and `agent_<role>` role engines are named, then apply it | S | settled naming policy |
 
 ## Control & governance
 
@@ -48,7 +65,6 @@ Agents cooperate through types, delegation, and team stages. Sub-agents use the 
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Concurrent runs and live focus - background execution, per-run output and input routing, live status and progress, cancellation and thread safety | L | watch and join running agents |
 | Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style) | M | current state of a delegation |
 | Auto team selection - the assistant composes the team (types + order + briefs) for a task and delegates in sequence | M | team orchestration as a user-facing pattern |
 | `/agent` types - interactive type selection/run UX (type registry, sub-engine, and `delegate` landed) | M | pick a type and run with it |
@@ -65,7 +81,6 @@ React to and see jobs from outside the box. Run teams on schedule.
 | Task | Effort | Provides |
 |------|--------|----------|
 | Recurring tasks carry their own role - each job carries its own type and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time | S-M | encoded recurring behavior |
-| Persistent member sessions for recurring teams - `job`-style warm sessions, one-off runs stay fresh `sub_` sessions | M | cheap recurring team context |
 | `jobs add --team` - scheduled team runs, per-run team summary session, member sessions as team stages | M | recurring team pipelines |
 | Jobs operator API - `GET /jobs` and `POST /jobs/<name>/approve|reject|run|disable` on `replio serve` | M | any client can see/act per agent |
 | Job event hooks - the scheduler emits typed transitions (`proposed`, `approved`, `will_run`, `executing`, `verified`, `failed`, `timeout`, `waiting_approval`) to registered `services`, channel-agnostic core | M | notification source |

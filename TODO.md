@@ -7,6 +7,7 @@
 - Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style)
 - Non-blocking delegation - the assistant starts sub-agents or whole teams for bigger tasks and reports their status instead of blocking the current run
 - Recurring tasks carry their own role - each job carries its own type and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time
+- Auto-improving skills - a role refines its skills from experience and keeps them alongside its memory, so recurring work gets better without re-prompting
 - Report-back connectors - job summaries delivered out-of-band (email first, idea only) when the terminal is closed
 - Remove the legacy provider-plugin backfill migration (`Config._migrate_plugins`) once a stable replio release has shipped with the externalized providers - existing `plugins` lists no longer need the automatic append, and the migration code is dead weight
 - Human-in-the-loop channels - job events outbound (`proposed`, `will_run`, `failed`, `waiting_approval`) plus inbound actions (`approve`/`reject`/`run`/`disable`) over configurable connectors (webhook first, then email, then Telegram), so a job can reach an operator who is not on the box
@@ -36,22 +37,24 @@
 
 ## Open
 
-- [ ] Warm-session naming - decide what a `session_key` warm delegation session is named (`sub_<key>` today vs `sub_<id(key)>`)
-- [ ] Role-session naming - decide how `agent_<role>` role-engine sessions are named
+- [ ] Runs, focus, and memory redesign (see PLAN.md `Runs, focus, and memory`):
+  - [ ] Run-centric focus - attach to a run's own session and role, remove `agent_<role>`
+  - [ ] Run tree navigation - `/focus` tree with `↔ Switch to <role>` lines and jump by run/session
+  - [ ] Handoff as run-to-run control - target runs, preserve the target session
+  - [ ] `focus_on_delegate` targets the child run
+  - [ ] Run continuation and compaction - resume a run/session, or compact/drop its context
+  - [ ] Memory scopes - automatic and configurable role/team/job memory, plus manual memorize
+  - [ ] Non-blocking runs and live focus - background execution, output/input routing, spinner, cancellation
+  - [ ] Provider session binding - bind the provider session id to the run's session
+  - [ ] VISION and docs revision
 - [ ] Remove `--session-id` - explicit session naming is no longer needed now that auto sessions are named `ses_<ts>_<id>`
 - [ ] Relocate job run sessions under `.replio/jobs/<name>/` (kept in `sessions/` for now)
-- [ ] Concurrent runs and live focus - run agents in the background, route output to per-run buffers and input to the focused run, stream live status and progress, and support cancellation and thread safety
-  - Background execution - each run's loop in a worker thread, the parent yields and joins when the sub-run finishes
-  - Output router - per-run buffers with a `[#id role]` prefix, the focused run streams, and switching shows only new output
-  - Cancellation - `/stop` interrupts the focused run, with safe shutdown and thread-safe sessions and registry
 - [ ] Role-name sync - adopt assistant, composer, manager, and specialist as the canonical roles across types, prompts, and docs
 - [ ] Assistant-roles track docs - record the assistant, composer, and manager architecture and the work packages in VISION, PLAN, and TODO
 - [ ] Core dev team configuration - a bundled development team with the review loop plus the project lead/support teams and their skills
 - [ ] Manager role - a bundled agent type that runs one or many teams and reports, sequential first
-- [ ] Provider session binding - bind the provider session id (`x-opencode-session`) to the logical role session so a switched-away context is reusable
 - [ ] Per-job report destination - a `report_url` (or connector list) on a job so different jobs report to different endpoints, instead of one global `report.webhook`
 - [ ] Per-task decide-vs-park for `direction` asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator
-- [ ] Persistent member sessions for recurring teams - `job`-style warm sessions for recurring teams, one-off runs stay fresh `sub_` sessions (sequential run loop + briefs + team memory landed with `Engine.run_team`)
 - [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
 - [ ] Tool spec polish - rename `grep.glob` -> `include` (alias `glob`), add examples and prefer-`web_fetch` guidance to tool descriptions
 - [ ] Mid-run blocking job approval - an `ask` tool inside a running job pauses the run in place (per-tool-call `waiting_approval`), notifies via a connector, and resumes the same session when the operator replies. Needs resumable mid-run state, a wait loop inside the run, and the connectors/transport below (deeper than the shipped per-run `--require-approval` gate)
