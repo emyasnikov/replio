@@ -1,34 +1,34 @@
-# Developer teams & coding assistants
+# Developer teams and coding assistants
 
-Replio is a terminal-native agent core, so developers are the most natural first audience. Repo-scoped agents, permission-gated machine tools, and a headless CLI slot it into a working day and a CI pipeline without a new editor, daemon, or dependency tree. The shared foundation is in [index.md](index.md).
+Replio is native to the terminal, so developers are the most natural first audience. Repo-scoped agents, permission-gated machine tools, and a headless CLI fit a working day and a CI pipeline without a new editor, a daemon, or a dependency tree. The shared foundation is in [index.md](index.md).
 
 ## Why it fits
 
-- **Right tool, already installed** - a stdlib-only Python package and a REPL you already understand. No lockfile churn, no supply-chain surface to audit.
-- **Scoped by repository** - launch inside a repo (or pass `--path`) and the worktree scoping in [docs/tools.md](../tools.md) keeps file tools inside it. `file_read`, `list_dir`, `glob`, `grep`, and `file_write` operate on the code you are actually working on.
-- **CI-native** - `replio run` is a single headless command with `--output json`, so agents run in pipelines, pre-commit hooks, and scheduled jobs the same way they run in the terminal.
-- **Permission discipline by design** - `run_command` (builds, tests, git) defaults to `ask`, so the model proposes before it executes. Headless agents auto-deny anything unapproved, which makes accidental shell side effects rare.
+- **Right tool, already installed**. A standard-library Python package and a REPL you already understand, with no lockfile churn and no supply chain to audit.
+- **Scoped by repository**. Launch inside a repo (or pass `--path`) and the worktree scoping keeps file tools inside it. `file_read`, `list_dir`, `glob`, `grep`, and `file_write` operate on the code you are working on. See [tools.md](../tools.md).
+- **CI-native**. `replio run` is a single headless command with `--output json`, so agents run in pipelines, pre-commit hooks, and scheduled jobs the same way they run in the terminal.
+- **Permission discipline by design**. `run_command` for builds, tests, and git defaults to `ask`, so the model proposes before it executes. Headless agents auto-deny anything unapproved, which keeps accidental shell side effects rare.
 
 ## Fit by use case
 
-- **Codebase Q&A** - "where is the retry logic?", "how do providers register?" answered from the actual tree via `glob`/`grep`/`file_read`, with the file and line cited.
-- **PR and change review** - summarize diffs, flag risks, and draft review comments. Sessions give the whole review thread a replayable record.
-- **Test and CI triage** - `replio run -p "explain this test failure" --output json` in the pipeline, with the tool results (exit codes, logs) feeding the analysis.
-- **Documentation generation** - draft release notes, README sections, and migration guides from history and code, then `file_write` them under review.
-- **Multi-repo fleets** - one `replio serve --path <repo>` agent per repository, answering over the API. See [docs/fleet.md](../fleet.md).
-- **Release and ops notes** - summarize changelogs, craft commit messages, and prepare runbooks from local records.
+- **Codebase Q&A**. Ask where the retry logic lives or how providers register, and get an answer from the actual tree via `glob`, `grep`, and `file_read`, with the file and line cited.
+- **PR and change review**. Summarize diffs, flag risks, and draft review comments. Sessions give the whole review thread a replayable record.
+- **Test and CI triage**. Run `replio run -p "explain this test failure" --output json` in the pipeline, with tool results such as exit codes and logs feeding the analysis.
+- **Documentation generation**. Draft release notes, README sections, and migration guides from history and code, then write them with `file_write` under review.
+- **Multi-repo fleets**. Run one `replio serve --path <repo>` agent per repository, answering over the API. See [fleet.md](../fleet.md).
+- **Release and ops notes**. Summarize changelogs, craft commit messages, and prepare runbooks from local records.
 
 ## Hands-on setup
 
-A complete step-by-step recipe - a lead/implementer/tester/reviewer fleet on a Raspberry Pi with cloud Ollama (`gpt-oss:20b-cloud`), git worktree isolation, and human gates between every hand-off - is in [docs/usage/programming.md](../usage/programming.md).
+A complete step-by-step recipe for a lead, implementer, tester, and reviewer fleet with git worktree isolation and human gates between hand-offs is in [usage/programming.md](../usage/programming.md).
 
-## Gaps and planned
+## What is live and what is planned
 
-Plan/Build modes are live: `/mode plan` (or `replio run --mode plan`) switches to a read-only posture where write and exec tools are denied and the model is instructed to plan, `/mode build` restores full access, and custom modes can express other postures. Swarm foundations are live too: an agent type catalog (bundled defaults plus global/local `.replio/types.json`), an in-process sub-agent engine, and the `delegate` tool that runs a task under an agent type and returns its answer - so a single REPL can hand research, writing, or programming work to `researcher`/`programmer`/`code-reviewer` sub-agents (`/types`, `/tool delegate`, see [docs/types.md](../types.md) and [docs/swarm.md](../swarm.md)). Developer workflow tooling is live: `file_edit` for surgical search-and-replace, read-only `git` plus gated `git_commit`, `code_test`/`code_lint`/`code_format` wrappers, a `run_command` command allowlist (`tool_permission.bash_allow`), and the per-worktree instructions file (`project_instructions`, default `AGENTS.md`) auto-loaded into the system prompt. The interactive `/agent` command and auditor agents (generate > check > correct) are planned. Notebook mode for iterating on code cells and richer interactive data analysis are still planned. These track the roadmap in [PLAN.md](../../PLAN.md) and [TODO.md](../../TODO.md). Tab completion, `/compact`, `/session`, and `replio run` already cover most day-to-day flows.
+Plan and Build modes are live: `/mode plan` (or `replio run --mode plan`) switches to a read-only posture where write and exec tools are denied, `/mode build` restores full access, and custom modes can express other postures. The swarm foundations are live as well: an agent type catalog (bundled defaults plus global and local `.replio/types.json`), an in-process sub-agent engine, and the `delegate` and `team` tools that run work under agent types and named pipelines, so a single REPL can hand research, writing, or programming work to `researcher`, `programmer`, or `code-reviewer` sub-agents. See [types.md](../types.md), [teams.md](../teams.md), and [swarm.md](../swarm.md). Developer tooling is live too: `file_edit` for surgical search-and-replace, read-only `git` plus gated `git_commit`, `code_test`/`code_lint`/`code_format` wrappers, a `run_command` command allowlist (`tool_permission.bash_allow`), and the per-worktree instructions file (`project_instructions`, default `AGENTS.md`) auto-loaded into the system prompt. The interactive `/agent` command and auditor agents are planned, as are notebook mode and richer interactive data analysis. These track [PLAN.md](../../PLAN.md) and [TODO.md](../../TODO.md). Tab completion, `/compact`, `/session`, and `replio run` already cover most day-to-day flows.
 
 ## Get started
 
-1. `pip install replio` and run `replio` inside your repository. `/connect` to your provider or point `--base-url` at a company gateway.
+1. `pip install replio` and run `replio` inside your repository, then `/connect` to your provider or point `--base-url` at a company gateway.
 2. Try `/tool` to run tools directly, then ask a codebase question and watch it read the tree.
-3. For automation, `replio run -p "summarize the failing tests" --path tests --output json` - add it to CI with `--yes` only when you are comfortable with the permissions.
-4. Scope harder agents with `tools.deny` (a read-only reviewer denies `run_command` and `file_write`) and `tool_permission` categories in [docs/config.md](../config.md).
+3. For automation, run `replio run -p "summarize the failing tests" --path tests --output json`. Add it to CI with `--yes` only when you are comfortable with the permissions.
+4. Scope harder agents with `tools.deny` (a read-only reviewer denies `run_command` and `file_write`) and `tool_permission` categories in [config.md](../config.md).

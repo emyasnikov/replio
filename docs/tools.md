@@ -1,6 +1,6 @@
 # Tools
 
-Tools are how the model acts. The `ToolRegistry` (`src/replio/tools/registry.py`) is the single dispatch point: the model invokes tools via OpenAI-compatible function calling, slash commands are thin wrappers over the same `execute()`, and the loop never special-cases tool names - per-tool behavior comes from registration metadata.
+Tools are how the model acts. The `ToolRegistry` (`src/replio/tools/registry.py`) is the single dispatch point: the model invokes tools via OpenAI-compatible function calling, slash commands are thin wrappers over the same `execute()`, and the loop never special-cases tool names, because per-tool behavior comes from registration metadata.
 
 This page is the reference: what the registry supports, the bundled tools, and the policy that gates them. Tool definitions follow the OpenAI function calling JSON schema format. The model sees the schema (filtered by policy), requests a tool call, and the loop executes it and feeds the result back. For how to design, name, and describe a new tool so agents use it well, see [writing-tools.md](writing-tools.md).
 
@@ -41,11 +41,11 @@ The `ask` tool (core, like `delegate`) pauses the run and routes a decision or p
 - `kind='permission'` - a request for a tool or category the sub-agent is not allowed to use. Routing follows `ask_policy.permission` (`auto` = the lead decides and grants one use, `human` = the operator, `deny` = disabled), capped by the caller's `grant_permission` ceiling. An approval creates a one-shot grant on the asking sub-agent, consumed by the next matching call. The operator may answer `always` to make it reusable for the rest of that sub-agent's run. The lead only ever grants `once`. See [config.md](config.md#permission-authority).
 - When no one can answer (headless `run`/`serve`/jobs: no terminal and no lead at the root), `ask` returns an `Error: ask has no one to answer ...` result and the run continues autonomously. It never blocks on stdin outside the REPL. The asynchronous "pause a job and wait for an operator reply over a connector" variant is tracked separately (see [jobs.md](jobs.md)).
 
-The ask is not additionally gated - `tool_permission.ask` defaults to `allow` (the question and answer are the point). Operators can block it with `tools.deny: ["ask"]`. The question (tool arguments) and answer (tool result) persist in the asking session's log, and the call is recorded in the session `permissions` audit array like any tool call. A permission grant adds `scope` and `granted_by` fields to that audit entry.
+The ask is not additionally gated: `tool_permission.ask` defaults to `allow`, since the question and answer are the point. Operators can block it with `tools.deny: ["ask"]`. The question (tool arguments) and answer (tool result) persist in the asking session's log, and the call is recorded in the session `permissions` audit array like any tool call. A permission grant adds `scope` and `granted_by` fields to that audit entry.
 
 ## Handing off control
 
-The `handoff` tool (core) pauses or finishes the current run and hands control to another run, with the operator's focus following the target. Schema: `target` (required) and `done` (default false). Targets resolve against the run registry: `parent`, `child`, `sibling`, a role name, `root`, a run id (`3` or `#3`), or a session id (`#ab12cd`). The tool marks the current run `done` (when `done=true`) or `paused`, then records a pending handoff on the focus root. The turn ends immediately - the loop does not stream another round after the tool batch - and `ChatLoop` applies the pending handoff once the turn returns, focusing the resolved role's engine (a root-role target resets to the assistant). It is REPL-only: a delegated sub-agent has no focus manager and gets an `Error: handoff is only available in the REPL focus session ...` result. Gated by `tool_permission.handoff` (default `allow`).
+The `handoff` tool (core) pauses or finishes the current run and hands control to another run, with the operator's focus following the target. Schema: `target` (required) and `done` (default false). Targets resolve against the run registry: `parent`, `child`, `sibling`, a role name, `root`, a run id (`3` or `#3`), or a session id (`#ab12cd`). The tool marks the current run `done` (when `done=true`) or `paused`, then records a pending handoff on the focus root. The turn ends immediately, because the loop does not stream another round after the tool batch, and `ChatLoop` applies the pending handoff once the turn returns, focusing the resolved role's engine (a root-role target resets to the assistant). It is REPL-only: a delegated sub-agent has no focus manager and gets an `Error: handoff is only available in the REPL focus session ...` result. Gated by `tool_permission.handoff` (default `allow`).
 
 ## The tool loop
 
@@ -55,7 +55,7 @@ The `handoff` tool (core) pauses or finishes the current run and hands control t
 4. Each result is appended as a `tool` message (with `tool_call_id` and the tool name), plus a one-line `analysis` when `tool_analysis` is enabled.
 5. The loop continues with the enriched context until the model answers.
 
-Ctrl-C in the REPL cancels the running turn - streaming and any in-flight tool execution are aborted, partial output is persisted, a `(cancelled)` note prints, and the prompt returns. At a y/N confirm prompt it cancels the whole turn too (`n` still declines just that tool). Headless behavior mirrors this - `replio run` exits non-zero on a cancelled turn.
+Ctrl-C in the REPL cancels the running turn: streaming and any in-flight tool execution are aborted, partial output is persisted, a `(cancelled)` note prints, and the prompt returns. At a y/N confirm prompt it cancels the whole turn too (`n` still declines just that tool). Headless behavior mirrors this, and `replio run` exits non-zero on a cancelled turn.
 
 ## Running a tool directly
 
@@ -81,9 +81,9 @@ Tools are registered with `@registry.register(name, description, parameters)` pl
 | `param_aliases` | Caller-side parameter synonyms mapped onto declared parameters (e.g. `cursor` -> `offset`, `query` -> `pattern`) |
 | `loop` | When true, `/tool <name>` runs the tool as a real agent-loop turn (`Engine.chat_tool`) - the tool call and result persist, then the model streams its final answer. Used by `delegate` so a `/tool delegate` plan, results, and answer land in the session and a later prompt can continue the work. Direct `ToolRegistry.execute()` calls are unaffected |
 
-`ToolRegistry.execute()` passes only arguments declared in the tool's schema - undeclared and `null`-valued arguments (e.g. a hallucinated `recursive`, or `depth: null`) are dropped. It also passes the engine `Config` to handlers that declare a `_config` keyword argument (e.g. `def file_read(path, offset=1, limit=500, _config=None)`), so a tool can read config keys like `tool_max_result_chars` without exposing them to the model.
+`ToolRegistry.execute()` passes only arguments declared in the tool's schema. Undeclared and `null`-valued arguments (e.g. a hallucinated `recursive`, or `depth: null`) are dropped. It also passes the engine `Config` to handlers that declare a `_config` keyword argument (e.g. `def file_read(path, offset=1, limit=500, _config=None)`), so a tool can read config keys like `tool_max_result_chars` without exposing them to the model.
 
-Models often guess tool and argument names instead of reading the schema (`search` for `web_search`, `find` for `grep`, `cursor` for `offset`). `aliases` (extra tool names resolving to a tool, e.g. `search`/`find`) and `param_aliases` (caller-side parameter synonyms, e.g. `cursor -> offset`, `query -> pattern`) let the registry absorb that dialect without advertising it in the schema. An unregistered tool call returns `Error: unknown tool "<name>. Available tools: <...>"` - the loop lists the registered tools so the model can pick a real one. `open` also tolerates a URL string in its `id` argument by treating it as the URL.
+Models often guess tool and argument names instead of reading the schema (`search` for `web_search`, `find` for `grep`, `cursor` for `offset`). `aliases` (extra tool names resolving to a tool, e.g. `search`/`find`) and `param_aliases` (caller-side parameter synonyms, e.g. `cursor -> offset`, `query -> pattern`) let the registry absorb that dialect without advertising it in the schema. An unregistered tool call returns `Error: unknown tool "<name>. Available tools: <...>"`, and the loop lists the registered tools so the model can pick a real one. `open` also tolerates a URL string in its `id` argument by treating it as the URL.
 
 ## Adding a tool
 
@@ -118,20 +118,20 @@ Tool results are sent to the model verbatim, up to the `tool_max_result_chars` c
 `file_read` helps the model page through large files without hitting a cap:
 
 - Every result header reports the total size: `# <path> - <N> lines, <M> chars` (plus `(showing a-b)` for partial windows), so the model learns a file's size from the first read.
-- `limit=0` returns just the header as a size probe - the model can check size before committing to a read.
+- `limit=0` returns just the header as a size probe, so the model can check size before committing to a read.
 - A large file is read in windows via `offset` / `limit` arguments (`file_read(path, offset=1, limit=200)`, then `offset=201`, ...).
 
 ## Tool policy
 
-Every tool call is gated by `ToolPolicy` (`src/replio/tools/policy.py`), the single permission resolution point. The loop and `/tool` both route through it - never special-case tool names for permission logic.
+Every tool call is gated by `ToolPolicy` (`src/replio/tools/policy.py`), the single permission resolution point. The loop and `/tool` both route through it, so never special-case tool names for permission logic.
 
 Actions are `allow` (no prompt), `ask` (y/N confirm in the loop), or `deny` (tool filtered from the provider schema and refused on direct calls).
 
-Every resolution and its outcome (granted / declined / denied) is recorded to the session `permissions` array as an append-only audit trail - see [session.md](session.md).
+Every resolution and its outcome (granted / declined / denied) is recorded to the session `permissions` array as an append-only audit trail. See [session.md](session.md).
 
 Resolution precedence:
 
-1. **Name-level** - `tools.deny` (always denied) and `tools.allow` (when non-empty, an allowlist - everything else denied).
+1. **Name-level** - `tools.deny` (always denied) and `tools.allow` (when non-empty, it is an allowlist, so everything else is denied).
 2. **Category action** - the `tool_permission.<key>` action for the tool's `permission` key. `deny` here filters the tool from the provider schema and from tool listings, not just direct calls.
 3. **Per-invocation resolver** - a tool may declare a `permission_fn` that refines the action from its current arguments (e.g. `delegate` resolves per type: a configured type uses its own `tool_permission` with `delegate` defaulting to `allow`, an agent type outside the registry is `deny`). The resolver only refines a non-`deny` base action and is skipped when no arguments are available, so schema filtering (`allowed()`) keeps the tool visible for `ask`/`allow` categories.
 4. **Worktree escalation** - `read` / `list` / `write` tools pointing outside the project worktree escalate from `allow` to `ask`.
@@ -140,7 +140,7 @@ Modes ([config.md](config.md)) layer over the base policy: a mode's `tool_permis
 
 ### Worktree
 
-The worktree is the directory holding the local `.replio/` - the launch directory, or `--path`. Launching from `~` makes the whole home directory the worktree, so subdirectories (including other projects) do not escalate. Launch inside the project or pass `--path` for project-scoped prompting. `bash` defaults to `ask`, so every `run_command` confirms unless `tool_permission.bash = "allow"`.
+The worktree is the directory holding the local `.replio/`, which is the launch directory, or `--path`. Launching from `~` makes the whole home directory the worktree, so subdirectories (including other projects) do not escalate. Launch inside the project or pass `--path` for project-scoped prompting. `bash` defaults to `ask`, so every `run_command` confirms unless `tool_permission.bash = "allow"`.
 
 In headless mode (`run` / `serve`), `ask`-gated tools are denied outright (`--yes` / `--no` override), so an agent's reachable surface is exactly its `allow` tools on paths inside its worktree.
 
@@ -174,10 +174,10 @@ See [config.md](config.md) for the `tools.allow`, `tools.deny`, and `tool_permis
 
 ## Status and activity lines
 
-Tool status is ephemeral REPL/CLI UI - never persisted to session files (tool calls and results are already recorded there). Registered tools render a typed activity line - `<glyph> <verb> <key_arg>` (e.g. `← Read README.md`, `→ Write test.md`, `$ Run pytest`) - gated by `glyph_lines` (default `true`). Category defaults map to glyphs: read `←` Read, write `→` Write, search `%` Search, exec `$` Run, ask `~` Ask, todo `-` Todo, delegate `↳` Call. Unmapped categories fall back to the `[tool: key_arg]` oneliner plus any `status` detail lines. Filesystem tools use the `*` glyph with distinct verbs: `* Glob`, `* List`, `* Grep`.
+Tool status is ephemeral REPL/CLI UI, never persisted to session files (tool calls and results are already recorded there). Registered tools render a typed activity line, `<glyph> <verb> <key_arg>` (e.g. `← Read README.md`, `→ Write test.md`, `$ Run pytest`), gated by `glyph_lines` (default `true`). Category defaults map to glyphs: read `←` Read, write `→` Write, search `%` Search, exec `$` Run, ask `~` Ask, todo `-` Todo, delegate `↳` Call. Unmapped categories fall back to the `[tool: key_arg]` oneliner plus any `status` detail lines. Filesystem tools use the `*` glyph with distinct verbs: `* Glob`, `* List`, `* Grep`.
 
-When `glyph_params` is on (default `true`), the parameters the model passed - excluding the one already shown in the label - are appended: `← Read engine.py [offset=299, limit=85]`, `$ Run pytest [cwd=/workspace, timeout=600]`. Confirm prompts show the same suffix so cwd, timeout, and other arguments are visible before approving.
+When `glyph_params` is on (default `true`), the parameters the model passed (excluding the one already shown in the label) are appended: `← Read engine.py [offset=299, limit=85]`, `$ Run pytest [cwd=/workspace, timeout=600]`. Confirm prompts show the same suffix so cwd, timeout, and other arguments are visible before approving.
 
-When a tool call fails, the first line of its `Error:` result is echoed as a dimmed `! Error: ...` line under the activity line (gated by `show_errors`, default `true`). This applies to every tool through the shared dispatch point - the agent loop, `/tool`, and policy-denied calls alike.
+When a tool call fails, the first line of its `Error:` result is echoed as a dimmed `! Error: ...` line under the activity line (gated by `show_errors`, default `true`). This applies to every tool through the shared dispatch point: the agent loop, `/tool`, and policy-denied calls alike.
 
-Soft tool results - short one-line informational notes a tool returns instead of content, like `(empty file)`, `(empty directory)`, `(no matches for "x")`, `(end of content)`, or `No search results found.` - surface as a dimmed info line under the activity line (gated by `show_notes`, default `true`). A tool opts in by declaring a `note` predicate (a callable taking the raw result and returning whether it is a note) in its registration metadata. The result itself is unchanged and still fed to the model.
+Soft tool results (short one-line informational notes a tool returns instead of content, like `(empty file)`, `(empty directory)`, `(no matches for "x")`, `(end of content)`, or `No search results found.`) surface as a dimmed info line under the activity line (gated by `show_notes`, default `true`). A tool opts in by declaring a `note` predicate (a callable taking the raw result and returning whether it is a note) in its registration metadata. The result itself is unchanged and still fed to the model.

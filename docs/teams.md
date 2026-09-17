@@ -1,6 +1,6 @@
 # Teams
 
-A team is a named, ordered chain of delegated stages - each runs under an agent type and its result is handed to the next. A team turns the `delegate` primitive into a repeatable pipeline: "writing" = researcher > writer > referencer > editor for documents, "programming" = planner > programmer > tester > code-reviewer. The registry stores the definition and the sequential stage loop (`Engine.run_team`) executes it, reachable from the REPL (`/teams run`), the model (the `team` tool), and the CLI.
+A team is a named, ordered chain of delegated stages, where each runs under an agent type and its result is handed to the next. A team turns the `delegate` primitive into a repeatable pipeline: "writing" = researcher > writer > referencer > editor for documents, "programming" = planner > programmer > tester > code-reviewer. The registry stores the definition and the sequential stage loop (`Engine.run_team`) executes it, reachable from the REPL (`/teams run`), the model (the `team` tool), and the CLI.
 
 ## Storage
 
@@ -63,7 +63,7 @@ Stage fields:
 - `/teams remove <name>` - remove a team from the local catalog. Bundled teams cannot be removed (override them instead).
 - `/teams show <name>` - show a team's full definition (stages, task hints, handoff notes).
 
-Plugins contribute teams through the same `register_teams` entry hook the kit machine (templates, recipes) uses - see [plugins.md](plugins.md).
+Plugins contribute teams through the same `register_teams` entry hook the kit machine (templates, recipes) uses. See [plugins.md](plugins.md).
 
 ## Running a team
 
@@ -77,7 +77,7 @@ The brief handed to each member is built per run from:
 - the shared team memory block, when present,
 - the stage's `task_hint` (or a generic "Complete this stage of the task." line).
 
-After the run, the whole team run is summarized - seeded with the previous team memory - and written to **`.replio/teams/<name>/memory.md`** (atomic write, human-editable). The next run reads the same file back into its briefs, so facts from earlier runs carry without the session files growing. If the summarizer fails, a fallback of one line per stage (type, status, first part of the output or error) is stored instead.
+After the run, the whole team run is summarized (seeded with the previous team memory) and written to **`.replio/teams/<name>/memory.md`** (atomic write, human-editable). The next run reads the same file back into its briefs, so facts from earlier runs carry without the session files growing. If the summarizer fails, a fallback of one line per stage (type, status, first part of the output or error) is stored instead.
 
 `/teams run <name> <task>` executes a team from the REPL and prints one line per stage (`<n>. <type> <status> <duration>s`), the final member's result, and the memory file path.
 
@@ -93,7 +93,7 @@ A warm session is named `sub_<key>` and stored like any other session, so it is 
 
 ## Review loop
 
-A team can iterate a producer/reviewer block until the review passes or a cap is reached - the generate > check > correct pattern. The team's `loop` names the block by stage type (or zero-based index):
+A team can iterate a producer/reviewer block until the review passes or a cap is reached, the generate > check > correct pattern. The team's `loop` names the block by stage type (or zero-based index):
 
 ```json
 {
@@ -112,7 +112,7 @@ The loop's producer is forced onto a warm session for the run, so its iterations
 
 `team(name, task)` is the model-facing entry point (core, like `delegate` and `ask`), so a lead agent can orchestrate a whole pipeline in one call instead of delegating each stage itself. It runs `Engine.run_team` and returns the final stage's answer (or `Error: team "<name>" failed: <reason>`).
 
-- **Permission**: the `team` category gates the tool (default `allow`), separate from `delegate` so a type can be a delegation target but not run pipelines. On top of that, a per-invocation resolver reads the stage types like `delegate` - a stage type that sets `delegate: "deny"` disables the team, `"ask"` confirms it, otherwise it runs. Unknown teams and stages with unknown types return a clear error.
+- **Permission**: the `team` category gates the tool (default `allow`), separate from `delegate` so a type can be a delegation target but not run pipelines. On top of that, a per-invocation resolver reads the stage types like `delegate`: a stage type that sets `delegate: "deny"` disables the team, `"ask"` confirms it, otherwise it runs. Unknown teams and stages with unknown types return a clear error.
 - **Ceiling**: each stage's carve is still capped by the caller's `grant_permission` (see [config.md](config.md#permission-authority)). When a stage's requested permissions get clamped, the result carries a `(reduced permissions for: <type>)` note, so a silently degraded run is visible.
 - **Depth and cycles**: `run_team` refuses a team already on the current stack (`team_cycle`) and stops at `max_team_depth` nested team runs (default 2, `team_depth`), so a supervisor stage that itself runs teams cannot recurse forever. Both values propagate into sub-engines.
 

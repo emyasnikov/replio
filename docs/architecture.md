@@ -1,6 +1,6 @@
 # Architecture
 
-Replio is a terminal-based agentic REPL core: the model is the planner, the tool registry is how it acts. It is a zero-dependency Python app (stdlib only) built around a **single agent loop** - one SSE stream per turn where the model emits content or requests tool calls, which the loop executes and feeds back until the model answers.
+Replio is a terminal-based agentic REPL core: the model is the planner, the tool registry is how it acts. It is a zero-dependency Python app (stdlib only) built around a **single agent loop**: one SSE stream per turn where the model emits content or requests tool calls, which the loop executes and feeds back until the model answers.
 
 ## The three core layers
 
@@ -37,7 +37,7 @@ Every engine instance is a run, tracked in a process-local `RunRegistry` (`src/r
 
 ## One stream, one round trip
 
-When no tools are used, a turn is a single streaming request - no separate non-streaming decision round. `chat_nonstreaming()` is reserved for auxiliary decisions: query refinement, tool-result analysis, compaction. The `<thinking>` marker split lives in the engine so thinking stays separate from content in JSON results and session logs.
+When no tools are used, a turn is a single streaming request, with no separate non-streaming decision round. `chat_nonstreaming()` is reserved for auxiliary decisions: query refinement, tool-result analysis, compaction. The `<thinking>` marker split lives in the engine so thinking stays separate from content in JSON results and session logs.
 
 ## UI sinks
 
@@ -63,7 +63,7 @@ Agents talk to each other over the same `POST /chat` API that `replio serve` exp
 
 ## Sessions
 
-Every turn appends to a session - a complete, append-only JSON log of messages, tool calls and results, reasoning, and errors. The provider payload is prepared from the log by `_provider_messages()`. See [session.md](session.md).
+Every turn appends to a session, a complete append-only JSON log of messages, tool calls and results, reasoning, and errors. The provider payload is prepared from the log by `_provider_messages()`. See [session.md](session.md).
 
 ## Plugins
 

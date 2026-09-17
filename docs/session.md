@@ -1,6 +1,6 @@
 # Sessions
 
-Sessions are complete, append-only conversation logs. Every turn - the operator prompt, the agent's thinking, each tool call with its result, and the answer - is persisted as JSON under the project's `.replio/sessions/` directory. Entries are never removed. Compaction only trims the provider context, never the log.
+Sessions are complete, append-only conversation logs. Every turn (the operator prompt, the agent's thinking, each tool call with its result, and the answer) is persisted as JSON under the project's `.replio/sessions/` directory. Entries are never removed. Compaction only trims the provider context, never the log.
 
 ## Where sessions live
 
@@ -12,16 +12,16 @@ Session files carry a type prefix so the kinds stay distinguishable at a glance:
 
 | Prefix | Kind | Example |
 |--------|------|---------|
-| `agent_` | REPL role engines - one stable session per focused role | `agent_writer.json` |
-| `job_` | Jobs - one fresh file per run | `job_20260826_110230_7f3k2a.json` |
+| `agent_` | REPL role engines: one stable session per focused role | `agent_writer.json` |
+| `job_` | Jobs: one fresh file per run | `job_20260826_110230_7f3k2a.json` |
 | `ses_` | Interactive/auto sessions | `ses_20260817_120000_ab12cd.json` |
 | `sub_` | Delegation sub-agents | `sub_20260817_120100_cd34ef.json` |
 
 The trailing `<id>` is a six-character base36 hash minted at creation and embedded in the name, so a generated session is fully named from the start (no prompt-slug rename). The `session_id` is the stable run handle: each run mirrors it as `Run.session_id`, `/focus` and `/history` show it, and commands accept it as `#<id>` (`/focus #ab12cd`, `handoff` target `#ab12cd`, `/history --run #ab12cd`, `/print --run #ab12cd`). Resolution is a direct filename glob for `*_<id>.json`, so an id is found without reading every session. The `ses_`, `job_`, and `sub_` kinds carry an id. `agent_` role sessions and warm `sub_<key>` member sessions are stable, deterministic names with no id yet. Explicit names carry no id and are referenced by `session:<name>`. Files written before the `session_name`/`session_id` fields were introduced no longer load (the file is left on disk and stays listed).
 
-Delegation writes each sub-agent's log as its own session: `sub_<ts>_<id>` (`sub_20260817_120100_cd34ef`), with the calling session recorded as `parent_id` rather than in the filename. Job runs use `job_<ts>_<id>`, with the job name still recorded in the job registry and each run's `JobRun.session`. A warm member session (`delegate`/team `session_key`, or a team's `warm_sessions`) is named `sub_<key>` instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same `.replio/sessions/` directory and are regular sessions - listed by `/sessions` (annotated with their parent), exportable, loadable - so lead and sub-agent logs stay separate and complete.
+Delegation writes each sub-agent's log as its own session: `sub_<ts>_<id>` (`sub_20260817_120100_cd34ef`), with the calling session recorded as `parent_id` rather than in the filename. Job runs use `job_<ts>_<id>`, with the job name still recorded in the job registry and each run's `JobRun.session`. A warm member session (`delegate`/team `session_key`, or a team's `warm_sessions`) is named `sub_<key>` instead and is resumed on each call, appending to the same log so the role keeps its context. These live in the same `.replio/sessions/` directory and are regular sessions, listed by `/sessions` (annotated with their parent), exportable, and loadable, so lead and sub-agent logs stay separate and complete.
 
-Each session also records the agent `role` that owns it - the bound root type, the delegated type, the team-stage type, or the job type - stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no `--type` leaves `role` empty.
+Each session also records the agent `role` that owns it (the bound root type, the delegated type, the team-stage type, or the job type), stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no `--type` leaves `role` empty.
 
 Session files written before the turn format (flat `messages`) and files written before the `session_name`/`session_id` rename do not load: `read()` returns nothing for them, the file is left untouched on disk, and `/sessions` still lists the name. The turn format is a full cutover, not a compatibility layer.
 
@@ -47,7 +47,7 @@ The current session auto-saves after every turn and command, so nothing is lost 
 
 `/history` lists the active session's turns as a numbered index, one line per turn: `#<index>  [<status>]  <duration>  <tool count>  <prompt>`. The index is the turn's absolute `index`, so a turn can be named later regardless of the listing limit. `/history 3` shows the last three turns, `/history all` every turn, and `--thoughts` adds a dim first-line excerpt of the turn's thinking (`--thoughts all` prints the full thinking text). `/history --run <#id|#run|role|session:name|name>` reads another run's session without switching focus or the current session: a session id (`#ab12cd`) resolves to a live run first, otherwise the saved `ses_` session, a numeric run id (`#3`) resolves to the live focused run when present, otherwise the saved session, a role resolves to its live `agent_<role>` engine or the saved session, and a name resolves to the saved session (files without the current turn format read as not found).
 
-`/print <n>` reprints the turn with that absolute index: the full turn metadata block (`#index`, status, duration, tool count, `started`/`ended`, model, provider, mode, reasoning - empty values shown as `-`, so even a command turn is self-describing), then each part - the operator prompt, thinking (dim), every tool call with `input` JSON, `output`, `is_error`, and `analysis`, the answer, command records (a compaction summary included), and system notes. `/print <n>.<m>` prints only the m-th part of turn n. Each part's text is capped at `print_max_chars` characters (default 4000) with `... (N more chars, use --full)` appended, and `--full` (or `print_max_chars: 0`) removes the cap. `/print` takes the same `--run <#id|#run|role|session:name|name>` selector as `/history`, resolving through the same rules without switching focus or the current session.
+`/print <n>` reprints the turn with that absolute index: the full turn metadata block (`#index`, status, duration, tool count, `started`/`ended`, model, provider, mode, reasoning, with empty values shown as `-`, so even a command turn is self-describing), then each part: the operator prompt, thinking (dim), every tool call with `input` JSON, `output`, `is_error`, and `analysis`, the answer, command records (a compaction summary included), and system notes. `/print <n>.<m>` prints only the m-th part of turn n. Each part's text is capped at `print_max_chars` characters (default 4000) with `... (N more chars, use --full)` appended, and `--full` (or `print_max_chars: 0`) removes the cap. `/print` takes the same `--run <#id|#run|role|session:name|name>` selector as `/history`, resolving through the same rules without switching focus or the current session.
 
 ## Exporting to Markdown
 
@@ -57,7 +57,7 @@ Default output is `.replio/exports/<name>.md`, next to the `sessions/` directory
 
 The export is the full, auditable log: user prompts, each thinking block, tool calls (arguments and result, with the optional `analysis`), plain assistant answers, `command` records, compaction summaries (with the trimmed-context boundary), system notes, and a final `## Errors` section. Since it renders the persisted form, serialization-time transforms (`noise_tools` markers, `session_tool_max_chars` truncation) carry through as they appear in the file.
 
-The headless CLI `replio export <name> [--out <file>]` reuses the same renderer for scripts and CI - `--out -` prints to stdout, the default matches the slash command (`.replio/exports/<name>.md`).
+The headless CLI `replio export <name> [--out <file>]` reuses the same renderer for scripts and CI. `--out -` prints to stdout, and the default matches the slash command (`.replio/exports/<name>.md`).
 
 ## File structure
 
@@ -85,7 +85,7 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 | `role` | string | Agent type that owns the session, stamped at creation (empty for a plain root or a headless run with no `--type`) |
 | `session_id` | string | Six-character base36 session id, embedded in an auto name's trailing component (empty for explicit names) |
 | `session_name` | string | Session name, matches the filename |
-| `sub_sessions` | array | Names of sessions spawned from this one (delegations - the delegate sets the sub-agent's `parent_id`) |
+| `sub_sessions` | array | Names of sessions spawned from this one (delegations, since the delegate sets the sub-agent's `parent_id`) |
 | `turns` | array | The conversation log, append-only, one entry per turn |
 | `updated_at` | string | ISO 8601 UTC timestamp, bumped on every appended part |
 
@@ -145,7 +145,7 @@ A tool round and the final answer:
     {"type": "thinking", "text": "I need current data, search first.", "timestamp": "..."},
     {"type": "tool", "name": "web_search", "input": {"query": "latest Python release"},
      "output": "Web search results...", "is_error": false,
-     "analysis": "Pages about recent Python releases - 3.13 is the latest.", "timestamp": "..."},
+     "analysis": "Pages about recent Python releases, 3.13 being the latest.", "timestamp": "..."},
     {"type": "text", "text": "The latest release is 3.13...", "timestamp": "..."}
   ]
 }
@@ -192,11 +192,11 @@ Every tool permission resolution is recorded to the `permissions` array, making 
 | `path` | The tool's `path_arg` value when the tool has one (e.g. the file or command target) |
 | `timestamp` | ISO 8601 UTC timestamp |
 
-Per-invocation (resolver-based) actions are recorded the same way - e.g. `delegate` logs the action resolved from the target type, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on - no config switch - so the log stays a reliable audit record.
+Per-invocation (resolver-based) actions are recorded the same way, for example `delegate` logs the action resolved from the target type, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on, with no config switch, so the log stays a reliable audit record.
 
 ## Append-only semantics
 
-Turns and errors are only ever appended. Compaction stores the summary in a `command` part and leaves the earlier turns in place. Loading a session never rewrites history. The only transformations happen at serialization time (below), never to the in-memory log. A turn is written whenever it produced content or thinking - a truncated mid-reasoning turn still persists its thinking, and a reasoning-only turn (thinking, no text) is recorded rather than lost. An empty turn (no content, no thinking) still records its status and any tool results.
+Turns and errors are only ever appended. Compaction stores the summary in a `command` part and leaves the earlier turns in place. Loading a session never rewrites history. The only transformations happen at serialization time (below), never to the in-memory log. A turn is written whenever it produced content or thinking, so a truncated mid-reasoning turn still persists its thinking, and a reasoning-only turn (thinking, no text) is recorded rather than lost. An empty turn (no content, no thinking) still records its status and any tool results.
 
 ## Serialization-time transforms
 

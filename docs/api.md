@@ -33,12 +33,12 @@ Lists saved session names.
 
 ```bash
 curl localhost:8787/sessions
-# {"sessions": ["20260814_192251_hi", "api"]}
+# {"sessions": ["ses_20260814_192251_ab12cd", "api"]}
 ```
 
 ## GET /asks
 
-Lists parked asks (unattended runs park `ask target='human'` instead of blocking or erroring - see [config.md](config.md#unattended-mode)). Each entry carries `id`, `question`, `context`, `options`, `origin` (the session that parked it), `kind` (`direction`/`permission`), `permission`, `status` (`pending`/`answered`), `answer`, and timestamps.
+Lists parked asks. Unattended runs park `ask target='human'` instead of blocking or erroring, see [config.md](config.md#unattended-mode). Each entry carries `id`, `question`, `context`, `options`, `origin` (the session that parked it), `kind` (`direction`/`permission`), `permission`, `status` (`pending`/`answered`), `answer`, and timestamps.
 
 ```bash
 curl localhost:8787/asks
@@ -74,7 +74,7 @@ Returns the installed version.
 
 ```bash
 curl localhost:8787/version
-# {"version": "0.31.0"}
+# {"version": "0.33.0"}
 ```
 
 Unknown routes return `404 {"error": "not found"}`.

@@ -10,7 +10,7 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 .venv/bin/replio
 ```
 
-The project is Python >=3.10, stdlib only - no external dependencies.
+The project targets Python >=3.10 and uses only the standard library, with no external dependencies.
 
 ## Running tests
 

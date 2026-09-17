@@ -5,7 +5,7 @@ Config is a single JSON object read from two files and merged per key, with proj
 1. **Global** - `~/.config/replio/config.json` (user-wide defaults, credentials).
 2. **Local** - `.replio/config.json` in the project path (project overrides).
 
-Every process merges them in memory. Nothing is distributed to folders. Writes default to the **local** file and hold only the keys you selected - a save never re-writes the merged config. API keys live outside the config, in the global provider registry (`~/.config/replio/providers.json`), managed through `/connect` (see [Models](#model-registry-not-config)).
+Every process merges them in memory. Nothing is distributed to folders. Writes default to the **local** file and hold only the keys you selected, so a save never re-writes the merged config. API keys live outside the config, in the global provider registry (`~/.config/replio/providers.json`), managed through `/connect` (see [Models](#model-registry-not-config)).
 
 ```bash
 # inspect in the REPL (origin: default/global/local)
@@ -99,7 +99,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 
 ### `modes`
 
-Modes are named postures combining an instruction block with tool-policy overrides. The built-ins ship as defaults - `build` (no overrides) and `plan` (read-only, `edit` and `bash` denied):
+Modes are named postures combining an instruction block with tool-policy overrides. The built-ins ship as defaults: `build` (no overrides) and `plan` (read-only, `edit` and `bash` denied):
 
 ```json
 {
@@ -135,7 +135,7 @@ Each mode may define `system_prompt` (instructions), `tool_permission` (category
 }
 ```
 
-Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)). The `team` category gates the `team` tool (default `allow`), separate from `delegate` so a type can be a delegation target yet be barred from running pipelines. The `ask` category gates the `ask` tool (default `allow` - the interaction itself, answered by the human or the lead agent, see [tools.md](tools.md)). The `catalog` category gates the `catalog` tool (default `allow`) - it writes only to the project catalog in `.replio/`, so a team-composing agent can manage types, teams, and skills without general file edits. Set it to `ask` to confirm every catalog change. The `handoff` category gates the `handoff` tool (default `allow`) - it only moves the REPL's focus between runs (see [tools.md](tools.md#handing-off-control)).
+Actions are `allow` (no prompt), `ask` (y/N confirm), `deny` (tool hidden/refused). Read/write/list outside the worktree escalate to `ask` automatically. The `delegate` category gates the `delegate` tool. On top of the category action, delegation resolves its permission from the target type: a configured type uses its own `tool_permission` overrides (category `delegate` defaulting to `allow`), while an agent type not in the registry defaults to `deny` (see [types.md](types.md)). The `team` category gates the `team` tool (default `allow`), separate from `delegate` so a type can be a delegation target yet be barred from running pipelines. The `ask` category gates the `ask` tool (default `allow`, the interaction itself, answered by the human or the lead agent, see [tools.md](tools.md)). The `catalog` category gates the `catalog` tool (default `allow`). It writes only to the project catalog in `.replio/`, so a team-composing agent can manage types, teams, and skills without general file edits. Set it to `ask` to confirm every catalog change. The `handoff` category gates the `handoff` tool (default `allow`). It only moves the REPL's focus between runs (see [tools.md](tools.md#handing-off-control)).
 
 ### `ask_policy`
 
@@ -162,17 +162,17 @@ Every engine has two permission axes:
 
 A sub-agent's effective permissions are the parent's `tool_permission`, narrowed by the type's `tool_permission` carve and capped by the parent's `grant_permission`. A type can never widen a category above the ceiling, so a sub-agent cannot gain a permission its caller was not authorized to delegate. `grant_permission` defaults to the engine's own `tool_permission`, so delegation never escalates unless a type (or config) explicitly widens the ceiling.
 
-A type that sets `grant_permission` may delegate categories it does not use itself - e.g. a supervisor with `edit`/`bash` denied for itself but allowed in its ceiling can hand them to an `implementer` while never running them.
+A type that sets `grant_permission` may delegate categories it does not use itself. For example, a supervisor with `edit`/`bash` denied for itself but allowed in its ceiling can hand them to an `implementer` while never running them.
 
 An approved permission request creates a one-shot grant on the asking sub-agent (`once`), consumed by the next matching call. The operator may grant `always`, reusable for the rest of that sub-agent's run. Grants are never inherited by grandchildren and are recorded in the session `permissions` audit array.
 
 ### Unattended mode
 
-`unattended: true` guarantees that nothing in a turn reads stdin, at any depth - an overnight REPL run cannot freeze on a prompt. It applies to the whole sub-agent tree:
+`unattended: true` guarantees that nothing in a turn reads stdin, at any depth, so an overnight REPL run cannot freeze on a prompt. It applies to the whole sub-agent tree:
 
 - **Confirms auto-deny.** A tool whose policy action is `ask` (e.g. `run_command` with `bash: ask`) returns `[cancelled] User declined the <name> call` instead of prompting.
-- **`ask target='human'` parks instead of prompting.** The root engine drops its terminal UI (`_ask_ui` is not propagated down the tree), and any human-routed ask becomes a pending request persisted in `.replio/asks.json`, returned to the agent as `[parked] Ask #<id> ...` so it continues or finishes. A sub-agent's human ask parks rather than falling back to its lead - the operator should decide. Permission asks routed `human` park the same way. Routed `auto` still go to the lead (a one-shot grant).
-- **Model approval is not prompted.** An unapproved type/team model is denied (the run reports the error) unless the headless `approve_models` flag was passed - launch with `--approve-model` if the run needs to approve one itself.
+- **`ask target='human'` parks instead of prompting.** The root engine drops its terminal UI (`_ask_ui` is not propagated down the tree), and any human-routed ask becomes a pending request persisted in `.replio/asks.json`, returned to the agent as `[parked] Ask #<id> ...` so it continues or finishes. A sub-agent's human ask parks rather than falling back to its lead, so the operator decides. Permission asks routed `human` park the same way. Routed `auto` still go to the lead (a one-shot grant).
+- **Model approval is not prompted.** An unapproved type/team model is denied (the run reports the error) unless the headless `approve_models` flag was passed. Launch with `--approve-model` if the run needs to approve one itself.
 
 Enable it per run with `replio --unattended` (not persisted), in config with `unattended: true`, or live with `/unattended`. Parked asks are listed and answered with `/asks` or the serve API (`GET /asks`, `POST /asks/<id>/answer`). Answering marks the ask answered and injects the answer into the origin session, so the next turn on that session resumes with the operator's decision in context. Scheduled/durable job engines run unattended, so a job parks its human asks the same way. `confirm_timeout` (seconds, default `0` = forever) additionally makes attended confirm/ask prompts self-limiting, so a prompt left unanswered auto-denies instead of hanging.
 
@@ -188,7 +188,7 @@ The check runs through the per-invocation policy resolver, so it composes with m
 
 ## Model registry (not config)
 
-Two global files live separately from config in `~/.config/replio/`. Neither is part of the config merge - `/config` never lists or writes them, and neither has a local scope.
+Two global files live separately from config in `~/.config/replio/`. Neither is part of the config merge: `/config` never lists or writes them, and neither has a local scope.
 
 ### Provider registry (`providers.json`)
 
@@ -205,14 +205,14 @@ Two global files live separately from config in `~/.config/replio/`. Neither is 
 }
 ```
 
-- `api_key` lives here, one per provider - the only place API keys live.
-- `base_url` is the effective base URL of the connection - the preset provider default (e.g. `/connect ollama`) or a custom URL (`/connect <url>`). The engine falls back to it when the config leaves `base_url` empty.
+- `api_key` lives here, one per provider, and is the only place API keys live.
+- `base_url` is the effective base URL of the connection: the preset provider default (e.g. `/connect ollama`) or a custom URL (`/connect <url>`). The engine falls back to it when the config leaves `base_url` empty.
 - Managed through `/connect` (writes the key and any custom base URL). Re-running it re-enters a missing or stale key.
-- The engine resolves the active provider's API key from this file (matching entry or `""`), falling back to a stored custom `base_url` when the config has none. There is no `api_key` config key anymore - `replio config set api_key` would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.
+- The engine resolves the active provider's API key from this file (matching entry or `""`), falling back to a stored custom `base_url` when the config has none. There is no `api_key` config key anymore, and `replio config set api_key` would store an unused ordinary value. Deleting a project config cannot lose the registry, which is global by design.
 
 ### Model registry (`models.json`)
 
-`~/.config/replio/models.json` is the history of approved models - entries `{provider, model, added_at, last_used}`, no API keys (those live in `providers.json`). It records every model you connect or switch to, so `/models` shows what has been used per provider with `>` marking the active one. The active model still comes from `config.model`.
+`~/.config/replio/models.json` is the history of approved models. Entries are `{provider, model, added_at, last_used}` with no API keys (those live in `providers.json`). It records every model you connect or switch to, so `/models` shows what has been used per provider with `>` marking the active one. The active model still comes from `config.model`.
 
 - `/connect` records the model for the connection it just saved.
 - `/models` shows approved models grouped by provider, the active one marked `>`, plus `(key)` when that provider has a stored key.

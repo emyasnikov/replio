@@ -1,6 +1,6 @@
 # Agent fleets
 
-Replio composes into fleets of single-purpose agents, each a full Replio process scoped to a directory. A documentation agent owns a folder of PDFs, a code agent stays inside one repository, and a web-research agent has no filesystem access. The zero-dependency core keeps a process at a few MB, so dozens or hundreds can run on one machine, and thin process and permission boundaries keep them apart.
+Replio composes into fleets of single-purpose agents, each a full Replio process scoped to a directory. A documentation agent owns a folder of PDFs, a code agent stays inside one repository, and a web-research agent has no filesystem access. The zero-dependency core keeps each process small, so many can run on one machine, and thin process and permission boundaries keep them apart.
 
 ## One agent = one process = one folder
 

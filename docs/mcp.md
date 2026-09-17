@@ -1,6 +1,6 @@
 # MCP (Model Context Protocol)
 
-Replio speaks MCP in both directions through the bundled `replio-core-mcp` plugin (stdlib-only, no third-party `mcp` library - JSON-RPC 2.0 over newline-delimited stdio and SSE over urllib):
+Replio speaks MCP in both directions through the bundled `replio-core-mcp` plugin. It is stdlib-only, with no third-party `mcp` library, and uses JSON-RPC 2.0 over newline-delimited stdio and SSE over urllib:
 
 - **Client** - connect to external MCP servers (stdio or HTTP), import their tools into the `ToolRegistry`, and call them like any other Replio tool. Tool policy, `/tool`, `/help`, glyph activity lines, query refinement and session logging all apply.
 - **Server** - expose Replio's registered tools and sessions as an MCP server to external agents (Claude, opencode, and other MCP clients) over stdio (`replio mcp`) and HTTP (`POST /mcp` on `replio serve`).
@@ -70,7 +70,7 @@ Imported tools are named `<prefix>.<tool>` (e.g. `github.list_issues`) and inher
 
 The server exposes Replio's currently registered tools (policy-filtered) and its saved sessions as resources, without mutating the active session. Tool execution follows `ToolPolicy`. `ask` tools run directly (the external MCP client is the human-in-the-loop and shows its own confirmations) unless `mcp_server.allow_ask` is `false`, which refuses them.
 
-### stdio - `replio mcp`
+### stdio (`replio mcp`)
 
 ```bash
 replio mcp                # read JSON-RPC from stdin, write to stdout
@@ -78,7 +78,7 @@ replio mcp                # read JSON-RPC from stdin, write to stdout
 
 An MCP client launches this as a subprocess (newline-delimited JSON), `initialize` or `server/discover`, then `tools/list` / `tools/call`.
 
-### HTTP - `POST /mcp` on `replio serve`
+### HTTP (`POST /mcp` on `replio serve`)
 
 ```bash
 replio serve --port 8787  # adds POST /mcp when the plugin is loaded

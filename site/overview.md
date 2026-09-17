@@ -4,13 +4,13 @@
 
 Current version: **v0.33.0** (Python >= 3.10, MIT, zero external dependencies)
 
-An agent is a model plus a harness. Replio is a deliberately small, auditable, zero-dependency agentic core. The model plans, the tool registry acts, and a single streaming loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types, skills, teams, and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability.
+An agent is a model plus a harness. Replio is the harness: a deliberately small, auditable, zero-dependency agentic core. The model plans, the tool registry acts, and a single streaming loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers. Swarm covers types, skills, teams, and delegation. Jobs cover scheduled, durable work. Fleet provides a supervisor for many agents. MCP adds cross-tool interoperability.
 
 ## Vision
 
 **One runtime, many agents**
 
-Replio assembles five replaceable layers - access, orchestration, capability, model, and storage - around a thin core. The direction is everything is a plugin: models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI become replaceable plugins, and the REPL itself moves to a plugin. The operator sees one window: the `assistant` agent greets you, answers small tasks inline, delegates bigger work to sub-agents or teams, runs recurring work in the background, watches your agents for health, and reports back.
+Replio assembles five replaceable layers around a thin core: access, orchestration, capability, model, and storage. The direction is everything is a plugin: models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI become replaceable plugins, and the REPL itself moves to a plugin. The operator sees one window: the `assistant` agent greets you, answers small tasks inline, delegates bigger work to sub-agents or teams, runs recurring work in the background, watches your agents for health, and reports back.
 
 For bigger work the flow is ask, compose, run, hand off, remember, report. The assistant composes a team, runs it stage by stage, and hands control between agents as phases change, while you watch, stay out, or jump into any run. See [Workflows and usage](reference/usage/workflow.md).
 
@@ -37,7 +37,7 @@ Read the full vision, decisions, and context economics in [Vision](vision.md).
 
 ## Development plan
 
-The work packages and milestones live in [Roadmap](roadmap.md). The full task backlog (open work, newest first) is in [Backlog](backlog.md). The current priority is the runs, focus, and memory redesign - run-owned sessions, focus that only navigates, handoff between runs, bounded memory per role/team/job, and non-blocking runs with live focus - followed by the assistant governance track.
+The work packages and milestones live in [Roadmap](roadmap.md). The full task backlog (open work, newest first) is in [Backlog](backlog.md). The current priority is the runs, focus, and memory redesign: run-owned sessions, focus that only navigates, handoff between runs, bounded memory per role/team/job, and non-blocking runs with live focus. The assistant governance track follows.
 
 ## Reference docs
 

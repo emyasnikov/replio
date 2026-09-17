@@ -4,7 +4,7 @@
 
 ## Job store
 
-Jobs live in `.replio/jobs.json` next to the sessions, one register per worktree (same rule as types). The file is plain JSON and the last writer wins, so run one scheduler per `.replio`. Removing a job removes only its definition - its sessions stay as the append-only log of every run. The register keeps the most recent 100 runs. The full transcript stays in the session file.
+Jobs live in `.replio/jobs.json` next to the sessions, one register per worktree (same rule as types). The file is plain JSON and the last writer wins, so run one scheduler per `.replio`. Removing a job removes only its definition, while its sessions stay as the append-only log of every run. The register keeps the most recent 100 runs. The full transcript stays in the session file.
 
 ```json
 {
@@ -65,7 +65,7 @@ replio jobs add nightly --file jobs/nightly-report.md --cron "0 2 * * *"
 
 - **`--prompt` becomes optional** - `--file` alone is enough (at least one of `--prompt` / `--file` is required). Given both, `--prompt` is the short per-run trigger on top of the task file.
 - When `--file` is omitted, the default path is `.replio/jobs/<name>.md`. A file missing at `add` time is **created from a template** (`# <name>` / `## Task` / `## Done when` / `## Notes`) to fill in.
-- The job stores the path and **stays linked**: the file is re-read at the start of every run, so editing the `.md` changes the job - no re-adding, no restart.
+- The job stores the path and **stays linked**: the file is re-read at the start of every run, so editing the `.md` changes the job, with no re-adding and no restart.
 - **`replio jobs edit <name>`** (also `/jobs edit <name>`) opens the task file in `$EDITOR` (creating the template first if needed). `replio jobs show <name>` prints the stored path.
 - Paths under the worktree are stored relative to it. Absolute paths stay absolute. A task file missing at run time fails that run with a clear `task file not found` reason, so a broken link is never silently ignored.
 
@@ -76,8 +76,8 @@ At run time the system prompt is composed of `type.system_prompt` (if an agent t
 Every run is summarized into the job's rolling memory, so the next run knows what happened before without a growing session file:
 
 - After each run (successful or failed) the scheduler summarizes it through the same compaction path as `/compact` (seeded with the previous memory so context carries) and writes the result to **`.replio/jobs/<name>.memory.md`** atomically. If the summarize call fails, a short fallback of `Run <ts>: verified|failed` plus the first part of the output or error is stored instead.
-- The memory file is **injected into the next run** as the `## Run memory` system prompt block. A compact, bounded record - never the whole history.
-- `replio jobs show <name>` prints the memory file path and a preview. Read or hand-edit the `.memory.md` like the task file (the next run uses whatever is there). A memory file that stops being summarized stays stale - it never breaks a run.
+- The memory file is **injected into the next run** as the `## Run memory` system prompt block. A compact, bounded record, never the whole history.
+- `replio jobs show <name>` prints the memory file path and a preview. Read or hand-edit the `.memory.md` like the task file (the next run uses whatever is there). A memory file that stops being summarized stays stale, but it never breaks a run.
 
 ## CLI reference
 
@@ -105,7 +105,7 @@ replio jobs daemon [--tick 15] [--quiet]        # scheduler loop, Ctrl-C to stop
 | Flag | Meaning |
 |------|---------|
 | `--prompt` | Optional short per-run trigger. Required only when `--file` is not given |
-| `--file` | Markdown task file describing the job (default `.replio/jobs/<name>.md`, template-created if missing). Linked - edits apply on the next run |
+| `--file` | Markdown task file describing the job (default `.replio/jobs/<name>.md`, template-created if missing). Linked, so edits apply on the next run |
 | `--cron` / `--interval` / `--at` | Exactly one schedule (required) |
 | `--session` | Stable session name. Default is a fresh per-run `job_<ts>_<id>` file |
 | `--mode` | Mode override (`plan`, `build`, or custom) |
@@ -117,7 +117,7 @@ replio jobs daemon [--tick 15] [--quiet]        # scheduler loop, Ctrl-C to stop
 | `--retries N` | Retries after a failed attempt. Default `3` |
 | `--backoff SECONDS` | Base backoff, doubled per retry. Default `60` |
 | `--timeout SECONDS` | Max seconds for one attempt. `0` (default) = no cap |
-| `--require-approval` | Arm only one run per approve - every run parks in `waiting_approval` until a human approves it |
+| `--require-approval` | Arm one run per approve, so every run parks in `waiting_approval` until a human approves it |
 | `--approve-model` | Approve the model referenced by `--type` (or `--model`) so the headless job may use it without prompting |
 | `--approval auto` | Start `approved` instead of `proposed` |
 
@@ -129,7 +129,7 @@ There are three distinct gates, from coarsest to finest:
 2. **Per-run approval (`--require-approval`)** - for when "something has to be decided" about *this* run, not arm-or-disarm for all time. Each run parks in `waiting_approval`: the daemon will not fire it, `replio jobs status` shows `WAITING for approve`, and `replio jobs approve <name>` (or `/jobs approve`) arms exactly the next run. It parks again after the run. `reject` clears the grant. `run` still overrides and executes now.
 3. **Mid-run blocking approval (tool-level, planned)** - an `ask` tool inside a running job pauses the run in place and waits for a human reply before resuming on the same session. The deepest "decide during the task" model, tracked separately in [TODO.md](../../TODO.md): it needs resumable mid-run state, a wait loop inside the run, and a transport to deliver the ask and return the answer (the planned webhook/email/Telegram connectors drive the same operator API).
 
-A job runs with `HeadlessUI(auto='deny')` on an unattended engine - the same posture as `replio serve`, plus parking. So until mid-run blocking is implemented, an `ask target='human'` inside a run is not paused and does not hang: it parks as a pending request in `.replio/asks.json` (returned to the agent as `[parked] Ask #<id> ...`), the run continues or finishes, and the operator answers later with `/asks answer <id> <text>` or `POST /asks/<id>/answer` on `replio serve` - which injects the answer into the run's session for the next run/continuation. Give a job its permissions up front (`--tool-permission bash=allow`, an agent type carve, or a `--tools-deny` list) and it will not need mid-run interruption. A sub-agent inside a job can still use `ask target='lead'` for a decision from the job's model mid-run. `timeout` runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so inspect a timed-out job with `replio jobs show <name>` before a manual retry.
+A job runs with `HeadlessUI(auto='deny')` on an unattended engine, the same posture as `replio serve`, plus parking. So until mid-run blocking is implemented, an `ask target='human'` inside a run is not paused and does not hang: it parks as a pending request in `.replio/asks.json` (returned to the agent as `[parked] Ask #<id> ...`), the run continues or finishes, and the operator answers later with `/asks answer <id> <text>` or `POST /asks/<id>/answer` on `replio serve`, which injects the answer into the run's session for the next run or continuation. Give a job its permissions up front (`--tool-permission bash=allow`, an agent type carve, or a `--tools-deny` list) and it will not need mid-run interruption. A sub-agent inside a job can still use `ask target='lead'` for a decision from the job's model mid-run. `timeout` runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so inspect a timed-out job with `replio jobs show <name>` before a manual retry.
 
 ## Report-back
 
@@ -138,7 +138,7 @@ A finished or failed run is surfaced in-band and, optionally, out-of-band, so an
 - **`replio jobs status` / `/jobs status`** prints a `last run:` line per job (status, duration, reason, session) under the run counts.
 - **`replio jobs run` / `/jobs run`** print the run's result plus a `summary:` line from the run memory written after the run.
 - **Delegated and team runs** show their outcome in the REPL sub-footer (`status session` after the duration/token footer, when `delegate_echo` is on).
-- **Out-of-band**: after each completed run the scheduler dispatches one `job.run.completed` event to a registered `report` service. The bundled `replio-core-webhook` plugin implements it: set `report.webhook` to a URL and it POSTs the JSON payload (job, status, duration, reason, session, timestamps, content, worktree, memory summary, parked asks) - a pending ask parked during the run is flagged by id and origin, so a night that "finished but needs you" is visible in the report. Empty `report.webhook` is a no-op. Service failures are logged and never fail the run. A report fires once per completed run (the final status after retries), not per attempt. Per-job destinations are future work (TODO).
+- **Out-of-band**: after each completed run the scheduler dispatches one `job.run.completed` event to a registered `report` service. The bundled `replio-core-webhook` plugin implements it: set `report.webhook` to a URL and it POSTs the JSON payload (job, status, duration, reason, session, timestamps, content, worktree, memory summary, and parked asks). A pending ask parked during the run is flagged by id and origin, so a night that "finished but needs you" is visible in the report. Empty `report.webhook` is a no-op. Service failures are logged and never fail the run. A report fires once per completed run (the final status after retries), not per attempt. Per-job destinations are future work (TODO).
 
 ## Supervisor overnight run
 
@@ -151,7 +151,7 @@ replio jobs daemon            # runs it on schedule
 replio jobs run night         # or run it once now
 ```
 
-The job's type is `leader`, whose `grant_permission` lets it delegate categories it denies itself (bash, web) to team stages, and whose `ask_policy` routes decisions to the operator (parking them under unattended mode). The task file (`.replio/jobs/<name>.md`) carries the standing goal - edit it and the next run picks the change up. The model the job uses must be approved (`/model`, or `--approve-model` when a type or team references a model).
+The job's type is `leader`, whose `grant_permission` lets it delegate categories it denies itself (bash, web) to team stages, and whose `ask_policy` routes decisions to the operator (parking them under unattended mode). The task file (`.replio/jobs/<name>.md`) carries the standing goal, and the next run picks up any edit. The model the job uses must be approved (`/model`, or `--approve-model` when a type or team references a model).
 
 While it runs:
 
@@ -175,7 +175,7 @@ Each attempt builds a fresh headless `Engine` from the job's overrides, uses the
 
 ## Scheduling semantics
 
-The daemon (`replio jobs daemon`) wakes on the `--tick` interval (default 15s), runs every due, runnable job sequentially, then sleeps. Jobs are single-threaded: one at a time, in name order. Concurrent execution is future work. `next_run_at` is the single source of truth - computed when a job is added and after each run, and a `next_run_at` in the past makes a job due immediately. A missed window is not backlogged: after any run the next run is recomputed strictly after the current time (or the run's finish for interval schedules), so a scheduler stopped overnight runs the current schedule on wake instead of replaying old ones.
+The daemon (`replio jobs daemon`) wakes on the `--tick` interval (default 15s), runs every due, runnable job sequentially, then sleeps. Jobs are single-threaded: one at a time, in name order. Concurrent execution is future work. `next_run_at` is the single source of truth, computed when a job is added and after each run, and a `next_run_at` in the past makes a job due immediately. A missed window is not backlogged: after any run the next run is recomputed strictly after the current time (or the run's finish for interval schedules), so a scheduler stopped overnight runs the current schedule on wake instead of replaying old ones.
 
 ## Session logs
 

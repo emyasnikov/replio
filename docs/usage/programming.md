@@ -84,7 +84,7 @@ The examples use the **cloud Ollama** provider with **`gpt-oss:20b-cloud`**, a 2
 
 > Tip: use a different model for the reviewer than the implementer, with a fresh session, so a flawed plan is not rubber-stamped by the same model and context.
 
-The API key is registered once per provider via `/connect` in the global provider registry (`~/.config/replio/providers.json`) - it is not a config value and never appears in `.replio/config.json`. Never commit a key to git.
+The API key is registered once per provider via `/connect` in the global provider registry (`~/.config/replio/providers.json`). It is not a config value and never appears in `.replio/config.json`. Never commit a key to git.
 
 ## Step 3 - Clone the repo and create the worktrees
 
@@ -211,7 +211,7 @@ services:
     restart: unless-stopped
 ```
 
-Add one service per agent - `tester` on port 8783, `reviewer` on port 8784, and each `feature-*` worktree on a distinct port - mounting that agent's folder (its `.replio/config.json` from Step 4 plus its sessions) or the git worktree. Implementers mount their worktree, `tester` and `reviewer` mount their own agent folders. Ports publish on `127.0.0.1` so the JSON API stays host-local behind your reverse proxy. The model comes from the mounted `.replio/config.json`. The API key is resolved from the global model registry (`~/.config/replio/models.json`), so mount that file into each container (or register the connection with `/connect` inside it) for keyed providers - the key is never read from config.
+Add one service per agent: `tester` on port 8783, `reviewer` on port 8784, and each `feature-*` worktree on a distinct port. Mount that agent's folder (its `.replio/config.json` from Step 4 plus its sessions) or the git worktree. Implementers mount their worktree, `tester` and `reviewer` mount their own agent folders. Ports publish on `127.0.0.1` so the JSON API stays host-local behind your reverse proxy. The model comes from the mounted `.replio/config.json`. The API key is resolved from the global model registry (`~/.config/replio/models.json`), so mount that file into each container (or register the connection with `/connect` inside it) for keyed providers, since the key is never read from config.
 
 Bring the fleet up:
 
@@ -225,7 +225,7 @@ docker logs -f replio-lead
 
 ## Step 6 - The human gates
 
-Automation stops at three gates. Everything between them is agent work, every gate is a human decision. Agents answer over `POST /chat` ([docs/api.md](../api.md)), the headless server auto-denies anything that needs confirmation, which is the safe default - never add `--yes` just to make a task pass.
+Automation stops at three gates. Everything between them is agent work, every gate is a human decision. Agents answer over `POST /chat` ([docs/api.md](../api.md)), and the headless server auto-denies anything that needs confirmation, which is the safe default. Never add `--yes` just to make a task pass.
 
 1. **Plan review** - ask the lead for a plan, then a human confirms scope, allowed files, acceptance criteria, and risks before any implementer starts:
 

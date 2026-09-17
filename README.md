@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
 </p>
 
-An agent is a model plus a harness. Replio is a deliberately small, auditable, zero-dependency agentic core for harness. The model plans, the tool registry acts, and a single streaming loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types, skills, teams, and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability. All layers share one API and compose: a supervised fleet agent can delegate by type, a job can drive a team.
+An agent is a model plus a harness. Replio is the harness: a deliberately small, auditable, zero-dependency agentic core. The model plans, the tool registry acts, and a single streaming loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers. Swarm covers types, skills, teams, and delegation. Jobs cover scheduled, durable work. Fleet provides a supervisor for many agents. MCP adds cross-tool interoperability, and all layers share one API and compose, so a supervised fleet agent can delegate by type and a job can drive a team.
 
 <p align="center"><img src="replio.svg" alt="Replio terminal session"></p>
 
@@ -55,7 +55,7 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 
 ## Usage
 
-Replio runs the same loop in three ways: interactively in the REPL, headlessly from the CLI, and as an HTTP service. For bigger work the flow is ask, compose, run, hand off, remember, report - the assistant composes a team, runs it stage by stage, and hands control between agents as phases change. See [docs/usage/workflow.md](docs/usage/workflow.md) for the workflows and patterns.
+Replio runs the same loop in three ways: interactively in the REPL, headlessly from the CLI, and as an HTTP service. For bigger work the flow is ask, compose, run, hand off, remember, report. The assistant composes a team, runs it stage by stage, and hands control between agents as phases change. See [docs/usage/workflow.md](docs/usage/workflow.md) for the workflows and patterns.
 
 ### REPL
 
@@ -152,7 +152,7 @@ On `replio serve`, the same is available at `POST /mcp`. See [docs/mcp.md](docs/
 
 ## Roadmap
 
-Fleet orchestration, scheduled and durable jobs, and the swarm foundations - bundled types, in-process sub-agents, the `delegate` and `team` tools, team pipelines, skills, the review loop, the `assistant` root and `composer` roles, and the `ask` tool - are live. Next: the runs, focus, and memory redesign (run-owned sessions, focus that only navigates, handoff between runs, bounded memory per role/team/job, and non-blocking runs with live focus), the governance track (first-run onboarding, one-window status over sessions, running agents, and jobs, agent health monitoring, per-agent todo lists), report-back connectors, the jobs operator API, the interactive `/agent` command, and remote channels. See [docs/swarm.md](docs/swarm.md), [docs/jobs.md](docs/jobs.md), and the open tasks in [TODO.md](TODO.md).
+The fleet orchestration, scheduled and durable jobs, and the swarm foundations are live: bundled types, in-process sub-agents, the `delegate` and `team` tools, team pipelines, skills, the review loop, the `assistant` root and `composer` roles, and the `ask` tool. Next comes the runs, focus, and memory redesign (run-owned sessions, focus that only navigates, handoff between runs, bounded memory per role/team/job, and non-blocking runs with live focus), then the governance track (first-run onboarding, one-window status over sessions, running agents, and jobs, agent health monitoring, per-agent todo lists), report-back connectors, the jobs operator API, the interactive `/agent` command, and remote channels. See [docs/swarm.md](docs/swarm.md), [docs/jobs.md](docs/jobs.md), and the open tasks in [TODO.md](TODO.md).
 
 ## Contributing
 

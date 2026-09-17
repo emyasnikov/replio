@@ -73,7 +73,7 @@ Error responses are guidance, not telemetry. When a call fails, tell the model w
 
 ## Evaluating your tools
 
-Measure how well a model uses a tool before you trust it. Replio ships an agent-level tool-evaluation harness - `replio eval` - that runs task fixtures through the headless agent loop and reports tool-call accuracy, redundant calls, errors, and tokens, against a mock or a real provider (see [eval.md](eval.md)). The `replio-core-eval` bundled plugin contributes a small fixture catalog. Author your own fixtures under `.replio/eval/*.json`.
+Measure how well a model uses a tool before you trust it. Replio ships an agent-level tool-evaluation harness, `replio eval`, that runs task fixtures through the headless agent loop and reports tool-call accuracy, redundant calls, errors, and tokens, against a mock or a real provider (see [eval.md](eval.md)). The `replio-core-eval` bundled plugin contributes a small fixture catalog. Author your own fixtures under `.replio/eval/*.json`.
 
 - Build a mock-provider loop test. The test suite runs the full agent loop against a stubbed `provider.chat` with no network and no API key. `tests/test_tool_calling.py`, `tests/test_agent_loop.py`, and the `make_chat` / `make_engine` helpers in `tests/` are the pattern. Drive the loop with a tool-call event and assert the model-visible result and session parts.
 - Run `replio eval` against a real provider before and after a description change. A fixture whose `pass` flips (or whose accuracy moves) quantifies the effect.

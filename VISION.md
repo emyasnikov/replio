@@ -4,7 +4,7 @@
 
 Replio is an agent harness: the runtime that turns a language model into an agent that can act. The model plans, the harness executes, and one streaming loop drives an interactive REPL, a headless CLI, and an HTTP API. Replio is deliberately small, zero-dependency, and auditable, so the whole runtime fits in one review.
 
-The main agent, **assistant**, is the point of contact: it greets you on first run and asks what you want to do, answers small tasks inline in the current run, delegates bigger tasks to sub-agents or whole teams instead of blocking, runs recurring work in the background, watches your other agents for health, and reports back. Everything you need to see - sessions, running agents, and configured jobs on the machine - is reachable from one place. Users never see the machinery. They feel supported and do less work.
+The main agent, **assistant**, is the point of contact: it greets you on first run and asks what you want to do, answers small tasks inline in the current run, delegates bigger tasks to sub-agents or whole teams instead of blocking, runs recurring work in the background, watches your other agents for health, and reports back. Everything you need to see is reachable from one place: sessions, running agents, and configured jobs on the machine. Users never see the machinery. They feel supported and do less work.
 
 ## What Replio is
 

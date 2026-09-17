@@ -30,7 +30,7 @@
 - Centralized static strings - move hardcoded prompts and static strings into one module
 - Code cleanup pass - a dedicated pass over the core for dead code, naming, and rough edges
 - Report-back connectors - job summaries delivered out-of-band (email first, idea only) when the terminal is closed
-- Remove the legacy provider-plugin backfill migration (`Config._migrate_plugins`) once a stable replio release has shipped with the externalized providers - existing `plugins` lists no longer need the automatic append, and the migration code is dead weight
+- Remove the legacy provider-plugin backfill migration (`Config._migrate_plugins`) once a stable replio release has shipped with the externalized providers. Existing `plugins` lists no longer need the automatic append, and the migration code is dead weight
 - Human-in-the-loop channels - job events outbound (`proposed`, `will_run`, `failed`, `waiting_approval`) plus inbound actions (`approve`/`reject`/`run`/`disable`) over configurable connectors (webhook first, then email, then Telegram), so a job can reach an operator who is not on the box
 - Global jobs overview across agents - `replio jobs list --root <dir>` fleet scan, a `GET /jobs` + `POST /jobs/<name>/approve|reject|run|disable` operator API on `replio serve`, then a web Control UI, so one view shows which agents run next and with which task
 - Edge / offline store-and-forward buffering - offline-capable agents with local buffering for unreliable connectivity (enterprise use case)
@@ -105,7 +105,7 @@
 - [ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store
 - [ ] Agent folder watcher - internal bundled plugin (stdlib `threading` + `pathlib` polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps
 - [ ] Minimal web Control UI - stdlib `http.server` page over the existing `replio serve` JSON API (OpenClaw Control UI analogue). Richer frameworks stay plugin-first
-- [ ] Externalize the bundled plugins (`replio-core-web`/`fs`/`exec`) into separate versioned repositories - the bundled copies stay the shipped defaults. Global/local plugins of the same name already override them
+- [ ] Externalize the bundled plugins (`replio-core-web`/`fs`/`exec`) into separate versioned repositories, while the bundled copies stay the shipped defaults. Global/local plugins of the same name already override them
 - [ ] PyPI plugin source - discover installed plugin packages via `importlib.metadata` entry points (`replio.plugins` group)
 - [ ] Shared plugin virtualenv - one venv for all plugin dependencies, injected at import
 - [ ] Per-plugin virtualenv isolation - `~/.config/replio/plugins/<name>/.venv`. The loader injects its site-packages at import (strongest dependency separation)

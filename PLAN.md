@@ -2,7 +2,7 @@
 
 Groups the next tasks from `TODO.md` (`## Open`) into work packages, each providing a distinct next-level capability. Packages are ordered top-to-bottom by urgency and importance, vision-first. Re-rank the packages against the backlog before starting each next step (docs-first for the roadmap phases).
 
-Finished tasks are removed from this file - they live as one-liners in `TODO.md` `## Done` and in detail under the matching version in `CHANGELOG.md`.
+Finished tasks are removed from this file and live as one-liners in `TODO.md` `## Done` and in detail under the matching version in `CHANGELOG.md`.
 
 ## Method
 
@@ -88,7 +88,7 @@ React to and see jobs from outside the box. Run teams on schedule.
 
 ## Tool engineering for agents
 
-Tools are the provider-facing surface - one OpenAI-compatible contract, registry metadata drives the loop. Hardening it for any provider (weak OpenAI-compatible backends especially), from the Anthropic tool-writing principles (choosing the right tools, namespacing, meaningful context, token efficiency, description prompt-engineering) and the tool-use evaluation methodology.
+Tools are the provider-facing surface: one OpenAI-compatible contract, registry metadata drives the loop. Hardening it for any provider (weak OpenAI-compatible backends especially), from the Anthropic tool-writing principles (choosing the right tools, namespacing, meaningful context, token efficiency, description prompt-engineering) and the tool-use evaluation methodology.
 
 | Task | Effort | Provides |
 |------|--------|----------|

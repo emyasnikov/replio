@@ -5,7 +5,7 @@ You can run `replio serve` directly, but a fleet of agents is best supervised by
 - **Single interactive agent** - install with pipx and run the REPL, `replio run`, or `replio serve` by hand. See the [README](../README.md).
 - **Supervised fleet or always-on server** - this page. Build the image from the repo's `Dockerfile` and run one container per agent with `docker-compose.yml.example`.
 
-The Docker templates live at the repo root (`Dockerfile`, `replio-entrypoint.sh`, `docker-compose.yml.example`) and work as-is. Per-agent values - the project path, the port, and the API key - are configured on your machine, never in the templates. A deployed agent is always `replio serve` pointed at a folder inside the container. The folder holds `.replio/config.json` (provider, model, system prompt, tool permissions, plugins) and writes sessions under `.replio/sessions/`. Mount that folder into the container and the agent keeps its state across restarts.
+The Docker templates live at the repo root (`Dockerfile`, `replio-entrypoint.sh`, `docker-compose.yml.example`) and work as-is. Per-agent values (the project path, the port, and the API key) are configured on your machine, never in the templates. A deployed agent is always `replio serve` pointed at a folder inside the container. The folder holds `.replio/config.json` (provider, model, system prompt, tool permissions, plugins) and writes sessions under `.replio/sessions/`. Mount that folder into the container and the agent keeps its state across restarts.
 
 ## Docker
 
@@ -37,7 +37,7 @@ The mounted `agents/docs` directory holds the agent's `.replio/config.json` (mod
 
 ### Fleet with Docker Compose
 
-The repo root's `docker-compose.yml.example` defines one service per agent. Copy it to `docker-compose.yml` and adjust the services (name, `REPLIO_PATH`, port, volume - the API key and model come from the mounted `.replio/config.json`):
+The repo root's `docker-compose.yml.example` defines one service per agent. Copy it to `docker-compose.yml` and adjust the services (name, `REPLIO_PATH`, port, and volume, since the API key and model come from the mounted `.replio/config.json`):
 
 ```yaml
 services:

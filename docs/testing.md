@@ -1,6 +1,6 @@
 # Testing
 
-Tests live in `tests/` and use the stdlib `unittest` framework - no external runner, no network, no API key. **Mock tests** patch provider responses so the agent loop, engine, CLI, and server are exercised without a real model.
+Tests live in `tests/` and use the stdlib `unittest` framework, with no external runner, no network, and no API key. **Mock tests** patch provider responses so the agent loop, engine, CLI, and server are exercised without a real model.
 
 ## Running tests
 
@@ -10,7 +10,7 @@ Run all tests:
 python -m unittest discover tests
 ```
 
-The canonical setup installs the package (`pip install -e .`), which is also what CI does. On a source checkout without installing, use `PYTHONPATH=$PWD/src` (absolute - the detached-fleet daemon changes directory, so a relative `src` would not resolve). `PluginManager` then falls back to the repo-root `plugins/` directory for the bundled plugins.
+The canonical setup installs the package (`pip install -e .`), which is also what CI does. On a source checkout without installing, use `PYTHONPATH=$PWD/src` (absolute, because the detached-fleet daemon changes directory, so a relative `src` would not resolve). `PluginManager` then falls back to the repo-root `plugins/` directory for the bundled plugins.
 
 Run a single file:
 
@@ -32,7 +32,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_cli.py` | `replio run`: JSON/text output, session-id persistence, exit codes, one-shot overrides applied but never persisted, `_engine_from_args` approval wiring (explicit `--model` auto-approves, `--approve-model` grants, default does not). `replio export`: default/custom/stdout targets, unknown session. `replio models`: bare configured listing (grouped, active marker, key marker, empty) and `list [provider]` probe (default/`<provider>`, error/empty), `main` dispatch for both. `replio plugins`: list/install/uninstall, enable/disable plugins-list toggle + unknown name, `main` dispatch |
 | `test_commands.py` | Slash-command registration and `/help` output (aliases, subcommands, tools listed under `/tool`, mode-filtered listings), `/connect` provider flow (interactive picker list/number/URL/bad number/stored-custom reconnect, named connect preset defaults + probe args, stored-key keep/re-enter, unknown-name error, URL known-host + plugin default-URL match + custom name derivation + `[name]` override + bare hostname, probe-before-commit decline/accept, `connect_check` off, config `model` untouched), `/model` show/switch-touch (provider/model ref unfold + approval prompt), `/config` scope flags (`--global`/`--local`, `api_key` as a normal key incl. global writes, `-a`/`-r` scope), `/models` configured listing and `list` probe (key marker sourced from providers.json, provider filter, error/empty, configured-model note), `/provider` warn |
 | `test_completion.py` | Readline tab completion: commands, session names, plugin names, tool names |
-| `test_config.py` | Config scopes: local-only saves, `--global` writes, `apply()` in-memory overrides (never written), unset fallback/origin, global>local merge, empty-local-does-not-shadow-global, `replio config` CLI (get/set/unset/reload, JSON values, show-origin). `api_key` is an ordinary key - no global forcing, `0600`, or migration |
+| `test_config.py` | Config scopes: local-only saves, `--global` writes, `apply()` in-memory overrides (never written), unset fallback/origin, global>local merge, empty-local-does-not-shadow-global, `replio config` CLI (get/set/unset/reload, JSON values, show-origin). `api_key` is an ordinary key, with no global forcing, `0600`, or migration |
 | `test_delegate.py` | `delegate` tool: type allow default (no prompt) / `ask` confirm grant-decline / unknown-type deny, `delegate_echo` on/off display + sub footer, `/tool delegate` single print, empty-content log-summary fallback, sub-agent session persistence + resolver actions |
 | `test_delegation_permissions.py` | Permission ceiling + grants: `clamp_action`/`resolve_permissions`/`resolve_grant_ceiling`, `ToolPolicy` one-shot/always grants + consume + category/tool matching, no-escalation (a type carve cannot widen above the caller's `grant_permission`), supervisor grants a category it cannot use itself, one-shot grants do not propagate to children, `ask(kind='permission')` routing (`auto`/`human`/`deny`, ceiling denial, lead grants `once` only, operator grants `once`/`always`), granted tool appears then is consumed from the schema, audit entries |
 | `test_engine.py` | `Engine.chat` turn result, thinking/content separation, load-or-create sessions, auto `ses_<ts>_<id>` naming (stable across turns), plan-mode schema filtering, instruction injection, per-turn `mode`, glyph param suffix gating, `!` error-line rendering and `show_errors` gating, soft-result note-line rendering and `show_notes` gating, `check_connection`/`list_models` probe resolution and overrides without state mutation, `_reinit_provider` provider-registry API key resolution (no config fallback, registry custom base_url fallback when config empty), model-ref unfold + approval gate (unfolded provider/base_url/model, headless deny, `approve_models` grant, chat short-circuit, subagent type-model unfold + gate, team-run pre-check deny) |
@@ -70,7 +70,7 @@ Run tests before committing changes to verify core logic isn't broken.
 | `test_types.py` | `TypeRegistry`: bundled/plugin/global/local merge and precedence, origins (bundled/plugin/local/global origin), tags roundtrip + merge, put/remove/reload (disk re-read + plugin-manager re-apply), `/types` command (list/show/new override/remove, `list <tag>` filter, bundled remove rejected) |
 | `test_ui.py` | UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, `!` tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm), confirm `?` glyph at line start, confirm re-raises KeyboardInterrupt / returns False on EOF |
 
-`tests/helpers.py` provides `make_chat(config_data)` - a `ChatLoop` with a mocked provider - used by most tests to drive the engine without a model.
+`tests/helpers.py` provides `make_chat(config_data)`, a `ChatLoop` with a mocked provider, used by most tests to drive the engine without a model.
 
 ## Plugin test suites
 

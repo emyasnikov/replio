@@ -2,7 +2,7 @@
 
 ## Slash commands
 
-Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` for details.
+Run `replio` and type `/` to tab-complete commands. Use `/help` or `/help <cmd>` for details.
 
 | Command                 | Aliases        | Description                                                    |
 |-------------------------|----------------|----------------------------------------------------------------|
@@ -19,7 +19,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 | `/model`                 |                | Show or switch the active model. `/model <name>` sets it on the current provider. `/model <provider>/<model>` switches provider and model together, approving the model on confirm |
 | `/models`                |                | List configured models, or probe a provider's available models. `/models` shows the approved-model history grouped by provider (`(key)` when the provider has a stored key). `/models list [provider]` probes a provider's advertised models live (default: current provider) |
 | `/plugins`              | `/plugin`      | Manage plugins: `list`, `enable`, `disable`, `install`, `update`, `uninstall` |
-| `/print`                |                | Reprint a turn (or one part) in full: `/print <n>[.<m>] [--full] [--run <target>]`. Shows the turn metadata, prompt, thinking, each tool call with input/output, and the answer; capped per part by `print_max_chars`, `--full` drops the cap. See [session.md](session.md) |
+| `/print`                |                | Reprint a turn (or one part) in full: `/print <n>[.<m>] [--full] [--run <target>]`. Shows the turn metadata, prompt, thinking, each tool call with input/output, and the answer. Each part is capped by `print_max_chars`, and `--full` drops the cap. See [session.md](session.md) |
 | `/provider`              |                | Show or switch the active provider                             |
 | `/session`              |                | Show or switch the active session: `/session new`, `/session load <name>`, `/session save`. Saved-session catalog operations live under `/sessions` |
 | `/sessions`             |                | Manage the saved-session catalog: `list`, `preview`, `delete`, `export <name> [out]` (Markdown output, see [session.md](session.md)) |
@@ -33,7 +33,7 @@ Run `replio` and type `/` - commands tab-complete. Use `/help` or `/help <cmd>` 
 
 `/help` renders commands with subcommands indented below and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.
 
-Delegation is a normal tool: the lead agent proposes it, or you run it directly - `/tool delegate {"type": "researcher", "task": "..."}` routes through the same tool policy. A configured type delegates without prompting (`delegate` defaults to `allow`. Set an agent type's `delegate` to `ask` to confirm), and an agent type outside the registry is denied. See [types.md](types.md) and [swarm.md](swarm.md).
+Delegation is a normal tool: the lead agent proposes it, or you run it directly, and `/tool delegate {"type": "researcher", "task": "..."}` routes through the same tool policy. A configured type delegates without prompting (`delegate` defaults to `allow`. Set an agent type's `delegate` to `ask` to confirm), and an agent type outside the registry is denied. See [types.md](types.md) and [swarm.md](swarm.md).
 
 ## CLI
 
@@ -92,7 +92,7 @@ replio models list [provider]          # probe a provider's advertised models (d
 
 ### `replio eval`
 
-Tool-use evaluation harness - run task fixtures through the agent loop and report metrics. See [eval.md](eval.md).
+Tool-use evaluation harness: run task fixtures through the agent loop and report metrics. See [eval.md](eval.md).
 
 ```bash
 replio eval --path <project> list              # list discovered fixtures
@@ -111,7 +111,7 @@ replio eval --path <project> run --compare ollama,openai --output json
 
 ### `replio config`
 
-Scoped, scriptable config management (same layers as `/config` - see [config.md](config.md)).
+Scoped, scriptable config management, with the same layers as `/config` (see [config.md](config.md)).
 
 ```bash
 replio config get [key ...] [--show-origin]   # effective values, default all keys

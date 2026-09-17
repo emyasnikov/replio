@@ -1,8 +1,8 @@
 # Enterprise fit
 
-Replio is deliberately small: a zero-dependency agentic core with one streaming loop, scoped per-process agents, and an append-only session log. That makes it a strong **orchestration, analysis, and assistant layer** above existing systems - not a replacement for the deterministic systems that run production (SCADA, PLC, MES, ERP, quality and maintenance systems). The recurring conclusion across the research is consistent: start read-only, keep humans in the loop for anything that writes or controls, and grow autonomy in bounded steps.
+Replio is deliberately small: a zero-dependency agentic core with one streaming loop, scoped per-process agents, and an append-only session log. That makes it a strong **orchestration, analysis, and assistant layer** above existing systems. It complements the deterministic systems that run production (SCADA, PLC, MES, ERP, quality and maintenance systems) rather than replacing them. The recurring conclusion across the research is consistent: start read-only, keep humans in the loop for anything that writes or controls, and grow autonomy in bounded steps.
 
-This guide covers the enterprise-specific assessment: capability fit, industry fits, the extensions an enterprise deployment adds, and the audit advantage. The shared foundation - what Replio provides today, the adoption path, and the reference architecture - lives in [index.md](index.md).
+This guide covers the enterprise-specific assessment: capability fit, industry fits, the extensions an enterprise deployment adds, and the audit advantage. The shared foundation (what Replio provides today, the adoption path, and the reference architecture) is in [index.md](index.md).
 
 ## Fit by capability area
 
@@ -20,7 +20,7 @@ The guiding principle from the research applies across industries: the target ar
 
 ## Industry fits
 
-Replio's combination of auditability, local control, and low footprint applies broadly across manufacturing and operations. The verticals below are examples of where the fit is strongest. The food section is the researched reference case. The list is illustrative, not exhaustive - the same capability pattern generalizes to any vertical with regulated processes, assets to monitor, and reports to produce.
+Replio's combination of auditability, local control, and low footprint applies broadly across manufacturing and operations. The verticals below are examples of where the fit is strongest. The food section is the researched reference case. The list is illustrative rather than exhaustive, and the same capability pattern generalizes to any vertical with regulated processes, assets to monitor, and reports to produce.
 
 ### Manufacturing (general)
 
@@ -45,7 +45,7 @@ As elsewhere, food safety decisions (release of a batch, recall, setpoint change
 
 ### Pharmaceuticals & life sciences
 
-Same pattern as food but with even tighter validation requirements (GxP, 21 CFR Part 11, EU Annex 11): audit trails, electronic records, batch records, and deviation management. Replio's complete session logs and local storage align with validated-environment expectations, and the same phased approach applies - document knowledge, monitoring explanation, deviation analysis, and audit-ready reporting before any write access.
+Same pattern as food, with even tighter validation requirements (GxP, 21 CFR Part 11, EU Annex 11) for audit trails, electronic records, batch records, and deviation management. Replio's complete session logs and local storage align with validated-environment expectations, and the same phased approach applies: document knowledge, monitoring explanation, deviation analysis, and audit-ready reporting before any write access.
 
 ### Chemicals & process industries
 
@@ -161,7 +161,7 @@ The research and the roadmap ([TODO.md](../../TODO.md)) agree on what an enterpr
 - **MCP support** - an MCP client plugin (connect to external MCP servers and register their tools into the ToolRegistry) and an MCP server (expose Replio's tools and sessions to external agents). Planned in [TODO.md](../../TODO.md).
 - **Connectors** - data ingestion and write channels for the systems of record: OPC UA / MQTT for machine and sensor data, and adapters for MES, ERP, LIMS, CMMS, WMS, and document management. The enterprise plugin list in [TODO.md](../../TODO.md) covers `read_stream`/`write_stream`, time-series analysis, model inference, scheduling optimization, SCADA commands, and reporting.
 - **Tool gateway and policy engine** - a controlled layer between the agent and target systems: whitelisted tools, strict input schemas, read/write separation, value ranges, rate limits, idempotency, four-eyes approval, dry run, and full logging. Write tools must never carry the same rights as read tools.
-- **Durable workflows** - scheduled jobs, retries with backoff, timeouts, resumability, and the human-in-the-loop status model (`proposed`, `approved`, `executing`, `verified`, `failed`) landed as `replio jobs` (see [jobs.md](../jobs.md)). Dead-letter queues remain planned. A chat loop alone is not a workflow engine, and now the workflow engine is a first-class command.
+- **Durable workflows** - scheduled jobs, retries with backoff, timeouts, resumability, and the human-in-the-loop status model (`proposed`, `approved`, `executing`, `verified`, `failed`) landed as `replio jobs` (see [jobs.md](../jobs.md)). Dead-letter queues remain planned, and the workflow engine is now a first-class command.
 - **Central audit aggregation** - Replio's per-agent session logs are complete, but enterprise compliance wants a central, tamper-evident view: aggregated audit with correlation IDs across agents and target systems, retention policies, and export for compliance and forensics. Options are a lightweight audit proxy in front of `replio serve`, or a dedicated store.
 - **Observability** - metrics for latency, cost, errors, and tool usage, tracing across agent, MCP, and target systems, alerting on misbehavior, prompt and model versioning, rate and budget limits.
 - **Edge deployment** - offline-capable agents with local buffering and store-and-forward for plants with limited or unreliable connectivity.
@@ -171,7 +171,7 @@ The production-grade reference architecture and the phased adoption path are sha
 
 ## Audit advantage vs. alternatives
 
-The research positions Replio's audit capability as its main differentiator for regulated environments. The honest comparison is more nuanced than the headline claims in some of the research:
+The research positions Replio's audit capability as its main differentiator for regulated environments. What matters is the depth of the record rather than a headline:
 
 | Criterion | Replio today | OpenClaw (per its audit docs) |
 |-----------|--------------|-------------------------------|
@@ -182,4 +182,4 @@ The research positions Replio's audit capability as its main differentiator for 
 | Cross-agent trail | Per-agent sessions, a supervisor must aggregate | Built-in gateway aggregation |
 | Data sovereignty | Local files, no external service | Workspace-based, local-first by design |
 
-Replio's advantage is not that it is inherently "more secure" - it is that its logs are **content-complete**: the full chain from user request, context, tool call with arguments, result, and reasoning is reconstructable, which is what auditors and quality departments actually need for batch-level traceability, deviation investigation, and recall documentation. That completeness is paired with strict isolation (worktree scoping, headless auto-deny) and zero external logging. For enterprise-grade compliance, the research recommends adding central aggregation and tamper-evidence (hash-chained logging or WORM storage) on top of the existing session logs - both are additive, not rework.
+Replio's advantage is log depth. Its logs are **content-complete**: the full chain from user request, context, tool call with arguments, result, and reasoning is reconstructable, which is what auditors and quality departments need for batch-level traceability, deviation investigation, and recall documentation. That completeness is paired with strict isolation (worktree scoping, headless auto-deny) and zero external logging. For enterprise-grade compliance, the recommended additions are central aggregation and tamper-evidence (hash-chained logging or WORM storage) on top of the existing session logs, both additive rather than rework.

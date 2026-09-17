@@ -4,7 +4,7 @@ An agent type is a named agent definition: a system prompt, an optional model ov
 
 ## What an agent type bundles
 
-A type is a single reusable profile carrying several distinct axes of an agent. The name `type` is deliberately neutral - "a kind of agent" - so it holds all of these without privileging any one.
+A type is a single reusable profile carrying several distinct axes of an agent. The name `type` is deliberately neutral ("a kind of agent"), so it holds all of these without privileging any one.
 
 | Axis | What it covers | Field |
 |---|---|---|
@@ -38,7 +38,7 @@ The bundled catalog ships two pre-carved teams plus an `assistant`, a `composer`
 Each synonym covers only part of the profile, or collides with a term already in use:
 
 - **`role`** collides with the chat message roles in the session format and provider API (`"role": "user"` / `"assistant"` / `"tool"`). Two "role" concepts in the same API and docs would confuse readers.
-- **`function`** collides with OpenAI function calling - the mechanism the agent loop uses to invoke tools.
+- **`function`** collides with OpenAI function calling, the mechanism the agent loop uses to invoke tools.
 - **`profile`** collides with the existing "permission profile" language (`tool_permission`).
 - **`capability`**, **`mandate`**, **`specialization`**, and **`duty`** each name one axis (what it can do, what it may do, its expertise, its obligation) but not the whole object.
 - **`persona`** names the identity-and-behavior axis alone. It fits one axis, but as the name of the whole profile it undersells authority and function, and reads as marketing jargon to enterprise readers.
@@ -75,7 +75,7 @@ Fields:
 
 - `name` - unique key of the type.
 - `system_prompt` - the type's system prompt, injected when it runs.
-- `model` - optional. Overrides the caller's model when the type runs, falls back to the caller's when empty. Accepts a `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) to pin provider and model together. The model must be approved before the type runs (`delegate`/`/teams run` ask interactively, or pass `--approve-model` headlessly - see [Model refs and approval](providers.md#model-refs-and-approval)).
+- `model` - optional. Overrides the caller's model when the type runs, falls back to the caller's when empty. Accepts a `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) to pin provider and model together. The model must be approved before the type runs (`delegate`/`/teams run` ask interactively, or pass `--approve-model` headlessly, see [Model refs and approval](providers.md#model-refs-and-approval)).
 - `skills` - optional list of standing skill names from the [skills registry](skills.md), resolved and injected into the type's sub-agent system prompt (and jobs with `--type`). A caller may layer additional skills per run through `delegate`/`team` or a team stage, so one reusable type carries a stable identity while each task adds its own instructions.
 - `tags` - optional list of job tags for grouping and filtering (`/types list <tag>`). The bundled set uses a controlled vocabulary: `management`, `research`, `writing`, `programming`, `review`.
 - `tool_permission` - optional per-agent overrides of `tool_permission` categories. The per-agent permission profile.
@@ -99,7 +99,7 @@ Fields:
 - A configured type uses its own `tool_permission` overrides. The default for the `delegate` category is `allow` (delegation runs without a prompt). Set `delegate: "ask"` on a type to confirm each delegation to it. A type with `delegate: "deny"` is refused as a delegation target and is not offered the `delegate` tool itself. To bar a type from running team pipelines without blocking delegation to it, set `team: "deny"` instead (the `team` category gates only the `team` tool).
 - A temporary type created only to run a task in parallel defaults to `deny` until you opt in.
 
-Sub-agent permissions are bounded by the caller: the effective carve is the caller's `tool_permission`, narrowed by the type's carve and capped by the caller's `grant_permission` ceiling (see [config.md](config.md#permission-authority)). `grant_permission` defaults to the caller's own `tool_permission`, so a type can never grant a sub-agent more than the caller holds. A type that sets `grant_permission` may delegate categories it does not use itself - e.g. a supervisor that denies `edit`/`bash` for itself but allows them in its ceiling can hand them to an `implementer` while never running them. An approved `ask(kind="permission")` request creates a one-shot grant on the asking sub-agent, consumed by the next matching call. The operator may grant `always` for the rest of that sub-agent's run.
+Sub-agent permissions are bounded by the caller: the effective carve is the caller's `tool_permission`, narrowed by the type's carve and capped by the caller's `grant_permission` ceiling (see [config.md](config.md#permission-authority)). `grant_permission` defaults to the caller's own `tool_permission`, so a type can never grant a sub-agent more than the caller holds. A type that sets `grant_permission` may delegate categories it does not use itself. For example, a supervisor that denies `edit`/`bash` for itself but allows them in its ceiling can hand them to an `implementer` while never running them. An approved `ask(kind="permission")` request creates a one-shot grant on the asking sub-agent, consumed by the next matching call. The operator may grant `always` for the rest of that sub-agent's run.
 
 ## Relationship to /agent, skills, and fleets
 

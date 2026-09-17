@@ -1,6 +1,6 @@
 # Skills
 
-A skill is a named set of markdown instructions an agent type can attach: `AgentType.skills` lists skill names, and when that type runs, each resolved skill's content is injected into its system prompt under a `## Skills` section. Skills are capability instructions distinct from tools and plugins - an agent type carries them, the sub-agent reads them.
+A skill is a named set of markdown instructions an agent type can attach: `AgentType.skills` lists skill names, and when that type runs, each resolved skill's content is injected into its system prompt under a `## Skills` section. Skills are capability instructions distinct from tools and plugins: an agent type carries them, and the sub-agent reads them.
 
 ## Storage
 
@@ -36,7 +36,7 @@ def register_skills(registry):
 
 ## Standing and per-invocation skills
 
-`AgentType.skills` are a type's standing skills - the experience a role always carries. A caller may extend a type for one run with additional skills, so the same reusable agent gains task, technology, stack, or framework instructions without defining a new type:
+`AgentType.skills` are a type's standing skills, the experience a role always carries. A caller may extend a type for one run with additional skills, so the same reusable agent gains task, technology, stack, or framework instructions without defining a new type:
 
 - `delegate(type, task, skills=[...])` appends the named skills after the type's standing skills.
 - A team stage may set `skills`, and `team(name, task, skills=[...])` adds task-wide skills to every stage.
@@ -57,11 +57,11 @@ When an agent type with `skills` runs as a sub-agent (`delegate`), each register
 Find sources and evaluate them. ...
 ```
 
-Missing or empty skills are skipped silently, and an agent type without skills gets an unchanged prompt. Jobs with `--type` inject the same section (from the global/local file layers - plugin contributions do not reach the scheduler's preparse, same rule as plugin types there). The format is built by `skills_section(registry, names)` in `replio.skills`.
+Missing or empty skills are skipped silently, and an agent type without skills gets an unchanged prompt. Jobs with `--type` inject the same section (from the global/local file layers, since plugin contributions do not reach the scheduler's preparse, the same rule as plugin types there). The format is built by `skills_section(registry, names)` in `replio.skills`.
 
 ## Managing skills
 
-- `/skills` - list skills (name, first-line description, origin) - `(local)` / `(global)` / `(plugin)` / `(merged)`.
+- `/skills` - list skills (name, first-line description, origin), with origins shown as `(local)` / `(global)` / `(plugin)` / `(merged)`.
 - `/skills new <name>` - create an empty local skill (edit the created `.md` file, or write one directly).
 - `/skills remove <name>` - remove a local skill. Plugin skills cannot be removed (override them locally instead).
 - `/skills show <name>` - print the full skill content.
