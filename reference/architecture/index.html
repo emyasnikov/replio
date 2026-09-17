@@ -1176,6 +1176,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../usage/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows and usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../writing-tools/" class="md-nav__link">
         
   
@@ -1369,7 +1397,7 @@
 
 
 <h1 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h1>
-<p>Replio is a terminal-based agentic REPL core: the model is the planner, the tool registry is how it acts. It is a zero-dependency Python app (stdlib only) built around a <strong>single agent loop</strong> - one SSE stream per turn where the model emits content or requests tool calls, which the loop executes and feeds back until the model answers.</p>
+<p>Replio is a terminal-based agentic REPL core: the model is the planner, the tool registry is how it acts. It is a zero-dependency Python app (stdlib only) built around a <strong>single agent loop</strong>: one SSE stream per turn where the model emits content or requests tool calls, which the loop executes and feeds back until the model answers.</p>
 <h2 id="the-three-core-layers">The three core layers<a class="headerlink" href="#the-three-core-layers" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>Agent loop</strong> (<code>src/replio/engine.py</code>) - the headless core. Each turn runs a single streaming request. The provider's <code>chat()</code> is a generator yielding events the engine reacts to:</li>
@@ -1398,7 +1426,7 @@
 <h2 id="focus">Focus<a class="headerlink" href="#focus" title="Permanent link">&para;</a></h2>
 <p><code>FocusManager</code> (<code>src/replio/focus.py</code>) owns the REPL's focus stack: the root assistant plus a role engine per focused role. <code>ChatLoop.active()</code> returns the focused engine and <code>ChatLoop.run()</code> routes turns and slash commands to it, so the operator talks to whichever agent is in focus. A role engine is built by <code>Engine.focused_engine(role)</code> with the same type resolution, skills, and permission carve as a delegation sub-agent, but with the REPL UI and a stable <code>agent_&lt;role&gt;</code> session that resumes on re-focus. <code>FocusManager.back()</code> walks the stack back and <code>reset()</code> returns to the root, repointing <code>ReplUI._loop</code> so rendering and confirms follow the active engine. The <code>prompt_role</code> config (default false) prefixes the prompt with the active role (e.g. <code>Assistant &gt;&gt;&gt;</code>). The <code>/focus</code> command surfaces the same model: no args prints the current run, the run tree, and the call log (each run shows its <code>session_id</code>), and it attaches or moves by <code>#id</code>, <code>run</code>, <code>role</code>, <code>session:</code>, <code>parent</code>, <code>child</code>, <code>sibling</code>, <code>next</code>, <code>prev</code>, or <code>back</code>. The <code>handoff</code> tool lets an agent do the same at run time: it marks its own run <code>paused</code> or <code>done</code>, resolves <code>parent</code>/<code>child</code>/<code>sibling</code>/<code>role</code>/<code>#run</code>/<code>#id</code> against the registry, and records a pending handoff that <code>ChatLoop</code> applies after the turn, so focus follows the target once the model stops. The <code>focus_on_delegate</code> config (<code>off</code>, <code>ask</code>, <code>on</code>, default <code>off</code>) does the same for an ordinary <code>delegate</code> call: when it fires, the <code>delegate</code> tool records a pending focus on the delegated role and the turn still finishes, so the REPL follows the sub-agent while the caller's answer completes.</p>
 <h2 id="one-stream-one-round-trip">One stream, one round trip<a class="headerlink" href="#one-stream-one-round-trip" title="Permanent link">&para;</a></h2>
-<p>When no tools are used, a turn is a single streaming request - no separate non-streaming decision round. <code>chat_nonstreaming()</code> is reserved for auxiliary decisions: query refinement, tool-result analysis, compaction. The <code>&lt;thinking&gt;</code> marker split lives in the engine so thinking stays separate from content in JSON results and session logs.</p>
+<p>When no tools are used, a turn is a single streaming request, with no separate non-streaming decision round. <code>chat_nonstreaming()</code> is reserved for auxiliary decisions: query refinement, tool-result analysis, compaction. The <code>&lt;thinking&gt;</code> marker split lives in the engine so thinking stays separate from content in JSON results and session logs.</p>
 <h2 id="ui-sinks">UI sinks<a class="headerlink" href="#ui-sinks" title="Permanent link">&para;</a></h2>
 <p>The loop renders through a <code>UISink</code>, an interface of methods the loop calls as events happen (<code>token</code>, <code>thinking</code>, <code>tool_status</code>, <code>activity</code>, <code>footer</code>, <code>confirm</code>, <code>error</code>, ...):</p>
 <table>
@@ -1453,7 +1481,7 @@
 </table>
 <p>Agents talk to each other over the same <code>POST /chat</code> API that <code>replio serve</code> exposes, which is how fleets and swarms compose. See <a href="../fleet/">fleet.md</a>, <a href="../swarm/">swarm.md</a>, <a href="../api/">api.md</a>.</p>
 <h2 id="sessions">Sessions<a class="headerlink" href="#sessions" title="Permanent link">&para;</a></h2>
-<p>Every turn appends to a session - a complete, append-only JSON log of messages, tool calls and results, reasoning, and errors. The provider payload is prepared from the log by <code>_provider_messages()</code>. See <a href="../session/">session.md</a>.</p>
+<p>Every turn appends to a session, a complete append-only JSON log of messages, tool calls and results, reasoning, and errors. The provider payload is prepared from the log by <code>_provider_messages()</code>. See <a href="../session/">session.md</a>.</p>
 <h2 id="plugins">Plugins<a class="headerlink" href="#plugins" title="Permanent link">&para;</a></h2>
 <p>Plugins extend the core with tools, providers, commands, and services without changing it. <code>PluginManager</code> discovers plugins in the bundled, global, and local roots, validates manifests, and hooks them into the live registries. The core stays stdlib-only, and plugin dependencies are imported lazily. See <a href="../plugins/">plugins.md</a>.</p>
 <h2 id="source-layout">Source layout<a class="headerlink" href="#source-layout" title="Permanent link">&para;</a></h2>

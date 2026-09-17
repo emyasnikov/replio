@@ -797,7 +797,7 @@
   <a href="#stdio-replio-mcp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        stdio - replio mcp
+        stdio (replio mcp)
       
     </span>
   </a>
@@ -808,7 +808,7 @@
   <a href="#http-post-mcp-on-replio-serve" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP - POST /mcp on replio serve
+        HTTP (POST /mcp on replio serve)
       
     </span>
   </a>
@@ -1177,6 +1177,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../usage/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows and usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../writing-tools/" class="md-nav__link">
         
   
@@ -1297,7 +1325,7 @@
   <a href="#stdio-replio-mcp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        stdio - replio mcp
+        stdio (replio mcp)
       
     </span>
   </a>
@@ -1308,7 +1336,7 @@
   <a href="#http-post-mcp-on-replio-serve" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP - POST /mcp on replio serve
+        HTTP (POST /mcp on replio serve)
       
     </span>
   </a>
@@ -1371,7 +1399,7 @@
 
 
 <h1 id="mcp-model-context-protocol">MCP (Model Context Protocol)<a class="headerlink" href="#mcp-model-context-protocol" title="Permanent link">&para;</a></h1>
-<p>Replio speaks MCP in both directions through the bundled <code>replio-core-mcp</code> plugin (stdlib-only, no third-party <code>mcp</code> library - JSON-RPC 2.0 over newline-delimited stdio and SSE over urllib):</p>
+<p>Replio speaks MCP in both directions through the bundled <code>replio-core-mcp</code> plugin. It is stdlib-only, with no third-party <code>mcp</code> library, and uses JSON-RPC 2.0 over newline-delimited stdio and SSE over urllib:</p>
 <ul>
 <li><strong>Client</strong> - connect to external MCP servers (stdio or HTTP), import their tools into the <code>ToolRegistry</code>, and call them like any other Replio tool. Tool policy, <code>/tool</code>, <code>/help</code>, glyph activity lines, query refinement and session logging all apply.</li>
 <li><strong>Server</strong> - expose Replio's registered tools and sessions as an MCP server to external agents (Claude, opencode, and other MCP clients) over stdio (<code>replio mcp</code>) and HTTP (<code>POST /mcp</code> on <code>replio serve</code>).</li>
@@ -1496,11 +1524,11 @@
 </ul>
 <h2 id="server">Server<a class="headerlink" href="#server" title="Permanent link">&para;</a></h2>
 <p>The server exposes Replio's currently registered tools (policy-filtered) and its saved sessions as resources, without mutating the active session. Tool execution follows <code>ToolPolicy</code>. <code>ask</code> tools run directly (the external MCP client is the human-in-the-loop and shows its own confirmations) unless <code>mcp_server.allow_ask</code> is <code>false</code>, which refuses them.</p>
-<h3 id="stdio-replio-mcp">stdio - <code>replio mcp</code><a class="headerlink" href="#stdio-replio-mcp" title="Permanent link">&para;</a></h3>
+<h3 id="stdio-replio-mcp">stdio (<code>replio mcp</code>)<a class="headerlink" href="#stdio-replio-mcp" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>replio<span class="w"> </span>mcp<span class="w">                </span><span class="c1"># read JSON-RPC from stdin, write to stdout</span>
 </code></pre></div>
 <p>An MCP client launches this as a subprocess (newline-delimited JSON), <code>initialize</code> or <code>server/discover</code>, then <code>tools/list</code> / <code>tools/call</code>.</p>
-<h3 id="http-post-mcp-on-replio-serve">HTTP - <code>POST /mcp</code> on <code>replio serve</code><a class="headerlink" href="#http-post-mcp-on-replio-serve" title="Permanent link">&para;</a></h3>
+<h3 id="http-post-mcp-on-replio-serve">HTTP (<code>POST /mcp</code> on <code>replio serve</code>)<a class="headerlink" href="#http-post-mcp-on-replio-serve" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>replio<span class="w"> </span>serve<span class="w"> </span>--port<span class="w"> </span><span class="m">8787</span><span class="w">  </span><span class="c1"># adds POST /mcp when the plugin is loaded</span>
 </code></pre></div>
 <p>This implements the streamable HTTP transport: each JSON-RPC request is its own POST, answered with JSON (or SSE for streaming-capable requests).</p>

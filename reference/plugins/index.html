@@ -1243,6 +1243,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../usage/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows and usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../writing-tools/" class="md-nav__link">
         
   
@@ -1531,9 +1559,9 @@
 </tr>
 </tbody>
 </table>
-<p>First-party plugins ship with replio and are listed in the default <code>plugins</code> config, so they are active out of the box. <code>replio-core-web</code> provides <code>web_search</code> and <code>web_fetch</code>. <code>replio-core-webhook</code> provides the job report-back connector (<code>report.webhook</code>). <code>replio-core-fs</code> provides <code>file_read</code>, <code>list_dir</code>, <code>file_write</code>, <code>glob</code>, and <code>grep</code>. <code>replio-core-exec</code> provides <code>run_command</code>. <code>replio-core-mcp</code> provides the MCP client (<code>mcp_connect</code>/<code>mcp_list</code>/<code>mcp_disconnect</code>) and server (<code>replio mcp</code> and <code>POST /mcp</code>) - see <a href="../mcp/">mcp.md</a>. <code>replio-core-eval</code> provides the eval fixture catalog for <code>replio eval</code> - see <a href="../eval/">eval.md</a>. <code>replio-core-edit</code> provides <code>file_edit</code>, <code>replio-core-git</code> provides <code>git</code>/<code>git_commit</code>, and <code>replio-core-dev</code> provides <code>code_test</code>/<code>code_lint</code>/<code>code_format</code>. The vendor providers ship as bundled plugins too (<code>replio-core-ollama</code>, <code>replio-core-openai</code>, <code>replio-core-groq</code>, <code>replio-core-anthropic</code>, <code>replio-core-opencode</code>) - see <a href="../providers/">providers.md</a>. They behave like any other plugin but cannot be uninstalled or updated, since they version with replio. Remove a name from <code>plugins</code> (or <code>/plugins disable</code>) to stop one loading. A global or local plugin with the same name overrides the bundled one.</p>
+<p>First-party plugins ship with replio and are listed in the default <code>plugins</code> config, so they are active out of the box. <code>replio-core-web</code> provides <code>web_search</code> and <code>web_fetch</code>. <code>replio-core-webhook</code> provides the job report-back connector (<code>report.webhook</code>). <code>replio-core-fs</code> provides <code>file_read</code>, <code>list_dir</code>, <code>file_write</code>, <code>glob</code>, and <code>grep</code>. <code>replio-core-exec</code> provides <code>run_command</code>. <code>replio-core-mcp</code> provides the MCP client (<code>mcp_connect</code>/<code>mcp_list</code>/<code>mcp_disconnect</code>) and server (<code>replio mcp</code> and <code>POST /mcp</code>). See <a href="../mcp/">mcp.md</a>. <code>replio-core-eval</code> provides the eval fixture catalog for <code>replio eval</code>. See <a href="../eval/">eval.md</a>. <code>replio-core-edit</code> provides <code>file_edit</code>, <code>replio-core-git</code> provides <code>git</code>/<code>git_commit</code>, and <code>replio-core-dev</code> provides <code>code_test</code>/<code>code_lint</code>/<code>code_format</code>. The vendor providers ship as bundled plugins too (<code>replio-core-ollama</code>, <code>replio-core-openai</code>, <code>replio-core-groq</code>, <code>replio-core-anthropic</code>, <code>replio-core-opencode</code>). See <a href="../providers/">providers.md</a>. They behave like any other plugin but cannot be uninstalled or updated, since they version with replio. Remove a name from <code>plugins</code> (or <code>/plugins disable</code>) to stop one loading. A global or local plugin with the same name overrides the bundled one.</p>
 <h2 id="plugin-layout">Plugin layout<a class="headerlink" href="#plugin-layout" title="Permanent link">&para;</a></h2>
-<p>A plugin is a directory with a <code>manifest.json</code>, an entry module, and an optional unit-test suite. Source modules live under <code>src/</code>, tests under <code>tests/</code> (a bare <code>.py</code> file at the root is also accepted - name = filename, defaults apply):</p>
+<p>A plugin is a directory with a <code>manifest.json</code>, an entry module, and an optional unit-test suite. Source modules live under <code>src/</code>, tests under <code>tests/</code> (a bare <code>.py</code> file at the root is also accepted, where name = filename and defaults apply):</p>
 <div class="highlight"><pre><span></span><code>~/.config/replio/plugins/web-scraper/
   manifest.json
   src/
@@ -1542,7 +1570,7 @@
   tests/
     test_plugins.py    # optional - run by `replio plugins test` and the core suite
 </code></pre></div>
-<p>The entry module may sit anywhere under the plugin directory - <code>manifest.json</code> <code>"entry"</code> is a path relative to the plugin root (default <code>plugin.py</code>). Sibling imports resolve from the entry module's directory, so a <code>src/</code> layout works like a flat one.</p>
+<p>The entry module may sit anywhere under the plugin directory. The <code>manifest.json</code> <code>"entry"</code> key is a path relative to the plugin root (default <code>plugin.py</code>). Sibling imports resolve from the entry module's directory, so a <code>src/</code> layout works like a flat one.</p>
 <h2 id="manifest">Manifest<a class="headerlink" href="#manifest" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"replio-web-scraper"</span><span class="p">,</span>
@@ -1625,7 +1653,7 @@
 </code></pre></div>
 <p>Plugin tools automatically inherit the tool permission policy, <code>/tool</code>, <code>/help</code>, query refinement, <code>noise_tools</code>, and session logging. The loop never special-cases plugin names. A tool handler may declare a <code>_config</code> keyword argument to receive the engine's <code>Config</code> (e.g. to read a config key like <code>tool_max_result_chars</code>). The registry passes it only when the handler's signature accepts it. It is never exposed to the model. See <a href="../tools/">tools.md</a>.</p>
 <h3 id="providers">Providers<a class="headerlink" href="#providers" title="Permanent link">&para;</a></h3>
-<p><code>register_providers</code> contributes to the same provider set as the core <code>PROVIDERS</code> dict: the plugin provider appears in the <code>/connect</code> picker, and passing its <code>DEFAULT_BASE_URL</code> as a <code>/connect &lt;url&gt;</code> argument selects it automatically (see <a href="../providers/">providers.md</a>). A plugin provider's <code>DEFAULT_BASE_URL</code> also makes it a model-ref target (<code>&lt;name&gt;/&lt;model&gt;</code>). A provider class may declare <code>HOST_PATTERNS</code> - a tuple of URL substrings - so <code>/connect &lt;url&gt;</code> auto-detects it from the host (see <a href="../providers/#auto-detection">Auto-detection</a>). The core <code>detect_provider()</code> scans the merged set and prefers the longest matching pattern. The bundled vendor providers (<code>replio-core-ollama</code>, <code>-openai</code>, <code>-groq</code>, <code>-anthropic</code>, <code>replio-core-opencode</code>) are plugins themselves, so an external plugin registering a provider with the same name as a bundled one does not override it - the core <code>PROVIDERS</code> registry wins on name conflicts.</p>
+<p><code>register_providers</code> contributes to the same provider set as the core <code>PROVIDERS</code> dict: the plugin provider appears in the <code>/connect</code> picker, and passing its <code>DEFAULT_BASE_URL</code> as a <code>/connect &lt;url&gt;</code> argument selects it automatically (see <a href="../providers/">providers.md</a>). A plugin provider's <code>DEFAULT_BASE_URL</code> also makes it a model-ref target (<code>&lt;name&gt;/&lt;model&gt;</code>). A provider class may declare <code>HOST_PATTERNS</code> (a tuple of URL substrings) so <code>/connect &lt;url&gt;</code> auto-detects it from the host (see <a href="../providers/#auto-detection">Auto-detection</a>). The core <code>detect_provider()</code> scans the merged set and prefers the longest matching pattern. The bundled vendor providers (<code>replio-core-ollama</code>, <code>-openai</code>, <code>-groq</code>, <code>-anthropic</code>, <code>replio-core-opencode</code>) are plugins themselves, so an external plugin registering a provider with the same name as a bundled one does not override it, because the core <code>PROVIDERS</code> registry wins on name conflicts.</p>
 <h3 id="services">Services<a class="headerlink" href="#services" title="Permanent link">&para;</a></h3>
 <p><code>register_services</code> lets a plugin power a core feature that is not tool-calling. Two services exist today: web search-then-answer and job report-back. The bundled <code>replio-core-web</code> registers <code>services['search']</code> with <code>search(query, num)</code>, <code>display(query, results)</code>, and <code>context(query, results)</code> methods (without it, that mode reports the service is unavailable instead of erroring). The bundled <code>replio-core-webhook</code> registers <code>services['report']</code> with a <code>report(payload, config)</code> method: the scheduler calls it once per completed job run with a <code>job.run.completed</code> payload and its <code>Config</code>, so the connector reads its own keys (e.g. <code>report.webhook</code>) and posts the report. Any plugin can register a <code>report</code> service the same way to deliver run summaries elsewhere (email, chat, a local log). See <a href="../jobs/#report-back">jobs.md</a>.</p>
 <h3 id="agent-types-teams-and-skills">Agent types, teams, and skills<a class="headerlink" href="#agent-types-teams-and-skills" title="Permanent link">&para;</a></h3>

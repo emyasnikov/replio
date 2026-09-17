@@ -1128,6 +1128,34 @@
   
   
     <li class="md-nav__item">
+      <a href="reference/usage/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows and usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="reference/writing-tools/" class="md-nav__link">
         
   
@@ -1279,10 +1307,11 @@
 <h1 id="replio">Replio<a class="headerlink" href="#replio" title="Permanent link">&para;</a></h1>
 <p><strong>A lightweight, zero-dependency agentic core for fleets of single-purpose agents.</strong></p>
 <p>Current version: <strong>v0.33.0</strong> (Python &gt;= 3.10, MIT, zero external dependencies)</p>
-<p>An agent is a model plus a harness. Replio is a deliberately small, auditable, zero-dependency agentic core. The model plans, the tool registry acts, and a single streaming loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers - swarm (types, skills, teams, and delegation), jobs (scheduled, durable work), and fleet (a supervisor for many agents) - with MCP for cross-tool interoperability.</p>
+<p>An agent is a model plus a harness. Replio is the harness: a deliberately small, auditable, zero-dependency agentic core. The model plans, the tool registry acts, and a single streaming loop powers an interactive REPL, a headless CLI, and an HTTP API. Each process is a self-contained agent scoped to one folder, with its own config, model, and tool permissions. Agents compose into larger systems through three orchestration layers. Swarm covers types, skills, teams, and delegation. Jobs cover scheduled, durable work. Fleet provides a supervisor for many agents. MCP adds cross-tool interoperability.</p>
 <h2 id="vision">Vision<a class="headerlink" href="#vision" title="Permanent link">&para;</a></h2>
 <p><strong>One runtime, many agents</strong></p>
-<p>Replio assembles five replaceable layers - access, orchestration, capability, model, and storage - around a thin core. The direction is everything is a plugin: models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI become replaceable plugins, and the REPL itself moves to a plugin. The operator sees one window: the <code>assistant</code> agent greets you, answers small tasks inline, delegates bigger work to sub-agents or teams, runs recurring work in the background, watches your agents for health, and reports back.</p>
+<p>Replio assembles five replaceable layers around a thin core: access, orchestration, capability, model, and storage. The direction is everything is a plugin: models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI become replaceable plugins, and the REPL itself moves to a plugin. The operator sees one window: the <code>assistant</code> agent greets you, answers small tasks inline, delegates bigger work to sub-agents or teams, runs recurring work in the background, watches your agents for health, and reports back.</p>
+<p>For bigger work the flow is ask, compose, run, hand off, remember, report. The assistant composes a team, runs it stage by stage, and hands control between agents as phases change, while you watch, stay out, or jump into any run. See <a href="reference/usage/workflow/">Workflows and usage</a>.</p>
 <p>Read the full vision, decisions, and context economics in <a href="vision/">Vision</a>.</p>
 <h2 id="current-state">Current state<a class="headerlink" href="#current-state" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1304,7 +1333,7 @@
 <li><strong>Plugins</strong> - external repositories register tools, providers, slash commands, services, types, teams, skills, and eval fixtures. The core stays zero-dependency</li>
 </ul>
 <h2 id="development-plan">Development plan<a class="headerlink" href="#development-plan" title="Permanent link">&para;</a></h2>
-<p>The work packages and milestones live in <a href="roadmap/">Roadmap</a>. The full task backlog (open work, newest first) is in <a href="backlog/">Backlog</a>. The current priority is the runs, focus, and memory redesign - run-owned sessions, focus that only navigates, handoff between runs, bounded memory per role/team/job, and non-blocking runs with live focus - followed by the assistant governance track.</p>
+<p>The work packages and milestones live in <a href="roadmap/">Roadmap</a>. The full task backlog (open work, newest first) is in <a href="backlog/">Backlog</a>. The current priority is the runs, focus, and memory redesign: run-owned sessions, focus that only navigates, handoff between runs, bounded memory per role/team/job, and non-blocking runs with live focus. The assistant governance track follows.</p>
 <h2 id="reference-docs">Reference docs<a class="headerlink" href="#reference-docs" title="Permanent link">&para;</a></h2>
 <p>The detailed reference is organized in the <a href="reference/">Reference index</a>, covering architecture, commands, configuration, providers, tools, security, sessions, jobs, fleet, swarm, plugins, and more.</p>
 <h2 id="getting-started">Getting started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>

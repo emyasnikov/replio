@@ -1110,6 +1110,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../usage/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows and usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../writing-tools/" class="md-nav__link">
         
   
@@ -1237,7 +1265,7 @@
 
 
 <h1 id="skills">Skills<a class="headerlink" href="#skills" title="Permanent link">&para;</a></h1>
-<p>A skill is a named set of markdown instructions an agent type can attach: <code>AgentType.skills</code> lists skill names, and when that type runs, each resolved skill's content is injected into its system prompt under a <code>## Skills</code> section. Skills are capability instructions distinct from tools and plugins - an agent type carries them, the sub-agent reads them.</p>
+<p>A skill is a named set of markdown instructions an agent type can attach: <code>AgentType.skills</code> lists skill names, and when that type runs, each resolved skill's content is injected into its system prompt under a <code>## Skills</code> section. Skills are capability instructions distinct from tools and plugins: an agent type carries them, and the sub-agent reads them.</p>
 <h2 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h2>
 <p>Skills come from three layers, merged like types and teams: plugin contributions first, then global, then local, with local winning per field:</p>
 <ul>
@@ -1263,7 +1291,7 @@ the source URL, and a one-line reliability assessment.
     <span class="n">registry</span><span class="o">.</span><span class="n">add_plugin</span><span class="p">({</span><span class="s1">'name'</span><span class="p">:</span> <span class="s1">'finders'</span><span class="p">,</span> <span class="s1">'content'</span><span class="p">:</span> <span class="s1">'# finders</span><span class="se">\n\n</span><span class="s1">...'</span><span class="p">})</span>
 </code></pre></div>
 <h2 id="standing-and-per-invocation-skills">Standing and per-invocation skills<a class="headerlink" href="#standing-and-per-invocation-skills" title="Permanent link">&para;</a></h2>
-<p><code>AgentType.skills</code> are a type's standing skills - the experience a role always carries. A caller may extend a type for one run with additional skills, so the same reusable agent gains task, technology, stack, or framework instructions without defining a new type:</p>
+<p><code>AgentType.skills</code> are a type's standing skills, the experience a role always carries. A caller may extend a type for one run with additional skills, so the same reusable agent gains task, technology, stack, or framework instructions without defining a new type:</p>
 <ul>
 <li><code>delegate(type, task, skills=[...])</code> appends the named skills after the type's standing skills.</li>
 <li>A team stage may set <code>skills</code>, and <code>team(name, task, skills=[...])</code> adds task-wide skills to every stage.</li>
@@ -1279,10 +1307,10 @@ the source URL, and a one-line reliability assessment.
 
 Find sources and evaluate them. ...
 </code></pre></div>
-<p>Missing or empty skills are skipped silently, and an agent type without skills gets an unchanged prompt. Jobs with <code>--type</code> inject the same section (from the global/local file layers - plugin contributions do not reach the scheduler's preparse, same rule as plugin types there). The format is built by <code>skills_section(registry, names)</code> in <code>replio.skills</code>.</p>
+<p>Missing or empty skills are skipped silently, and an agent type without skills gets an unchanged prompt. Jobs with <code>--type</code> inject the same section (from the global/local file layers, since plugin contributions do not reach the scheduler's preparse, the same rule as plugin types there). The format is built by <code>skills_section(registry, names)</code> in <code>replio.skills</code>.</p>
 <h2 id="managing-skills">Managing skills<a class="headerlink" href="#managing-skills" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>/skills</code> - list skills (name, first-line description, origin) - <code>(local)</code> / <code>(global)</code> / <code>(plugin)</code> / <code>(merged)</code>.</li>
+<li><code>/skills</code> - list skills (name, first-line description, origin), with origins shown as <code>(local)</code> / <code>(global)</code> / <code>(plugin)</code> / <code>(merged)</code>.</li>
 <li><code>/skills new &lt;name&gt;</code> - create an empty local skill (edit the created <code>.md</code> file, or write one directly).</li>
 <li><code>/skills remove &lt;name&gt;</code> - remove a local skill. Plugin skills cannot be removed (override them locally instead).</li>
 <li><code>/skills show &lt;name&gt;</code> - print the full skill content.</li>

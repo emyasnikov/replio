@@ -1193,6 +1193,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../usage/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows and usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../writing-tools/" class="md-nav__link">
         
   
@@ -1404,7 +1432,7 @@
 
 <h1 id="commands-cli">Commands &amp; CLI<a class="headerlink" href="#commands-cli" title="Permanent link">&para;</a></h1>
 <h2 id="slash-commands">Slash commands<a class="headerlink" href="#slash-commands" title="Permanent link">&para;</a></h2>
-<p>Run <code>replio</code> and type <code>/</code> - commands tab-complete. Use <code>/help</code> or <code>/help &lt;cmd&gt;</code> for details.</p>
+<p>Run <code>replio</code> and type <code>/</code> to tab-complete commands. Use <code>/help</code> or <code>/help &lt;cmd&gt;</code> for details.</p>
 <table>
 <thead>
 <tr>
@@ -1482,7 +1510,7 @@
 <tr>
 <td><code>/print</code></td>
 <td></td>
-<td>Reprint a turn (or one part) in full: <code>/print &lt;n&gt;[.&lt;m&gt;] [--full] [--run &lt;target&gt;]</code>. Shows the turn metadata, prompt, thinking, each tool call with input/output, and the answer; capped per part by <code>print_max_chars</code>, <code>--full</code> drops the cap. See <a href="../session/">session.md</a></td>
+<td>Reprint a turn (or one part) in full: <code>/print &lt;n&gt;[.&lt;m&gt;] [--full] [--run &lt;target&gt;]</code>. Shows the turn metadata, prompt, thinking, each tool call with input/output, and the answer. Each part is capped by <code>print_max_chars</code>, and <code>--full</code> drops the cap. See <a href="../session/">session.md</a></td>
 </tr>
 <tr>
 <td><code>/provider</code></td>
@@ -1537,7 +1565,7 @@
 </tbody>
 </table>
 <p><code>/help</code> renders commands with subcommands indented below and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under <code>/tool</code>. <code>/tool</code> with no arguments lists the same tools with their short descriptions.</p>
-<p>Delegation is a normal tool: the lead agent proposes it, or you run it directly - <code>/tool delegate {"type": "researcher", "task": "..."}</code> routes through the same tool policy. A configured type delegates without prompting (<code>delegate</code> defaults to <code>allow</code>. Set an agent type's <code>delegate</code> to <code>ask</code> to confirm), and an agent type outside the registry is denied. See <a href="../types/">types.md</a> and <a href="../swarm/">swarm.md</a>.</p>
+<p>Delegation is a normal tool: the lead agent proposes it, or you run it directly, and <code>/tool delegate {"type": "researcher", "task": "..."}</code> routes through the same tool policy. A configured type delegates without prompting (<code>delegate</code> defaults to <code>allow</code>. Set an agent type's <code>delegate</code> to <code>ask</code> to confirm), and an agent type outside the registry is denied. See <a href="../types/">types.md</a> and <a href="../swarm/">swarm.md</a>.</p>
 <h2 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>usage: replio [-h] [--path PATH] [-v] {config,eval,export,fleet,jobs,mcp,models,plugins,run,serve} ...
 </code></pre></div>
@@ -1670,7 +1698,7 @@ replio<span class="w"> </span>models<span class="w"> </span>list<span class="w">
 </tbody>
 </table>
 <h3 id="replio-eval"><code>replio eval</code><a class="headerlink" href="#replio-eval" title="Permanent link">&para;</a></h3>
-<p>Tool-use evaluation harness - run task fixtures through the agent loop and report metrics. See <a href="../eval/">eval.md</a>.</p>
+<p>Tool-use evaluation harness: run task fixtures through the agent loop and report metrics. See <a href="../eval/">eval.md</a>.</p>
 <div class="highlight"><pre><span></span><code>replio<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--path<span class="w"> </span>&lt;project&gt;<span class="w"> </span>list<span class="w">              </span><span class="c1"># list discovered fixtures</span>
 replio<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--path<span class="w"> </span>&lt;project&gt;<span class="w"> </span>run<span class="w"> </span><span class="o">[</span>--fixture<span class="w"> </span>&lt;id&gt;<span class="o">]</span><span class="w"> </span><span class="o">[</span>--provider<span class="w"> </span>P<span class="o">]</span><span class="w"> </span><span class="o">[</span>--model<span class="w"> </span>M<span class="o">]</span>
 replio<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--path<span class="w"> </span>&lt;project&gt;<span class="w"> </span>run<span class="w"> </span>--compare<span class="w"> </span>ollama,openai<span class="w"> </span>--output<span class="w"> </span>json
@@ -1717,7 +1745,7 @@ replio<span class="w"> </span><span class="nb">eval</span><span class="w"> </spa
 </tbody>
 </table>
 <h3 id="replio-config"><code>replio config</code><a class="headerlink" href="#replio-config" title="Permanent link">&para;</a></h3>
-<p>Scoped, scriptable config management (same layers as <code>/config</code> - see <a href="../config/">config.md</a>).</p>
+<p>Scoped, scriptable config management, with the same layers as <code>/config</code> (see <a href="../config/">config.md</a>).</p>
 <div class="highlight"><pre><span></span><code>replio<span class="w"> </span>config<span class="w"> </span>get<span class="w"> </span><span class="o">[</span>key<span class="w"> </span>...<span class="o">]</span><span class="w"> </span><span class="o">[</span>--show-origin<span class="o">]</span><span class="w">   </span><span class="c1"># effective values, default all keys</span>
 replio<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>&lt;key&gt;<span class="w"> </span>&lt;value&gt;<span class="w"> </span><span class="o">[</span>--global<span class="o">]</span><span class="w">    </span><span class="c1"># JSON-parseable value, default local</span>
 replio<span class="w"> </span>config<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>&lt;key&gt;<span class="w"> </span><span class="o">[</span>--global<span class="o">]</span><span class="w">          </span><span class="c1"># drop a value from the selected scope</span>

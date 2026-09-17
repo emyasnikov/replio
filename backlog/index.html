@@ -1075,6 +1075,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../reference/usage/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows and usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../reference/writing-tools/" class="md-nav__link">
         
   
@@ -1200,7 +1228,7 @@
 <li>Centralized static strings - move hardcoded prompts and static strings into one module</li>
 <li>Code cleanup pass - a dedicated pass over the core for dead code, naming, and rough edges</li>
 <li>Report-back connectors - job summaries delivered out-of-band (email first, idea only) when the terminal is closed</li>
-<li>Remove the legacy provider-plugin backfill migration (<code>Config._migrate_plugins</code>) once a stable replio release has shipped with the externalized providers - existing <code>plugins</code> lists no longer need the automatic append, and the migration code is dead weight</li>
+<li>Remove the legacy provider-plugin backfill migration (<code>Config._migrate_plugins</code>) once a stable replio release has shipped with the externalized providers. Existing <code>plugins</code> lists no longer need the automatic append, and the migration code is dead weight</li>
 <li>Human-in-the-loop channels - job events outbound (<code>proposed</code>, <code>will_run</code>, <code>failed</code>, <code>waiting_approval</code>) plus inbound actions (<code>approve</code>/<code>reject</code>/<code>run</code>/<code>disable</code>) over configurable connectors (webhook first, then email, then Telegram), so a job can reach an operator who is not on the box</li>
 <li>Global jobs overview across agents - <code>replio jobs list --root &lt;dir&gt;</code> fleet scan, a <code>GET /jobs</code> + <code>POST /jobs/&lt;name&gt;/approve|reject|run|disable</code> operator API on <code>replio serve</code>, then a web Control UI, so one view shows which agents run next and with which task</li>
 <li>Edge / offline store-and-forward buffering - offline-capable agents with local buffering for unreliable connectivity (enterprise use case)</li>
@@ -1275,7 +1303,7 @@
 <li>[ ] Grep text index - internal bundled plugin (stdlib) that indexes converted text files for local search, bridging toward the vector store</li>
 <li>[ ] Agent folder watcher - internal bundled plugin (stdlib <code>threading</code> + <code>pathlib</code> polling) that detects new files in an agent's folder and triggers their processing (e.g. convert new PDFs on arrival), scoped capability, no deps</li>
 <li>[ ] Minimal web Control UI - stdlib <code>http.server</code> page over the existing <code>replio serve</code> JSON API (OpenClaw Control UI analogue). Richer frameworks stay plugin-first</li>
-<li>[ ] Externalize the bundled plugins (<code>replio-core-web</code>/<code>fs</code>/<code>exec</code>) into separate versioned repositories - the bundled copies stay the shipped defaults. Global/local plugins of the same name already override them</li>
+<li>[ ] Externalize the bundled plugins (<code>replio-core-web</code>/<code>fs</code>/<code>exec</code>) into separate versioned repositories, while the bundled copies stay the shipped defaults. Global/local plugins of the same name already override them</li>
 <li>[ ] PyPI plugin source - discover installed plugin packages via <code>importlib.metadata</code> entry points (<code>replio.plugins</code> group)</li>
 <li>[ ] Shared plugin virtualenv - one venv for all plugin dependencies, injected at import</li>
 <li>[ ] Per-plugin virtualenv isolation - <code>~/.config/replio/plugins/&lt;name&gt;/.venv</code>. The loader injects its site-packages at import (strongest dependency separation)</li>

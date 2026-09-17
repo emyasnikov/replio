@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://emyasnikov.github.io/replio/reference/writing-tools/">
       
       
-        <link rel="prev" href="../usage/programming/">
+        <link rel="prev" href="../usage/workflow/">
       
       
       
@@ -1003,6 +1003,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows and usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1413,7 +1441,7 @@
 <li>Use a <code>note</code> predicate for informational one-liners that are not failures. <code>(no matches for "x")</code>, <code>(empty file)</code>, <code>(end of content)</code>, and <code>No search results found.</code> are normal outcomes. A dimmed note beats a red error line.</li>
 </ul>
 <h2 id="evaluating-your-tools">Evaluating your tools<a class="headerlink" href="#evaluating-your-tools" title="Permanent link">&para;</a></h2>
-<p>Measure how well a model uses a tool before you trust it. Replio ships an agent-level tool-evaluation harness - <code>replio eval</code> - that runs task fixtures through the headless agent loop and reports tool-call accuracy, redundant calls, errors, and tokens, against a mock or a real provider (see <a href="../eval/">eval.md</a>). The <code>replio-core-eval</code> bundled plugin contributes a small fixture catalog. Author your own fixtures under <code>.replio/eval/*.json</code>.</p>
+<p>Measure how well a model uses a tool before you trust it. Replio ships an agent-level tool-evaluation harness, <code>replio eval</code>, that runs task fixtures through the headless agent loop and reports tool-call accuracy, redundant calls, errors, and tokens, against a mock or a real provider (see <a href="../eval/">eval.md</a>). The <code>replio-core-eval</code> bundled plugin contributes a small fixture catalog. Author your own fixtures under <code>.replio/eval/*.json</code>.</p>
 <ul>
 <li>Build a mock-provider loop test. The test suite runs the full agent loop against a stubbed <code>provider.chat</code> with no network and no API key. <code>tests/test_tool_calling.py</code>, <code>tests/test_agent_loop.py</code>, and the <code>make_chat</code> / <code>make_engine</code> helpers in <code>tests/</code> are the pattern. Drive the loop with a tool-call event and assert the model-visible result and session parts.</li>
 <li>Run <code>replio eval</code> against a real provider before and after a description change. A fixture whose <code>pass</code> flips (or whose accuracy moves) quantifies the effect.</li>

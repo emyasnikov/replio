@@ -16,7 +16,7 @@
         <link rel="prev" href="../../types/">
       
       
-        <link rel="next" href="../../writing-tools/">
+        <link rel="next" href="../workflow/">
       
       
         
@@ -1237,6 +1237,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows and usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../writing-tools/" class="md-nav__link">
         
   
@@ -1579,7 +1607,7 @@ docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </
 <blockquote>
 <p>Tip: use a different model for the reviewer than the implementer, with a fresh session, so a flawed plan is not rubber-stamped by the same model and context.</p>
 </blockquote>
-<p>The API key is registered once per provider via <code>/connect</code> in the global provider registry (<code>~/.config/replio/providers.json</code>) - it is not a config value and never appears in <code>.replio/config.json</code>. Never commit a key to git.</p>
+<p>The API key is registered once per provider via <code>/connect</code> in the global provider registry (<code>~/.config/replio/providers.json</code>). It is not a config value and never appears in <code>.replio/config.json</code>. Never commit a key to git.</p>
 <h2 id="step-3-clone-the-repo-and-create-the-worktrees">Step 3 - Clone the repo and create the worktrees<a class="headerlink" href="#step-3-clone-the-repo-and-create-the-worktrees" title="Permanent link">&para;</a></h2>
 <blockquote>
 <p>Creates a directory tree under your home directory. Nothing destructive.</p>
@@ -1677,7 +1705,7 @@ git<span class="w"> </span>clone<span class="w"> </span>&lt;your-repo-url&gt;<sp
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"127.0.0.1:8782:8782"</span>
 <span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
 </code></pre></div>
-<p>Add one service per agent - <code>tester</code> on port 8783, <code>reviewer</code> on port 8784, and each <code>feature-*</code> worktree on a distinct port - mounting that agent's folder (its <code>.replio/config.json</code> from Step 4 plus its sessions) or the git worktree. Implementers mount their worktree, <code>tester</code> and <code>reviewer</code> mount their own agent folders. Ports publish on <code>127.0.0.1</code> so the JSON API stays host-local behind your reverse proxy. The model comes from the mounted <code>.replio/config.json</code>. The API key is resolved from the global model registry (<code>~/.config/replio/models.json</code>), so mount that file into each container (or register the connection with <code>/connect</code> inside it) for keyed providers - the key is never read from config.</p>
+<p>Add one service per agent: <code>tester</code> on port 8783, <code>reviewer</code> on port 8784, and each <code>feature-*</code> worktree on a distinct port. Mount that agent's folder (its <code>.replio/config.json</code> from Step 4 plus its sessions) or the git worktree. Implementers mount their worktree, <code>tester</code> and <code>reviewer</code> mount their own agent folders. Ports publish on <code>127.0.0.1</code> so the JSON API stays host-local behind your reverse proxy. The model comes from the mounted <code>.replio/config.json</code>. The API key is resolved from the global model registry (<code>~/.config/replio/models.json</code>), so mount that file into each container (or register the connection with <code>/connect</code> inside it) for keyed providers, since the key is never read from config.</p>
 <p>Bring the fleet up:</p>
 <blockquote>
 <p>Builds or pulls the image and starts every service now. Each agent is <code>replio serve</code> scoped to the mounted folder. <code>docker compose down</code> stops the whole fleet, <code>docker compose stop &lt;name&gt;</code> stops one agent.</p>
@@ -1687,7 +1715,7 @@ docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> 
 docker<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>replio-lead
 </code></pre></div>
 <h2 id="step-6-the-human-gates">Step 6 - The human gates<a class="headerlink" href="#step-6-the-human-gates" title="Permanent link">&para;</a></h2>
-<p>Automation stops at three gates. Everything between them is agent work, every gate is a human decision. Agents answer over <code>POST /chat</code> (<a href="../../api/">docs/api.md</a>), the headless server auto-denies anything that needs confirmation, which is the safe default - never add <code>--yes</code> just to make a task pass.</p>
+<p>Automation stops at three gates. Everything between them is agent work, every gate is a human decision. Agents answer over <code>POST /chat</code> (<a href="../../api/">docs/api.md</a>), and the headless server auto-denies anything that needs confirmation, which is the safe default. Never add <code>--yes</code> just to make a task pass.</p>
 <ol>
 <li><strong>Plan review</strong> - ask the lead for a plan, then a human confirms scope, allowed files, acceptance criteria, and risks before any implementer starts:</li>
 </ol>

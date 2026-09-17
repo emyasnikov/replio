@@ -1177,6 +1177,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../usage/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows and usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../writing-tools/" class="md-nav__link">
         
   
@@ -1376,7 +1404,7 @@
 <li><strong>Global</strong> - <code>~/.config/replio/config.json</code> (user-wide defaults, credentials).</li>
 <li><strong>Local</strong> - <code>.replio/config.json</code> in the project path (project overrides).</li>
 </ol>
-<p>Every process merges them in memory. Nothing is distributed to folders. Writes default to the <strong>local</strong> file and hold only the keys you selected - a save never re-writes the merged config. API keys live outside the config, in the global provider registry (<code>~/.config/replio/providers.json</code>), managed through <code>/connect</code> (see <a href="#model-registry-not-config">Models</a>).</p>
+<p>Every process merges them in memory. Nothing is distributed to folders. Writes default to the <strong>local</strong> file and hold only the keys you selected, so a save never re-writes the merged config. API keys live outside the config, in the global provider registry (<code>~/.config/replio/providers.json</code>), managed through <code>/connect</code> (see <a href="#model-registry-not-config">Models</a>).</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># inspect in the REPL (origin: default/global/local)</span>
 /config
 <span class="c1"># set a value (project-local, Git-like default)</span>
@@ -1697,7 +1725,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </tbody>
 </table>
 <h3 id="modes"><code>modes</code><a class="headerlink" href="#modes" title="Permanent link">&para;</a></h3>
-<p>Modes are named postures combining an instruction block with tool-policy overrides. The built-ins ship as defaults - <code>build</code> (no overrides) and <code>plan</code> (read-only, <code>edit</code> and <code>bash</code> denied):</p>
+<p>Modes are named postures combining an instruction block with tool-policy overrides. The built-ins ship as defaults: <code>build</code> (no overrides) and <code>plan</code> (read-only, <code>edit</code> and <code>bash</code> denied):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">"mode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"plan"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"modes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -1726,7 +1754,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <span class="w">  </span><span class="nt">"web"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (y/N confirm), <code>deny</code> (tool hidden/refused). Read/write/list outside the worktree escalate to <code>ask</code> automatically. The <code>delegate</code> category gates the <code>delegate</code> tool. On top of the category action, delegation resolves its permission from the target type - a configured type uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaulting to <code>allow</code>), while an agent type not in the registry defaults to <code>deny</code> (see <a href="../types/">types.md</a>). The <code>team</code> category gates the <code>team</code> tool (default <code>allow</code>), separate from <code>delegate</code> so a type can be a delegation target yet be barred from running pipelines. The <code>ask</code> category gates the <code>ask</code> tool (default <code>allow</code> - the interaction itself, answered by the human or the lead agent, see <a href="../tools/">tools.md</a>). The <code>catalog</code> category gates the <code>catalog</code> tool (default <code>allow</code>) - it writes only to the project catalog in <code>.replio/</code>, so a team-composing agent can manage types, teams, and skills without general file edits. Set it to <code>ask</code> to confirm every catalog change. The <code>handoff</code> category gates the <code>handoff</code> tool (default <code>allow</code>) - it only moves the REPL's focus between runs (see <a href="../tools/#handing-off-control">tools.md</a>).</p>
+<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (y/N confirm), <code>deny</code> (tool hidden/refused). Read/write/list outside the worktree escalate to <code>ask</code> automatically. The <code>delegate</code> category gates the <code>delegate</code> tool. On top of the category action, delegation resolves its permission from the target type: a configured type uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaulting to <code>allow</code>), while an agent type not in the registry defaults to <code>deny</code> (see <a href="../types/">types.md</a>). The <code>team</code> category gates the <code>team</code> tool (default <code>allow</code>), separate from <code>delegate</code> so a type can be a delegation target yet be barred from running pipelines. The <code>ask</code> category gates the <code>ask</code> tool (default <code>allow</code>, the interaction itself, answered by the human or the lead agent, see <a href="../tools/">tools.md</a>). The <code>catalog</code> category gates the <code>catalog</code> tool (default <code>allow</code>). It writes only to the project catalog in <code>.replio/</code>, so a team-composing agent can manage types, teams, and skills without general file edits. Set it to <code>ask</code> to confirm every catalog change. The <code>handoff</code> category gates the <code>handoff</code> tool (default <code>allow</code>). It only moves the REPL's focus between runs (see <a href="../tools/#handing-off-control">tools.md</a>).</p>
 <h3 id="ask_policy"><code>ask_policy</code><a class="headerlink" href="#ask_policy" title="Permanent link">&para;</a></h3>
 <p>Routes the <code>ask</code> tool by kind:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1747,14 +1775,14 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <li><code>grant_permission</code> - the ceiling on what it may hand down to sub-agents.</li>
 </ul>
 <p>A sub-agent's effective permissions are the parent's <code>tool_permission</code>, narrowed by the type's <code>tool_permission</code> carve and capped by the parent's <code>grant_permission</code>. A type can never widen a category above the ceiling, so a sub-agent cannot gain a permission its caller was not authorized to delegate. <code>grant_permission</code> defaults to the engine's own <code>tool_permission</code>, so delegation never escalates unless a type (or config) explicitly widens the ceiling.</p>
-<p>A type that sets <code>grant_permission</code> may delegate categories it does not use itself - e.g. a supervisor with <code>edit</code>/<code>bash</code> denied for itself but allowed in its ceiling can hand them to an <code>implementer</code> while never running them.</p>
+<p>A type that sets <code>grant_permission</code> may delegate categories it does not use itself. For example, a supervisor with <code>edit</code>/<code>bash</code> denied for itself but allowed in its ceiling can hand them to an <code>implementer</code> while never running them.</p>
 <p>An approved permission request creates a one-shot grant on the asking sub-agent (<code>once</code>), consumed by the next matching call. The operator may grant <code>always</code>, reusable for the rest of that sub-agent's run. Grants are never inherited by grandchildren and are recorded in the session <code>permissions</code> audit array.</p>
 <h3 id="unattended-mode">Unattended mode<a class="headerlink" href="#unattended-mode" title="Permanent link">&para;</a></h3>
-<p><code>unattended: true</code> guarantees that nothing in a turn reads stdin, at any depth - an overnight REPL run cannot freeze on a prompt. It applies to the whole sub-agent tree:</p>
+<p><code>unattended: true</code> guarantees that nothing in a turn reads stdin, at any depth, so an overnight REPL run cannot freeze on a prompt. It applies to the whole sub-agent tree:</p>
 <ul>
 <li><strong>Confirms auto-deny.</strong> A tool whose policy action is <code>ask</code> (e.g. <code>run_command</code> with <code>bash: ask</code>) returns <code>[cancelled] User declined the &lt;name&gt; call</code> instead of prompting.</li>
-<li><strong><code>ask target='human'</code> parks instead of prompting.</strong> The root engine drops its terminal UI (<code>_ask_ui</code> is not propagated down the tree), and any human-routed ask becomes a pending request persisted in <code>.replio/asks.json</code>, returned to the agent as <code>[parked] Ask #&lt;id&gt; ...</code> so it continues or finishes. A sub-agent's human ask parks rather than falling back to its lead - the operator should decide. Permission asks routed <code>human</code> park the same way. Routed <code>auto</code> still go to the lead (a one-shot grant).</li>
-<li><strong>Model approval is not prompted.</strong> An unapproved type/team model is denied (the run reports the error) unless the headless <code>approve_models</code> flag was passed - launch with <code>--approve-model</code> if the run needs to approve one itself.</li>
+<li><strong><code>ask target='human'</code> parks instead of prompting.</strong> The root engine drops its terminal UI (<code>_ask_ui</code> is not propagated down the tree), and any human-routed ask becomes a pending request persisted in <code>.replio/asks.json</code>, returned to the agent as <code>[parked] Ask #&lt;id&gt; ...</code> so it continues or finishes. A sub-agent's human ask parks rather than falling back to its lead, so the operator decides. Permission asks routed <code>human</code> park the same way. Routed <code>auto</code> still go to the lead (a one-shot grant).</li>
+<li><strong>Model approval is not prompted.</strong> An unapproved type/team model is denied (the run reports the error) unless the headless <code>approve_models</code> flag was passed. Launch with <code>--approve-model</code> if the run needs to approve one itself.</li>
 </ul>
 <p>Enable it per run with <code>replio --unattended</code> (not persisted), in config with <code>unattended: true</code>, or live with <code>/unattended</code>. Parked asks are listed and answered with <code>/asks</code> or the serve API (<code>GET /asks</code>, <code>POST /asks/&lt;id&gt;/answer</code>). Answering marks the ask answered and injects the answer into the origin session, so the next turn on that session resumes with the operator's decision in context. Scheduled/durable job engines run unattended, so a job parks its human asks the same way. <code>confirm_timeout</code> (seconds, default <code>0</code> = forever) additionally makes attended confirm/ask prompts self-limiting, so a prompt left unanswered auto-denies instead of hanging.</p>
 <h3 id="bash_allow-command-allowlist-for-run_command"><code>bash_allow</code> - command allowlist for <code>run_command</code><a class="headerlink" href="#bash_allow-command-allowlist-for-run_command" title="Permanent link">&para;</a></h3>
@@ -1766,7 +1794,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 </ul>
 <p>The check runs through the per-invocation policy resolver, so it composes with modes, name-level <code>tools.deny</code>/<code>tools.allow</code>, and the worktree escalation. <code>bash_allow</code> gives a coding agent a safe default set (tests, linters, git) without opening up arbitrary shell.</p>
 <h2 id="model-registry-not-config">Model registry (not config)<a class="headerlink" href="#model-registry-not-config" title="Permanent link">&para;</a></h2>
-<p>Two global files live separately from config in <code>~/.config/replio/</code>. Neither is part of the config merge - <code>/config</code> never lists or writes them, and neither has a local scope.</p>
+<p>Two global files live separately from config in <code>~/.config/replio/</code>. Neither is part of the config merge: <code>/config</code> never lists or writes them, and neither has a local scope.</p>
 <h3 id="provider-registry-providersjson">Provider registry (<code>providers.json</code>)<a class="headerlink" href="#provider-registry-providersjson" title="Permanent link">&para;</a></h3>
 <p><code>~/.config/replio/providers.json</code> (written <code>0600</code> when it holds keys) stores the active connections, keyed by provider name:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1779,13 +1807,13 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <span class="p">}</span>
 </code></pre></div>
 <ul>
-<li><code>api_key</code> lives here, one per provider - the only place API keys live.</li>
-<li><code>base_url</code> is the effective base URL of the connection - the preset provider default (e.g. <code>/connect ollama</code>) or a custom URL (<code>/connect &lt;url&gt;</code>). The engine falls back to it when the config leaves <code>base_url</code> empty.</li>
+<li><code>api_key</code> lives here, one per provider, and is the only place API keys live.</li>
+<li><code>base_url</code> is the effective base URL of the connection: the preset provider default (e.g. <code>/connect ollama</code>) or a custom URL (<code>/connect &lt;url&gt;</code>). The engine falls back to it when the config leaves <code>base_url</code> empty.</li>
 <li>Managed through <code>/connect</code> (writes the key and any custom base URL). Re-running it re-enters a missing or stale key.</li>
-<li>The engine resolves the active provider's API key from this file (matching entry or <code>""</code>), falling back to a stored custom <code>base_url</code> when the config has none. There is no <code>api_key</code> config key anymore - <code>replio config set api_key</code> would store an unused ordinary value. Deleting a project config cannot lose the registry - it is global by design.</li>
+<li>The engine resolves the active provider's API key from this file (matching entry or <code>""</code>), falling back to a stored custom <code>base_url</code> when the config has none. There is no <code>api_key</code> config key anymore, and <code>replio config set api_key</code> would store an unused ordinary value. Deleting a project config cannot lose the registry, which is global by design.</li>
 </ul>
 <h3 id="model-registry-modelsjson">Model registry (<code>models.json</code>)<a class="headerlink" href="#model-registry-modelsjson" title="Permanent link">&para;</a></h3>
-<p><code>~/.config/replio/models.json</code> is the history of approved models - entries <code>{provider, model, added_at, last_used}</code>, no API keys (those live in <code>providers.json</code>). It records every model you connect or switch to, so <code>/models</code> shows what has been used per provider with <code>&gt;</code> marking the active one. The active model still comes from <code>config.model</code>.</p>
+<p><code>~/.config/replio/models.json</code> is the history of approved models. Entries are <code>{provider, model, added_at, last_used}</code> with no API keys (those live in <code>providers.json</code>). It records every model you connect or switch to, so <code>/models</code> shows what has been used per provider with <code>&gt;</code> marking the active one. The active model still comes from <code>config.model</code>.</p>
 <ul>
 <li><code>/connect</code> records the model for the connection it just saved.</li>
 <li><code>/models</code> shows approved models grouped by provider, the active one marked <code>&gt;</code>, plus <code>(key)</code> when that provider has a stored key.</li>
