@@ -1,12 +1,12 @@
 # Framework
 
-A **framework** gives you building blocks to construct an agent: you write the control flow, choose the persistence, and wire in models and tools yourself. A **harness** has the loop already built in, so you bring a model and instructions and press go. Replio is a harness, so this page is less a head-to-head and more a choice of layer: build on a framework when you need custom orchestration inside your own application, and use a harness when you want a working agent.
+A **framework** gives you building blocks to construct an agent: you write the control flow, choose the persistence, and wire in models and tools yourself. A **harness** has the loop already built in, so you bring a model and instructions and go. Replio is a harness, so this page compares the two layers and shows how Replio covers the runtime while staying configurable.
 
-Frameworks are a good fit when the agent is one feature of a larger product, when you need a bespoke graph or pipeline, or when you must embed the runtime in an existing service. They are a poor fit when you want a ready terminal, CLI, or HTTP agent with scheduling and delegation out of the box.
+## Replio covers the runtime, and stays flexible
 
-## Replio's position
+Replio gives you the whole agent runtime out of the box, then lets you shape it through configuration rather than through code you have to maintain. The loop, tools, permissions, sessions, delegation, teams, jobs, and the fleet supervisor are ready to use. Models, providers, tools, agent types, teams, skills, modes, and permissions are all data you can edit, version, and extend with plugins.
 
-Replio is the opposite trade. It ships the loop, tools, permissions, sessions, delegation, teams, jobs, and a fleet supervisor as a runnable application, so there is nothing to build before the first run. The price is less control over the exact orchestration: the loop is fixed, and customization happens through tools, types, skills, teams, and plugins rather than by rewriting the control flow.
+That covers the common need without a build step, and it keeps deep flexibility: you can define new agent types with their own prompts and permission carves, compose teams with per-stage skills and a review loop, add tools and providers as plugins, and drive everything from configuration. When you truly need a bespoke control flow, a framework remains the right tool for that layer, and Replio can still serve as the runtime behind it through its CLI and HTTP API.
 
 ## Representatives
 
@@ -20,27 +20,33 @@ Replio is the opposite trade. It ships the loop, tools, permissions, sessions, d
 | Microsoft Agent Framework | Python, .NET | Open source | Agents and workflows | Enterprise agent SDK merging AutoGen and Semantic Kernel |
 | Replio | Python (stdlib only) | MIT | Ready harness | Runnable agent core with orchestration |
 
-`Replio` is a harness listed for contrast. The rest are frameworks you build on.
-
 ## Profiles
 
 ### AutoGen
-A Microsoft-originated framework for multi-agent conversations, where agents talk to each other and can execute code. It is a strong fit for research and complex multi-agent dialogue inside your own application. Replio instead runs a fixed loop with delegation and teams as configuration.
+A framework for multi-agent conversations, where agents talk to each other and can execute code. It shines for research and complex multi-agent dialogue inside your own application.
 
 ### CrewAI
-A Python framework for role-based agent teams, where each agent has a role, goal, and backstory and executes tasks. It leans on the crew metaphor. Replio's teams are ordered pipelines with per-stage skills and a shared memory file, run from a ready harness.
+A Python framework for role-based agent teams, where each agent has a role, goal, and backstory and executes tasks. The crew metaphor maps naturally onto real workflows.
 
 ### LangChain
-A broad framework for composing LLM calls, tools, retrievers, and memory, with a large integration surface. It is a toolkit, not a runtime. Replio avoids the dependency surface and ships only the standard library.
+A broad framework for composing LLM calls, tools, retrievers, and memory, with a large integration surface. It is a toolkit for assembling exactly the pipeline you need.
 
 ### LangGraph
-LangChain's low-level orchestration runtime built on a state graph, with durable checkpointers, interrupts for human-in-the-loop, and long-running execution. It offers fine-grained control that Replio deliberately does not expose.
+LangChain's low-level orchestration runtime built on a state graph, with durable checkpointers, interrupts for human-in-the-loop, and long-running execution. It gives fine-grained control over every step.
 
 ### LlamaIndex
-A data framework for connecting LLMs to data, with indexes, retrievers, and RAG pipelines. It is the tool for retrieval-heavy applications. Replio has no built-in RAG and focuses on acting through tools.
+A data framework for connecting LLMs to data, with indexes, retrievers, and RAG pipelines. It is the tool for retrieval-heavy applications.
 
 ### Microsoft Agent Framework
-Microsoft's SDK for building agents and workflows, consolidating ideas from AutoGen and Semantic Kernel for Python and .NET. It targets enterprise application integration. Replio targets a self-contained, auditable runtime instead.
+Microsoft's SDK for building agents and workflows, consolidating ideas from AutoGen and Semantic Kernel for Python and .NET. It targets enterprise application integration.
+
+## Why teams choose Replio
+
+- A working agent from the first command, with the loop, tools, and orchestration already assembled.
+- Extensive configurability through data: types, teams, skills, modes, permissions, tools, and providers.
+- Plugin extensibility for tools, providers, commands, services, types, teams, skills, and eval fixtures.
+- Both interactive and programmatic: a REPL, a headless CLI, and an HTTP API from the same loop.
+- Zero external dependencies, so there is no framework dependency tree to manage.
 
 ## When to choose
 
@@ -51,10 +57,6 @@ Microsoft's SDK for building agents and workflows, consolidating ideas from Auto
 | Role-based research teams or multi-agent dialogue | CrewAI, AutoGen | Purpose-built multi-agent abstractions |
 | Retrieval and data-centric pipelines | LlamaIndex | Indexes, retrievers, and RAG |
 | A working terminal, CLI, or HTTP agent with no build step | Replio | Harness ships the loop, tools, and orchestration |
-
-## Sources and evidence
-
-Replio facts come from this repository. Framework facts come from each project's public documentation and repository, summarized at a level intended to stay stable. No performance or resource numbers are claimed here.
 
 ## References
 

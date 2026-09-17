@@ -21,6 +21,7 @@ Detailed reference for Replio. For the overview, features, and quick start, see 
 - [Skills](skills.md) - skill registry, storage, type injection
 - [Testing](testing.md) - running the mock test suite, per-file coverage map
 - [Tools](tools.md) - tool registry, bundled tools, tool policy, registration metadata
+- [Workflows and usage](usage/workflow.md) - how work flows from a request to a result, and common patterns
 - [Usage](usage/) - step-by-step setup variations
 - [Use cases](use-cases/) - fit and adoption guides for enterprise, personal, etc.
 - [Writing tools for agents](writing-tools.md) - how to design, name, and describe tools for the agent loop

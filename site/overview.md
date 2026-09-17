@@ -12,6 +12,8 @@ An agent is a model plus a harness. Replio is a deliberately small, auditable, z
 
 Replio assembles five replaceable layers - access, orchestration, capability, model, and storage - around a thin core. The direction is everything is a plugin: models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI become replaceable plugins, and the REPL itself moves to a plugin. The operator sees one window: the `assistant` agent greets you, answers small tasks inline, delegates bigger work to sub-agents or teams, runs recurring work in the background, watches your agents for health, and reports back.
 
+For bigger work the flow is ask, compose, run, hand off, remember, report. The assistant composes a team, runs it stage by stage, and hands control between agents as phases change, while you watch, stay out, or jump into any run. See [Workflows and usage](reference/usage/workflow.md).
+
 Read the full vision, decisions, and context economics in [Vision](vision.md).
 
 ## Current state

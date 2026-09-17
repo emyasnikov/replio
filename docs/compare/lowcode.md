@@ -2,52 +2,54 @@
 
 A **low-code** tool gives you a visual canvas for building AI or automation flows, and lets you drop into code for the parts that need it. You assemble nodes, connect them, and the platform runs the result, often exposing it as an API. It is the middle ground between a framework (all code) and a no-code product (no code).
 
-Low-code tools win when the flow is integration-heavy, when a visual map helps a team understand it, or when non-programmers need to assemble pieces a developer then extends. They are a poor fit when you want a small auditable runtime, when you prefer everything in code and version control, or when you run on low-resource hardware.
+## Replio is code-first, with a path to visual
 
-## Replio's position
+Replio takes the code-first route and makes it a strength. Every configuration, from models and providers to tools, agent types, teams, and skills, is text you can read, diff, review, and keep in version control alongside your project. That means reproducible setups, clean reviews, and no hidden state in a database.
 
-Replio is code-first: a terminal harness with a fixed agent loop, driven by prompts, slash commands, and configuration files. It has no visual canvas. Its composition model is the registries (types, teams, skills) and the `delegate` and `team` tools, all editable as text and kept in the repository. The trade is a smaller footprint and a fully auditable runtime, at the cost of the visual builder.
+The composition model is the registries: define types with their own prompts and permission carves, compose teams with per-stage skills and a review loop, and run them from a prompt, a slash command, or the CLI. This covers the same ground as a canvas while staying scriptable.
 
-The planned PlantUML plugin points the other way: an external plugin that can draw a configuration or a run as a node diagram, borrowing the readability of a canvas without moving the runtime into one.
+Replio also meets the visual tools halfway. A planned PlantUML plugin draws a configuration or a run as a node diagram, so you get the readability of a canvas without moving the runtime into one. The agents, teams, and workflows stay text, and the picture is generated from them.
 
 ## Representatives
 
 | Project | Language | License | Building style | Primary focus |
 |---------|----------|---------|----------------|---------------|
-| Dify | Python + TypeScript | Open source (with commercial restrictions) | Visual workflow canvas | LLM app development and backend-as-a-service |
-| Flowise | TypeScript | Open source | Drag-and-drop canvas | LLM apps and chatflows on LangChain |
+| Dify | Python + TypeScript | Open source | Visual workflow canvas | LLM app development and backend-as-a-service |
+| Flowise | TypeScript | Open source | Drag-and-drop canvas | LLM apps and chatflows |
 | Langflow | Python | MIT | Visual flow canvas | Agent, RAG, and MCP app builder |
-| n8n | TypeScript | Fair-code (Sustainable Use License) | Node-based workflow editor | Workflow automation with AI agent nodes |
+| n8n | TypeScript | Fair-code | Node-based workflow editor | Workflow automation with AI agent nodes |
 | Replio | Python (stdlib only) | MIT | Code and configuration | Runnable agent harness with orchestration |
-
-`Replio` is a harness listed for contrast. The rest are visual builders.
 
 ## Profiles
 
 ### Dify
-An open-source platform for building LLM applications with a visual workflow editor and a backend-as-a-service layer. It targets teams shipping LLM apps and agents with observability and a managed API. Replio stays a terminal-first core with no platform services.
+An open-source platform for building LLM applications with a visual workflow editor and a backend-as-a-service layer. It helps teams ship LLM apps and agents with observability and a managed API.
 
 ### Flowise
-A drag-and-drop builder for LLM apps and chatflows, built on top of LangChain components. It is approachable for prototyping assistants and RAG chains. Replio trades the canvas for a stdlib-only runtime and built-in jobs, fleet, and delegation.
+A drag-and-drop builder for LLM apps and chatflows. It is approachable for prototyping assistants and retrieval chains, with a friendly canvas.
 
 ### Langflow
-A visual builder for agents, RAG apps, and MCP servers that generates Python under the hood, from DataStax and now IBM. It offers a large component library and flow-as-API deployment. Replio offers a code-first harness with no external dependencies.
+A visual builder for agents, RAG apps, and MCP servers that generates Python under the hood. It offers a large component library and flow-as-API deployment.
 
 ### n8n
-A fair-code workflow automation platform with a node editor, 400+ integrations, and AI agent nodes. It is strongest at wiring business systems together. Replio is narrower: a scoped agent core with scheduling and delegation rather than broad app integration.
+A fair-code workflow automation platform with a node editor and a deep integration catalog. It is strongest at wiring business systems together with AI agent nodes.
+
+## Why teams choose Replio
+
+- Configuration as versioned text: reviewable, reproducible, and friendly to git-based workflows.
+- Scriptable and automatable: drive the same agent from a prompt, a slash command, the CLI, or the HTTP API.
+- Orchestration as configuration: types, teams, skills, and a review loop without a canvas or a database.
+- A path to visuals: the PlantUML plugin renders configurations and runs as node diagrams.
+- Zero external dependencies, so the runtime stays small and portable.
 
 ## When to choose
 
 | Scenario | Pick | Why |
 |----------|------|-----|
 | A visual flow a mixed team can read and edit | Langflow, n8n, Dify, Flowise | Canvas, prebuilt components, flow-as-API |
-| Broad integration with business apps and triggers | n8n | 400+ integrations and templates |
-| A small, auditable, code-first agent you version with the project | Replio | Stdlib runtime, text configuration, session logs |
-| Running many scoped agents on low-resource hardware | Replio | Minimal footprint and a fleet supervisor |
-
-## Sources and evidence
-
-Replio facts come from this repository. Platform facts come from each project's public documentation and repository, summarized at a level intended to stay stable. No performance or resource numbers are claimed here.
+| Broad integration with business apps and triggers | n8n | Deep integration catalog and templates |
+| Configuration you version and review with the project | Replio | Text registries, session logs, git-friendly setup |
+| Running many scoped agents on modest hardware | Replio | Minimal footprint and a fleet supervisor |
 
 ## References
 

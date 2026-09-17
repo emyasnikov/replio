@@ -55,6 +55,8 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 
 ## Usage
 
+Replio runs the same loop in three ways: interactively in the REPL, headlessly from the CLI, and as an HTTP service. For bigger work the flow is ask, compose, run, hand off, remember, report - the assistant composes a team, runs it stage by stage, and hands control between agents as phases change. See [docs/usage/workflow.md](docs/usage/workflow.md) for the workflows and patterns.
+
 ### REPL
 
 First-time setup with `/connect`, then type any message. Tab-complete `/` commands and session names, and navigate history with arrow keys. Open a `"""` or `'''` block to type a multi-line prompt. The framing quotes are stripped and the whole message is sent as one turn. Ctrl-C exits the REPL from anywhere, even inside an open block.

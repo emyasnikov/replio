@@ -45,6 +45,30 @@ Interop is part of the same idea. MCP connects tools and sessions today. ACP, in
 - **Report-back** - finished or failed runs surface a summary, and are delivered out-of-band over connectors (webhook first, email later) when the terminal is closed.
 - **Governance mode** - when needed, the full control surface is available. For small tasks the assistant simply responds in the current run. The user does not see the complexity of the whole, only the reduced workload.
 
+## Workflow
+
+The end-to-end shape of a bigger task:
+
+1. **Ask** - the operator states an outcome to the `assistant`, in one sentence.
+2. **Compose** - for work beyond one task, the assistant engages the `composer` role, which designs a team: the specialists, the skills each needs, the stage order, and an optional review loop. The team is saved to the catalog, so it can be reused and extended.
+3. **Run** - the assistant starts the team. Stages run in order, each with its own type, skills, and permission carve, and each writing its own session log. A review loop lets a producer revise against the reviewer's feedback until it passes.
+4. **Hand off** - as phases change, control moves from one run to the next. The assistant hands focus to the composer, the composer to a planning agent, the planning agent to a developer, and back again with a new task. Each run keeps its own session, so a developer resumes with what it just did.
+5. **Watch or stay out** - the operator can follow progress, jump into any run with `/focus`, or let it run silently. A status line shows what each agent is doing.
+6. **Remember** - after the run, the team and its members update bounded memory. The next run continues from the change, not from a replayed transcript.
+7. **Report** - finished and failed runs surface a summary, and recurring work reports out of band.
+
+## Usage
+
+A few ways people use Replio:
+
+- **One terminal, whole teams** - ask the assistant for an outcome (a document, a feature, a review), and let it compose and run a team. You stay at one prompt.
+- **A recurring maintainer** - schedule a job that carries its own type and skills, for example "keep the docs in sync with AGENTS.md", and let the scheduler run it unattended.
+- **A supervised fleet** - run many single-purpose agents, one per folder, under the fleet supervisor, and reach each over HTTP.
+- **A library of specialists** - define agent types and skills once, then reuse them across tasks, teams, and jobs, extending a type per task with additional skills.
+- **A scripted agent** - drive the same loop from the CLI or the HTTP API for automation and CI.
+
+This is the operator-facing half of the runtime, and it is what the phases turn on.
+
 ## Decisions
 
 - **Assistant is the single point of contact** - the main agent is named `assistant`. Delegation and team composition are assistant-driven, using the types, teams, and skills registries (bundled, global, local, and plugin layers).

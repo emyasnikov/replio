@@ -1,15 +1,24 @@
 # Replio comparisons
 
-Replio is an agent **harness**: a runtime with the agent loop already built in. The projects it is compared against fall into four categories, depending on how much of the loop they give you and how you build with them.
+Replio is an agent **harness**: a runtime with the agent loop already built in. Projects in the space fall into four categories, depending on how much of the loop they give you and how you build with them.
 
 | Category | What it is | You provide | Page |
 |----------|------------|-------------|------|
-| No-code | A turnkey product you configure | nothing, or prompts | [nocode.md](nocode.md) |
-| Low-code | A visual canvas that generates code | flows, with code for custom parts | [lowcode.md](lowcode.md) |
 | Harness | A runtime with the loop built in | instructions and tools | [harness.md](harness.md) |
 | Framework | A library to build an agent | the control flow | [framework.md](framework.md) |
+| Low-code | A visual canvas that generates code | flows, with code for custom parts | [lowcode.md](lowcode.md) |
+| No-code | A turnkey product you configure | nothing, or prompts | [nocode.md](nocode.md) |
 
-Replio sits in the harness category, with a deliberate angle: zero dependencies, fleet orchestration, scheduled jobs, and a small auditable core.
+Replio sits in the harness category, with a clear angle: a zero-dependency, standard-library core that covers the full harness and the orchestration around it, stays configurable as data, and runs anywhere Python runs.
+
+## Why Replio
+
+- **Complete harness**: loop, tools, permissions, sessions, delegation, teams, jobs, and a fleet supervisor in one package.
+- **Zero external dependencies**: the whole runtime is Python standard library, so it is small, portable, and easy to audit.
+- **One loop, three surfaces**: a REPL, a headless CLI, and an HTTP API from the same code path.
+- **Orchestration included**: types, the `delegate` and `team` tools, scheduled jobs, and a fleet supervisor, without extra infrastructure.
+- **Configuration as data**: models, providers, tools, types, teams, skills, and permissions are editable, versionable, and plugin-extensible.
+- **Local-first and provider-agnostic**: run fully local or bring any OpenAI-compatible provider, with complete session logs.
 
 ## Who is covered
 
@@ -44,11 +53,7 @@ Replio sits in the harness category, with a deliberate angle: zero dependencies,
 2. **Where does it run?** Replio is a local process or a small HTTP service. Hosted assistants are cloud-only. Some harnesses need Node.js, Bun, or Docker.
 3. **Who operates it?** A developer is comfortable with a terminal and text configuration. A mixed team often prefers a visual canvas. A non-developer wants a chat UI.
 4. **What has to persist?** Replio keeps append-only session logs and bounded memory. Frameworks bring pluggable checkpointers. Chat UIs keep conversation history.
-5. **How much isolation?** Replio gates tools with `allow` / `ask` / `deny` and records an audit trail, without a sandbox. OpenHands, Hermes, and Pi offer container or micro-VM isolation.
-
-## Sources and evidence
-
-Replio facts come from this repository. Competitor facts come from each project's public documentation and repository, summarized at a level intended to stay stable. Numeric benchmarks are not included in these pages. Any performance or resource claim belongs in a measured, dated benchmark, not a comparison page.
+5. **How much isolation?** Replio gates tools with `allow` / `ask` / `deny` and records an audit trail. Some harnesses add container or micro-VM isolation.
 
 ## References
 
