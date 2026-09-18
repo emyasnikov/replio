@@ -23,10 +23,9 @@ Decisions: remove `agent_<role>` and `sub_<key>` (every session is ordinary, own
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Provider session binding - bind the provider session id to the run's session | S | cache and context reuse across switches |
 | Sync architecture, swarm, session, and command docs - align the behavior docs with run-owned sessions and bounded memory | S | aligned reference docs |
 
-Step order: provider session binding, then sync the architecture, swarm, session, and command docs.
+Step order: sync the architecture, swarm, session, and command docs.
 
 ## Non-blocking runs & live focus
 

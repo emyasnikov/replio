@@ -6,8 +6,9 @@ from replio.providers.base import OpenAICompatibleProvider
 
 class OpenCodeProviderBase(OpenAICompatibleProvider):
     def __init__(self, **kwargs):
-        self.session_id = kwargs.pop('session_id', None) or uuid.uuid4().hex
+        session_id = kwargs.pop('session_id', None) or uuid.uuid4().hex
         super().__init__(**kwargs)
+        self.session_id = session_id
 
     def _headers(self):
         headers = super()._headers()

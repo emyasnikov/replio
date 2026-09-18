@@ -115,6 +115,7 @@ class Engine:
         if self._unattended:
             self._ask_ui = None
         self._lead = None
+        self._owns_provider = provider is None
         if plugin_manager is None:
             self._plugin_manager = PluginManager(config)
             self._plugin_manager.load()
@@ -128,6 +129,7 @@ class Engine:
         sessions_dir = config.local_path.parent / 'sessions'
         self.sessions = SessionManager(sessions_dir)
         self.current_session = self.sessions.create(role=self.role)
+        self._bind_provider_session()
         self.runs = runs if runs is not None else RunRegistry()
         if run is not None:
             self.current_run: Run = run
@@ -379,7 +381,19 @@ class Engine:
             temperature=self.config.get('temperature'),
             max_tokens=self.config.get('max_tokens'),
             reasoning=self.config.get('reasoning'),
+            session_id=self._current_session_id(),
         )
+
+    def _current_session_id(self) -> str:
+        session = getattr(self, 'current_session', None)
+        return session.session_id if session is not None else ''
+
+    def _bind_provider_session(self):
+        provider = getattr(self, 'provider', None)
+        if provider is None or not hasattr(provider, 'session_id'):
+            return
+        if getattr(self, '_owns_provider', False):
+            provider.session_id = self.current_session.session_id
 
     def check_connection(self, base_url: str | None = None, api_key: str | None = None,
                          model: str | None = None,
@@ -435,6 +449,7 @@ class Engine:
             self.current_session = self.sessions.create(role=self.role)
         self.current_run.session = self.current_session.session_name
         self.current_run.session_id = self.current_session.session_id
+        self._bind_provider_session()
         return self.current_session
 
     def _grant(self) -> dict:

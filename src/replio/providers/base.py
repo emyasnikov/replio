@@ -11,13 +11,14 @@ USER_AGENT = ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
 class BaseProvider:
     def __init__(self, base_url: str = '', api_key: str = '',
                  model: str = '', temperature: float = 0.7,
-                 max_tokens: int = 0, reasoning=None):
+                 max_tokens: int = 0, reasoning=None, session_id: str = ''):
         self.base_url = base_url.rstrip('/')
         self.api_key = api_key
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.reasoning = reasoning
+        self.session_id = session_id
 
     def chat(self, messages: list[dict], stream: bool = True,
              tools: list[dict] | None = None):

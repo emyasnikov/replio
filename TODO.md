@@ -64,7 +64,6 @@
 - [ ] REPL UI colors and prompts - Actions/Asks orange, errored tool calls red, Thinking/Thought blue, output and reasoning dimmed, `[Y/n]` enter-to-continue, and an option to hide input for prompts
 - [ ] Runs, focus, and memory redesign (see PLAN.md `Runs, focus, and memory`):
   - [ ] Non-blocking runs and live focus - background execution, output/input routing, spinner, cancellation
-  - [ ] Provider session binding - bind the provider session id to the run's session
   - [ ] Sync architecture, swarm, session, and command docs
 - [ ] Remove `--session-id` - explicit session naming is no longer needed now that auto sessions are named `ses_<ts>_<id>`
 - [ ] Relocate job run sessions under `.replio/jobs/<name>/` (kept in `sessions/` for now)
@@ -130,6 +129,7 @@
 
 ## Done
 
+- [x] Provider session binding - provider `session_id` bound to the run session
 - [x] Memory scopes - shared `.replio/memory/` role/team/job memory, `/memorize`
 - [x] Run continuation - `delegate`/`team` `resume`/`context`, warm `sub_<key>` removed
 - [x] Run-owned focus - run-keyed stack, `run_engine` resume, no `agent_<role>`
