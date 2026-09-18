@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 from replio.types import AgentType
-from replio.ui import NullUI
+from replio.ui import BufferUI
 
 from tests.helpers import make_chat
 
@@ -172,9 +172,10 @@ class TestSubAgentEngine(unittest.TestCase):
         system = next(m for m in messages if m.get('role') == 'system')
         self.assertIn('Extra skill body.', system['content'])
 
-    def test_subagent_uses_null_ui(self):
+    def test_subagent_uses_buffer_ui(self):
         sub = self.chat._new_sub_engine('writer')
-        self.assertIsInstance(sub.ui, NullUI)
+        self.assertIsInstance(sub.ui, BufferUI)
+        self.assertIs(sub.ui.run, sub.current_run)
 
     def test_model_override_applies(self):
         self.chat.types.put(

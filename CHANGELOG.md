@@ -2,6 +2,7 @@
 
 ## v0.35.0
 
+- Per-run output buffers - every run records a plain-text `buffer`, and a sub-engine renders through a new `BufferUI` sink instead of `NullUI`, so its streamed output, tool lines, and footer land in the run (a focused run rebuilt for the REPL keeps the terminal `ReplUI`). `Run` gains `append_buffer`/`buffer_text`/`clear_buffer` plus a `buffer_lock` and a `max_buffer_lines` cap, and the new `run_buffer_max_lines` config (default 2000, `0` = unlimited) trims the oldest lines. `/focus log [n]` prints the focused run's buffer (all lines, or the last `n`). Docs (`commands.md`, `architecture.md`, `config.md`, `testing.md`). Tests: `tests/test_run_buffer.py`, plus `test_subagent.py`
 - Run status animation - a Braille status line (`status_spinner`, default `true`) animates while a delegated agent or team stage runs. The REPL is blocked during `run_subagent`, so the spinner runs on its own thread. `ReplUI` gains `status_begin(label)`/`status_end()` (the thinking spinner is generalized to a labeled spinner), `NullUI`/`HeadlessUI` no-op, and `Engine.run_subagent` wraps each run with a label that names the team and stage when nested. Docs (`config.md`, `testing.md`). Tests: `test_ui.py`
 
 ## v0.34.0 - 2026-09-18

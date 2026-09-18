@@ -163,6 +163,24 @@ def _focus_show(focus, runs):
         print('  ' + _focus_run_line(run, current_id))
 
 
+def _focus_log(focus, parts):
+    run = getattr(focus.active, 'current_run', None)
+    if run is None:
+        print('No focused run')
+        return
+    n = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
+    lines = run.buffer_text().splitlines()
+    if n and len(lines) > n:
+        lines = lines[-n:]
+    if not lines:
+        print(f'Run #{run.id} has no buffered output')
+        return
+    header = f'Run #{run.id} {run.role or "root"} [{run.status}] ({run.session})'
+    print(header)
+    for line in lines:
+        print(line)
+
+
 def _live_session_for_run(chat, run_id):
     focus = _focus_manager(chat)
     engines = focus.engines() if focus is not None else [chat]
@@ -1107,6 +1125,7 @@ def register_builtins(registry):
         ('', 'Show the current run, the run tree, and the run log'),
         ('<id|#id>', 'Attach to the run with that id'),
         ('#<session_id>', 'Attach to the run with that session id'),
+        ('log [n]', "Print the focused run's buffered output"),
         ('session:<name>', 'Attach to the run using that session'),
         ('root', 'Attach to the root run'),
         ('parent', 'Attach to the parent run'),
@@ -1124,6 +1143,9 @@ def register_builtins(registry):
         arg = arg.strip()
         if not arg:
             _focus_show(focus, chat.runs)
+            return
+        if arg == 'log' or arg.startswith('log '):
+            _focus_log(focus, arg.split())
             return
         kind, value = _focus_target(focus, chat.runs, arg)
         if kind == 'back':

@@ -29,7 +29,7 @@ Providers (`src/replio/providers/`) are OpenAI-compatible `/v1/chat/completions`
 
 ## Runs
 
-Every engine instance is a run, tracked in a process-local `RunRegistry` (`src/replio/runs.py`) shared across the delegation tree. A run records a numeric `id`, the agent `role`, the `session`, the `session_id` (a durable six-character handle, empty for explicit names), the `parent` run id and its ordered `children`, a `status` (`running`, `done`, or `error`), the `task` brief, and timestamps. Delegated and team-stage engines register as children of the caller (`_new_sub_engine` passes the registry and parent id) and are finished when their `chat` returns, and the registry keeps the engine so a run can be re-entered. `RunRegistry.runs()` is the flat creation-order call log, and `children(id)` walks the tree. This is the data model the focus and handoff command surface builds on.
+Every engine instance is a run, tracked in a process-local `RunRegistry` (`src/replio/runs.py`) shared across the delegation tree. A run records a numeric `id`, the agent `role`, the `session`, the `session_id` (a durable six-character handle, empty for explicit names), the `parent` run id and its ordered `children`, a `status` (`running`, `done`, or `error`), the `task` brief, and timestamps. Delegated and team-stage engines register as children of the caller (`_new_sub_engine` passes the registry and parent id) and are finished when their `chat` returns, and the registry keeps the engine so a run can be re-entered. `RunRegistry.runs()` is the flat creation-order call log, and `children(id)` walks the tree. Every run also carries a plain-text `buffer` (capped by `run_buffer_max_lines`, default 2000, `0` = unlimited): a sub-engine's UI is a `BufferUI`, so its streamed output, tool lines, and footer land in the run instead of the terminal, while a focused run rebuilt for the REPL keeps the terminal UI. `/focus log [n]` prints the focused run's buffer. This is the data model the focus and handoff command surface builds on.
 
 ## Focus
 
@@ -51,6 +51,7 @@ The loop renders through a `UISink`, an interface of methods the loop calls as e
 |------|---------|
 | `ReplUI` | Terminal REPL: ANSI streaming, dimmed thinking, optional markdown, confirm prompts, footer stats |
 | `HeadlessUI` | `run` / `serve`: stderr diagnostics, auto-approve/deny confirm policy, never blocks on stdin |
+| `BufferUI` | Writes plain-text event lines into a run's buffer, for per-run logs read back with `/focus log`. No terminal, `confirm` denies and `ask` returns `None` |
 | `NullUI` | Silent, for tests |
 
 `ReplUI`'s markdown rendering (code blocks, inline code, bold) is a lightweight token-level state machine in `src/replio/ui.py`, gated by the `markdown_streaming` config.
@@ -101,7 +102,7 @@ src/replio/
 ├── teams.py             # TeamRegistry (named team pipelines) + team memory helpers
 ├── tools/               # tool registry, tool policy, delegate, ask
 ├── types.py             # TypeRegistry (agent types, bundled/plugin/global/local)
-├── ui.py                # UISink - ReplUI / HeadlessUI / NullUI
+├── ui.py                # UISink - ReplUI / HeadlessUI / BufferUI / NullUI
 └── utils/               # urllib-based SSE streaming
 ```
 

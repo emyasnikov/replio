@@ -12,7 +12,7 @@ from .sessions import turns
 from .commands.registry import CommandRegistry
 from .commands.builtins import register_builtins
 from .plugins.manager import PluginManager
-from .ui import NullUI, ReplUI
+from .ui import BufferUI, NullUI, ReplUI
 
 
 @dataclass
@@ -536,9 +536,13 @@ class Engine:
             sub_config.apply('ask_policy', ask_policy)
         if provider is None and not agent_type.model:
             provider = self.provider
-        sub = Engine(sub_config, ui=ui if ui is not None else NullUI(),
+        sub = Engine(sub_config, ui=ui,
                      plugin_manager=self._plugin_manager, provider=provider,
                      runs=self.runs, parent_run=self.current_run.id, run=run)
+        if ui is None:
+            sub._ui = BufferUI(
+                sub.current_run,
+                max_lines=int(self.config.get('run_buffer_max_lines', 0) or 0))
         sub.role = type_name
         sub.current_run.role = type_name
         sub.current_run.task = task

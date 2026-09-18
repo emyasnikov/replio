@@ -15,9 +15,8 @@ Deferred from the runs, focus, and memory redesign. Each piece is independent.
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Per-run output buffers - buffer each run's streamed output and route input to the focused run | M | per-run logs and input |
 | Background execution - run sub-agents and teams off the calling thread, with thread-safe session and registry access | L | non-blocking runs |
-| Live focus and cancellation - watch or join a running run and cancel it | M | watch or join a running agent |
+| Live focus and cancellation - watch or join a running run and cancel it, and route input to the focused run | M | watch or join a running agent |
 
 ## Assistant roles & team orchestration
 

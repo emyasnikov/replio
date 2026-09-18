@@ -56,6 +56,7 @@ DEFAULT_CONFIG = {
     'show_thinking': False,
     'show_thought_duration': True,
     'status_spinner': True,
+    'run_buffer_max_lines': 2000,
     'reasoning': 'auto',
     'markdown_streaming': False,
     'word_streaming': True,

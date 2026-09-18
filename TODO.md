@@ -128,6 +128,7 @@
 
 ## Done
 
+- [x] Per-run output buffers - `BufferUI` writes each run's log, `/focus log` reads it
 - [x] Run status animation - Braille status spinner for delegation/team stages
 - [x] Provider session binding - provider `session_id` bound to the run session
 - [x] Memory scopes - shared `.replio/memory/` role/team/job memory, `/memorize`

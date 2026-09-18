@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
@@ -21,6 +22,26 @@ class Run:
     ended_at: str = ''
     buffer: list[str] = field(default_factory=list)
     session_id: str = ''
+    max_buffer_lines: int = 0
+    buffer_lock: threading.Lock = field(
+        default_factory=threading.Lock, repr=False, compare=False)
+
+    def append_buffer(self, line: str) -> None:
+        with self.buffer_lock:
+            if line == '' and not self.buffer:
+                return
+            self.buffer.append(line)
+            cap = self.max_buffer_lines
+            if cap and len(self.buffer) > cap:
+                del self.buffer[:len(self.buffer) - cap]
+
+    def buffer_text(self) -> str:
+        with self.buffer_lock:
+            return '\n'.join(self.buffer)
+
+    def clear_buffer(self) -> None:
+        with self.buffer_lock:
+            self.buffer.clear()
 
 
 class RunRegistry:

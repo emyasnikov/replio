@@ -395,6 +395,93 @@ class NullUI:
         return None
 
 
+class BufferUI:
+    def __init__(self, run, max_lines: int = 0):
+        self.run = run
+        self._partial = ''
+        if max_lines:
+            run.max_buffer_lines = int(max_lines)
+
+    def _feed(self, text):
+        if not text:
+            return
+        self._partial += text
+        while '\n' in self._partial:
+            line, self._partial = self._partial.split('\n', 1)
+            self.run.append_buffer(line)
+
+    def _flush(self):
+        if self._partial:
+            self.run.append_buffer(self._partial)
+            self._partial = ''
+
+    def _line(self, text):
+        self._flush()
+        self.run.append_buffer(text)
+
+    def token(self, text):
+        self._feed(text)
+
+    def thinking(self, text):
+        self._feed(text)
+
+    def thinking_begin(self):
+        self._flush()
+
+    def thinking_end(self, duration):
+        self._flush()
+
+    def status_begin(self, label):
+        self._flush()
+
+    def status_end(self):
+        self._flush()
+
+    def warning(self, msg):
+        self._line(f'[warning] {msg}')
+
+    def error(self, code, msg):
+        label = f'[Error {code}]' if code else '[Error]'
+        self._line(f'{label} {msg}')
+
+    def tool_status(self, name, value, body):
+        self._line(f'[{name}: {value}]')
+        for line in body:
+            self._line(line)
+
+    def activity(self, glyph, verb, label, body):
+        self._line(f'{glyph} {verb} {label}')
+        for line in body:
+            self._line(line)
+
+    def tool_error(self, msg):
+        self._line(f'! {msg.split(chr(10), 1)[0]}')
+
+    def tool_note(self, output):
+        lines = [l for l in output.splitlines() if l]
+        if lines:
+            self._line(lines[-1])
+
+    def tool_result(self, output):
+        for line in output.splitlines():
+            self._line(line)
+
+    def tool_refine(self, old, new):
+        self._line(f'[refine: "{old}" → "{new}"]')
+
+    def footer(self, duration, counts, note=''):
+        self._line(f'({duration:.1f}s)')
+
+    def info(self, msg):
+        self._line(msg)
+
+    def confirm(self, name, label):
+        return False
+
+    def ask(self, question, context='', options=None, origin=''):
+        return None
+
+
 class HeadlessUI:
     def __init__(self, auto: str = 'deny', verbose: bool = False, stream: bool = True,
                  show_thinking: bool = True, show_thought_duration: bool = True,
