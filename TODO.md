@@ -63,10 +63,6 @@
 - [ ] Exact-args permission grants - approve the specific command (not just the tool), and let an `always` grant live beyond the current sub-agent run
 - [ ] REPL UI colors and prompts - Actions/Asks orange, errored tool calls red, Thinking/Thought blue, output and reasoning dimmed, `[Y/n]` enter-to-continue, and an option to hide input for prompts
 - [ ] Runs, focus, and memory redesign (see PLAN.md `Runs, focus, and memory`):
-  - [ ] Run-centric focus - attach to a run's own session and role, remove `agent_<role>`
-  - [ ] Run tree navigation - `/focus` tree with `↔ Switch to <role>` lines and jump by run/session
-  - [ ] Handoff as run-to-run control - target runs, preserve the target session
-  - [ ] `focus_on_delegate` targets the child run
   - [ ] Run continuation and compaction - resume a run/session, or compact/drop its context
   - [ ] Memory scopes - automatic and configurable role/team/job memory, plus manual memorize
   - [ ] Non-blocking runs and live focus - background execution, output/input routing, spinner, cancellation
@@ -136,6 +132,10 @@
 
 ## Done
 
+- [x] Run-owned focus - run-keyed stack, `run_engine` resume, no `agent_<role>`
+- [x] Run tree navigation - `/focus` by run/session with `↔ Switch to <role>`
+- [x] Run-to-run handoff - `handoff` targets runs and preserves the target session
+- [x] `focus_on_delegate` targets the child run (`TurnResult.run_id`)
 - [x] Session log fields - `name` -> `session_name`, `code` -> `session_id`
 - [x] Job and delegation names - `job_<ts>_<id>` and `sub_<ts>_<id>`
 - [x] Stable session id - six-char `session_id`, `ses_<ts>_<id>` names, and `#id` handles

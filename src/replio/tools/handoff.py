@@ -33,6 +33,9 @@ def _target_run(runs, current, target: str):
         return runs.get(int(token))
     if explicit:
         return runs.find_by_session_id(token)
+    for run in runs.runs():
+        if run.session == target:
+            return run
     return None
 
 
@@ -42,10 +45,10 @@ def register_handoff_tool(registry, engine) -> Callable:
         description=(
             "Hand control of the session to another run and pause or finish the "
             "current one. Use it when the next step belongs to a different run: "
-            "target is 'parent', 'child', 'sibling', a role name, 'root', a "
-            "run id like '#3', or a session id like '#ab12cd'. Set done=true to "
+            "target is 'parent', 'child', 'sibling', 'root', a run id like '#3', "
+            "a session id like '#ab12cd', or a session name. Set done=true to "
             "finish this run, otherwise it is left paused so the operator can "
-            "resume it. The operator's focus follows the target."
+            "resume it. The operator's focus follows the target run."
         ),
         parameters={
             'type': 'object',
@@ -53,8 +56,8 @@ def register_handoff_tool(registry, engine) -> Callable:
                 'target': {
                     'type': 'string',
                     'description': "Where to hand control: 'parent', 'child', "
-                                   "'sibling', a role name, 'root', a run id "
-                                   "('3' or '#3'), or a session id ('#ab12cd').",
+                                   "'sibling', 'root', a run id ('3' or '#3'), "
+                                   "a session id ('#ab12cd'), or a session name.",
                 },
                 'done': {
                     'type': 'boolean',
@@ -80,21 +83,17 @@ def register_handoff_tool(registry, engine) -> Callable:
             return 'Error: handoff needs a target'
         runs = engine.runs
         current = getattr(engine, 'current_run', None)
-        run = _target_run(runs, current, target)
-        if run is not None:
-            role = run.role or ''
-            label = f'#{run.id} {role or "root"}'
-        elif engine.types.find(target):
-            role = target
-            label = target
-        elif target.lower() == 'root':
-            role = focus.root.role or ''
-            label = focus.root.role or 'root'
+        if target.lower() == 'root':
+            run = focus.root.current_run
         else:
+            run = _target_run(runs, current, target)
+        if run is None:
             return f'Error: handoff target not found: {target}'
+        role = run.role or ''
+        label = f'#{run.id} {role or "root"}'
         if current is not None:
             runs.finish(current.id, 'done' if done else 'paused')
-        focus.root._pending_handoff = {'role': role, 'target': target}
+        focus.root._pending_handoff = {'run': run.id}
         state = 'finished' if done else 'paused'
         return (f'[handoff] Control handed to {label}. This run is {state}; '
                 'the operator is now focused there.')

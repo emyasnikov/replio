@@ -24,20 +24,25 @@ def _focus_mode(config) -> str:
     return value if value in _FOCUS_MODES else 'off'
 
 
-def _offer_focus(engine, role: str, config) -> str:
+def _offer_focus(engine, run_id, config) -> str:
+    if run_id is None:
+        return ''
     mode = _focus_mode(config)
     if mode == 'off':
         return ''
     focus = _focus_manager(engine)
     if focus is None:
         return ''
+    run = engine.runs.get(run_id)
+    role = (run.role if run is not None else '') or 'agent'
+    label = f'{role} #{run_id}'
     if mode == 'ask':
         if engine._is_unattended():
             return ''
-        if not engine.ui.confirm('focus_on_delegate', f'Focus on {role}'):
+        if not engine.ui.confirm('focus_on_delegate', f'Focus on {label}'):
             return ''
-    focus.root._pending_focus = {'role': role, 'target': role}
-    return f' [focus follows: {role}]'
+    focus.root._pending_focus = {'run': run_id}
+    return f' [focus follows: {label}]'
 
 
 def _summarize_session(engine, result) -> str:
@@ -159,7 +164,7 @@ def register_delegate_tool(registry, engine) -> Callable:
             return f'Error: {e}'
         result = _format_result(engine, type, res)
         if not result.startswith('Error'):
-            result += _offer_focus(engine, type, _config)
+            result += _offer_focus(engine, res.run_id, _config)
         if (_echo and _config is not None and _config.get('delegate_echo', True)
                 and not result.startswith('Error')):
             engine.ui.tool_result(result)

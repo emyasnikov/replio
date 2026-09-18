@@ -23,17 +23,23 @@ Decisions: remove `agent_<role>` and `sub_<key>` (every session is ordinary, own
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Run-centric focus - key the focus stack by run id and attach to the run's own session and role, removing `agent_<role>`, `focused_engine`, and `_agent_session_name` | M | focus that never creates |
-| Run tree navigation - `/focus` lists the tree with `↔ Switch to <role>` lines, marks the current run, and jumps by `#run`, `#session_id`, `session:name`, `parent`, `child`, `sibling`, `next`, `prev`, or `back` | S-M | see and join existing runs |
-| Handoff as run-to-run control - target runs (not roles), move focus, pause or finish the current run, and preserve the target's session | S-M | clean run handover |
-| Focus on delegate targets the child run - `focus_on_delegate` (off/ask/on) moves focus to the run just created, not a role | S | follow delegation |
 | Run continuation and compaction - resume a specific run/session from `delegate`/`team`, and let the caller compact or drop its context when the next task does not build on the previous one | M | continue a thread, or start it clean |
 | Memory scopes - a bounded memory summary per role, team, and job (automatic and configurable on/off, plus a manual memorize action), injected into briefs and written after runs | M | cheap long-horizon continuity |
-| Non-blocking runs and live focus - background execution, per-run output buffers and input routing, a status spinner, cancellation, and thread safety | L | watch or join a running agent |
 | Provider session binding - bind the provider session id to the run's session | S | cache and context reuse across switches |
 | Sync architecture, swarm, session, and command docs - align the behavior docs with run-owned sessions and bounded memory | S | aligned reference docs |
 
-Step order: run-centric focus and removing `agent_<role>`, then run tree navigation, then handoff and `focus_on_delegate`, then continuation and compaction, then memory scopes, then non-blocking runs and live focus, then provider session binding, then sync the architecture, swarm, session, and command docs.
+Step order: continuation and compaction, then memory scopes, then provider session binding, then sync the architecture, swarm, session, and command docs.
+
+## Non-blocking runs & live focus
+
+Deferred until the run-owned corrections above land. Each piece is independent, and the status animation needs no threads, so it can land first.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Run status animation - a Braille spinner and status line for long delegation and team stages, no threads required | S | visible progress |
+| Per-run output buffers - buffer each run's streamed output and route input to the focused run | M | per-run logs and input |
+| Background execution - run sub-agents and teams off the calling thread, with thread-safe session and registry access | L | non-blocking runs |
+| Live focus and cancellation - watch or join a running run and cancel it | M | watch or join a running agent |
 
 ## Assistant roles & team orchestration
 

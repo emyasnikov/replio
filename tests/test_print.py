@@ -118,16 +118,19 @@ class TestPrintCommand(unittest.TestCase):
         out = self._dispatch('/print 1 --run other')
         self.assertIn('other prompt', out)
 
-    def test_run_role_live_engine(self):
-        engine = self.chat.focus.focus_role('researcher')
-        add_turn(engine.current_session, user='researcher prompt')
+    def test_run_role_live_run(self):
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'token', 'content': 'found'},
+             {'type': 'done', 'reason': 'stop'}],
+        ]
+        self.chat.run_subagent('researcher', 'researcher prompt')
         before = self.chat.focus.active
         out = self._dispatch('/print 1 --run researcher')
         self.assertIn('researcher prompt', out)
         self.assertIs(self.chat.focus.active, before)
 
     def test_run_role_falls_back_to_saved(self):
-        self._saved('agent_writer', user='writer prompt')
+        self._saved('writer', user='writer prompt')
         out = self._dispatch('/print 1 --run writer')
         self.assertIn('writer prompt', out)
 

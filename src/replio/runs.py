@@ -27,6 +27,7 @@ class RunRegistry:
     def __init__(self):
         self._runs: dict[int, Run] = {}
         self._order: list[int] = []
+        self._engines: dict[int, object] = {}
         self._next_id = 1
 
     def start(self, role: str, session: str, parent: int | None = None,
@@ -61,6 +62,23 @@ class RunRegistry:
         run.status = status
         run.ended_at = _now()
         return run
+
+    def reactivate(self, run_id: int) -> Run | None:
+        run = self._runs.get(run_id)
+        if run is None:
+            return None
+        run.status = 'running'
+        run.ended_at = ''
+        return run
+
+    def set_engine(self, run_id: int, engine) -> None:
+        self._engines[run_id] = engine
+
+    def engine_for(self, run_id: int):
+        return self._engines.get(run_id)
+
+    def engines(self) -> list:
+        return [self._engines[i] for i in self._order if i in self._engines]
 
     def runs(self) -> list[Run]:
         return [self._runs[i] for i in self._order]

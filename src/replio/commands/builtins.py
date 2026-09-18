@@ -79,6 +79,8 @@ def _focus_run_line(run, current_id, indent=0):
         line += f' {run.session_id}'
     if head:
         line += f'  {head}'
+    if run.id != current_id:
+        line += f'  ↔ Switch to {role}'
     return line
 
 
@@ -122,20 +124,25 @@ def _focus_target(focus, runs, arg):
             return None, None
         i = ordered.index(current) + (1 if low == 'next' else -1)
         return ('run', ordered[i]) if 0 <= i < len(ordered) else (None, None)
+    if low == 'root':
+        return 'run', focus.root.current_run
     explicit = arg.startswith('#')
     token = arg[1:] if explicit else arg
     if token.isdigit():
         return 'run', runs.get(int(token))
     if explicit:
         return 'run', runs.find_by_session_id(token)
+    if low.startswith('run:'):
+        token = arg.split(':', 1)[1].strip()
+        if token.isdigit():
+            return 'run', runs.get(int(token))
+        return 'run', runs.find_by_session_id(token)
     if low.startswith('session:'):
         name = arg.split(':', 1)[1].strip()
-        return 'run', next(
-            (r for r in runs.runs() if r.session == name), None)
-    if low.startswith('role:'):
-        return 'role', arg.split(':', 1)[1].strip()
-    if focus.root.types.find(arg):
-        return 'role', arg
+        found = next((r for r in runs.runs() if r.session == name), None)
+        if found is not None:
+            return 'run', found
+        return 'session', name
     found = next((r for r in runs.runs() if r.session == arg), None)
     if found is not None:
         return 'run', found
@@ -187,14 +194,15 @@ def _target_session(chat, target):
         session = chat.sessions.find_by_session_id(token)
         return (session, '') if session is not None else _target_error(target)
     focus = _focus_manager(chat)
-    if focus is not None and (focus.find(target) is not None
-                              or focus.root.types.find(target) is not None):
-        engine = focus.find(target)
-        if engine is not None:
-            return engine.current_session, ''
-        from ..engine import _agent_session_name
-        session = chat.sessions.read(_agent_session_name(target))
-        return (session, '') if session is not None else _target_error(target)
+    if focus is not None:
+        for run in chat.runs.runs():
+            if run.role != target and run.session != target:
+                continue
+            engine = chat.runs.engine_for(run.id)
+            if engine is not None:
+                return engine.current_session, ''
+            session = chat.sessions.read(run.session)
+            return (session, '') if session is not None else _target_error(target)
     session = chat.sessions.read(target)
     return (session, '') if session is not None else _target_error(target)
 
@@ -1098,8 +1106,9 @@ def register_builtins(registry):
     @registry.register('focus', description='Show and switch the focused agent run', subcommands=[
         ('', 'Show the current run, the run tree, and the run log'),
         ('<id|#id>', 'Attach to the run with that id'),
-        ('<role>', 'Attach to a role via its stable agent session'),
+        ('#<session_id>', 'Attach to the run with that session id'),
         ('session:<name>', 'Attach to the run using that session'),
+        ('root', 'Attach to the root run'),
         ('parent', 'Attach to the parent run'),
         ('child [n]', 'Attach to the nth child run'),
         ('sibling [n]', 'Attach to the nth sibling run'),
@@ -1125,12 +1134,10 @@ def register_builtins(registry):
             print(f'Focus target not found: {arg}')
             return
         try:
-            if kind == 'role':
-                engine = focus.focus_role(value)
-            elif value.role and value.role != focus.root.role:
-                engine = focus.focus_role(value.role)
+            if kind == 'session':
+                engine = focus.focus_session(value)
             else:
-                engine = focus.reset()
+                engine = focus.enter(value.id)
         except ValueError as e:
             print(f'Cannot focus: {e}')
             return

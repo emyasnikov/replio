@@ -27,6 +27,7 @@ class TurnResult:
     provider: str = ''
     session: str = ''
     status: str = 'ok'
+    run_id: int | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -40,6 +41,7 @@ class TurnResult:
             'provider': self.provider,
             'session': self.session,
             'status': self.status,
+            'run_id': self.run_id,
         }
 
 
@@ -99,15 +101,12 @@ def _warm_session_name(key: str) -> str:
     return f'sub_{_sanitize_session(key, limit=48)}'
 
 
-def _agent_session_name(role: str) -> str:
-    return f'agent_{_sanitize_session(role, limit=48)}'
-
-
 class Engine:
     def __init__(self, config: Config, ui=None, plugin_manager=None,
                  provider=None, approve_models: bool = False,
                  runs: RunRegistry | None = None,
-                 parent_run: int | None = None):
+                 parent_run: int | None = None,
+                 run: Run | None = None):
         self.config = config
         self.approve_models = approve_models
         self.role = ''
@@ -134,9 +133,12 @@ class Engine:
         self.sessions = SessionManager(sessions_dir)
         self.current_session = self.sessions.create(role=self.role)
         self.runs = runs if runs is not None else RunRegistry()
-        self.current_run: Run = self.runs.start(
-            role=self.role, session=self.current_session.session_name,
-            parent=parent_run, session_id=self.current_session.session_id)
+        if run is not None:
+            self.current_run: Run = run
+        else:
+            self.current_run = self.runs.start(
+                role=self.role, session=self.current_session.session_name,
+                parent=parent_run, session_id=self.current_session.session_id)
         self.registry = CommandRegistry(self)
         register_builtins(self.registry)
         self._plugin_manager.register_commands(self.registry)
@@ -470,7 +472,8 @@ class Engine:
                         skills: list | None = None,
                         session_key: str = '', task: str = '',
                         session_name: str | None = None, ui=None,
-                        link_parent: bool = True) -> 'Engine':
+                        link_parent: bool = True,
+                        run: Run | None = None) -> 'Engine':
         agent_type = self.types.find(type_name)
         if agent_type is None:
             raise ValueError(f'Unknown agent type: {type_name}')
@@ -514,7 +517,7 @@ class Engine:
             provider = self.provider
         sub = Engine(sub_config, ui=ui if ui is not None else NullUI(),
                      plugin_manager=self._plugin_manager, provider=provider,
-                     runs=self.runs, parent_run=self.current_run.id)
+                     runs=self.runs, parent_run=self.current_run.id, run=run)
         sub.role = type_name
         sub.current_run.role = type_name
         sub.current_run.task = task
@@ -533,14 +536,30 @@ class Engine:
                 self.current_session.session_name, self.sessions.sessions_dir))
         if link_parent:
             sub.current_session.parent_id = self.current_session.session_name
+        self.runs.set_engine(sub.current_run.id, sub)
         return sub
 
-    def focused_engine(self, role: str, ui=None) -> 'Engine':
-        engine = self._new_sub_engine(
-            role, session_name=_agent_session_name(role), ui=ui,
-            link_parent=False)
-        engine.current_session.parent_id = ''
-        return engine
+    def run_engine(self, run: Run, ui=None) -> 'Engine':
+        if run.id == self.current_run.id:
+            return self
+        if run.role and self.types.find(run.role) is not None:
+            sub = self._new_sub_engine(
+                run.role, session_name=run.session, ui=ui, link_parent=False,
+                run=run)
+        else:
+            sub = Engine(self.config, ui=ui if ui is not None else NullUI(),
+                         plugin_manager=self._plugin_manager,
+                         provider=self.provider, runs=self.runs, run=run)
+            sub.load_or_create_session(run.session)
+            sub._lead = self
+            sub._ask_ui = getattr(self, '_ask_ui', None)
+        sub.role = run.role
+        sub.current_run.role = run.role
+        sub.current_session.role = run.role
+        sub.current_session.parent_id = ''
+        self.runs.set_engine(run.id, sub)
+        self.runs.reactivate(run.id)
+        return sub
 
     def run_subagent(self, type_name: str, task: str, mode: str = '',
                      skills: list | None = None,
@@ -1092,6 +1111,7 @@ class Engine:
             provider=self.config.get('provider'),
             session=self.current_session.session_name,
             status=status,
+            run_id=self.current_run.id,
         )
 
     def _execute_tool_calls(self, tcs: list[dict], thinking: str = '') -> list[dict]:

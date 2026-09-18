@@ -242,9 +242,15 @@ class ChatLoop(Engine):
         focus = getattr(self, 'focus', None)
         if focus is None:
             return
-        role = str(pending.get('role') or '')
+        run_id = pending.get('run')
+        session_name = pending.get('session')
         try:
-            engine = focus.focus_role(role)
+            if run_id is not None:
+                engine = focus.enter(run_id)
+            elif session_name:
+                engine = focus.focus_session(session_name)
+            else:
+                return
         except ValueError as e:
             print(f'\001\033[91m\002[Cannot focus]\001\033[0m\002 {e}')
             return
