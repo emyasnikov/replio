@@ -1535,7 +1535,7 @@
 <li>Provides: the capability the task delivers</li>
 </ul>
 <h2 id="non-blocking-runs-live-focus">Non-blocking runs &amp; live focus<a class="headerlink" href="#non-blocking-runs-live-focus" title="Permanent link">&para;</a></h2>
-<p>Deferred from the runs, focus, and memory redesign. Each piece is independent, and the status animation needs no threads, so it can land first.</p>
+<p>Deferred from the runs, focus, and memory redesign. Each piece is independent.</p>
 <table>
 <thead>
 <tr>
@@ -1546,22 +1546,12 @@
 </thead>
 <tbody>
 <tr>
-<td>Run status animation - a Braille spinner and status line for long delegation and team stages, no threads required</td>
-<td>S</td>
-<td>visible progress</td>
-</tr>
-<tr>
-<td>Per-run output buffers - buffer each run's streamed output and route input to the focused run</td>
-<td>M</td>
-<td>per-run logs and input</td>
-</tr>
-<tr>
 <td>Background execution - run sub-agents and teams off the calling thread, with thread-safe session and registry access</td>
 <td>L</td>
 <td>non-blocking runs</td>
 </tr>
 <tr>
-<td>Live focus and cancellation - watch or join a running run and cancel it</td>
+<td>Live focus and cancellation - watch or join a running run and cancel it, and route input to the focused run</td>
 <td>M</td>
 <td>watch or join a running agent</td>
 </tr>

@@ -1628,6 +1628,11 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td>URL the bundled <code>replio-core-webhook</code> report connector POSTs a completed job run to (JSON). Empty = no out-of-band report. See <a href="../jobs/#report-back">jobs.md</a></td>
 </tr>
 <tr>
+<td><code>run_buffer_max_lines</code></td>
+<td><code>2000</code></td>
+<td>Cap lines kept in a run's per-run output buffer (<code>BufferUI</code>). Oldest lines are trimmed past the cap. <code>0</code> = unlimited. Read back with <code>/focus log</code></td>
+</tr>
+<tr>
 <td><code>search_results</code></td>
 <td><code>5</code></td>
 <td>Number of search results to fetch</td>
@@ -1666,6 +1671,11 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td><code>show_version</code></td>
 <td><code>true</code></td>
 <td>Show the version in the REPL banner</td>
+</tr>
+<tr>
+<td><code>status_spinner</code></td>
+<td><code>true</code></td>
+<td>Show an animated Braille status line while a delegated agent or team stage runs. The REPL is blocked, so the spinner runs on its own thread. Off hides it. Headless and Null sinks ignore it</td>
 </tr>
 <tr>
 <td><code>stream_retries</code></td>

@@ -1383,6 +1383,10 @@
 <td>REPL input: multi-line <code>"""</code>/<code>'''</code> block detection, framing strip (pure, lead-in, indentation preserved), EOF exit during an open block, slash commands single-line</td>
 </tr>
 <tr>
+<td><code>test_run_buffer.py</code></td>
+<td>Per-run output buffers: <code>Run.append_buffer</code>/<code>buffer_text</code>/<code>clear_buffer</code> (leading blank skip, cap trims oldest), <code>BufferUI</code> plain-text line formatting (tokens split on newlines, partial flush on footer/info, tool/activity/error/result lines, <code>max_lines</code> sets the run cap), confirm denies and ask returns <code>None</code>, <code>/focus log [n]</code> prints the focused run's buffer (tail limit, empty)</td>
+</tr>
+<tr>
 <td><code>test_run_resume.py</code></td>
 <td>Run resume and context control: fresh <code>sub_</code> sessions by default, <code>resume</code> by run id / session name / session id reuses the session and reactivates the run, unknown target raises, <code>context='new'</code> ignores resume, <code>context='compact'</code> summarizes first, team <code>resume</code> seeds the first stage, <code>delegate</code>/<code>team</code> tools forward <code>resume</code>/<code>context</code>, team field round-trip without <code>warm_sessions</code>/<code>session_key</code></td>
 </tr>
@@ -1412,7 +1416,7 @@
 </tr>
 <tr>
 <td><code>test_subagent.py</code></td>
-<td>In-process sub-engine: provider/plugin/worktree inheritance, type prompt/mode/tool_permission application, type-skill system-prompt injection (present/missing/empty/no-skills), model override, <code>NullUI</code>, unknown type, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
+<td>In-process sub-engine: provider/plugin/worktree inheritance, type prompt/mode/tool_permission application, type-skill system-prompt injection (present/missing/empty/no-skills), model override, <code>BufferUI</code>, unknown type, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
 </tr>
 <tr>
 <td><code>test_team_run.py</code></td>
@@ -1452,7 +1456,7 @@
 </tr>
 <tr>
 <td><code>test_ui.py</code></td>
-<td>UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, <code>!</code> tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm), confirm <code>?</code> glyph at line start, confirm re-raises KeyboardInterrupt / returns False on EOF</td>
+<td>UI sinks: glyph activity lines, status oneliner fallback, headless verbose rendering, <code>!</code> tool-error lines, word-streaming buffering (boundary flush, tail flush, off-mode immediate writes, markdown across boundaries, flush before status/confirm), thinking spinner, delegation status spinner (<code>status_begin</code>/<code>status_end</code> label, <code>status_spinner</code> off, Null no-op, <code>run_subagent</code> wraps it), confirm <code>?</code> glyph at line start, confirm re-raises KeyboardInterrupt / returns False on EOF</td>
 </tr>
 </tbody>
 </table>
