@@ -90,6 +90,7 @@ class ReplUI:
         self._spinner_stop = threading.Event()
         self._spinner_lock = threading.Lock()
         self._spinner_frame = 0
+        self._spinner_label = 'Thinking'
         self._word_buffer = ''
 
     def _prefix(self):
@@ -145,10 +146,21 @@ class ReplUI:
     def thinking_begin(self):
         self.flush()
         if not self._loop.config.get('show_thinking', True):
-            self._start_spinner()
+            self._start_spinner('Thinking')
             return
         self._emit('- Thinking', '\033[90m')
         self.content_newline = True
+
+    def status_begin(self, label: str):
+        self.flush()
+        if not self._loop.config.get('status_spinner', True):
+            return
+        self._start_spinner(str(label or 'Working'))
+
+    def status_end(self):
+        if not self._loop.config.get('status_spinner', True):
+            return
+        self._stop_spinner()
 
     def _spinner_run(self):
         while not self._spinner_stop.is_set():
@@ -157,13 +169,17 @@ class ReplUI:
             with self._spinner_lock:
                 if self._spinner_stop.is_set():
                     break
-                sys.stdout.write(f'\r\033[K{frame} Thinking')
+                sys.stdout.write(f'\r\033[K{frame} {self._spinner_label}')
                 sys.stdout.flush()
             time.sleep(SPINNER_INTERVAL)
 
-    def _start_spinner(self):
+    def _start_spinner(self, label: str | None = None):
         if self._spinner_thread is not None and self._spinner_thread.is_alive():
+            if label:
+                self._spinner_label = label
             return
+        if label:
+            self._spinner_label = label
         self._spinner_stop.clear()
         self._spinner_frame = 0
         self._spinner_thread = threading.Thread(
@@ -336,6 +352,12 @@ class NullUI:
     def thinking_end(self, duration):
         pass
 
+    def status_begin(self, label):
+        pass
+
+    def status_end(self):
+        pass
+
     def warning(self, msg):
         pass
 
@@ -407,6 +429,12 @@ class HeadlessUI:
                 sys.stderr.write(f'(Thought {duration:.1f}s)\n')
         else:
             sys.stderr.write(f'+ Thought {duration:.1f}s\n')
+
+    def status_begin(self, label):
+        pass
+
+    def status_end(self):
+        pass
 
     def warning(self, msg):
         sys.stderr.write(f'[warning] {msg}\n')

@@ -634,11 +634,18 @@ class Engine:
             self.runs.reactivate(run.id)
         if ctx == 'compact':
             sub.compact_session()
+        label = type_name
+        stack = list(getattr(self, '_team_stack', []))
+        if stack:
+            label = f'{stack[-1]}: {type_name}'
+        self.ui.status_begin(f'{label}...')
         try:
             result = sub.chat(task)
         except Exception:
+            self.ui.status_end()
             self.runs.finish(sub.current_run.id, 'error')
             raise
+        self.ui.status_end()
         status = 'done' if result.status in ('ok', 'truncated') else 'error'
         self.runs.finish(sub.current_run.id, status)
         if result.session and result.session not in self.current_session.sub_sessions:

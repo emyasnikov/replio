@@ -125,6 +125,48 @@ class TestThinkingSpinner(unittest.TestCase):
         self.assertIsNone(self.chat._ui._spinner_thread)
         self.assertIn('+ Thought 1.0s', out.getvalue())
 
+    def test_status_begin_and_end_use_label(self):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat._ui.status_begin('Delegating to writer...')
+            thread = self.chat._ui._spinner_thread
+            self.assertIsNotNone(thread)
+            self.assertTrue(thread.is_alive())
+            self.assertEqual(self.chat._ui._spinner_label,
+                             'Delegating to writer...')
+            self.chat._ui.status_end()
+        self.assertFalse(thread.is_alive())
+        self.assertIsNone(self.chat._ui._spinner_thread)
+        self.assertIn('\r\033[K', out.getvalue())
+
+    def test_status_spinner_disabled(self):
+        self.chat.config.set('status_spinner', False)
+        self.chat._ui.status_begin('Delegating...')
+        self.assertIsNone(self.chat._ui._spinner_thread)
+
+    def test_null_ui_status_is_noop(self):
+        from replio.ui import NullUI
+        NullUI().status_begin('x')
+        NullUI().status_end()
+
+    def test_run_subagent_wraps_status(self):
+        from replio.types import AgentType
+        self.chat.types.put(
+            AgentType(name='writer', system_prompt='You are the writer.'),
+            scope='local')
+        self.chat.provider.chat.side_effect = [
+            [{'type': 'token', 'content': 'done'},
+             {'type': 'done', 'reason': 'stop'}],
+        ]
+        calls = []
+        self.chat._ui.status_begin = lambda label: calls.append(('begin', label))
+        self.chat._ui.status_end = lambda: calls.append(('end',))
+        with patch('sys.stdout', new=io.StringIO()):
+            self.chat.run_subagent('writer', 'draft it')
+        self.assertEqual(calls[0][0], 'begin')
+        self.assertIn('writer', calls[0][1])
+        self.assertEqual(calls[-1], ('end',))
+
     def test_thinking_end_streamed_prints_thought_duration(self):
         self.chat.config.set('show_thinking', True)
         self.chat.config.set('show_thought_duration', True)

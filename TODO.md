@@ -63,7 +63,7 @@
 - [ ] Exact-args permission grants - approve the specific command (not just the tool), and let an `always` grant live beyond the current sub-agent run
 - [ ] REPL UI colors and prompts - Actions/Asks orange, errored tool calls red, Thinking/Thought blue, output and reasoning dimmed, `[Y/n]` enter-to-continue, and an option to hide input for prompts
 - [ ] Runs, focus, and memory redesign (see PLAN.md `Runs, focus, and memory`):
-  - [ ] Non-blocking runs and live focus - background execution, output/input routing, spinner, cancellation
+  - [ ] Non-blocking runs and live focus - background execution, output/input routing, cancellation
 - [ ] Remove `--session-id` - explicit session naming is no longer needed now that auto sessions are named `ses_<ts>_<id>`
 - [ ] Relocate job run sessions under `.replio/jobs/<name>/` (kept in `sessions/` for now)
 - [ ] Role-name sync - adopt assistant, composer, manager, and specialist as the canonical roles across types, prompts, and docs
@@ -128,6 +128,7 @@
 
 ## Done
 
+- [x] Run status animation - Braille status spinner for delegation/team stages
 - [x] Provider session binding - provider `session_id` bound to the run session
 - [x] Memory scopes - shared `.replio/memory/` role/team/job memory, `/memorize`
 - [x] Run continuation - `delegate`/`team` `resume`/`context`, warm `sub_<key>` removed

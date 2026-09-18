@@ -11,11 +11,10 @@ Finished tasks are removed from this file and live as one-liners in `TODO.md` `#
 
 ## Non-blocking runs & live focus
 
-Deferred from the runs, focus, and memory redesign. Each piece is independent, and the status animation needs no threads, so it can land first.
+Deferred from the runs, focus, and memory redesign. Each piece is independent.
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Run status animation - a Braille spinner and status line for long delegation and team stages, no threads required | S | visible progress |
 | Per-run output buffers - buffer each run's streamed output and route input to the focused run | M | per-run logs and input |
 | Background execution - run sub-agents and teams off the calling thread, with thread-safe session and registry access | L | non-blocking runs |
 | Live focus and cancellation - watch or join a running run and cancel it | M | watch or join a running agent |

@@ -55,6 +55,7 @@ DEFAULT_CONFIG = {
     'report.webhook': '',
     'show_thinking': False,
     'show_thought_duration': True,
+    'status_spinner': True,
     'reasoning': 'auto',
     'markdown_streaming': False,
     'word_streaming': True,

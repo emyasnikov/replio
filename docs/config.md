@@ -85,6 +85,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 | `show_thinking`             | `false`                | Stream thinking/reasoning tokens dimmed. When off, thinking shows as an animated spinner plus a `+ Thought N.Ns` summary (display only - what is sent to the model is unchanged) |
 | `show_thought_duration`     | `true`                 | When thinking is streamed (`show_thinking` on), print a dimmed `(Thought N.Ns)` line after each thinking block. Off hides it |
 | `show_version`              | `true`                 | Show the version in the REPL banner                                    |
+| `status_spinner`            | `true`                 | Show an animated Braille status line while a delegated agent or team stage runs. The REPL is blocked, so the spinner runs on its own thread. Off hides it. Headless and Null sinks ignore it |
 | `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event without content |
 | `stream_retry_delay`        | `0.5`                  | Seconds to wait between stream retries                                  |
 | `system_prompt`             | `""`                   | Optional system prompt, injected for every front-end (REPL, `run`, `serve`) |
