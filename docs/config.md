@@ -61,6 +61,9 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 | `max_team_depth`            | `2`                    | Maximum nested team runs (a `team` stage that itself runs a team). `0` = unlimited. Cycles are refused regardless. See [teams.md](teams.md#the-team-tool) |
 | `mcp.servers`               | `[]`                   | MCP client server definitions (see [mcp.md](mcp.md) for the schema)     |
 | `mcp_server.allow_ask`      | `true`                 | When serving MCP, run `ask`-policy tools (deferred to the client) vs refuse them |
+| `memory`                    | `true`                 | Enable bounded memory summaries under `.replio/memory/`: role memory injected into sub-agent prompts, team/job memory into briefs, each refreshed after a run. `false` disables every scope |
+| `memory_max_chars`          | `2000`                 | Cap characters of a memory summary injected into a prompt or brief (`... (truncated)` appended). `0` = unlimited |
+| `memory_scopes`             | `{"role": true, "team": true, "job": true}` | Per-scope memory toggles, applied on top of `memory` |
 | `mode`                      | `"build"`              | Active agent mode (`build`, `plan`, or a custom mode from `modes`) |
 | `model`                     | `"llama3.2"`           | Model name. A `provider/model` ref (e.g. `opencode-go/deepseek-v4-flash`) unfolds to that provider and model. An unfolded model must be approved (see [Model refs and approval](providers.md#model-refs-and-approval)) |
 | `noise_tools`               | `["web_fetch", "open", "fetch_page"]` | Tool results replaced by a marker in persisted sessions                |

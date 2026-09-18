@@ -17,6 +17,9 @@ DEFAULT_CONFIG = {
     'assistant_type': 'assistant',
     'prompt_role': False,
     'focus_on_delegate': 'off',
+    'memory': True,
+    'memory_scopes': {'role': True, 'team': True, 'job': True},
+    'memory_max_chars': 2000,
     'mode': 'build',
     'modes': {
         'build': {'system_prompt': '', 'tool_permission': {}},

@@ -63,7 +63,6 @@
 - [ ] Exact-args permission grants - approve the specific command (not just the tool), and let an `always` grant live beyond the current sub-agent run
 - [ ] REPL UI colors and prompts - Actions/Asks orange, errored tool calls red, Thinking/Thought blue, output and reasoning dimmed, `[Y/n]` enter-to-continue, and an option to hide input for prompts
 - [ ] Runs, focus, and memory redesign (see PLAN.md `Runs, focus, and memory`):
-  - [ ] Memory scopes - automatic and configurable role/team/job memory, plus manual memorize
   - [ ] Non-blocking runs and live focus - background execution, output/input routing, spinner, cancellation
   - [ ] Provider session binding - bind the provider session id to the run's session
   - [ ] Sync architecture, swarm, session, and command docs
@@ -131,6 +130,7 @@
 
 ## Done
 
+- [x] Memory scopes - shared `.replio/memory/` role/team/job memory, `/memorize`
 - [x] Run continuation - `delegate`/`team` `resume`/`context`, warm `sub_<key>` removed
 - [x] Run-owned focus - run-keyed stack, `run_engine` resume, no `agent_<role>`
 - [x] Run tree navigation - `/focus` by run/session with `↔ Switch to <role>`

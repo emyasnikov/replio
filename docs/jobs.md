@@ -75,9 +75,9 @@ At run time the system prompt is composed of `type.system_prompt` (if an agent t
 
 Every run is summarized into the job's rolling memory, so the next run knows what happened before without a growing session file:
 
-- After each run (successful or failed) the scheduler summarizes it through the same compaction path as `/compact` (seeded with the previous memory so context carries) and writes the result to **`.replio/jobs/<name>.memory.md`** atomically. If the summarize call fails, a short fallback of `Run <ts>: verified|failed` plus the first part of the output or error is stored instead.
+- After each run (successful or failed) the scheduler summarizes it through the same compaction path as `/compact` (seeded with the previous memory so context carries) and writes the result to **`.replio/memory/jobs/<name>.md`** atomically. If the summarize call fails, a short fallback of `Run <ts>: verified|failed` plus the first part of the output or error is stored instead.
 - The memory file is **injected into the next run** as the `## Run memory` system prompt block. A compact, bounded record, never the whole history.
-- `replio jobs show <name>` prints the memory file path and a preview. Read or hand-edit the `.memory.md` like the task file (the next run uses whatever is there). A memory file that stops being summarized stays stale, but it never breaks a run.
+- `replio jobs show <name>` prints the memory file path and a preview. Read or hand-edit the `.md` like the task file (the next run uses whatever is there). A memory file that stops being summarized stays stale, but it never breaks a run.
 
 ## CLI reference
 

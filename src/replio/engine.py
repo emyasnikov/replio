@@ -487,6 +487,16 @@ class Engine:
                     system_prompt = system_prompt.rstrip() + '\n\n' + section
                 else:
                     system_prompt = section
+        from . import memory as memory_store
+        worktree = self.config.local_path.parent.parent
+        if memory_store.memory_enabled(sub_config, 'role'):
+            text = memory_store.read_memory(worktree, 'role', type_name)
+            section = memory_store.memory_section(text, self.config)
+            if section:
+                if system_prompt.strip():
+                    system_prompt = system_prompt.rstrip() + '\n\n' + section
+                else:
+                    system_prompt = section
         sub_config.apply('system_prompt', system_prompt)
         if agent_type.model:
             ref = self.unfold_ref(agent_type.model)
@@ -619,7 +629,64 @@ class Engine:
         if result.session and result.session not in self.current_session.sub_sessions:
             self.current_session.sub_sessions.append(result.session)
             self.session_auto_save()
+        self._update_role_memory(type_name, result.session)
         return result
+
+    def _update_role_memory(self, role: str, session_name: str):
+        if not role or not session_name:
+            return
+        from . import memory as memory_store
+        worktree = self.config.local_path.parent.parent
+        if not memory_store.memory_enabled(self.config, 'role'):
+            return
+        session = self.sessions.read(session_name)
+        if session is None or not session.turns:
+            return
+        prior = memory_store.read_memory(worktree, 'role', role)
+        messages = []
+        if prior:
+            messages.append({'role': 'system',
+                             'content': f'Previous role memory:\n{prior}'})
+        messages += turns.provider_messages(session.turns)
+        if not messages:
+            return
+        try:
+            summary = self._summarize(messages)
+        except Exception:
+            summary = None
+        if not isinstance(summary, str) or not summary:
+            return
+        memory_store.write_memory(worktree, 'role', role, summary)
+
+    def memorize(self, scope: str = 'role', name: str = '',
+                 session=None) -> str:
+        from . import memory as memory_store
+        scope = str(scope or 'role').strip().lower()
+        if scope not in memory_store.SCOPES:
+            return f'Error: scope must be one of {", ".join(memory_store.SCOPES)}'
+        name = str(name or '').strip()
+        if not name:
+            if scope == 'role':
+                name = self.role or self.current_session.role or \
+                    self.current_session.session_name
+            else:
+                return f'Error: /memorize {scope} needs a name'
+        if not memory_store.memory_enabled(self.config, scope):
+            return f'Memory for scope "{scope}" is disabled'
+        worktree = self.config.local_path.parent.parent
+        prior = memory_store.read_memory(worktree, scope, name)
+        messages = []
+        if prior:
+            messages.append({'role': 'system',
+                             'content': f'Previous {scope} memory:\n{prior}'})
+        messages += turns.provider_messages((session or self.current_session).turns)
+        if not messages:
+            return 'Nothing to memorize'
+        summary = self._summarize(messages)
+        if not isinstance(summary, str) or not summary:
+            return 'Memory not updated'
+        path = memory_store.write_memory(worktree, scope, name, summary)
+        return f'Wrote {scope} memory: {path}'
 
     def _build_stage_brief(self, team, task: str, results: list,
                            index: int, memory: str,

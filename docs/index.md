@@ -13,6 +13,7 @@ Detailed reference for Replio. For the overview, features, and quick start, see 
 - [Deployment](deploy.md) - Docker deployment (image + Compose fleet)
 - [Eval harness](eval.md) - tool-use evaluation (`replio eval`), task fixtures, metrics
 - [Jobs](jobs.md) - scheduled and durable jobs (`replio jobs`), cron scheduling, approvals
+- [Memory](memory.md) - bounded role, team, and job memory, automatic and manual
 - [Model Context Protocol](mcp.md) - MCP client and server
 - [Plugins](plugins.md) - bundled, layout, manifest, management
 - [Providers](providers.md) - providers, auto-detection, the chat event contract, adding a provider

@@ -405,23 +405,18 @@ def read_task_file(worktree: Path, job: 'Job') -> str | None:
 
 
 def memory_file_path(worktree: Path, job: 'Job') -> Path:
-    return (Path(worktree) / '.replio' / 'jobs' / f'{job.name}.memory.md').resolve()
+    from .memory import memory_path
+    return memory_path(worktree, 'job', job.name)
 
 
 def read_memory(worktree: Path, job: 'Job') -> str:
-    path = memory_file_path(worktree, job)
-    if path.exists():
-        return path.read_text().strip()
-    return ''
+    from .memory import read_memory as _read
+    return _read(worktree, 'job', job.name)
 
 
 def write_memory(worktree: Path, job: 'Job', text: str) -> Path:
-    path = memory_file_path(worktree, job)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix('.memory.md.tmp')
-    tmp.write_text(text)
-    os.replace(tmp, path)
-    return path
+    from .memory import write_memory as _write
+    return _write(worktree, 'job', job.name, text)
 
 
 def system_prompt_for(job: 'Job', worktree: Path, agent_type=None) -> str:

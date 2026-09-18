@@ -75,7 +75,7 @@ The brief handed to each member is built per run from:
 - the shared team memory block, when present,
 - the stage's `task_hint` (or a generic "Complete this stage of the task." line).
 
-After the run, the whole team run is summarized (seeded with the previous team memory) and written to **`.replio/teams/<name>/memory.md`** (atomic write, human-editable). The next run reads the same file back into its briefs, so facts from earlier runs carry without the session files growing. If the summarizer fails, a fallback of one line per stage (type, status, first part of the output or error) is stored instead.
+After the run, the whole team run is summarized (seeded with the previous team memory) and written to **`.replio/memory/teams/<name>.md`** (atomic write, human-editable). The next run reads the same file back into its briefs, so facts from earlier runs carry without the session files growing. If the summarizer fails, a fallback of one line per stage (type, status, first part of the output or error) is stored instead.
 
 `/teams run <name> <task>` executes a team from the REPL and prints one line per stage (`<n>. <type> <status> <duration>s`), the final member's result, and the memory file path.
 
