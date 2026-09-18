@@ -43,7 +43,6 @@ Team fields:
 - `stages` - ordered list of stage objects. A stage may also be a plain string (`"researcher"`), shorthand for a stage with only an agent type.
 - `description` - optional, shown in `/teams show`.
 - `tags` - optional list for grouping and filtering (`/teams list <tag>`), same vocabulary as types.
-- `warm_sessions` - optional boolean (default false). When true, each stage reuses a persistent member session keyed by `<team>__<stage-type>`, so a role keeps its context across runs (see [Warm member sessions](#warm-member-sessions)). The `team` tool's `warm` argument overrides it per run.
 - `loop` - optional review loop over a producer/reviewer stage block (see [Review loop](#review-loop)). Properties: `from`, `until`, `max_iterations`, `verdict`.
 
 Stage fields:
@@ -53,7 +52,6 @@ Stage fields:
 - `task_hint` - optional guidance folded into the delegated brief for this stage.
 - `handoff_note` - optional note passed with the previous stage's result into the next stage's brief.
 - `skills` - optional list of skill names added to this stage's type for the run, layered over the type's standing skills (see [skills.md](skills.md)). The `team` tool adds task-wide skills to every stage through its own `skills` argument.
-- `session_key` - optional explicit warm-session key for this stage. Set it to pin a member's persistent session independently of `warm_sessions`.
 
 ## Managing teams
 
@@ -81,15 +79,15 @@ After the run, the whole team run is summarized (seeded with the previous team m
 
 `/teams run <name> <task>` executes a team from the REPL and prints one line per stage (`<n>. <type> <status> <duration>s`), the final member's result, and the memory file path.
 
-## Warm member sessions
+## Resuming a member run
 
-A stage can instead keep a persistent member session, so the role reuses its context (its "experience") across tasks and review rounds while per-run skills extend it:
+Every stage starts a fresh run with its own session by default. To continue a previous thread, pass `resume` to the `team` tool:
 
-- `delegate(type, task, session_key=...)` resumes the agent whose warm session carries that key.
-- A team sets `warm_sessions: true` to give every stage a persistent key of `<team>__<stage-type>`, or a stage sets an explicit `session_key`.
-- The `team` tool's `warm` argument forces warm member sessions for one run, overriding the team setting.
+- `team(name, task, resume=...)` resumes that run or session for the **first stage**, which then keeps its prior context. Later stages start fresh, seeded by the brief.
+- `resume` accepts a run id (`#3`), a session id (`#ab12cd`), a session name, or `session:<name>`.
+- `context` controls how the resumed context is treated: `continue` (append, default), `compact` (summarize the prior turns first), or `new` (ignore `resume` and start fresh).
 
-A warm session is named `sub_<key>` and stored like any other session, so it is listed by `/sessions`, exportable, and resumable. Every call appends the new task and brief to the session, so the member sees its own history. Warm sessions are opt-in: omitting the key keeps the fresh one-off `sub_` behavior, and callers should use a stable key (one per role or per team stage) so different roles do not share a session.
+The same applies to a single delegated agent: `delegate(type, task, resume=..., context=...)`. There are no standing warm-session names, since a session belongs to the run that started it and is resumed explicitly by run or session handle.
 
 ## Review loop
 
@@ -103,10 +101,10 @@ A team can iterate a producer/reviewer block until the review passes or a cap is
 
 - Stages before `from` run once, then the `from..until` block repeats, then stages after `until` run once.
 - The `until` stage is the review. It passes when its result contains the verdict marker followed by `PASS` (case-insensitive). The default marker is `VERDICT:`, configurable through `loop.verdict`. A reviewer stage should be told to end with `VERDICT: PASS` or `VERDICT: CHANGES`.
-- On the next iteration the producer's brief carries a `## Findings from the previous review` block, and the producer keeps its warm session, so it revises with its own context.
+- On the next iteration the producer's brief carries a `## Findings from the previous review` block, so it revises with the review context even though each iteration starts a fresh run.
 - `max_iterations` (default 3) caps the block. Reaching it without a pass is still a successful run, with the last review as the result.
 
-The loop's producer is forced onto a warm session for the run, so its iterations share context even when the team does not set `warm_sessions`. When `warm_sessions` is true the producer uses the team's persistent key instead, so context also carries across runs.
+Each loop iteration starts a fresh producer run seeded by the findings, rather than replaying a standing session.
 
 ## The `team` tool
 

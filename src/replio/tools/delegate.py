@@ -135,13 +135,21 @@ def register_delegate_tool(registry, engine) -> Callable:
                                    'with task, technology, stack, or framework '
                                    'instructions.',
                 },
-                'session_key': {
+                'resume': {
                     'type': 'string',
-                    'description': 'Resume a persistent sub-agent session with '
-                                   'this key, so the same role keeps its context '
-                                   'across calls. Omit for a fresh one-off '
-                                   'session. Reuse the same key to continue an '
-                                   'agent after feedback.',
+                    'description': 'Resume an existing run or session so the '
+                                   'agent keeps its prior context: a run id '
+                                   '(#3), a session id (#ab12cd), a session name, '
+                                   'or session:<name>. Omit for a fresh one-off '
+                                   'session.',
+                },
+                'context': {
+                    'type': 'string',
+                    'enum': ['continue', 'compact', 'new'],
+                    'description': 'How to treat a resumed context when resume '
+                                   'is set: continue (append, default), compact '
+                                   '(summarize first), or new (ignore resume and '
+                                   'start fresh).',
                 },
             },
             'required': ['type', 'task'],
@@ -156,10 +164,11 @@ def register_delegate_tool(registry, engine) -> Callable:
         permission_fn=lambda args: _delegate_action(engine, args),
     )
     def delegate(type: str, task: str, skills: list | None = None,
-                 session_key: str = '', _config=None, _echo: bool = True) -> str:
+                 resume: str = '', context: str = 'continue',
+                 _config=None, _echo: bool = True) -> str:
         try:
             res = engine.run_subagent(type, task, skills=skills,
-                                      session_key=session_key)
+                                      resume=resume, context=context)
         except ValueError as e:
             return f'Error: {e}'
         result = _format_result(engine, type, res)

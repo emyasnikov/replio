@@ -15,7 +15,6 @@ class TeamStage:
     task_hint: str = ''
     handoff_note: str = ''
     skills: list = field(default_factory=list)
-    session_key: str = ''
 
     @classmethod
     def from_dict(cls, d) -> 'TeamStage':
@@ -27,7 +26,6 @@ class TeamStage:
             task_hint=str(d.get('task_hint') or ''),
             handoff_note=str(d.get('handoff_note') or ''),
             skills=list(d.get('skills') or []),
-            session_key=str(d.get('session_key') or ''),
         )
 
     def to_body(self) -> dict:
@@ -41,7 +39,6 @@ class Team:
     stages: list = field(default_factory=list)
     description: str = ''
     tags: list = field(default_factory=list)
-    warm_sessions: bool = False
     loop: dict = field(default_factory=dict)
 
     @classmethod
@@ -54,7 +51,6 @@ class Team:
             stages=[TeamStage.from_dict(s) for s in stages],
             description=str(d.get('description') or ''),
             tags=list(d.get('tags') or []),
-            warm_sessions=bool(d.get('warm_sessions')),
             loop=dict(d.get('loop') or {}),
         )
 

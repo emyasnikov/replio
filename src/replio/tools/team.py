@@ -103,11 +103,21 @@ def register_team_tool(registry, engine) -> Callable:
                                    'with task, technology, stack, or framework '
                                    'instructions.',
                 },
-                'warm': {
-                    'type': 'boolean',
-                    'description': 'Force persistent member sessions for this '
-                                   'run, so each stage keeps its context across '
-                                   'runs. Default: the team\'s own setting.',
+                'resume': {
+                    'type': 'string',
+                    'description': 'Resume an existing run or session for the '
+                                   'first stage so it keeps its prior context: '
+                                   'a run id (#3), a session id (#ab12cd), a '
+                                   'session name, or session:<name>. Omit to '
+                                   'start every stage fresh.',
+                },
+                'context': {
+                    'type': 'string',
+                    'enum': ['continue', 'compact', 'new'],
+                    'description': 'How to treat a resumed context when resume '
+                                   'is set: continue (append, default), compact '
+                                   '(summarize first), or new (ignore resume and '
+                                   'start fresh).',
                 },
             },
             'required': ['name', 'task'],
@@ -122,14 +132,15 @@ def register_team_tool(registry, engine) -> Callable:
         permission_fn=lambda args: _team_action(engine, args),
     )
     def team(name: str, task: str, skills: list | None = None,
-             warm: bool | None = None,
+             resume: str = '', context: str = 'continue',
              _config=None, _echo: bool = True) -> str:
         team_obj = engine.teams.find(name)
         if team_obj is None:
             return f'Error: unknown team "{name}"'
         if not team_obj.stages:
             return f'Error: team "{name}" has no stages'
-        res = engine.run_team(team_obj, task, skills=skills, warm=warm)
+        res = engine.run_team(team_obj, task, skills=skills,
+                              resume=resume, context=context)
         result = _format_result(name, res)
         clamped = _clamped_stages(engine, team_obj)
         if clamped:

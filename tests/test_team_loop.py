@@ -85,7 +85,7 @@ class TestTeamLoop(unittest.TestCase):
         result = self.chat.run_team(team, 'write it')
         self.assertEqual(len(result.stages), 4)
         writer_sessions = [result.stages[i].session for i in (0, 2)]
-        self.assertEqual(writer_sessions[0], writer_sessions[1])
+        self.assertNotEqual(writer_sessions[0], writer_sessions[1])
         second_brief = self.chat.provider.chat.call_args_list[2][0][0]
         user = [m for m in second_brief if m.get('role') == 'user'][-1]
         self.assertIn('Findings from the previous review', user['content'])

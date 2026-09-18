@@ -97,10 +97,6 @@ def _sub_session_name(parent: str, sessions_dir: Path) -> str:
     return coded_session_name('sub', parent, sessions_dir=sessions_dir)
 
 
-def _warm_session_name(key: str) -> str:
-    return f'sub_{_sanitize_session(key, limit=48)}'
-
-
 class Engine:
     def __init__(self, config: Config, ui=None, plugin_manager=None,
                  provider=None, approve_models: bool = False,
@@ -470,7 +466,7 @@ class Engine:
 
     def _new_sub_engine(self, type_name: str, provider=None, mode: str = '',
                         skills: list | None = None,
-                        session_key: str = '', task: str = '',
+                        task: str = '',
                         session_name: str | None = None, ui=None,
                         link_parent: bool = True,
                         run: Run | None = None) -> 'Engine':
@@ -529,8 +525,6 @@ class Engine:
         sub._team_stack = list(getattr(self, '_team_stack', []))
         if session_name:
             sub.load_or_create_session(session_name)
-        elif session_key:
-            sub.load_or_create_session(_warm_session_name(session_key))
         else:
             sub.load_or_create_session(_sub_session_name(
                 self.current_session.session_name, self.sessions.sessions_dir))
@@ -561,9 +555,35 @@ class Engine:
         self.runs.reactivate(run.id)
         return sub
 
+    def resolve_target(self, target: str) -> tuple[Run | None, str]:
+        text = str(target or '').strip()
+        if not text:
+            return None, ''
+        low = text.lower()
+        if low.startswith('session:'):
+            name = text.split(':', 1)[1].strip()
+            run = next((r for r in self.runs.runs() if r.session == name), None)
+            return run, name
+        explicit = text.startswith('#')
+        token = text[1:] if explicit else text
+        if token.isdigit():
+            run = self.runs.get(int(token))
+            return run, run.session if run is not None else ''
+        if explicit:
+            run = self.runs.find_by_session_id(token)
+            if run is not None:
+                return run, run.session
+            session = self.sessions.find_by_session_id(token)
+            return None, session.session_name if session is not None else ''
+        run = next((r for r in self.runs.runs() if r.session == text), None)
+        if run is not None:
+            return run, run.session
+        session = self.sessions.read(text)
+        return None, session.session_name if session is not None else ''
+
     def run_subagent(self, type_name: str, task: str, mode: str = '',
                      skills: list | None = None,
-                     session_key: str = '') -> TurnResult:
+                     resume: str = '', context: str = 'continue') -> TurnResult:
         agent_type = self.types.find(type_name)
         if agent_type is None:
             raise ValueError(f'Unknown agent type: {type_name}')
@@ -575,8 +595,20 @@ class Engine:
                 raise ValueError(
                     f'Type "{type_name}" uses unapproved model "{model}" - '
                     'approve it first (/model, --approve-model, or /connect)')
-        sub = self._new_sub_engine(type_name, mode=mode, skills=skills,
-                                   session_key=session_key, task=task)
+        ctx = str(context or 'continue').strip().lower()
+        run = None
+        session_name = None
+        if resume and ctx != 'new':
+            run, session_name = self.resolve_target(resume)
+            if not session_name:
+                raise ValueError(f'Cannot resume "{resume}": not found')
+        sub = self._new_sub_engine(
+            type_name, mode=mode, skills=skills, task=task,
+            session_name=session_name, run=run, link_parent=run is None)
+        if run is not None:
+            self.runs.reactivate(run.id)
+        if ctx == 'compact':
+            sub.compact_session()
         try:
             result = sub.chat(task)
         except Exception:
@@ -647,7 +679,7 @@ class Engine:
         return '\n'.join(lines)[:1500]
 
     def run_team(self, team, task: str, skills: list | None = None,
-                 warm: bool | None = None) -> TeamRunResult:
+                 resume: str = '', context: str = 'continue') -> TeamRunResult:
         depth = getattr(self, '_team_depth', 0)
         max_depth = int(self.config.get('max_team_depth', 2) or 0)
         stack = list(getattr(self, '_team_stack', []))
@@ -664,27 +696,25 @@ class Engine:
         self._team_stack = stack + [team.name]
         self._team_depth = depth + 1
         try:
-            return self._run_team_stages(team, task, skills=skills, warm=warm)
+            return self._run_team_stages(
+                team, task, skills=skills, resume=resume, context=context)
         finally:
             self._team_stack = stack
             self._team_depth = depth
 
     def _run_team_stage(self, team, stage, brief: str, skills: list | None,
-                        warm_sessions: bool, loop_producer: bool = False,
-                        run_id: str = '') -> TurnResult:
+                        resume: str = '', context: str = 'continue') -> TurnResult:
         mode = stage.mode or str(self.config.get('mode') or 'build')
         stage_skills = list(skills or [])
         for name in (stage.skills or []):
             if name and name not in stage_skills:
                 stage_skills.append(name)
-        stage_key = stage.session_key
-        if not stage_key:
-            if warm_sessions:
-                stage_key = f'{team.name}__{stage.type}'
-            elif loop_producer:
-                stage_key = f'{team.name}__{stage.type}__loop_{run_id}'
+        if stage is team.stages[0] and resume:
+            return self.run_subagent(stage.type, brief, mode=mode,
+                                     skills=stage_skills, resume=resume,
+                                     context=context)
         return self.run_subagent(stage.type, brief, mode=mode,
-                                 skills=stage_skills, session_key=stage_key)
+                                 skills=stage_skills)
 
     def _build_iteration_brief(self, team, task: str, memory: str, stage,
                                prior: list, iteration: int,
@@ -735,13 +765,14 @@ class Engine:
         return frm, until, max_iterations, marker
 
     def _run_team_loop(self, team, task: str, skills: list | None,
-                       warm_sessions: bool, memory: str, plan,
-                       stages: list, run_id: str) -> tuple[str, list]:
+                       memory: str, plan, stages: list,
+                       resume: str = '', context: str = 'continue') -> tuple[str, list]:
         frm, until, max_iterations, marker = plan
         for i in range(0, frm):
             stage = team.stages[i]
             brief = self._build_stage_brief(team, task, stages, i, memory)
-            res = self._run_team_stage(team, stage, brief, skills, warm_sessions)
+            res = self._run_team_stage(
+                team, stage, brief, skills, resume, context)
             stages.append(res)
             if res.status not in ('ok', 'truncated'):
                 return 'error', list(res.errors)
@@ -757,8 +788,7 @@ class Engine:
                 brief = self._build_iteration_brief(
                     team, task, memory, stage, block, iterations, review)
                 res = self._run_team_stage(
-                    team, stage, brief, skills, warm_sessions,
-                    loop_producer=(i == frm), run_id=run_id)
+                    team, stage, brief, skills, resume, context)
                 stages.append(res)
                 block.append(res)
                 if res.status not in ('ok', 'truncated'):
@@ -772,14 +802,15 @@ class Engine:
             stage = team.stages[i]
             brief = self._build_iteration_brief(
                 team, task, memory, stage, block, iterations)
-            res = self._run_team_stage(team, stage, brief, skills, warm_sessions)
+            res = self._run_team_stage(
+                team, stage, brief, skills, resume, context)
             stages.append(res)
             if res.status not in ('ok', 'truncated'):
                 return 'error', list(res.errors)
         return 'ok', []
 
     def _run_team_stages(self, team, task: str, skills: list | None = None,
-                         warm: bool | None = None) -> TeamRunResult:
+                         resume: str = '', context: str = 'continue') -> TeamRunResult:
         from .teams import read_team_memory, write_team_memory
         for stage in team.stages:
             agent_type = self.types.find(stage.type)
@@ -796,18 +827,16 @@ class Engine:
                         'approve it first (/model, --approve-model, or /connect)'}])
         worktree = self.config.local_path.parent.parent
         memory = read_team_memory(worktree, team.name)
-        warm_sessions = bool(team.warm_sessions) if warm is None else bool(warm)
         stages: list[TurnResult] = []
         errors: list = []
         status = 'ok'
-        run_id = datetime.now().strftime('%Y%m%d_%H%M%S')
         try:
             plan = self._team_loop_plan(team)
             if plan is None:
                 for i, stage in enumerate(team.stages):
                     brief = self._build_stage_brief(team, task, stages, i, memory)
                     res = self._run_team_stage(team, stage, brief, skills,
-                                               warm_sessions)
+                                               resume, context)
                     stages.append(res)
                     if res.status not in ('ok', 'truncated'):
                         status = 'error'
@@ -815,8 +844,7 @@ class Engine:
                         break
             else:
                 status, errors = self._run_team_loop(
-                    team, task, skills, warm_sessions, memory, plan, stages,
-                    run_id)
+                    team, task, skills, memory, plan, stages, resume, context)
         except ValueError as e:
             status = 'error'
             errors.append({'code': '', 'message': str(e)})

@@ -95,7 +95,7 @@ def _save_type(engine, name: str, values: dict) -> str:
 
 def _save_team(engine, name: str, values: dict) -> str:
     data = {'name': name}
-    for field in ('description', 'tags', 'stages', 'warm_sessions', 'loop'):
+    for field in ('description', 'tags', 'stages', 'loop'):
         if values.get(field) is not None:
             data[field] = values[field]
     engine.teams.put(Team.from_dict(data), scope='local')
@@ -191,15 +191,9 @@ def register_catalog_tool(registry, engine) -> Callable:
                             'handoff_note': {'type': 'string'},
                             'skills': {'type': 'array',
                                        'items': {'type': 'string'}},
-                            'session_key': {'type': 'string'},
                         },
                         'required': ['type'],
                     },
-                },
-                'warm_sessions': {
-                    'type': 'boolean',
-                    'description': 'Team: keep each stage\'s member session '
-                                   'across runs so a role reuses its context.',
                 },
                 'loop': {
                     'type': 'object',
@@ -232,7 +226,6 @@ def register_catalog_tool(registry, engine) -> Callable:
                 ask_policy: dict | None = None, content: str | None = None,
                 description: str | None = None,
                 stages: list | None = None,
-                warm_sessions: bool | None = None,
                 loop: dict | None = None) -> str:
         if action == 'reload':
             reloaded = engine.touch_catalogs()
@@ -278,7 +271,7 @@ def register_catalog_tool(registry, engine) -> Callable:
                   'grant_permission': grant_permission,
                   'ask_policy': ask_policy, 'content': content,
                   'description': description, 'stages': stages,
-                  'warm_sessions': warm_sessions, 'loop': loop}
+                  'loop': loop}
         if kind == 'type':
             result = _save_type(engine, name, values)
         elif kind == 'team':
