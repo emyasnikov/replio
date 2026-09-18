@@ -361,10 +361,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#runs-focus-and-memory" class="md-nav__link">
+  <a href="#non-blocking-runs-live-focus" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Runs, focus, and memory
+        Non-blocking runs &amp; live focus
       
     </span>
   </a>
@@ -1334,10 +1334,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#runs-focus-and-memory" class="md-nav__link">
+  <a href="#non-blocking-runs-live-focus" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Runs, focus, and memory
+        Non-blocking runs &amp; live focus
       
     </span>
   </a>
@@ -1534,12 +1534,8 @@
 <li>Effort: S &lt; M &lt; L</li>
 <li>Provides: the capability the task delivers</li>
 </ul>
-<h2 id="runs-focus-and-memory">Runs, focus, and memory<a class="headerlink" href="#runs-focus-and-memory" title="Permanent link">&para;</a></h2>
-<p>A session belongs to a run. Whoever starts a run creates its session: the root at startup, <code>delegate</code>/<code>team</code> at delegation, the scheduler per job run. A role is an identity a run borrows (prompt, skills, carve), never a session owner, so there is no <code>agent_&lt;role&gt;</code> and no <code>sub_&lt;key&gt;</code>.</p>
-<p><code>/focus</code> is a navigator over the run tree. It never creates a session, it makes the existing runs visible and marks the current one, and it lets the operator jump into another by <code>#run</code>, <code>#session_id</code>, <code>session:name</code>, <code>parent</code>, <code>child</code>, <code>sibling</code>, <code>next</code>, <code>prev</code>, or <code>back</code>. A delegated agent runs blocking and hidden behind a status line, and the operator may jump in to print its output instead of waiting for the result.</p>
-<p><code>handoff</code> is run-to-run control, not session management. An agent that is done or paused hands the focus to another existing run, whose session is preserved so it continues where it stopped. Handoff never creates or names a session.</p>
-<p>Continuity has two scales. Within a run, the run's own session is the context, so a planner giving a developer another task only adds the new task and the developer still knows its recent work. Across runs, continuity is bounded memory: a compacted Markdown summary per role, team, and job, injected into briefs and refreshed after runs, so recurring work does not replay an ever-growing session.</p>
-<p>Decisions: remove <code>agent_&lt;role&gt;</code> and <code>sub_&lt;key&gt;</code> (every session is ordinary, owned by its run), focus only attaches, handoff only moves focus, a caller may resume or compact/drop a run's context, memory is automatic and configurable per role/team/job plus a manual memorize, and live runs are the enabling step for watching or joining an agent.</p>
+<h2 id="non-blocking-runs-live-focus">Non-blocking runs &amp; live focus<a class="headerlink" href="#non-blocking-runs-live-focus" title="Permanent link">&para;</a></h2>
+<p>Deferred from the runs, focus, and memory redesign. Each piece is independent, and the status animation needs no threads, so it can land first.</p>
 <table>
 <thead>
 <tr>
@@ -1550,53 +1546,27 @@
 </thead>
 <tbody>
 <tr>
-<td>Run-centric focus - key the focus stack by run id and attach to the run's own session and role, removing <code>agent_&lt;role&gt;</code>, <code>focused_engine</code>, and <code>_agent_session_name</code></td>
-<td>M</td>
-<td>focus that never creates</td>
-</tr>
-<tr>
-<td>Run tree navigation - <code>/focus</code> lists the tree with <code>↔ Switch to &lt;role&gt;</code> lines, marks the current run, and jumps by <code>#run</code>, <code>#session_id</code>, <code>session:name</code>, <code>parent</code>, <code>child</code>, <code>sibling</code>, <code>next</code>, <code>prev</code>, or <code>back</code></td>
-<td>S-M</td>
-<td>see and join existing runs</td>
-</tr>
-<tr>
-<td>Handoff as run-to-run control - target runs (not roles), move focus, pause or finish the current run, and preserve the target's session</td>
-<td>S-M</td>
-<td>clean run handover</td>
-</tr>
-<tr>
-<td>Focus on delegate targets the child run - <code>focus_on_delegate</code> (off/ask/on) moves focus to the run just created, not a role</td>
+<td>Run status animation - a Braille spinner and status line for long delegation and team stages, no threads required</td>
 <td>S</td>
-<td>follow delegation</td>
+<td>visible progress</td>
 </tr>
 <tr>
-<td>Run continuation and compaction - resume a specific run/session from <code>delegate</code>/<code>team</code>, and let the caller compact or drop its context when the next task does not build on the previous one</td>
+<td>Per-run output buffers - buffer each run's streamed output and route input to the focused run</td>
 <td>M</td>
-<td>continue a thread, or start it clean</td>
+<td>per-run logs and input</td>
 </tr>
 <tr>
-<td>Memory scopes - a bounded memory summary per role, team, and job (automatic and configurable on/off, plus a manual memorize action), injected into briefs and written after runs</td>
-<td>M</td>
-<td>cheap long-horizon continuity</td>
-</tr>
-<tr>
-<td>Non-blocking runs and live focus - background execution, per-run output buffers and input routing, a status spinner, cancellation, and thread safety</td>
+<td>Background execution - run sub-agents and teams off the calling thread, with thread-safe session and registry access</td>
 <td>L</td>
+<td>non-blocking runs</td>
+</tr>
+<tr>
+<td>Live focus and cancellation - watch or join a running run and cancel it</td>
+<td>M</td>
 <td>watch or join a running agent</td>
-</tr>
-<tr>
-<td>Provider session binding - bind the provider session id to the run's session</td>
-<td>S</td>
-<td>cache and context reuse across switches</td>
-</tr>
-<tr>
-<td>Sync architecture, swarm, session, and command docs - align the behavior docs with run-owned sessions and bounded memory</td>
-<td>S</td>
-<td>aligned reference docs</td>
 </tr>
 </tbody>
 </table>
-<p>Step order: run-centric focus and removing <code>agent_&lt;role&gt;</code>, then run tree navigation, then handoff and <code>focus_on_delegate</code>, then continuation and compaction, then memory scopes, then non-blocking runs and live focus, then provider session binding, then sync the architecture, swarm, session, and command docs.</p>
 <h2 id="assistant-roles-team-orchestration">Assistant roles &amp; team orchestration<a class="headerlink" href="#assistant-roles-team-orchestration" title="Permanent link">&para;</a></h2>
 <p>The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate &gt; check &gt; correct, and focus follows the call tree of runs. This track resumes after the runs, focus, and memory redesign above, ordered by dependency.</p>
 <table>

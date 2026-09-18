@@ -1261,15 +1261,7 @@
 <li>[ ] Exact-args permission grants - approve the specific command (not just the tool), and let an <code>always</code> grant live beyond the current sub-agent run</li>
 <li>[ ] REPL UI colors and prompts - Actions/Asks orange, errored tool calls red, Thinking/Thought blue, output and reasoning dimmed, <code>[Y/n]</code> enter-to-continue, and an option to hide input for prompts</li>
 <li>[ ] Runs, focus, and memory redesign (see PLAN.md <code>Runs, focus, and memory</code>):</li>
-<li>[ ] Run-centric focus - attach to a run's own session and role, remove <code>agent_&lt;role&gt;</code></li>
-<li>[ ] Run tree navigation - <code>/focus</code> tree with <code>↔ Switch to &lt;role&gt;</code> lines and jump by run/session</li>
-<li>[ ] Handoff as run-to-run control - target runs, preserve the target session</li>
-<li>[ ] <code>focus_on_delegate</code> targets the child run</li>
-<li>[ ] Run continuation and compaction - resume a run/session, or compact/drop its context</li>
-<li>[ ] Memory scopes - automatic and configurable role/team/job memory, plus manual memorize</li>
 <li>[ ] Non-blocking runs and live focus - background execution, output/input routing, spinner, cancellation</li>
-<li>[ ] Provider session binding - bind the provider session id to the run's session</li>
-<li>[ ] Sync architecture, swarm, session, and command docs</li>
 <li>[ ] Remove <code>--session-id</code> - explicit session naming is no longer needed now that auto sessions are named <code>ses_&lt;ts&gt;_&lt;id&gt;</code></li>
 <li>[ ] Relocate job run sessions under <code>.replio/jobs/&lt;name&gt;/</code> (kept in <code>sessions/</code> for now)</li>
 <li>[ ] Role-name sync - adopt assistant, composer, manager, and specialist as the canonical roles across types, prompts, and docs</li>
@@ -1334,6 +1326,13 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] Provider session binding - provider <code>session_id</code> bound to the run session</li>
+<li>[x] Memory scopes - shared <code>.replio/memory/</code> role/team/job memory, <code>/memorize</code></li>
+<li>[x] Run continuation - <code>delegate</code>/<code>team</code> <code>resume</code>/<code>context</code>, warm <code>sub_&lt;key&gt;</code> removed</li>
+<li>[x] Run-owned focus - run-keyed stack, <code>run_engine</code> resume, no <code>agent_&lt;role&gt;</code></li>
+<li>[x] Run tree navigation - <code>/focus</code> by run/session with <code>↔ Switch to &lt;role&gt;</code></li>
+<li>[x] Run-to-run handoff - <code>handoff</code> targets runs and preserves the target session</li>
+<li>[x] <code>focus_on_delegate</code> targets the child run (<code>TurnResult.run_id</code>)</li>
 <li>[x] Session log fields - <code>name</code> -&gt; <code>session_name</code>, <code>code</code> -&gt; <code>session_id</code></li>
 <li>[x] Job and delegation names - <code>job_&lt;ts&gt;_&lt;id&gt;</code> and <code>sub_&lt;ts&gt;_&lt;id&gt;</code></li>
 <li>[x] Stable session id - six-char <code>session_id</code>, <code>ses_&lt;ts&gt;_&lt;id&gt;</code> names, and <code>#id</code> handles</li>

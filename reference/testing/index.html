@@ -1320,19 +1320,19 @@
 </tr>
 <tr>
 <td><code>test_focus.py</code></td>
-<td><code>FocusManager</code>: root start, role-engine creation and stability, refocus, <code>back</code>/<code>reset</code> stack walking, root-role reset, unknown-role error, <code>find</code>/<code>engines</code>, run recording. REPL routing to the active engine for turns and slash commands, role prompt (<code>prompt_role</code>) gating. <code>/focus</code> command: show, role/<code>#id</code>/<code>#run</code>/session attach, <code>back</code>/<code>child</code>/<code>parent</code>/<code>sibling</code>/<code>next</code>/<code>prev</code>, unknown target, absent manager</td>
+<td><code>FocusManager</code>: root start, run-keyed attach to a run's own session and role (<code>agent_&lt;role&gt;</code> removed), re-enter identity, <code>back</code>/<code>reset</code> stack walking, root-run reset, unknown-run error, <code>engines</code> listing, <code>run_engine</code> resume of a saved run, <code>focus_session</code> by session name. REPL routing to the active engine for turns and slash commands, role prompt (<code>prompt_role</code>) gating. <code>/focus</code> command: show, <code>#id</code>/<code>#run</code>/<code>#&lt;session_id&gt;</code>/<code>session:&lt;name&gt;</code>/<code>root</code> attach, <code>back</code>/<code>child</code>/<code>parent</code>/<code>sibling</code>/<code>next</code>/<code>prev</code>, role no longer a target, unknown target, absent manager</td>
 </tr>
 <tr>
 <td><code>test_focus_on_delegate.py</code></td>
-<td><code>focus_on_delegate</code> config: default <code>off</code>, <code>off</code> leaves focus alone, <code>on</code> records a pending focus on the delegated role, <code>ask</code> prompts and focuses on yes / leaves focus on no, unattended <code>ask</code> skips the prompt, an invalid mode falls back to <code>off</code>, a sub-agent without a focus manager is a no-op. The pending focus does not stop the agent loop (the caller's answer still streams) and <code>ChatLoop</code> applies it after the turn</td>
+<td><code>focus_on_delegate</code> config: default <code>off</code>, <code>off</code> leaves focus alone, <code>on</code> records a pending focus on the child run, <code>ask</code> prompts and focuses on yes / leaves focus on no, unattended <code>ask</code> skips the prompt, an invalid mode falls back to <code>off</code>, a sub-agent without a focus manager is a no-op. The pending focus does not stop the agent loop (the caller's answer still streams) and <code>ChatLoop</code> applies it after the turn</td>
 </tr>
 <tr>
 <td><code>test_handoff.py</code></td>
-<td><code>handoff</code> tool (core): registration + <code>handoff</code> permission, role target sets the pending handoff and pauses the run, <code>done</code> finishes it, unknown target errors without pausing, <code>parent</code> from a role engine resolves the root role, <code>child</code>/<code>sibling</code>/<code>#id</code>/<code>#run</code>/role/<code>root</code> resolution, sub-agent without a focus manager errors. Agent loop stops after the handoff batch (no second provider round), <code>ChatLoop</code> applies the pending focus by role and resets on a root-role target</td>
+<td><code>handoff</code> tool (core): registration + <code>handoff</code> permission, run target sets the pending handoff and pauses the run, <code>done</code> finishes it, unknown target errors without pausing, <code>parent</code> from a child run resolves the root run, <code>child</code>/<code>sibling</code>/<code>#id</code>/<code>#run</code>/session name/<code>root</code> resolution, sub-agent without a focus manager errors. Agent loop stops after the handoff batch (no second provider round), <code>ChatLoop</code> applies the pending focus by run id and resets on the root run</td>
 </tr>
 <tr>
 <td><code>test_history.py</code></td>
-<td><code>/history</code> command: default last-10 / <code>n</code> / <code>all</code> listings by absolute turn index, header with total turns and role, line fields (status, duration, tool count, prompt), command-only turns, prompt first-line clip, <code>--thoughts</code> excerpt vs <code>--thoughts all</code>, <code>--run</code> target resolution (session name, bare name, live <code>#run</code>, saved-run <code>#run</code>, live <code>#id</code>, saved <code>#id</code>, live role engine, saved <code>agent_&lt;role&gt;</code> fallback) without switching focus or current session, unknown target and usage errors, empty-session and no-focus-manager cases</td>
+<td><code>/history</code> command: default last-10 / <code>n</code> / <code>all</code> listings by absolute turn index, header with total turns and role, line fields (status, duration, tool count, prompt), command-only turns, prompt first-line clip, <code>--thoughts</code> excerpt vs <code>--thoughts all</code>, <code>--run</code> target resolution (session name, bare name, live <code>#run</code>, saved-run <code>#run</code>, live <code>#id</code>, saved <code>#id</code>, live role run, saved session fallback) without switching focus or current session, unknown target and usage errors, empty-session and no-focus-manager cases</td>
 </tr>
 <tr>
 <td><code>test_http.py</code></td>
@@ -1341,6 +1341,10 @@
 <tr>
 <td><code>test_jobs.py</code></td>
 <td>Job model + registry (round-trip incl. <code>require_approval</code>/<code>task_file</code>/<code>approve_model</code>/<code>created_at</code>, runnable + ready-to-run gates, corrupt file tolerance), cron parser (steps/ranges/lists/dom/dow/the restrictive day rule, leap day), <code>next_run</code>/<code>compute_next_run</code>/<code>parse_dt</code>, scheduler run/tick under a mocked engine (verified/failed, retries with backoff, per-attempt history, unknown type, one-shot <code>at</code>, approval gates, per-run <code>require_approval</code> park/re-arm, run memory write + injection, per-run session naming + collision dedupe + <code>--session</code> stability, run content capture), <code>_build_engine</code> type-skill injection (present/missing), task file template/linkage/missing-file failure, status/list/show rendering (incl. the <code>last run:</code> summary line), <code>replio jobs</code> CLI (add/approve/list, <code>--file</code>, edit, status output, stop, auto-approval, bad cron, duplicates, run exit codes + content printing), report-back dispatch (verified/failed/build-failure events, payload fields, injected service, no-service no-op, service-exception tolerance)</td>
+</tr>
+<tr>
+<td><code>test_memory.py</code></td>
+<td>Shared <code>memory</code> module: path under <code>.replio/memory/&lt;scope&gt;/</code>, read/write round-trip, missing-empty, legacy job/team fallback reads, <code>memory_enabled</code> global + per-scope, <code>cap_memory</code> truncation. Engine role memory: injection into the sub-agent system prompt, scope-disabled skip, write after <code>run_subagent</code>, disabled skip, <code>Engine.memorize</code> + <code>/memorize</code> command, team memory on the shared path</td>
 </tr>
 <tr>
 <td><code>test_models.py</code></td>
@@ -1360,7 +1364,11 @@
 </tr>
 <tr>
 <td><code>test_print.py</code></td>
-<td><code>/print</code> command: whole-turn reprint with the full metadata block (empty fields as <code>-</code>, including a command turn), part-only <code>&lt;n&gt;.&lt;m&gt;</code>, out-of-range part, unknown turn, <code>print_max_chars</code> cap vs <code>--full</code>, <code>--run</code> targets (session name, bare name, live role engine, saved <code>agent_&lt;role&gt;</code> fallback, live <code>#run</code>, live <code>#id</code>) without switching focus, unknown target and usage/invalid-spec errors</td>
+<td><code>/print</code> command: whole-turn reprint with the full metadata block (empty fields as <code>-</code>, including a command turn), part-only <code>&lt;n&gt;.&lt;m&gt;</code>, out-of-range part, unknown turn, <code>print_max_chars</code> cap vs <code>--full</code>, <code>--run</code> targets (session name, bare name, live role run, saved session fallback, live <code>#run</code>, live <code>#id</code>) without switching focus, unknown target and usage/invalid-spec errors</td>
+</tr>
+<tr>
+<td><code>test_provider_session.py</code></td>
+<td>Provider session binding: <code>BaseProvider</code>/<code>OpenAICompatibleProvider</code> store <code>session_id</code> (default empty), an owned provider is rebound to the run's session, a shared provider keeps its binding, a provider without <code>session_id</code> is skipped, and <code>_current_session_id</code> handles a missing session</td>
 </tr>
 <tr>
 <td><code>test_providers.py</code></td>
@@ -1375,6 +1383,10 @@
 <td>REPL input: multi-line <code>"""</code>/<code>'''</code> block detection, framing strip (pure, lead-in, indentation preserved), EOF exit during an open block, slash commands single-line</td>
 </tr>
 <tr>
+<td><code>test_run_resume.py</code></td>
+<td>Run resume and context control: fresh <code>sub_</code> sessions by default, <code>resume</code> by run id / session name / session id reuses the session and reactivates the run, unknown target raises, <code>context='new'</code> ignores resume, <code>context='compact'</code> summarizes first, team <code>resume</code> seeds the first stage, <code>delegate</code>/<code>team</code> tools forward <code>resume</code>/<code>context</code>, team field round-trip without <code>warm_sessions</code>/<code>session_key</code></td>
+</tr>
+<tr>
 <td><code>test_runs.py</code></td>
 <td><code>RunRegistry</code>: sequential ids, parent/children tree and creation-order call log, <code>finish</code> status set-once, task recording, unknown-run tolerance. Engine runs: root run registration, <code>bind_root_agent</code> updates the run role, sub-engine shares the registry and links the parent, <code>run_subagent</code> finishes the child run, <code>load_or_create_session</code> updates the run session and session id</td>
 </tr>
@@ -1384,7 +1396,7 @@
 </tr>
 <tr>
 <td><code>test_session_id.py</code></td>
-<td>Session id: <code>session_id_hash</code> determinism/length/base36, <code>coded_session_name</code>/<code>session_id_from_name</code> parsing (<code>ses_</code>/<code>job_</code>/<code>sub_</code>, explicit and warm names ignored), <code>Session.session_id</code> stamping and round-trip, missing id loads empty, auto <code>ses_&lt;ts&gt;_&lt;id&gt;</code> naming and uniqueness, explicit names have no id, <code>SessionManager.find_by_session_id</code> hit/normalize/miss, <code>RunRegistry.start(session_id=)</code> + <code>find_by_session_id</code>, engine run/session id mirroring, <code>load_or_create_session</code> sync, id stable across turns, saved-session lookup</td>
+<td>Session id: <code>session_id_hash</code> determinism/length/base36, <code>coded_session_name</code>/<code>session_id_from_name</code> parsing (<code>ses_</code>/<code>job_</code>/<code>sub_</code>, explicit names ignored), <code>Session.session_id</code> stamping and round-trip, missing id loads empty, auto <code>ses_&lt;ts&gt;_&lt;id&gt;</code> naming and uniqueness, explicit names have no id, <code>SessionManager.find_by_session_id</code> hit/normalize/miss, <code>RunRegistry.start(session_id=)</code> + <code>find_by_session_id</code>, engine run/session id mirroring, <code>load_or_create_session</code> sync, id stable across turns, saved-session lookup</td>
 </tr>
 <tr>
 <td><code>test_session_log.py</code></td>

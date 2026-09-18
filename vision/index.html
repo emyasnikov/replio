@@ -1466,7 +1466,7 @@
 <h2 id="context-economics-why-this-costs-what-it-costs">Context economics (why this costs what it costs)<a class="headerlink" href="#context-economics-why-this-costs-what-it-costs" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Sub-engines are separate <code>Engine</code>s, with no in-memory context sharing. The persistence channels are session logs and memory files.</li>
-<li>Cold starts cost: file re-reads by multiple members and brief duplication. Mitigations are facts-in-briefs (not just paths), research stages summarizing into team memory (<code>.replio/teams/&lt;name&gt;/memory.md</code>), and bounded role/team/job memory, so recurring work never replays a whole session.</li>
+<li>Cold starts cost: file re-reads by multiple members and brief duplication. Mitigations are facts-in-briefs (not just paths), research stages summarizing into team memory (<code>.replio/memory/teams/&lt;name&gt;.md</code>), and bounded role/team/job memory, so recurring work never replays a whole session.</li>
 <li>Honest limit: per-run redundancy will not go to zero. Sequential wall-clock is accepted until concurrent runs land.</li>
 </ul>
 <h2 id="phases">Phases<a class="headerlink" href="#phases" title="Permanent link">&para;</a></h2>

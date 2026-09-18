@@ -972,10 +972,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#warm-member-sessions" class="md-nav__link">
+  <a href="#resuming-a-member-run" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Warm member sessions
+        Resuming a member run
       
     </span>
   </a>
@@ -1259,10 +1259,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#warm-member-sessions" class="md-nav__link">
+  <a href="#resuming-a-member-run" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Warm member sessions
+        Resuming a member run
       
     </span>
   </a>
@@ -1346,7 +1346,6 @@
 <li><code>stages</code> - ordered list of stage objects. A stage may also be a plain string (<code>"researcher"</code>), shorthand for a stage with only an agent type.</li>
 <li><code>description</code> - optional, shown in <code>/teams show</code>.</li>
 <li><code>tags</code> - optional list for grouping and filtering (<code>/teams list &lt;tag&gt;</code>), same vocabulary as types.</li>
-<li><code>warm_sessions</code> - optional boolean (default false). When true, each stage reuses a persistent member session keyed by <code>&lt;team&gt;__&lt;stage-type&gt;</code>, so a role keeps its context across runs (see <a href="#warm-member-sessions">Warm member sessions</a>). The <code>team</code> tool's <code>warm</code> argument overrides it per run.</li>
 <li><code>loop</code> - optional review loop over a producer/reviewer stage block (see <a href="#review-loop">Review loop</a>). Properties: <code>from</code>, <code>until</code>, <code>max_iterations</code>, <code>verdict</code>.</li>
 </ul>
 <p>Stage fields:</p>
@@ -1356,7 +1355,6 @@
 <li><code>task_hint</code> - optional guidance folded into the delegated brief for this stage.</li>
 <li><code>handoff_note</code> - optional note passed with the previous stage's result into the next stage's brief.</li>
 <li><code>skills</code> - optional list of skill names added to this stage's type for the run, layered over the type's standing skills (see <a href="../skills/">skills.md</a>). The <code>team</code> tool adds task-wide skills to every stage through its own <code>skills</code> argument.</li>
-<li><code>session_key</code> - optional explicit warm-session key for this stage. Set it to pin a member's persistent session independently of <code>warm_sessions</code>.</li>
 </ul>
 <h2 id="managing-teams">Managing teams<a class="headerlink" href="#managing-teams" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1377,16 +1375,16 @@
 <li>the shared team memory block, when present,</li>
 <li>the stage's <code>task_hint</code> (or a generic "Complete this stage of the task." line).</li>
 </ul>
-<p>After the run, the whole team run is summarized (seeded with the previous team memory) and written to <strong><code>.replio/teams/&lt;name&gt;/memory.md</code></strong> (atomic write, human-editable). The next run reads the same file back into its briefs, so facts from earlier runs carry without the session files growing. If the summarizer fails, a fallback of one line per stage (type, status, first part of the output or error) is stored instead.</p>
+<p>After the run, the whole team run is summarized (seeded with the previous team memory) and written to <strong><code>.replio/memory/teams/&lt;name&gt;.md</code></strong> (atomic write, human-editable). The next run reads the same file back into its briefs, so facts from earlier runs carry without the session files growing. If the summarizer fails, a fallback of one line per stage (type, status, first part of the output or error) is stored instead.</p>
 <p><code>/teams run &lt;name&gt; &lt;task&gt;</code> executes a team from the REPL and prints one line per stage (<code>&lt;n&gt;. &lt;type&gt; &lt;status&gt; &lt;duration&gt;s</code>), the final member's result, and the memory file path.</p>
-<h2 id="warm-member-sessions">Warm member sessions<a class="headerlink" href="#warm-member-sessions" title="Permanent link">&para;</a></h2>
-<p>A stage can instead keep a persistent member session, so the role reuses its context (its "experience") across tasks and review rounds while per-run skills extend it:</p>
+<h2 id="resuming-a-member-run">Resuming a member run<a class="headerlink" href="#resuming-a-member-run" title="Permanent link">&para;</a></h2>
+<p>Every stage starts a fresh run with its own session by default. To continue a previous thread, pass <code>resume</code> to the <code>team</code> tool:</p>
 <ul>
-<li><code>delegate(type, task, session_key=...)</code> resumes the agent whose warm session carries that key.</li>
-<li>A team sets <code>warm_sessions: true</code> to give every stage a persistent key of <code>&lt;team&gt;__&lt;stage-type&gt;</code>, or a stage sets an explicit <code>session_key</code>.</li>
-<li>The <code>team</code> tool's <code>warm</code> argument forces warm member sessions for one run, overriding the team setting.</li>
+<li><code>team(name, task, resume=...)</code> resumes that run or session for the <strong>first stage</strong>, which then keeps its prior context. Later stages start fresh, seeded by the brief.</li>
+<li><code>resume</code> accepts a run id (<code>#3</code>), a session id (<code>#ab12cd</code>), a session name, or <code>session:&lt;name&gt;</code>.</li>
+<li><code>context</code> controls how the resumed context is treated: <code>continue</code> (append, default), <code>compact</code> (summarize the prior turns first), or <code>new</code> (ignore <code>resume</code> and start fresh).</li>
 </ul>
-<p>A warm session is named <code>sub_&lt;key&gt;</code> and stored like any other session, so it is listed by <code>/sessions</code>, exportable, and resumable. Every call appends the new task and brief to the session, so the member sees its own history. Warm sessions are opt-in: omitting the key keeps the fresh one-off <code>sub_</code> behavior, and callers should use a stable key (one per role or per team stage) so different roles do not share a session.</p>
+<p>The same applies to a single delegated agent: <code>delegate(type, task, resume=..., context=...)</code>. There are no standing warm-session names, since a session belongs to the run that started it and is resumed explicitly by run or session handle.</p>
 <h2 id="review-loop">Review loop<a class="headerlink" href="#review-loop" title="Permanent link">&para;</a></h2>
 <p>A team can iterate a producer/reviewer block until the review passes or a cap is reached, the generate &gt; check &gt; correct pattern. The team's <code>loop</code> names the block by stage type (or zero-based index):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1396,10 +1394,10 @@
 <ul>
 <li>Stages before <code>from</code> run once, then the <code>from..until</code> block repeats, then stages after <code>until</code> run once.</li>
 <li>The <code>until</code> stage is the review. It passes when its result contains the verdict marker followed by <code>PASS</code> (case-insensitive). The default marker is <code>VERDICT:</code>, configurable through <code>loop.verdict</code>. A reviewer stage should be told to end with <code>VERDICT: PASS</code> or <code>VERDICT: CHANGES</code>.</li>
-<li>On the next iteration the producer's brief carries a <code>## Findings from the previous review</code> block, and the producer keeps its warm session, so it revises with its own context.</li>
+<li>On the next iteration the producer's brief carries a <code>## Findings from the previous review</code> block, so it revises with the review context even though each iteration starts a fresh run.</li>
 <li><code>max_iterations</code> (default 3) caps the block. Reaching it without a pass is still a successful run, with the last review as the result.</li>
 </ul>
-<p>The loop's producer is forced onto a warm session for the run, so its iterations share context even when the team does not set <code>warm_sessions</code>. When <code>warm_sessions</code> is true the producer uses the team's persistent key instead, so context also carries across runs.</p>
+<p>Each loop iteration starts a fresh producer run seeded by the findings, rather than replaying a standing session.</p>
 <h2 id="the-team-tool">The <code>team</code> tool<a class="headerlink" href="#the-team-tool" title="Permanent link">&para;</a></h2>
 <p><code>team(name, task)</code> is the model-facing entry point (core, like <code>delegate</code> and <code>ask</code>), so a lead agent can orchestrate a whole pipeline in one call instead of delegating each stage itself. It runs <code>Engine.run_team</code> and returns the final stage's answer (or <code>Error: team "&lt;name&gt;" failed: &lt;reason&gt;</code>).</p>
 <ul>

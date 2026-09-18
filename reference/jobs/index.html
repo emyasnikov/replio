@@ -1501,9 +1501,9 @@
 <h2 id="run-memory">Run memory<a class="headerlink" href="#run-memory" title="Permanent link">&para;</a></h2>
 <p>Every run is summarized into the job's rolling memory, so the next run knows what happened before without a growing session file:</p>
 <ul>
-<li>After each run (successful or failed) the scheduler summarizes it through the same compaction path as <code>/compact</code> (seeded with the previous memory so context carries) and writes the result to <strong><code>.replio/jobs/&lt;name&gt;.memory.md</code></strong> atomically. If the summarize call fails, a short fallback of <code>Run &lt;ts&gt;: verified|failed</code> plus the first part of the output or error is stored instead.</li>
+<li>After each run (successful or failed) the scheduler summarizes it through the same compaction path as <code>/compact</code> (seeded with the previous memory so context carries) and writes the result to <strong><code>.replio/memory/jobs/&lt;name&gt;.md</code></strong> atomically. If the summarize call fails, a short fallback of <code>Run &lt;ts&gt;: verified|failed</code> plus the first part of the output or error is stored instead.</li>
 <li>The memory file is <strong>injected into the next run</strong> as the <code>## Run memory</code> system prompt block. A compact, bounded record, never the whole history.</li>
-<li><code>replio jobs show &lt;name&gt;</code> prints the memory file path and a preview. Read or hand-edit the <code>.memory.md</code> like the task file (the next run uses whatever is there). A memory file that stops being summarized stays stale, but it never breaks a run.</li>
+<li><code>replio jobs show &lt;name&gt;</code> prints the memory file path and a preview. Read or hand-edit the <code>.md</code> like the task file (the next run uses whatever is there). A memory file that stops being summarized stays stale, but it never breaks a run.</li>
 </ul>
 <h2 id="cli-reference">CLI reference<a class="headerlink" href="#cli-reference" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>list<span class="w">                                </span><span class="c1"># table of jobs and next runs</span>

@@ -404,10 +404,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0340" class="md-nav__link">
+  <a href="#v0340-2026-09-18" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.34.0
+        v0.34.0 - 2026-09-18
       
     </span>
   </a>
@@ -1510,10 +1510,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0340" class="md-nav__link">
+  <a href="#v0340-2026-09-18" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.34.0
+        v0.34.0 - 2026-09-18
       
     </span>
   </a>
@@ -1901,8 +1901,12 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<h2 id="v0340">v0.34.0<a class="headerlink" href="#v0340" title="Permanent link">&para;</a></h2>
+<h2 id="v0340-2026-09-18">v0.34.0 - 2026-09-18<a class="headerlink" href="#v0340-2026-09-18" title="Permanent link">&para;</a></h2>
 <ul>
+<li>Provider session binding - providers carry a <code>session_id</code> (<code>BaseProvider</code>/<code>OpenAICompatibleProvider</code>) bound to the run's own session. The engine passes the session id when it builds a provider and <code>load_or_create_session</code> rebinds it, so a resumed or focused run reuses the provider-side session, while a shared sub-agent provider keeps the caller's binding. The OpenCode providers fix their <code>session_id</code> override so the passed run session id (or a minted uuid) survives construction and is sent as <code>x-opencode-session</code>. Docs (<code>providers.md</code>, <code>testing.md</code>). Tests: <code>test_provider_session.py</code> plus the OpenCode plugin suite</li>
+<li>Memory scopes - a shared <code>src/replio/memory.py</code> owns bounded memory under <code>.replio/memory/</code>, one Markdown summary per scope at <code>roles/&lt;type&gt;.md</code>, <code>teams/&lt;name&gt;.md</code>, and <code>jobs/&lt;name&gt;.md</code>. Role memory is injected into a sub-agent's system prompt and refreshed after its run, and team and job memory move onto the same module (reads fall back to the older <code>.replio/teams/.../memory.md</code> and <code>.replio/jobs/*.memory.md</code> locations, writes use the new path). New config <code>memory</code> (default <code>true</code>), <code>memory_scopes</code> (per scope), and <code>memory_max_chars</code> (default <code>2000</code>), plus a <code>/memorize [scope] [name]</code> command and <code>Engine.memorize</code>. Docs: new <code>docs/memory.md</code>, plus <code>config.md</code>, <code>commands.md</code>, <code>architecture.md</code>, <code>teams.md</code>, <code>jobs.md</code>, <code>swarm.md</code>, <code>index.md</code>, <code>testing.md</code>. Tests: <code>tests/test_memory.py</code></li>
+<li>Run continuation and context control - <code>delegate</code>/<code>team</code> accept <code>resume</code> (a run id like <code>#3</code>, a session id like <code>#ab12cd</code>, a session name, or <code>session:&lt;name&gt;</code>) and <code>context</code> (<code>continue</code>, <code>compact</code>, or <code>new</code>) in place of warm <code>session_key</code>/<code>warm_sessions</code> sessions, so a caller resumes a specific run or session and chooses whether to continue, compact, or start clean. <code>Engine.resolve_target</code> resolves the handle against live runs, saved sessions, and session ids, and reactivates a resumed run. Team <code>resume</code> applies to the first stage. The <code>sub_&lt;key&gt;</code> warm member sessions, <code>_warm_session_name</code>, <code>Team.warm_sessions</code>, <code>TeamStage.session_key</code>, the <code>team</code> tool's <code>warm</code> argument, and the matching catalog fields are removed, and the review loop starts a fresh producer run per iteration seeded by the previous findings. Docs synced (<code>teams.md</code>, <code>swarm.md</code>, <code>session.md</code>, <code>testing.md</code>). Tests: <code>test_run_resume.py</code> (was <code>test_warm_sessions.py</code>) plus a <code>test_team_loop.py</code> update</li>
+<li>Run-owned focus - the REPL focus stack is keyed by run id (<code>FocusManager</code>), and focus only navigates: a run with a retained engine is attached directly, a past run is rebuilt by <code>Engine.run_engine</code>, which resumes the run's own session and role. <code>agent_&lt;role&gt;</code> sessions, <code>Engine.focused_engine</code>, and <code>_agent_session_name</code> are removed, and <code>RunRegistry</code> keeps a run's engine (<code>set_engine</code>/<code>engine_for</code>) with <code>reactivate</code>. <code>/focus</code> attaches by <code>#run</code>, <code>#&lt;session_id&gt;</code>, <code>session:&lt;name&gt;</code>, <code>root</code>, or a session name and navigates by <code>parent</code>/<code>child</code>/<code>sibling</code>/<code>next</code>/<code>prev</code>/<code>back</code>, rendering a <code>↔ Switch to &lt;role&gt;</code> marker on non-current runs. The <code>handoff</code> tool targets runs (<code>parent</code>/<code>child</code>/<code>sibling</code>/<code>root</code>/<code>#run</code>/<code>#session_id</code>/session name), and <code>focus_on_delegate</code> records the child run (<code>TurnResult.run_id</code>) instead of a role. A focused run adopts the root UI so its turns render at the terminal. Docs synced (<code>architecture.md</code>, <code>commands.md</code>, <code>config.md</code>, <code>tools.md</code>, <code>session.md</code>, <code>testing.md</code>). Tests: <code>test_focus.py</code>, <code>test_handoff.py</code>, <code>test_focus_on_delegate.py</code>, plus <code>/history</code> and <code>/print</code> run-target updates</li>
 <li>Session log field rename - the session's two identity fields are now <code>session_name</code> and <code>session_id</code> (was <code>name</code> and <code>code</code>), so the log states what each value is. <code>Session.session_name</code>/<code>Session.session_id</code> replace <code>Session.name</code>/<code>Session.code</code>, <code>Run.session_id</code> replaces <code>Run.code</code> (the run's <code>session</code> still holds the session name), and the helpers are <code>session_id_hash</code>, <code>coded_session_name</code>, <code>session_id_from_name</code>, <code>SESSION_ID_LEN</code>, and <code>find_by_session_id</code>. Generated names keep the six-character id as the trailing component (<code>ses_&lt;ts&gt;_&lt;id&gt;</code>, <code>job_&lt;ts&gt;_&lt;id&gt;</code>, <code>sub_&lt;ts&gt;_&lt;id&gt;</code>), and the <code>replio serve</code> <code>/chat</code> body key <code>session_id</code> (the session-name selector) is renamed to <code>session</code> to avoid the collision. Files written before the rename no longer load (left on disk and still listed). Docs synced (<code>session.md</code>, <code>commands.md</code>, <code>tools.md</code>, <code>architecture.md</code>, <code>testing.md</code>, <code>api.md</code>, <code>fleet.md</code>, <code>jobs.md</code>, <code>swarm.md</code>, <code>security.md</code>, <code>teams.md</code>, <code>usage/programming.md</code>, <code>AGENTS.md</code>). Tests: <code>tests/test_session_id.py</code> (was <code>test_run_code.py</code>) plus field renames across the suite</li>
 </ul>
 <h2 id="v0330-2026-09-16">v0.33.0 - 2026-09-16<a class="headerlink" href="#v0330-2026-09-16" title="Permanent link">&para;</a></h2>

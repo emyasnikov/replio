@@ -1470,7 +1470,7 @@
 <tr>
 <td><code>/focus</code></td>
 <td></td>
-<td>Show and switch the focused agent run. No args shows the current run, the run tree (with session ids), and the call log. Attach by <code>&lt;#id&gt;</code>, <code>&lt;run|#run&gt;</code>, <code>&lt;role&gt;</code>, or <code>session:&lt;name&gt;</code>, and navigate with <code>parent</code>, <code>child [n]</code>, <code>sibling [n]</code>, <code>next</code>, <code>prev</code>, or <code>back</code>. See <a href="../architecture/#focus">architecture.md</a></td>
+<td>Show and switch the focused agent run. No args shows the current run, the run tree (each run with its id, session, and session id, plus a <code>↔ Switch to &lt;role&gt;</code> marker), and the call log. Attach by <code>&lt;#run&gt;</code>, <code>#&lt;session_id&gt;</code>, <code>session:&lt;name&gt;</code>, <code>root</code>, or a session name, and navigate with <code>parent</code>, <code>child [n]</code>, <code>sibling [n]</code>, <code>next</code>, <code>prev</code>, or <code>back</code>. Focus only navigates existing runs, it never creates a session. See <a href="../architecture/#focus">architecture.md</a></td>
 </tr>
 <tr>
 <td><code>/help</code></td>
@@ -1486,6 +1486,11 @@
 <td><code>/jobs</code></td>
 <td></td>
 <td>Manage scheduled and durable jobs: <code>list</code>, <code>status</code>, <code>show</code>, <code>add</code>, <code>add-supervisor</code>, <code>approve</code>, <code>reject</code>, <code>enable</code>, <code>disable</code>, <code>stop</code>, <code>remove</code>, <code>run</code>. See <a href="../jobs/">jobs.md</a></td>
+</tr>
+<tr>
+<td><code>/memorize</code></td>
+<td></td>
+<td>Summarize the active run into bounded memory: <code>/memorize</code> (active role), or <code>/memorize &lt;role\|team\|job&gt; &lt;name&gt;</code>. Writes <code>.replio/memory/&lt;scopes&gt;/&lt;name&gt;.md</code>. See <a href="../config/">config.md</a></td>
 </tr>
 <tr>
 <td><code>/mode</code></td>

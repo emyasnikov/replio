@@ -1495,7 +1495,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <tr>
 <td><code>focus_on_delegate</code></td>
 <td><code>"off"</code></td>
-<td>After a <code>delegate</code> call, move the REPL focus to the delegated role's engine. <code>off</code> leaves focus alone, <code>on</code> focuses automatically, <code>ask</code> prompts the operator first (skipped under <a href="#unattended-mode">unattended mode</a>). The root turn still finishes, so its answer is not lost. REPL-only</td>
+<td>After a <code>delegate</code> call, move the REPL focus to the child run just created. <code>off</code> leaves focus alone, <code>on</code> focuses automatically, <code>ask</code> prompts the operator first (skipped under <a href="#unattended-mode">unattended mode</a>). The root turn still finishes, so its answer is not lost. REPL-only</td>
 </tr>
 <tr>
 <td><code>footer_tokens</code></td>
@@ -1546,6 +1546,21 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td><code>mcp_server.allow_ask</code></td>
 <td><code>true</code></td>
 <td>When serving MCP, run <code>ask</code>-policy tools (deferred to the client) vs refuse them</td>
+</tr>
+<tr>
+<td><code>memory</code></td>
+<td><code>true</code></td>
+<td>Enable bounded memory summaries under <code>.replio/memory/</code>: role memory injected into sub-agent prompts, team/job memory into briefs, each refreshed after a run. <code>false</code> disables every scope</td>
+</tr>
+<tr>
+<td><code>memory_max_chars</code></td>
+<td><code>2000</code></td>
+<td>Cap characters of a memory summary injected into a prompt or brief (<code>... (truncated)</code> appended). <code>0</code> = unlimited</td>
+</tr>
+<tr>
+<td><code>memory_scopes</code></td>
+<td><code>{"role": true, "team": true, "job": true}</code></td>
+<td>Per-scope memory toggles, applied on top of <code>memory</code></td>
 </tr>
 <tr>
 <td><code>mode</code></td>
