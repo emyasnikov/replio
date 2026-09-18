@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.34.0
+## v0.34.0 - 2026-09-18
 
 - Provider session binding - providers carry a `session_id` (`BaseProvider`/`OpenAICompatibleProvider`) bound to the run's own session. The engine passes the session id when it builds a provider and `load_or_create_session` rebinds it, so a resumed or focused run reuses the provider-side session, while a shared sub-agent provider keeps the caller's binding. The OpenCode providers fix their `session_id` override so the passed run session id (or a minted uuid) survives construction and is sent as `x-opencode-session`. Docs (`providers.md`, `testing.md`). Tests: `test_provider_session.py` plus the OpenCode plugin suite
 - Memory scopes - a shared `src/replio/memory.py` owns bounded memory under `.replio/memory/`, one Markdown summary per scope at `roles/<type>.md`, `teams/<name>.md`, and `jobs/<name>.md`. Role memory is injected into a sub-agent's system prompt and refreshed after its run, and team and job memory move onto the same module (reads fall back to the older `.replio/teams/.../memory.md` and `.replio/jobs/*.memory.md` locations, writes use the new path). New config `memory` (default `true`), `memory_scopes` (per scope), and `memory_max_chars` (default `2000`), plus a `/memorize [scope] [name]` command and `Engine.memorize`. Docs: new `docs/memory.md`, plus `config.md`, `commands.md`, `architecture.md`, `teams.md`, `jobs.md`, `swarm.md`, `index.md`, `testing.md`. Tests: `tests/test_memory.py`

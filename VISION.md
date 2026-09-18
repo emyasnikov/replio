@@ -82,7 +82,7 @@ This is the operator-facing half of the runtime, and it is what the phases turn 
 ## Context economics (why this costs what it costs)
 
 - Sub-engines are separate `Engine`s, with no in-memory context sharing. The persistence channels are session logs and memory files.
-- Cold starts cost: file re-reads by multiple members and brief duplication. Mitigations are facts-in-briefs (not just paths), research stages summarizing into team memory (`.replio/teams/<name>/memory.md`), and bounded role/team/job memory, so recurring work never replays a whole session.
+- Cold starts cost: file re-reads by multiple members and brief duplication. Mitigations are facts-in-briefs (not just paths), research stages summarizing into team memory (`.replio/memory/teams/<name>.md`), and bounded role/team/job memory, so recurring work never replays a whole session.
 - Honest limit: per-run redundancy will not go to zero. Sequential wall-clock is accepted until concurrent runs land.
 
 ## Phases

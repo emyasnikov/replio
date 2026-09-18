@@ -9,27 +9,9 @@ Finished tasks are removed from this file and live as one-liners in `TODO.md` `#
 - Effort: S < M < L
 - Provides: the capability the task delivers
 
-## Runs, focus, and memory
-
-A session belongs to a run. Whoever starts a run creates its session: the root at startup, `delegate`/`team` at delegation, the scheduler per job run. A role is an identity a run borrows (prompt, skills, carve), never a session owner, so there is no `agent_<role>` and no `sub_<key>`.
-
-`/focus` is a navigator over the run tree. It never creates a session, it makes the existing runs visible and marks the current one, and it lets the operator jump into another by `#run`, `#session_id`, `session:name`, `parent`, `child`, `sibling`, `next`, `prev`, or `back`. A delegated agent runs blocking and hidden behind a status line, and the operator may jump in to print its output instead of waiting for the result.
-
-`handoff` is run-to-run control, not session management. An agent that is done or paused hands the focus to another existing run, whose session is preserved so it continues where it stopped. Handoff never creates or names a session.
-
-Continuity has two scales. Within a run, the run's own session is the context, so a planner giving a developer another task only adds the new task and the developer still knows its recent work. Across runs, continuity is bounded memory: a compacted Markdown summary per role, team, and job, injected into briefs and refreshed after runs, so recurring work does not replay an ever-growing session.
-
-Decisions: remove `agent_<role>` and `sub_<key>` (every session is ordinary, owned by its run), focus only attaches, handoff only moves focus, a caller may resume or compact/drop a run's context, memory is automatic and configurable per role/team/job plus a manual memorize, and live runs are the enabling step for watching or joining an agent.
-
-| Task | Effort | Provides |
-|------|--------|----------|
-| Sync architecture, swarm, session, and command docs - align the behavior docs with run-owned sessions and bounded memory | S | aligned reference docs |
-
-Step order: sync the architecture, swarm, session, and command docs.
-
 ## Non-blocking runs & live focus
 
-Deferred until the run-owned corrections above land. Each piece is independent, and the status animation needs no threads, so it can land first.
+Deferred from the runs, focus, and memory redesign. Each piece is independent, and the status animation needs no threads, so it can land first.
 
 | Task | Effort | Provides |
 |------|--------|----------|

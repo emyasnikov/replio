@@ -152,7 +152,7 @@ On `replio serve`, the same is available at `POST /mcp`. See [docs/mcp.md](docs/
 
 ## Roadmap
 
-The fleet orchestration, scheduled and durable jobs, and the swarm foundations are live: bundled types, in-process sub-agents, the `delegate` and `team` tools, team pipelines, skills, the review loop, the `assistant` root and `composer` roles, and the `ask` tool. Next comes the runs, focus, and memory redesign (run-owned sessions, focus that only navigates, handoff between runs, bounded memory per role/team/job, and non-blocking runs with live focus), then the governance track (first-run onboarding, one-window status over sessions, running agents, and jobs, agent health monitoring, per-agent todo lists), report-back connectors, the jobs operator API, the interactive `/agent` command, and remote channels. See [docs/swarm.md](docs/swarm.md), [docs/jobs.md](docs/jobs.md), and the open tasks in [TODO.md](TODO.md).
+The fleet orchestration, scheduled and durable jobs, and the swarm foundations are live: bundled types, in-process sub-agents, the `delegate` and `team` tools, team pipelines, skills, the review loop, the `assistant` root and `composer` roles, and the `ask` tool. The runs, focus, and memory redesign is live too: run-owned sessions, focus that only navigates, run-to-run handoff, and bounded role/team/job memory. Next comes non-blocking runs with live focus, then the governance track (first-run onboarding, one-window status over sessions, running agents, and jobs, agent health monitoring, per-agent todo lists), report-back connectors, the jobs operator API, the interactive `/agent` command, and remote channels. See [docs/swarm.md](docs/swarm.md), [docs/jobs.md](docs/jobs.md), and the open tasks in [TODO.md](TODO.md).
 
 ## Contributing
 
