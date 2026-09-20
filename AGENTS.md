@@ -204,7 +204,13 @@ Full schema and defaults are in `docs/config.md`. Notable edge cases:
 
 ## Testing
 
-Run tests before committing changes to verify core logic isn't broken. The suite is stdlib `unittest` with mock providers (no network, no API key). Commands and the per-file coverage map are in `docs/testing.md`.
+Run tests before committing changes to verify core logic isn't broken. The suite is stdlib `unittest` with mock providers (no network, no API key). The canonical setup installs the package (`pip install -e .`). On a source checkout without installing, point `PYTHONPATH` at the absolute `src` path, since a bare `python -m unittest` raises `ModuleNotFoundError: No module named 'replio'`:
+
+```bash
+PYTHONPATH=$PWD/src python -m unittest discover tests
+```
+
+Single-file runs use the same prefix (`PYTHONPATH=$PWD/src python -m unittest tests.test_turns`). The per-file coverage map is in `docs/testing.md`.
 
 ## Sessions
 
