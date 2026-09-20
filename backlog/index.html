@@ -1219,7 +1219,7 @@
 <li>Open WebUI and OpenTUI connectors - drive Replio from external chat and terminal UIs</li>
 <li>Tool-call quality enhancer - steer tool calling toward correct, cheaper calls (for example web-search parameters that find the right references) and better results</li>
 <li>PlantUML plugin - an external plugin that draws configurations and workflows as node diagrams instead of ASCII</li>
-<li>UI commands - <code>/clear</code>, <code>/new</code>, <code>/providers</code>, <code>/providers list</code>, <code>/thinking [hide|show]</code>, hide tool errors and show the call in red, and persist error logs</li>
+<li>UI commands - <code>/clear</code>, <code>/new</code>, <code>/providers</code>, <code>/providers list</code>, <code>/thinking [hide|show]</code>, and persist error logs</li>
 <li>Feedback - capture operator feedback on a run or answer and feed it back into memory and skills</li>
 <li>Inbound webhooks - accept inbound events to start a run or answer a parked ask</li>
 <li>Plugin management UI - list, enable, disable, install, and update plugins from a UI surface, not only slash commands</li>
@@ -1259,7 +1259,15 @@
 <li>[ ] Fix the PyPI long-description screenshot - the image fails to load on the package page</li>
 <li>[ ] Fix opencode permission rejection - the provider stops when a permission is rejected instead of continuing</li>
 <li>[ ] Exact-args permission grants - approve the specific command (not just the tool), and let an <code>always</code> grant live beyond the current sub-agent run</li>
-<li>[ ] REPL UI colors and prompts - Actions/Asks orange, errored tool calls red, Thinking/Thought blue, output and reasoning dimmed, <code>[Y/n]</code> enter-to-continue, and an option to hide input for prompts</li>
+<li>[ ] REPL UI colors and prompts - a consistent color scheme and prompt behavior for the REPL:</li>
+<li>[ ] User prompt - bold the <code>&gt;&gt;&gt;</code>/<code>...</code> marker so it stands out in long output</li>
+<li>[ ] Actions/Asks orange - activity/tool status lines and the confirm/ask prompts</li>
+<li>[ ] Keep output dimmed - tool results and detail lines stay dim</li>
+<li>[ ] Newline before status - a status line never prints inline after streamed text</li>
+<li>[ ] <code>[Y/n]</code> enter-to-continue - confirm defaults to yes on an empty answer</li>
+<li>[ ] Hide confirm input - hidden for the <code>[Y/n]</code> confirm, visible for a free-text ask</li>
+<li>[ ] Errored tool calls red - the <code>! Error:</code> line in red</li>
+<li>[ ] Thinking/Thought blue - headers blue, reasoning body dim</li>
 <li>[ ] Runs, focus, and memory redesign (see PLAN.md <code>Runs, focus, and memory</code>):</li>
 <li>[ ] Non-blocking runs and live focus - background execution, output/input routing, cancellation</li>
 <li>[ ] Remove <code>--session-id</code> - explicit session naming is no longer needed now that auto sessions are named <code>ses_&lt;ts&gt;_&lt;id&gt;</code></li>
@@ -1326,6 +1334,7 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] REPL UI colors and prompts - orange actions/asks, red errors, blue thinking, <code>[Y/n]</code> confirm</li>
 <li>[x] opencode reasoning echo - send <code>reasoning_content</code> back on assistant messages</li>
 <li>[x] Session log version - each session records the Replio version that wrote it</li>
 <li>[x] Per-run output buffers - <code>BufferUI</code> writes each run's log, <code>/focus log</code> reads it</li>

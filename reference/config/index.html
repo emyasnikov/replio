@@ -1518,6 +1518,11 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td>Delegation ceiling: the maximum category actions an engine may hand down to sub-agents. Empty means the engine's own <code>tool_permission</code> is the ceiling (no escalation). See <a href="#permission-authority">Permission authority</a></td>
 </tr>
 <tr>
+<td><code>hide_confirm_input</code></td>
+<td><code>false</code></td>
+<td>Hide the typed input for the REPL <code>[Y/n]</code> tool confirm prompt (the answer is not echoed). Free-text <code>ask</code> answers stay visible</td>
+</tr>
+<tr>
 <td><code>list_dir_max_entries</code></td>
 <td><code>200</code></td>
 <td>Cap entries <code>list_dir</code> returns (<code>... (showing first N of M entries)</code> appended). <code>0</code> = unlimited</td>
@@ -1650,7 +1655,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <tr>
 <td><code>show_errors</code></td>
 <td><code>true</code></td>
-<td>Show a dimmed <code>! Error: ...</code> line (first line of the result) when a tool call fails. Off hides the line</td>
+<td>Show a red <code>! Error: ...</code> line (first line of the result) when a tool call fails. Off hides the line</td>
 </tr>
 <tr>
 <td><code>show_notes</code></td>
@@ -1660,12 +1665,12 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <tr>
 <td><code>show_thinking</code></td>
 <td><code>false</code></td>
-<td>Stream thinking/reasoning tokens dimmed. When off, thinking shows as an animated spinner plus a <code>+ Thought N.Ns</code> summary (display only - what is sent to the model is unchanged)</td>
+<td>Stream reasoning tokens dimmed under a blue <code>- Thinking</code> header. When off, thinking shows as an animated spinner plus a <code>+ Thought N.Ns</code> summary (display only - what is sent to the model is unchanged)</td>
 </tr>
 <tr>
 <td><code>show_thought_duration</code></td>
 <td><code>true</code></td>
-<td>When thinking is streamed (<code>show_thinking</code> on), print a dimmed <code>(Thought N.Ns)</code> line after each thinking block. Off hides it</td>
+<td>When thinking is streamed (<code>show_thinking</code> on), print a blue <code>(Thought N.Ns)</code> line after each thinking block. Off hides it</td>
 </tr>
 <tr>
 <td><code>show_version</code></td>
@@ -1779,7 +1784,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <span class="w">  </span><span class="nt">"web"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (y/N confirm), <code>deny</code> (tool hidden/refused). Read/write/list outside the worktree escalate to <code>ask</code> automatically. The <code>delegate</code> category gates the <code>delegate</code> tool. On top of the category action, delegation resolves its permission from the target type: a configured type uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaulting to <code>allow</code>), while an agent type not in the registry defaults to <code>deny</code> (see <a href="../types/">types.md</a>). The <code>team</code> category gates the <code>team</code> tool (default <code>allow</code>), separate from <code>delegate</code> so a type can be a delegation target yet be barred from running pipelines. The <code>ask</code> category gates the <code>ask</code> tool (default <code>allow</code>, the interaction itself, answered by the human or the lead agent, see <a href="../tools/">tools.md</a>). The <code>catalog</code> category gates the <code>catalog</code> tool (default <code>allow</code>). It writes only to the project catalog in <code>.replio/</code>, so a team-composing agent can manage types, teams, and skills without general file edits. Set it to <code>ask</code> to confirm every catalog change. The <code>handoff</code> category gates the <code>handoff</code> tool (default <code>allow</code>). It only moves the REPL's focus between runs (see <a href="../tools/#handing-off-control">tools.md</a>).</p>
+<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (Y/n confirm), <code>deny</code> (tool hidden/refused). Read/write/list outside the worktree escalate to <code>ask</code> automatically. The <code>delegate</code> category gates the <code>delegate</code> tool. On top of the category action, delegation resolves its permission from the target type: a configured type uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaulting to <code>allow</code>), while an agent type not in the registry defaults to <code>deny</code> (see <a href="../types/">types.md</a>). The <code>team</code> category gates the <code>team</code> tool (default <code>allow</code>), separate from <code>delegate</code> so a type can be a delegation target yet be barred from running pipelines. The <code>ask</code> category gates the <code>ask</code> tool (default <code>allow</code>, the interaction itself, answered by the human or the lead agent, see <a href="../tools/">tools.md</a>). The <code>catalog</code> category gates the <code>catalog</code> tool (default <code>allow</code>). It writes only to the project catalog in <code>.replio/</code>, so a team-composing agent can manage types, teams, and skills without general file edits. Set it to <code>ask</code> to confirm every catalog change. The <code>handoff</code> category gates the <code>handoff</code> tool (default <code>allow</code>). It only moves the REPL's focus between runs (see <a href="../tools/#handing-off-control">tools.md</a>).</p>
 <h3 id="ask_policy"><code>ask_policy</code><a class="headerlink" href="#ask_policy" title="Permanent link">&para;</a></h3>
 <p>Routes the <code>ask</code> tool by kind:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>

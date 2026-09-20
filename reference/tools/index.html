@@ -1601,7 +1601,7 @@
 <li>Each result is appended as a <code>tool</code> message (with <code>tool_call_id</code> and the tool name), plus a one-line <code>analysis</code> when <code>tool_analysis</code> is enabled.</li>
 <li>The loop continues with the enriched context until the model answers.</li>
 </ol>
-<p>Ctrl-C in the REPL cancels the running turn: streaming and any in-flight tool execution are aborted, partial output is persisted, a <code>(cancelled)</code> note prints, and the prompt returns. At a y/N confirm prompt it cancels the whole turn too (<code>n</code> still declines just that tool). Headless behavior mirrors this, and <code>replio run</code> exits non-zero on a cancelled turn.</p>
+<p>Ctrl-C in the REPL cancels the running turn: streaming and any in-flight tool execution are aborted, partial output is persisted, a <code>(cancelled)</code> note prints, and the prompt returns. At a Y/n confirm prompt it cancels the whole turn too (<code>n</code> still declines just that tool). Headless behavior mirrors this, and <code>replio run</code> exits non-zero on a cancelled turn.</p>
 <h2 id="running-a-tool-directly">Running a tool directly<a class="headerlink" href="#running-a-tool-directly" title="Permanent link">&para;</a></h2>
 <p><code>/tool &lt;name&gt; {"key": "value"}</code> runs any registered tool from the REPL, routed through the same policy. <code>/help &lt;tool&gt;</code> shows a tool's description, parameters, category, and permission.</p>
 <h2 id="registration-metadata">Registration metadata<a class="headerlink" href="#registration-metadata" title="Permanent link">&para;</a></h2>
@@ -1703,7 +1703,7 @@
 </ul>
 <h2 id="tool-policy">Tool policy<a class="headerlink" href="#tool-policy" title="Permanent link">&para;</a></h2>
 <p>Every tool call is gated by <code>ToolPolicy</code> (<code>src/replio/tools/policy.py</code>), the single permission resolution point. The loop and <code>/tool</code> both route through it, so never special-case tool names for permission logic.</p>
-<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (y/N confirm in the loop), or <code>deny</code> (tool filtered from the provider schema and refused on direct calls).</p>
+<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (Y/n confirm in the loop), or <code>deny</code> (tool filtered from the provider schema and refused on direct calls).</p>
 <p>Every resolution and its outcome (granted / declined / denied) is recorded to the session <code>permissions</code> array as an append-only audit trail. See <a href="../session/">session.md</a>.</p>
 <p>Resolution precedence:</p>
 <ol>
