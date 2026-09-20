@@ -1465,6 +1465,7 @@
 <p>The trailing <code>&lt;id&gt;</code> is a six-character base36 hash minted at creation and embedded in the name, so a generated session is fully named from the start (no prompt-slug rename). The <code>session_id</code> is the stable run handle: each run mirrors it as <code>Run.session_id</code>, <code>/focus</code> and <code>/history</code> show it, and commands accept it as <code>#&lt;id&gt;</code> (<code>/focus #ab12cd</code>, <code>handoff</code> target <code>#ab12cd</code>, <code>/history --run #ab12cd</code>, <code>/print --run #ab12cd</code>). Resolution is a direct filename glob for <code>*_&lt;id&gt;.json</code>, so an id is found without reading every session. The <code>ses_</code>, <code>job_</code>, and <code>sub_</code> kinds carry an id. Explicit names carry no id and are referenced by <code>session:&lt;name&gt;</code>. Files written before the <code>session_name</code>/<code>session_id</code> fields were introduced no longer load (the file is left on disk and stays listed).</p>
 <p>Delegation writes each sub-agent's log as its own session: <code>sub_&lt;ts&gt;_&lt;id&gt;</code> (<code>sub_20260817_120100_cd34ef</code>), with the calling session recorded as <code>parent_id</code> rather than in the filename. Job runs use <code>job_&lt;ts&gt;_&lt;id&gt;</code>, with the job name still recorded in the job registry and each run's <code>JobRun.session</code>. A caller may resume a run or session explicitly with <code>delegate</code>/<code>team</code> <code>resume=...</code> and <code>context=continue|compact|new</code>, which appends to that run's own log instead of minting a new one. These live in the same <code>.replio/sessions/</code> directory and are regular sessions, listed by <code>/sessions</code> (annotated with their parent), exportable, and loadable, so lead and sub-agent logs stay separate and complete.</p>
 <p>Each session also records the agent <code>role</code> that owns it (the bound root type, the delegated type, the team-stage type, or the job type), stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no <code>--type</code> leaves <code>role</code> empty.</p>
+<p>Each session also records the Replio <code>version</code> that created it, so a log says which build wrote it. The version is stamped once at creation and never changes. Files written before the field load with an empty <code>version</code> (no backfill).</p>
 <p>Session files written before the turn format (flat <code>messages</code>) and files written before the <code>session_name</code>/<code>session_id</code> rename do not load: <code>read()</code> returns nothing for them, the file is left untouched on disk, and <code>/sessions</code> still lists the name. The turn format is a full cutover, not a compatibility layer.</p>
 <h2 id="managing-sessions">Managing sessions<a class="headerlink" href="#managing-sessions" title="Permanent link">&para;</a></h2>
 <p>The active session is handled by <code>/session</code> (like <code>/model</code> for the model). The catalog of saved sessions lives under <code>/sessions</code> (like <code>/models</code>).</p>
@@ -1541,7 +1542,8 @@
 <span class="w">  </span><span class="nt">"session_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ses_20260817_120000_ab12cd"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"sub_sessions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">  </span><span class="nt">"turns"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="w">  </span><span class="nt">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:05:15+00:00"</span>
+<span class="w">  </span><span class="nt">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-17T12:05:15+00:00"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.35.0"</span>
 <span class="p">}</span>
 </code></pre></div>
 <table>
@@ -1602,6 +1604,11 @@
 <td><code>updated_at</code></td>
 <td>string</td>
 <td>ISO 8601 UTC timestamp, bumped on every appended part</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>string</td>
+<td>Replio version that created the session, stamped at creation (empty for files written before the field)</td>
 </tr>
 </tbody>
 </table>

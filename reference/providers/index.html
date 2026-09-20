@@ -1559,6 +1559,7 @@
 </tr>
 </tbody>
 </table>
+<p>The <code>opencode</code> and <code>opencode-go</code> providers echo captured reasoning back to the API: the assistant <code>thinking</code> from an earlier turn is sent as <code>reasoning_content</code>, which Console Go requires in thinking mode when a turn continues after tool calls. Every other provider drops the internal <code>thinking</code> field, since some OpenAI-compatible endpoints (the official DeepSeek reasoner among them) reject <code>reasoning_content</code> in the input. The behavior is a provider class attribute (<code>ECHO_REASONING</code>, default <code>false</code>), so a new provider can opt in the same way.</p>
 <h2 id="adding-a-provider">Adding a provider<a class="headerlink" href="#adding-a-provider" title="Permanent link">&para;</a></h2>
 <p>The core substrate (<code>BaseProvider</code>, <code>OpenAICompatibleProvider</code>, the <code>PROVIDERS</code> registry, and <code>detect_provider</code>) stays in <code>src/replio/providers/</code>. Vendor providers ship as bundled plugins under <code>plugins/</code>, and any external plugin can register providers too:</p>
 <ol>
