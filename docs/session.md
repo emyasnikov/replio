@@ -22,6 +22,8 @@ Delegation writes each sub-agent's log as its own session: `sub_<ts>_<id>` (`sub
 
 Each session also records the agent `role` that owns it (the bound root type, the delegated type, the team-stage type, or the job type), stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no `--type` leaves `role` empty.
 
+Each session also records the Replio `version` that created it, so a log says which build wrote it. The version is stamped once at creation and never changes. Files written before the field load with an empty `version` (no backfill).
+
 Session files written before the turn format (flat `messages`) and files written before the `session_name`/`session_id` rename do not load: `read()` returns nothing for them, the file is left untouched on disk, and `/sessions` still lists the name. The turn format is a full cutover, not a compatibility layer.
 
 ## Managing sessions
@@ -71,7 +73,8 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
   "session_name": "ses_20260817_120000_ab12cd",
   "sub_sessions": [],
   "turns": [],
-  "updated_at": "2026-08-17T12:05:15+00:00"
+  "updated_at": "2026-08-17T12:05:15+00:00",
+  "version": "0.35.0"
 }
 ```
 
@@ -87,6 +90,7 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 | `sub_sessions` | array | Names of sessions spawned from this one (delegations, since the delegate sets the sub-agent's `parent_id`) |
 | `turns` | array | The conversation log, append-only, one entry per turn |
 | `updated_at` | string | ISO 8601 UTC timestamp, bumped on every appended part |
+| `version` | string | Replio version that created the session, stamped at creation (empty for files written before the field) |
 
 `/sessions preview` prints the `parent` and `sub-sessions` links. `/sessions` annotates `sub_*` children with their parent.
 

@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from .. import get_version
 from . import turns
 
 _BASE36 = '0123456789abcdefghijklmnopqrstuvwxyz'
@@ -52,10 +53,12 @@ class Session:
                  parent_id: str = '',
                  sub_sessions: list | None = None,
                  role: str = '',
-                 session_id: str = ''):
+                 session_id: str = '',
+                 version: str = ''):
         now = datetime.now(timezone.utc).isoformat(timespec='seconds')
         self.session_name = session_name
         self.session_id = session_id or ''
+        self.version = version or ''
         self.turns = turns_list or []
         self.errors = errors or []
         self.permissions = permissions or []
@@ -188,6 +191,7 @@ class Session:
             'parent_id': self.parent_id,
             'sub_sessions': self.sub_sessions,
             'role': self.role,
+            'version': self.version,
         }
 
     @classmethod
@@ -205,6 +209,7 @@ class Session:
             data.get('sub_sessions', []),
             data.get('role', ''),
             data.get('session_id', ''),
+            data.get('version', ''),
         )
 
 
@@ -218,7 +223,8 @@ class SessionManager:
         if not session_name:
             session_name = coded_session_name('ses', role, sessions_dir=self.sessions_dir)
         self.current = Session(
-            session_name, session_id=session_id_from_name(session_name), role=role)
+            session_name, session_id=session_id_from_name(session_name), role=role,
+            version=get_version())
         return self.current
 
     def find_by_session_id(self, session_id: str) -> Session | None:

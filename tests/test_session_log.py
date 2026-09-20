@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from replio.sessions import turns
 from replio.sessions.manager import Session, SessionManager
+from replio import get_version
 from tests.helpers import make_chat
 
 
@@ -72,6 +73,30 @@ class TestSessionModel(unittest.TestCase):
             self.assertEqual(sm.read('writer_run').role, 'writer')
         finally:
             tmp.cleanup()
+
+    def test_version_defaults_empty_and_round_trips(self):
+        s = Session('s1')
+        self.assertEqual(s.version, '')
+        s.version = '0.35.0'
+        d = s.to_dict()
+        self.assertEqual(d['version'], '0.35.0')
+        self.assertEqual(Session.from_dict(d).version, '0.35.0')
+
+    def test_create_stamps_version(self):
+        tmp = tempfile.TemporaryDirectory()
+        try:
+            sm = SessionManager(Path(tmp.name))
+            s = sm.create('versioned_run')
+            self.assertEqual(s.version, get_version())
+            sm.save(s)
+            self.assertEqual(sm.read('versioned_run').version, get_version())
+        finally:
+            tmp.cleanup()
+
+    def test_missing_version_loads_empty(self):
+        data = Session('s1').to_dict()
+        del data['version']
+        self.assertEqual(Session.from_dict(data).version, '')
 
     def test_errors_round_trip(self):
         s = Session('s1')
