@@ -21,7 +21,7 @@
 - Open WebUI and OpenTUI connectors - drive Replio from external chat and terminal UIs
 - Tool-call quality enhancer - steer tool calling toward correct, cheaper calls (for example web-search parameters that find the right references) and better results
 - PlantUML plugin - an external plugin that draws configurations and workflows as node diagrams instead of ASCII
-- UI commands - `/clear`, `/new`, `/providers`, `/providers list`, `/thinking [hide|show]`, hide tool errors and show the call in red, and persist error logs
+- UI commands - `/clear`, `/new`, `/providers`, `/providers list`, `/thinking [hide|show]`, and persist error logs
 - Feedback - capture operator feedback on a run or answer and feed it back into memory and skills
 - Inbound webhooks - accept inbound events to start a run or answer a parked ask
 - Plugin management UI - list, enable, disable, install, and update plugins from a UI surface, not only slash commands
@@ -61,7 +61,15 @@
 - [ ] Fix the PyPI long-description screenshot - the image fails to load on the package page
 - [ ] Fix opencode permission rejection - the provider stops when a permission is rejected instead of continuing
 - [ ] Exact-args permission grants - approve the specific command (not just the tool), and let an `always` grant live beyond the current sub-agent run
-- [ ] REPL UI colors and prompts - Actions/Asks orange, errored tool calls red, Thinking/Thought blue, output and reasoning dimmed, `[Y/n]` enter-to-continue, and an option to hide input for prompts
+- [ ] REPL UI colors and prompts - a consistent color scheme and prompt behavior for the REPL:
+  - [ ] User prompt - bold the `>>>`/`...` marker so it stands out in long output
+  - [ ] Actions/Asks orange - activity/tool status lines and the confirm/ask prompts
+  - [ ] Keep output dimmed - tool results and detail lines stay dim
+  - [ ] Newline before status - a status line never prints inline after streamed text
+  - [ ] `[Y/n]` enter-to-continue - confirm defaults to yes on an empty answer
+  - [ ] Hide confirm input - hidden for the `[Y/n]` confirm, visible for a free-text ask
+  - [ ] Errored tool calls red - the `! Error:` line in red
+  - [ ] Thinking/Thought blue - headers blue, reasoning body dim
 - [ ] Runs, focus, and memory redesign (see PLAN.md `Runs, focus, and memory`):
   - [ ] Non-blocking runs and live focus - background execution, output/input routing, cancellation
 - [ ] Remove `--session-id` - explicit session naming is no longer needed now that auto sessions are named `ses_<ts>_<id>`

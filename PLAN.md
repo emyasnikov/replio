@@ -115,6 +115,14 @@ Repo-aware coding assistance: version control, lint/format/test wrappers, scoped
 | Workspace sessions - tools write into a scoped `--workspace` dir, optional git sync | M | scoped workspaces |
 | `code_debug` / `compile` - pdb/gcc/rustc wrappers (test/lint/format landed as `code_test`/`code_lint`/`code_format`) | S-M | debug + compile |
 
+## REPL UI polish
+
+A legible, consistent terminal surface: operator input stands out, status and prompts share one color language, and confirm prompts are quick to answer.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| REPL UI colors and prompts - user prompt highlight, Actions/Asks orange, errored calls red, Thinking/Thought blue, output and reasoning dim, newline before status, `[Y/n]` enter-to-continue, and hide confirm input | S-M | a legible, consistent REPL |
+
 ## Knowledge & memory
 
 Answers drawn from past sessions and local documents, bridging toward a vector store.
