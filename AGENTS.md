@@ -146,6 +146,7 @@ Replio/
 - Start with a capital letter and a past-tense verb: `Added`, `Changed`, `Fixed`, `Removed`, `Renamed`, `Updated`, `Moved`.
 - Mirror the matching `TODO.md` `## Done` one-liner and trim it to a single line, so the log and the backlog read the same.
 - No trailing period, and ASCII punctuation only, per `### Doc Conventions`.
+- Commit each finished step as part of the work, without waiting for a per-commit request.
 - Never push. `git push` is never run, and commits stay local.
 
 ## Extension Points
@@ -212,7 +213,7 @@ PYTHONPATH=$PWD/src python -m unittest discover tests
 
 Single-file runs use the same prefix (`PYTHONPATH=$PWD/src python -m unittest tests.test_turns`). The per-file coverage map is in `docs/testing.md`.
 
-Test incrementally. After each step run only the tests for the code just changed, as a single file or single class. Run the full suite (`discover tests`) only once the whole change is implemented, before committing.
+Test incrementally. Before each commit run only the tests for the code just changed, as a single file or single class. After the last commit of a series, run the full suite (`discover tests`) and fix anything it finds.
 
 ## Sessions
 
