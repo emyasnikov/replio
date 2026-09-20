@@ -404,10 +404,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0360" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.36.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0350-2026-09-20" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.35.0. - 2026-09-20
+        v0.35.0 - 2026-09-20
       
     </span>
   </a>
@@ -1521,10 +1532,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0360" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.36.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0350-2026-09-20" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.35.0. - 2026-09-20
+        v0.35.0 - 2026-09-20
       
     </span>
   </a>
@@ -1923,7 +1945,11 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<h2 id="v0350-2026-09-20">v0.35.0. - 2026-09-20<a class="headerlink" href="#v0350-2026-09-20" title="Permanent link">&para;</a></h2>
+<h2 id="v0360">v0.36.0<a class="headerlink" href="#v0360" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Dimmed thought summary - the <code>(Thought N.Ns)</code> line printed after streamed reasoning is dimmed again, so only the <code>- Thinking</code> header (reasoning shown) and the <code>+ Thought N.Ns</code> line (reasoning hidden) stay blue. Docs (<code>config.md</code>). Tests: <code>tests/test_ui.py</code></li>
+</ul>
+<h2 id="v0350-2026-09-20">v0.35.0 - 2026-09-20<a class="headerlink" href="#v0350-2026-09-20" title="Permanent link">&para;</a></h2>
 <ul>
 <li>REPL UI colors and prompts - the terminal surface gets one color language and quicker prompts. The user prompt marker is bold cyan, activity/tool status lines and the confirm/ask prompts are orange (<code>\033[38;5;208m</code>), a failed tool call prints its <code>! Error:</code> line red, and the <code>- Thinking</code>/<code>+ Thought</code>/<code>(Thought N.Ns)</code> headers are blue while the reasoning body and tool output stay dim. Every status line now starts on a new line instead of trailing streamed text (<code>_ensure_newline</code>). The tool confirm defaults to yes on an empty answer (<code>[Y/n]</code>), and <code>/connect</code>, <code>/config</code>, and the compaction prompt follow the same <code>[Y/n]</code> convention. New <code>hide_confirm_input</code> config hides the typed input for the tool confirm while free-text <code>ask</code> answers stay visible. Docs (<code>config.md</code>, <code>architecture.md</code>, <code>commands.md</code>, <code>security.md</code>, <code>tools.md</code>, <code>writing-tools.md</code>). Tests: <code>tests/test_ui.py</code></li>
 <li>opencode reasoning echo - the <code>opencode</code> and <code>opencode-go</code> providers now send captured reasoning back as <code>reasoning_content</code>, which Console Go requires in thinking mode when a turn continues after tool calls (it rejected the tool-loop continuation with HTTP 400 <code>The reasoning_content in the thinking mode must be passed back to the API</code>). <code>OpenAICompatibleProvider</code> gains an <code>ECHO_REASONING</code> class attribute (default <code>false</code>) and <code>_prepare_messages</code>, which always drops the internal <code>thinking</code> key and, when enabled, copies it to <code>reasoning_content</code> on assistant messages. <code>OpenCodeProviderBase</code> sets the flag for both providers, and the auto-continue assistant message carries its thinking so a length continuation echoes it too. Other providers are unchanged, since some endpoints (the official DeepSeek reasoner) reject <code>reasoning_content</code> in the input. Docs (<code>providers.md</code>). Tests: <code>tests/test_providers.py</code>, <code>plugins/replio-core-opencode/tests/test_opencode_providers.py</code></li>
