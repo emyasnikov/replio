@@ -141,6 +141,13 @@ Replio/
 - Do not break a sentence with a dash-set-aside clause (for example `layers - swarm, jobs - with MCP`). Let the sentence flow as one statement, using commas, parentheses, or a separate sentence instead. Reserve the hyphen for compound words, list markers, bullet-list convention, and version separators. The dash-aside construction reads as machine-generated.
 - Sort enumerated lists alphanumerically: file trees, command and subcommand tables, tool/provider/type rosters, doc indexes, config key tables, and test coverage maps. New entries slot into their sorted position, never appended.
 
+### Commits
+- One line only: no body, no trailers, no conventional-commit prefixes (`feat:`, `fix:`, `chore:`), no scope, no emoji, no issue numbers.
+- Start with a capital letter and a past-tense verb: `Added`, `Changed`, `Fixed`, `Removed`, `Renamed`, `Updated`, `Moved`.
+- Mirror the matching `TODO.md` `## Done` one-liner and trim it to a single line, so the log and the backlog read the same.
+- No trailing period, and ASCII punctuation only, per `### Doc Conventions`.
+- Never push. `git push` is never run, and commits stay local.
+
 ## Extension Points
 
 ### Adding a Tool
