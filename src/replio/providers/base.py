@@ -39,6 +39,7 @@ class OpenAICompatibleProvider(BaseProvider):
     DEFAULT_BASE_URL = ''
     DEFAULT_MODEL = ''
     HOST_PATTERNS: tuple[str, ...] = ()
+    ECHO_REASONING = False
 
     def __init__(self, **kwargs):
         if not kwargs.get('base_url'):
@@ -65,10 +66,21 @@ class OpenAICompatibleProvider(BaseProvider):
             payload['reasoning_effort'] = self.reasoning
         return payload
 
+    def _prepare_messages(self, messages: list[dict]) -> list[dict]:
+        out: list[dict] = []
+        for message in messages:
+            prepared = dict(message)
+            thinking = prepared.pop('thinking', None)
+            if (self.ECHO_REASONING and thinking
+                    and prepared.get('role') == 'assistant'):
+                prepared['reasoning_content'] = thinking
+            out.append(prepared)
+        return out
+
     def _payload(self, messages, stream=False, tools=None):
         payload = {
             'model': self.model,
-            'messages': messages,
+            'messages': self._prepare_messages(messages),
             'temperature': self.temperature,
             'stream': stream,
         }

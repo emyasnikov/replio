@@ -435,5 +435,64 @@ class TestReasoningPayload(unittest.TestCase):
         self.assertEqual(payload['reasoning_effort'], 'high')
 
 
+class TestReasoningEcho(unittest.TestCase):
+
+    def _echo(self):
+        class _Echo(OpenAICompatibleProvider):
+            ECHO_REASONING = True
+        return _Echo(model='m')
+
+    def test_base_strips_thinking_without_reasoning_content(self):
+        p = OpenAICompatibleProvider(model='m')
+        payload = p._payload([
+            {'role': 'assistant', 'content': 'hi', 'thinking': 'reason'},
+        ])
+        message = payload['messages'][0]
+        self.assertNotIn('thinking', message)
+        self.assertNotIn('reasoning_content', message)
+
+    def test_echo_adds_reasoning_content_on_assistant(self):
+        p = self._echo()
+        payload = p._payload([
+            {'role': 'assistant', 'content': 'hi', 'thinking': 'reason'},
+        ])
+        message = payload['messages'][0]
+        self.assertEqual(message['reasoning_content'], 'reason')
+        self.assertNotIn('thinking', message)
+
+    def test_echo_adds_reasoning_content_on_tool_call_message(self):
+        p = self._echo()
+        payload = p._payload([
+            {'role': 'assistant', 'content': None, 'thinking': 'reason',
+             'tool_calls': [{'id': 'c1', 'type': 'function',
+                             'function': {'name': 'read', 'arguments': '{}'}}]},
+        ])
+        message = payload['messages'][0]
+        self.assertEqual(message['reasoning_content'], 'reason')
+        self.assertNotIn('thinking', message)
+
+    def test_echo_skips_assistant_without_thinking(self):
+        p = self._echo()
+        payload = p._payload([{'role': 'assistant', 'content': 'hi'}])
+        self.assertNotIn('reasoning_content', payload['messages'][0])
+
+    def test_echo_leaves_user_and_tool_messages(self):
+        p = self._echo()
+        payload = p._payload([
+            {'role': 'user', 'content': 'hi', 'thinking': 'nope'},
+            {'role': 'tool', 'content': 'out', 'thinking': 'nope'},
+        ])
+        for message in payload['messages']:
+            self.assertNotIn('thinking', message)
+            self.assertNotIn('reasoning_content', message)
+
+    def test_prepare_messages_does_not_mutate_input(self):
+        p = self._echo()
+        original = {'role': 'assistant', 'content': 'hi', 'thinking': 'reason'}
+        p._prepare_messages([original])
+        self.assertEqual(original['thinking'], 'reason')
+        self.assertNotIn('reasoning_content', original)
+
+
 if __name__ == '__main__':
     unittest.main()

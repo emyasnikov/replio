@@ -91,6 +91,8 @@ The `reasoning` config (default `"auto"`) tells the model reasoning is desired a
 | `ollama` (Qwen) | `enable_thinking: false` | `enable_thinking: true` (`chat_template_kwargs.thinking: true`) | `enable_thinking: true` |
 | other / `openai-compatible` / `opencode` / `opencode-go` | nothing | `reasoning_effort` pass-through | nothing (provider default) |
 
+The `opencode` and `opencode-go` providers echo captured reasoning back to the API: the assistant `thinking` from an earlier turn is sent as `reasoning_content`, which Console Go requires in thinking mode when a turn continues after tool calls. Every other provider drops the internal `thinking` field, since some OpenAI-compatible endpoints (the official DeepSeek reasoner among them) reject `reasoning_content` in the input. The behavior is a provider class attribute (`ECHO_REASONING`, default `false`), so a new provider can opt in the same way.
+
 ## Adding a provider
 
 The core substrate (`BaseProvider`, `OpenAICompatibleProvider`, the `PROVIDERS` registry, and `detect_provider`) stays in `src/replio/providers/`. Vendor providers ship as bundled plugins under `plugins/`, and any external plugin can register providers too:

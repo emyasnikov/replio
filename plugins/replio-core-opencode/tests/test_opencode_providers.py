@@ -63,5 +63,26 @@ class TestOpenCodeHeaders(unittest.TestCase):
             self.assertTrue(p._headers()['User-Agent'].startswith('replio/'))
 
 
+class TestOpenCodeReasoningEcho(unittest.TestCase):
+
+    def _cases(self):
+        return (OpenCodeProvider(model='m'), OpenCodeGoProvider(model='m'))
+
+    def test_payload_echoes_reasoning_content(self):
+        for p in self._cases():
+            payload = p._payload([
+                {'role': 'assistant', 'content': None, 'thinking': 'reason',
+                 'tool_calls': []},
+            ])
+            message = payload['messages'][0]
+            self.assertEqual(message['reasoning_content'], 'reason')
+            self.assertNotIn('thinking', message)
+
+    def test_payload_keeps_plain_messages(self):
+        for p in self._cases():
+            payload = p._payload([{'role': 'user', 'content': 'hi'}])
+            self.assertNotIn('reasoning_content', payload['messages'][0])
+
+
 if __name__ == '__main__':
     unittest.main()

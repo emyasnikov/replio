@@ -128,6 +128,7 @@
 
 ## Done
 
+- [x] opencode reasoning echo - send `reasoning_content` back on assistant messages
 - [x] Session log version - each session records the Replio version that wrote it
 - [x] Per-run output buffers - `BufferUI` writes each run's log, `/focus log` reads it
 - [x] Run status animation - Braille status spinner for delegation/team stages

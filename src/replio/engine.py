@@ -1060,8 +1060,11 @@ class Engine:
                 while True:
                     stream_messages = messages
                     if consumes > 0:
+                        assistant = {'role': 'assistant', 'content': content}
+                        if thinking:
+                            assistant['thinking'] = thinking
                         stream_messages = self._provider_messages() + [
-                            {'role': 'assistant', 'content': content},
+                            assistant,
                             {'role': 'user', 'content': CONTINUE_INSTRUCTION},
                         ]
                     s_content = ''
