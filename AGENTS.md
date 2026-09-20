@@ -212,6 +212,8 @@ PYTHONPATH=$PWD/src python -m unittest discover tests
 
 Single-file runs use the same prefix (`PYTHONPATH=$PWD/src python -m unittest tests.test_turns`). The per-file coverage map is in `docs/testing.md`.
 
+Test incrementally. After each step run only the tests for the code just changed, as a single file or single class. Run the full suite (`discover tests`) only once the whole change is implemented, before committing.
+
 ## Sessions
 
 Sessions are complete, append-only logs: every turn (the operator prompt, thinking, each tool call with its result, and the answer) and every error is persisted, and entries are **never removed** (compaction only trims the provider context). The full schema (file location, turn and part fields, `errors`, serialization-time transforms (`noise_tools`, `session_tool_max_chars`), provider-context preparation, and compaction) is in `docs/session.md`. Files written before the turn format (flat `messages`) and before the `session_name`/`session_id` rename are left untouched and no longer load.
