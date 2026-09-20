@@ -439,11 +439,11 @@ def _connect_save(chat, providers, provider, base_url, api_key):
         if not ok:
             print(f'  [Error] Connection test failed: {msg}')
             try:
-                answer = input('  Save anyway? [y/N] ').strip().lower()
+                answer = input('  Save anyway? [Y/n] ').strip().lower()
             except (EOFError, KeyboardInterrupt):
                 print()
                 return
-            if answer not in ('y', 'yes'):
+            if answer in ('n', 'no'):
                 print('  Connection not saved - run /connect again with corrected values')
                 return
     chat.providers.put(provider, base_url, api_key)
@@ -1056,12 +1056,12 @@ def register_builtins(registry):
         if key not in chat.config.data:
             try:
                 answer = input(
-                    f'Unknown config key "{key}". Store anyway? [y/N] '
+                    f'Unknown config key "{key}". Store anyway? [Y/n] '
                 ).strip().lower()
             except (EOFError, KeyboardInterrupt):
                 print()
                 return
-            if answer not in ('y', 'yes'):
+            if answer in ('n', 'no'):
                 print('Skipped')
                 return
 
@@ -1106,12 +1106,12 @@ def register_builtins(registry):
                 chat.current_session.add_command(f'/session load {name}')
                 try:
                     answer = input(
-                        '  Summarize & trim history before continuing? [y/N] '
+                        '  Summarize & trim history before continuing? [Y/n] '
                     ).strip().lower()
                 except (EOFError, KeyboardInterrupt):
                     print()
                     return
-                if answer in ('y', 'yes'):
+                if answer not in ('n', 'no'):
                     chat.compact_session()
             else:
                 print(f'Session not found: {name}')

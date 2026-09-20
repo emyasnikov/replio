@@ -136,6 +136,7 @@
 
 ## Done
 
+- [x] REPL UI colors and prompts - orange actions/asks, red errors, blue thinking, `[Y/n]` confirm
 - [x] opencode reasoning echo - send `reasoning_content` back on assistant messages
 - [x] Session log version - each session records the Replio version that wrote it
 - [x] Per-run output buffers - `BufferUI` writes each run's log, `/focus log` reads it

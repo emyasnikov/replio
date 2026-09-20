@@ -49,7 +49,7 @@ The loop renders through a `UISink`, an interface of methods the loop calls as e
 
 | Sink | Purpose |
 |------|---------|
-| `ReplUI` | Terminal REPL: ANSI streaming, dimmed thinking, optional markdown, confirm prompts, footer stats |
+| `ReplUI` | Terminal REPL: ANSI streaming with a color language (orange actions/asks, red errors, blue thinking headers, dim reasoning and output), optional markdown, `[Y/n]` confirm prompts, footer stats |
 | `HeadlessUI` | `run` / `serve`: stderr diagnostics, auto-approve/deny confirm policy, never blocks on stdin |
 | `BufferUI` | Writes plain-text event lines into a run's buffer, for per-run logs read back with `/focus log`. No terminal, `confirm` denies and `ask` returns `None` |
 | `NullUI` | Silent, for tests |

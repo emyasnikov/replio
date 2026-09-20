@@ -12,6 +12,7 @@ DEFAULT_CONFIG = {
     'max_team_depth': 2,
     'unattended': False,
     'confirm_timeout': 0,
+    'hide_confirm_input': False,
     'system_prompt': '',
     'assistant': True,
     'assistant_type': 'assistant',

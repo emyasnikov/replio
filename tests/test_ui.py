@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from tests.helpers import make_chat
 from replio.engine import Engine
-from replio.ui import HeadlessUI
+from replio.ui import HeadlessUI, DIM, RED, BLUE, ORANGE
 
 
 class TestGlyphActivityLines(unittest.TestCase):
@@ -349,8 +349,35 @@ class TestWordStreaming(unittest.TestCase):
             with patch('replio.ui.input', side_effect=fake_input):
                 self.ui.confirm('write_file', 'write_file a.md')
         value = self._capture(run)
-        self.assertIn('? write_file a.md - approve? [y/N]', value)
+        self.assertIn('? write_file a.md - approve? [Y/n]', value)
         self.assertNotIn('  ? ', value)
+
+    def test_confirm_default_yes_on_empty(self):
+        def fake_input(prompt):
+            return ''
+        with patch('replio.ui.input', side_effect=fake_input):
+            self.assertTrue(self.ui.confirm('write_file', 'write_file a.md'))
+
+    def test_confirm_no_on_n(self):
+        def fake_input(prompt):
+            return 'n'
+        with patch('replio.ui.input', side_effect=fake_input):
+            self.assertFalse(self.ui.confirm('write_file', 'write_file a.md'))
+
+    def test_confirm_hidden_input(self):
+        self.chat.config.set('hide_confirm_input', True)
+        with patch('replio.ui._hidden_input', return_value='y') as hidden:
+            with patch('replio.ui.input', side_effect=AssertionError(
+                    'visible input used')):
+                self.assertTrue(self.ui.confirm('write_file', 'write_file a.md'))
+        hidden.assert_called_once()
+
+    def test_ask_uses_visible_input(self):
+        self.chat.config.set('hide_confirm_input', True)
+        with patch('replio.ui._hidden_input', side_effect=AssertionError(
+                'hidden input used')):
+            with patch('replio.ui.input', return_value='answer'):
+                self.assertEqual(self.ui.ask('q'), 'answer')
 
     def test_confirm_raises_on_keyboard_interrupt(self):
         def fake_input(prompt):
@@ -366,6 +393,48 @@ class TestWordStreaming(unittest.TestCase):
 
         with patch('replio.ui.input', side_effect=fake_input):
             self.assertFalse(self.ui.confirm('write_file', 'write_file a.md'))
+
+
+class TestReplColors(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+        self.ui = self.chat._ui
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def _capture(self, fn):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            fn()
+        return out.getvalue()
+
+    def test_activity_orange(self):
+        value = self._capture(
+            lambda: self.ui.activity('→', 'Write', 'a.md', []))
+        self.assertIn(ORANGE, value)
+
+    def test_tool_error_red(self):
+        value = self._capture(lambda: self.ui.tool_error('Error: boom'))
+        self.assertIn(RED, value)
+
+    def test_thinking_header_blue(self):
+        self.chat.config.set('show_thinking', True)
+        value = self._capture(lambda: self.ui.thinking_begin())
+        self.assertIn(BLUE, value)
+
+    def test_reasoning_body_dim(self):
+        self.chat.config.set('show_thinking', True)
+        value = self._capture(lambda: self.ui.thinking('reason'))
+        self.assertIn(DIM, value)
+
+    def test_status_line_starts_on_new_line_after_text(self):
+        def run():
+            self.ui.token('streamed text')
+            self.ui.activity('→', 'Write', 'a.md', [])
+        value = self._capture(run)
+        self.assertIn('streamed text\n', value)
 
 
 if __name__ == '__main__':

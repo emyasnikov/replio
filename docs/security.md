@@ -7,7 +7,7 @@ Replio is local-first and deliberately small. Its security posture rests on an e
 Every tool call is gated by `ToolPolicy` (`src/replio/tools/policy.py`) with three actions:
 
 - **`allow`** - runs without prompting.
-- **`ask`** - prompts y/N in the loop.
+- **`ask`** - prompts Y/n in the loop.
 - **`deny`** - the tool is filtered from the provider schema and refused on direct calls.
 
 Resolution precedence (see [tools.md](tools.md) for the full flow):

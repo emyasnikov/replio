@@ -54,7 +54,7 @@ Registration metadata drives more than the schema. It shapes confirmation, displ
 | Metadata | What it does for the agent |
 |----------|----------------------------|
 | `refine` | Rewrites a short `query` via a lightweight model call before `web_search` runs, so vague queries still work |
-| `permission` / `permission_fn` | Gates the call with `allow` (no prompt), `ask` (y/N confirm), or `deny`. `permission_fn` resolves per invocation from the arguments (see `delegate`) |
+| `permission` / `permission_fn` | Gates the call with `allow` (no prompt), `ask` (Y/n confirm), or `deny`. `permission_fn` resolves per invocation from the arguments (see `delegate`) |
 | `path_arg` | Marks the filesystem path parameter so worktree escalation applies |
 | `key_arg` | The argument shown in confirm prompts and activity lines, so the human sees what will happen |
 | `aliases` / `param_aliases` | Absorb model-dialect tool and argument names at call time without advertising them |

@@ -55,7 +55,7 @@ The `handoff` tool (core) pauses or finishes the current run and hands control t
 4. Each result is appended as a `tool` message (with `tool_call_id` and the tool name), plus a one-line `analysis` when `tool_analysis` is enabled.
 5. The loop continues with the enriched context until the model answers.
 
-Ctrl-C in the REPL cancels the running turn: streaming and any in-flight tool execution are aborted, partial output is persisted, a `(cancelled)` note prints, and the prompt returns. At a y/N confirm prompt it cancels the whole turn too (`n` still declines just that tool). Headless behavior mirrors this, and `replio run` exits non-zero on a cancelled turn.
+Ctrl-C in the REPL cancels the running turn: streaming and any in-flight tool execution are aborted, partial output is persisted, a `(cancelled)` note prints, and the prompt returns. At a Y/n confirm prompt it cancels the whole turn too (`n` still declines just that tool). Headless behavior mirrors this, and `replio run` exits non-zero on a cancelled turn.
 
 ## Running a tool directly
 
@@ -125,7 +125,7 @@ Tool results are sent to the model verbatim, up to the `tool_max_result_chars` c
 
 Every tool call is gated by `ToolPolicy` (`src/replio/tools/policy.py`), the single permission resolution point. The loop and `/tool` both route through it, so never special-case tool names for permission logic.
 
-Actions are `allow` (no prompt), `ask` (y/N confirm in the loop), or `deny` (tool filtered from the provider schema and refused on direct calls).
+Actions are `allow` (no prompt), `ask` (Y/n confirm in the loop), or `deny` (tool filtered from the provider schema and refused on direct calls).
 
 Every resolution and its outcome (granted / declined / denied) is recorded to the session `permissions` array as an append-only audit trail. See [session.md](session.md).
 

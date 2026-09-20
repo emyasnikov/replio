@@ -10,8 +10,8 @@ from . import get_version
 
 HISTFILE = '.replio_history'
 
-MAIN_PROMPT = '\001\033[36m\002>>>\001\033[0m\002 '
-CONT_PROMPT = '\001\033[36m\002...\001\033[0m\002 '
+MAIN_PROMPT = '\001\033[1;36m\002>>>\001\033[0m\002 '
+CONT_PROMPT = '\001\033[1;36m\002...\001\033[0m\002 '
 
 
 def _open_delim(text: str) -> str | None:
@@ -190,7 +190,7 @@ class ChatLoop(Engine):
         if not role:
             return MAIN_PROMPT
         label = role[:1].upper() + role[1:]
-        return f'\001\033[36m\002{label} >>>\001\033[0m\002 '
+        return f'\001\033[1;36m\002{label} >>>\001\033[0m\002 '
 
     def run(self):
         if self.config.get('clear_screen', True):

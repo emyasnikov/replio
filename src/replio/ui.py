@@ -7,8 +7,16 @@ import time
 SPINNER_FRAMES = ('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
 SPINNER_INTERVAL = 0.08
 
+DIM = '\033[90m'
+RED = '\033[91m'
+BLUE = '\033[94m'
+ORANGE = '\033[38;5;208m'
+RESET = '\033[0m'
 
-def _timed_input(prompt: str, timeout: float) -> str | None:
+
+def _timed_input(prompt: str, timeout: float, hidden: bool = False) -> str | None:
+    if hidden:
+        return _hidden_input(prompt, timeout)
     if timeout and timeout > 0:
         try:
             ready, _, _ = select.select([sys.stdin], [], [], timeout)
@@ -17,6 +25,33 @@ def _timed_input(prompt: str, timeout: float) -> str | None:
         if not ready:
             return None
     return input(prompt)
+
+
+def _hidden_input(prompt: str, timeout: float) -> str | None:
+    import termios
+    import tty
+    fd = sys.stdin.fileno()
+    try:
+        attrs = termios.tcgetattr(fd)
+    except (termios.error, OSError, ValueError):
+        import getpass
+        return getpass.getpass(prompt)
+    sys.stdout.write(prompt)
+    sys.stdout.flush()
+    try:
+        tty.setcbreak(fd)
+        if timeout and timeout > 0:
+            ready, _, _ = select.select([sys.stdin], [], [], timeout)
+            if not ready:
+                return None
+        line = sys.stdin.readline()
+        if not line:
+            raise EOFError()
+        return line.rstrip('\n')
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, attrs)
+        sys.stdout.write('\n')
+        sys.stdout.flush()
 
 
 def render_markdown(token: str, state: dict) -> list[tuple[str, str]]:
@@ -112,6 +147,12 @@ class ReplUI:
             sys.stdout.write('\n')
             sys.stdout.flush()
 
+    def _ensure_newline(self):
+        if not self.content_newline:
+            sys.stdout.write('\n')
+            sys.stdout.flush()
+        self.content_newline = True
+
     def token(self, text):
         if self._loop.config.get('word_streaming', True):
             self._word_buffer += text
@@ -145,14 +186,16 @@ class ReplUI:
 
     def thinking_begin(self):
         self.flush()
+        self._ensure_newline()
         if not self._loop.config.get('show_thinking', True):
             self._start_spinner('Thinking')
             return
-        self._emit('- Thinking', '\033[90m')
+        self._emit('- Thinking', BLUE)
         self.content_newline = True
 
     def status_begin(self, label: str):
         self.flush()
+        self._ensure_newline()
         if not self._loop.config.get('status_spinner', True):
             return
         self._start_spinner(str(label or 'Working'))
@@ -201,59 +244,66 @@ class ReplUI:
         self.flush()
         if not self._loop.config.get('show_thinking', True):
             return
-        self._write(text, '\033[90m')
+        self._write(text, DIM)
         self.content_newline = text.endswith('\n')
 
     def thinking_end(self, duration):
         self.flush()
         self._stop_spinner()
+        self._ensure_newline()
         if self._loop.config.get('show_thinking', True):
-            sys.stdout.write('\n')
-            sys.stdout.flush()
             if self._loop.config.get('show_thought_duration', True):
-                self._emit(f'(Thought {duration:.1f}s)', '\033[90m')
+                self._emit(f'(Thought {duration:.1f}s)', BLUE)
         else:
-            self._emit(f'+ Thought {duration:.1f}s', '\033[90m')
+            self._emit(f'+ Thought {duration:.1f}s', BLUE)
         self.content_newline = True
 
     def warning(self, msg):
         self.flush()
+        self._ensure_newline()
         self._emit(f'[warning] {msg}', '\033[93m')
 
     def error(self, code, msg):
         self.flush()
+        self._ensure_newline()
         label = f'[Error {code}]' if code else '[Error]'
-        self._emit(f'{label} {msg}', '\033[91m')
+        self._emit(f'{label} {msg}', RED)
 
     def tool_status(self, name, value, body):
         self.flush()
-        self._emit(f'[{name}: {value}]', '\033[90m')
+        self._ensure_newline()
+        self._emit(f'[{name}: {value}]', ORANGE)
         for line in body:
-            self._emit(line, '\033[90m')
+            self._emit(line, DIM)
 
     def activity(self, glyph, verb, label, body):
         self.flush()
-        self._emit(f'{glyph} {verb} {label}', '\033[90m')
+        self._ensure_newline()
+        self._emit(f'{glyph} {verb} {label}', ORANGE)
         for line in body:
-            self._emit(line, '\033[90m')
+            self._emit(line, DIM)
 
     def tool_error(self, msg):
         self.flush()
-        self._emit(f'! {msg.split(chr(10), 1)[0]}', '\033[90m')
+        self._ensure_newline()
+        self._emit(f'! {msg.split(chr(10), 1)[0]}', RED)
 
     def tool_note(self, output):
         self.flush()
+        self._ensure_newline()
         lines = [l for l in output.splitlines() if l]
-        self._emit(lines[-1], '\033[90m')
+        self._emit(lines[-1], DIM)
 
     def tool_result(self, output):
         self.flush()
+        self._ensure_newline()
         for line in output.splitlines():
-            self._emit(line, '\033[90m')
+            self._emit(line, DIM)
 
     def tool_refine(self, old, new):
         self.flush()
-        self._emit(f'[refine: "{old}" → "{new}"]', '\033[90m')
+        self._ensure_newline()
+        self._emit(f'[refine: "{old}" → "{new}"]', DIM)
 
     def _footer_tokens(self, counts):
         parts = []
@@ -269,9 +319,7 @@ class ReplUI:
 
     def footer(self, duration, counts, note=''):
         self.flush()
-        if not self.content_newline:
-            sys.stdout.write('\n')
-            sys.stdout.flush()
+        self._ensure_newline()
         if self._loop.config.get('show_context_size', True):
             seg = self._footer_tokens(counts)
             body = f'({duration:.1f}s, {seg})' if seg else f'({duration:.1f}s)'
@@ -279,20 +327,23 @@ class ReplUI:
             body = f'({duration:.1f}s)'
         if note:
             body += f'  {note}'
-        self._emit(body, '\033[90m')
+        self._emit(body, DIM)
         self.content_newline = True
 
     def info(self, msg):
         self.flush()
+        self._ensure_newline()
         self._emit(msg)
 
     def confirm(self, name, label):
         self.flush()
+        self._ensure_newline()
         timeout = self._confirm_timeout()
+        hidden = bool(self._loop.config.get('hide_confirm_input', False))
         try:
             answer = _timed_input(
-                f'\001\033[90m\002? {label} - approve? [y/N] \001\033[0m\002',
-                timeout)
+                f'\001{ORANGE}\002? {label} - approve? [Y/n] \001{RESET}\002',
+                timeout, hidden=hidden)
         except EOFError:
             sys.stdout.write('\n')
             return False
@@ -302,7 +353,7 @@ class ReplUI:
         if answer is None:
             sys.stdout.write(f'? {label} - no answer in {timeout:g}s, denied\n')
             return False
-        return answer.strip().lower() in ('y', 'yes')
+        return answer.strip().lower() not in ('n', 'no')
 
     def _confirm_timeout(self) -> float:
         loop = getattr(self, '_loop', None)
@@ -313,19 +364,18 @@ class ReplUI:
 
     def ask(self, question, context='', options=None, origin=''):
         self.flush()
+        self._ensure_newline()
         timeout = self._confirm_timeout()
         prefix = ''
         if origin and origin != self._loop.current_session.session_name:
             prefix = f'[{origin}] '
-        lines = [f'{prefix}Ask: {question}']
+        self._emit(f'{prefix}Ask: {question}', ORANGE)
         if context:
-            lines.append(context)
+            self._emit(context, DIM)
         if options:
-            lines.append('Options: ' + ' / '.join(options) + ' (or type your own)')
-        sys.stdout.write('\n'.join(lines) + '\n')
-        sys.stdout.flush()
+            self._emit('Options: ' + ' / '.join(options) + ' (or type your own)', DIM)
         try:
-            answer = _timed_input('\001\033[90m\002? Answer: \001\033[0m\002',
+            answer = _timed_input(f'\001{ORANGE}\002? Answer: \001{RESET}\002',
                                   timeout)
         except EOFError:
             sys.stdout.write('\n')
