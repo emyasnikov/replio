@@ -429,6 +429,20 @@ class TestReplColors(unittest.TestCase):
         value = self._capture(lambda: self.ui.thinking('reason'))
         self.assertIn(DIM, value)
 
+    def test_thought_summary_dim(self):
+        self.chat.config.set('show_thinking', True)
+        self.chat.config.set('show_thought_duration', True)
+        value = self._capture(lambda: self.ui.thinking_end(2.5))
+        self.assertIn(DIM, value)
+        self.assertIn('(Thought 2.5s)', value)
+        self.assertNotIn(BLUE, value)
+
+    def test_hidden_thought_blue(self):
+        self.chat.config.set('show_thinking', False)
+        value = self._capture(lambda: self.ui.thinking_end(2.5))
+        self.assertIn(BLUE, value)
+        self.assertIn('+ Thought 2.5s', value)
+
     def test_status_line_starts_on_new_line_after_text(self):
         def run():
             self.ui.token('streamed text')

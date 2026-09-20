@@ -253,7 +253,7 @@ class ReplUI:
         self._ensure_newline()
         if self._loop.config.get('show_thinking', True):
             if self._loop.config.get('show_thought_duration', True):
-                self._emit(f'(Thought {duration:.1f}s)', BLUE)
+                self._emit(f'(Thought {duration:.1f}s)', DIM)
         else:
             self._emit(f'+ Thought {duration:.1f}s', BLUE)
         self.content_newline = True

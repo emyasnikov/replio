@@ -1,6 +1,10 @@
 # Changelog
 
-## v0.35.0. - 2026-09-20
+## v0.36.0
+
+- Dimmed thought summary - the `(Thought N.Ns)` line printed after streamed reasoning is dimmed again, so only the `- Thinking` header (reasoning shown) and the `+ Thought N.Ns` line (reasoning hidden) stay blue. Docs (`config.md`). Tests: `tests/test_ui.py`
+
+## v0.35.0 - 2026-09-20
 
 - REPL UI colors and prompts - the terminal surface gets one color language and quicker prompts. The user prompt marker is bold cyan, activity/tool status lines and the confirm/ask prompts are orange (`\033[38;5;208m`), a failed tool call prints its `! Error:` line red, and the `- Thinking`/`+ Thought`/`(Thought N.Ns)` headers are blue while the reasoning body and tool output stay dim. Every status line now starts on a new line instead of trailing streamed text (`_ensure_newline`). The tool confirm defaults to yes on an empty answer (`[Y/n]`), and `/connect`, `/config`, and the compaction prompt follow the same `[Y/n]` convention. New `hide_confirm_input` config hides the typed input for the tool confirm while free-text `ask` answers stay visible. Docs (`config.md`, `architecture.md`, `commands.md`, `security.md`, `tools.md`, `writing-tools.md`). Tests: `tests/test_ui.py`
 - opencode reasoning echo - the `opencode` and `opencode-go` providers now send captured reasoning back as `reasoning_content`, which Console Go requires in thinking mode when a turn continues after tool calls (it rejected the tool-loop continuation with HTTP 400 `The reasoning_content in the thinking mode must be passed back to the API`). `OpenAICompatibleProvider` gains an `ECHO_REASONING` class attribute (default `false`) and `_prepare_messages`, which always drops the internal `thinking` key and, when enabled, copies it to `reasoning_content` on assistant messages. `OpenCodeProviderBase` sets the flag for both providers, and the auto-continue assistant message carries its thinking so a length continuation echoes it too. Other providers are unchanged, since some endpoints (the official DeepSeek reasoner) reject `reasoning_content` in the input. Docs (`providers.md`). Tests: `tests/test_providers.py`, `plugins/replio-core-opencode/tests/test_opencode_providers.py`

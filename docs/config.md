@@ -85,7 +85,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 | `show_errors`               | `true`                 | Show a red `! Error: ...` line (first line of the result) when a tool call fails. Off hides the line |
 | `show_notes`                | `true`                 | Show a dimmed info line for soft tool results (e.g. `(empty file)`, `(no matches for "x")`). Off hides the line |
 | `show_thinking`             | `false`                | Stream reasoning tokens dimmed under a blue `- Thinking` header. When off, thinking shows as an animated spinner plus a `+ Thought N.Ns` summary (display only - what is sent to the model is unchanged) |
-| `show_thought_duration`     | `true`                 | When thinking is streamed (`show_thinking` on), print a blue `(Thought N.Ns)` line after each thinking block. Off hides it |
+| `show_thought_duration`     | `true`                 | When thinking is streamed (`show_thinking` on), print a dimmed `(Thought N.Ns)` line after each thinking block. Off hides it |
 | `show_version`              | `true`                 | Show the version in the REPL banner                                    |
 | `status_spinner`            | `true`                 | Show an animated Braille status line while a delegated agent or team stage runs. The REPL is blocked, so the spinner runs on its own thread. Off hides it. Headless and Null sinks ignore it |
 | `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event without content |
