@@ -372,6 +372,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#self-development-team-enablement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-development team enablement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#assistant-roles-team-orchestration" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1345,6 +1356,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#self-development-team-enablement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-development team enablement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#assistant-roles-team-orchestration" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1554,6 +1576,39 @@
 <td>Live focus and cancellation - watch or join a running run and cancel it, and route input to the focused run</td>
 <td>M</td>
 <td>watch or join a running agent</td>
+</tr>
+</tbody>
+</table>
+<h2 id="self-development-team-enablement">Self-development team enablement<a class="headerlink" href="#self-development-team-enablement" title="Permanent link">&para;</a></h2>
+<p>The selfdev teams run unattended, land their work, and can be reattached from the REPL. Background execution above is the prerequisite for leaving and returning to a running main loop. The rest closes the gaps between the shipped team catalogs and the described workflow.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Committer permission - <code>git_commit</code> honors an explicit per-type allow instead of always resolving to ask, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated</td>
+<td>S</td>
+<td>unattended commits</td>
+</tr>
+<tr>
+<td>Focus session catalog - <code>/focus</code> lists saved sessions and their runs, not only live runs, so an operator reattaches to a prior agent after a restart</td>
+<td>S-M</td>
+<td>switch to any prior agent</td>
+</tr>
+<tr>
+<td>Ask continuation - answering a parked ask resumes and continues its origin run in place, not only injecting the answer into the session</td>
+<td>M</td>
+<td>reply to stacked questions and continue</td>
+</tr>
+<tr>
+<td>Handoff from sub-agents - a team stage or delegated agent hands focus to the next agent (composer &gt; planner &gt; developer), not only the REPL root</td>
+<td>M</td>
+<td>automatic agent-to-agent handoff</td>
 </tr>
 </tbody>
 </table>
