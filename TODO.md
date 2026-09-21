@@ -58,6 +58,10 @@
 
 ## Open
 
+- [ ] Committer permission - `git_commit` honors an explicit per-type allow instead of always asking, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated (`plugins/replio-core-git`, non-blocking for the selfdev teams)
+- [ ] Focus session catalog - `/focus` lists saved sessions and their runs, not only live runs, so an operator can reattach to a prior agent after a restart
+- [ ] Ask continuation - answering a parked ask resumes and continues its origin run in place, instead of only injecting the answer into the session
+- [ ] Handoff from sub-agents - a team stage or delegated agent can hand focus to the next agent (composer > planner > developer), not only the REPL root
 - [ ] Fix the PyPI long-description screenshot - the image fails to load on the package page
 - [ ] Fix opencode permission rejection - the provider stops when a permission is rejected instead of continuing
 - [ ] Exact-args permission grants - approve the specific command (not just the tool), and let an `always` grant live beyond the current sub-agent run

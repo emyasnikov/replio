@@ -18,6 +18,17 @@ Deferred from the runs, focus, and memory redesign. Each piece is independent.
 | Background execution - run sub-agents and teams off the calling thread, with thread-safe session and registry access | L | non-blocking runs |
 | Live focus and cancellation - watch or join a running run and cancel it, and route input to the focused run | M | watch or join a running agent |
 
+## Self-development team enablement
+
+The selfdev teams run unattended, land their work, and can be reattached from the REPL. Background execution above is the prerequisite for leaving and returning to a running main loop. The rest closes the gaps between the shipped team catalogs and the described workflow.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Committer permission - `git_commit` honors an explicit per-type allow instead of always resolving to ask, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated | S | unattended commits |
+| Focus session catalog - `/focus` lists saved sessions and their runs, not only live runs, so an operator reattaches to a prior agent after a restart | S-M | switch to any prior agent |
+| Ask continuation - answering a parked ask resumes and continues its origin run in place, not only injecting the answer into the session | M | reply to stacked questions and continue |
+| Handoff from sub-agents - a team stage or delegated agent hands focus to the next agent (composer > planner > developer), not only the REPL root | M | automatic agent-to-agent handoff |
+
 ## Assistant roles & team orchestration
 
 The assistant is the operator's entry point. A composer turns a task into a team, a manager runs teams, and specialists do the work. A role keeps a standing identity and extends it with skills per task, teams iterate generate > check > correct, and focus follows the call tree of runs. This track resumes after the runs, focus, and memory redesign above, ordered by dependency.
