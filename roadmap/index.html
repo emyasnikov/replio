@@ -361,10 +361,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#non-blocking-runs-live-focus" class="md-nav__link">
+  <a href="#repl-interaction-fixes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Non-blocking runs &amp; live focus
+        REPL interaction fixes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-control-and-sub-run-visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run control and sub-run visibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#repl-input-and-defaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        REPL input and defaults
       
     </span>
   </a>
@@ -376,6 +398,61 @@
     <span class="md-ellipsis">
       
         Self-development team enablement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memory-and-role-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory and role instructions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#types-to-roles-rename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Types to roles rename
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#role-boundaries-skills-and-project-knowledge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Role boundaries, skills, and project knowledge
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-log-and-status-legibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output log and status legibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-blocking-runs-live-focus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-blocking runs &amp; live focus
       
     </span>
   </a>
@@ -1345,10 +1422,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#non-blocking-runs-live-focus" class="md-nav__link">
+  <a href="#repl-interaction-fixes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Non-blocking runs &amp; live focus
+        REPL interaction fixes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-control-and-sub-run-visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run control and sub-run visibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#repl-input-and-defaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        REPL input and defaults
       
     </span>
   </a>
@@ -1360,6 +1459,61 @@
     <span class="md-ellipsis">
       
         Self-development team enablement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memory-and-role-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory and role instructions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#types-to-roles-rename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Types to roles rename
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#role-boundaries-skills-and-project-knowledge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Role boundaries, skills, and project knowledge
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-log-and-status-legibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output log and status legibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-blocking-runs-live-focus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-blocking runs &amp; live focus
       
     </span>
   </a>
@@ -1556,8 +1710,293 @@
 <li>Effort: S &lt; M &lt; L</li>
 <li>Provides: the capability the task delivers</li>
 </ul>
+<h2 id="repl-interaction-fixes">REPL interaction fixes<a class="headerlink" href="#repl-interaction-fixes" title="Permanent link">&para;</a></h2>
+<p>The bugs that blocked interaction twice and affect every package that needs a decision or a long prompt.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Never confirm-gate <code>ask</code> - exclude the <code>ask</code> tool from its own confirm, so a question is never blocked by the prompt it needs</td>
+<td>S</td>
+<td>asking always works</td>
+</tr>
+<tr>
+<td><code>hide_confirm_input</code> scope - the hidden input applies only to a <code>[Y/n]</code> confirm, never to a free-text ask answer</td>
+<td>S</td>
+<td>no unanswerable prompts</td>
+</tr>
+<tr>
+<td>Reliable multi-line input - an explicit close rule (a closing delimiter at line start, or a blank line) instead of the odd-count quote heuristic</td>
+<td>M</td>
+<td>multi-line input that does not fire mid-typing</td>
+</tr>
+<tr>
+<td>Compact status params - render an oversized or multiline argument (<code>content</code>, <code>old</code>, <code>new</code>, <code>context</code>, <code>options</code>) as <code>&lt;N chars&gt;</code> or omit it, in the glyph status line and the confirm label</td>
+<td>S</td>
+<td>no body dumps in status or confirms</td>
+</tr>
+</tbody>
+</table>
+<h2 id="run-control-and-sub-run-visibility">Run control and sub-run visibility<a class="headerlink" href="#run-control-and-sub-run-visibility" title="Permanent link">&para;</a></h2>
+<p>A running team or delegate takes the terminal, so the operator cannot abort, run a command, or focus another run. The status line yields to the keyboard, a sub-run reports what it cost, and a middle verbosity keeps the caller in place.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interruptible run status - the status line yields to the keyboard, with a hint line naming the keys (Enter to continue, ^O to open, ^C to cancel) plus a <code>Switch &lt;role&gt;</code> marker</td>
+<td>M</td>
+<td>stay in control during a run</td>
+</tr>
+<tr>
+<td>Sub-run stats - print each sub-run's duration and token count, dimmed, under its status line</td>
+<td>S-M</td>
+<td>see what a sub-run cost</td>
+</tr>
+<tr>
+<td>Sub-run verbosity mode - a middle mode that keeps the caller in place and prints a truncated view of the sub-run (its write and edit calls), while research and reads stay hidden</td>
+<td>M</td>
+<td>watch progress without the noise</td>
+</tr>
+<tr>
+<td>Focus a live sub-run - <code>/focus</code> watches, joins, or cancels a running sub-run and leaves the caller reachable</td>
+<td>M</td>
+<td>jump into a live agent</td>
+</tr>
+<tr>
+<td>Focus keeps the run's context - re-entering a finished run resumes its own session, never a fresh one, and <code>/focus</code> drops the <code>session:&lt;name&gt;</code> attach</td>
+<td>S</td>
+<td>context survives a re-entry</td>
+</tr>
+</tbody>
+</table>
+<h2 id="repl-input-and-defaults">REPL input and defaults<a class="headerlink" href="#repl-input-and-defaults" title="Permanent link">&para;</a></h2>
+<p>Small operator-picked REPL changes, one commit each.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hide_confirm_input</code> default true - the typed input is hidden on the tool confirm unless overridden</td>
+<td>S</td>
+<td>quieter confirms</td>
+</tr>
+<tr>
+<td>Backslash line continuation - a trailing <code>\</code> continues the message on the next line, alongside the existing <code>"""</code> and <code>'''</code> blocks</td>
+<td>S</td>
+<td>easier multi-line input</td>
+</tr>
+<tr>
+<td><code>/clear</code> command - empty the screen and the previous messages, then reprint the startup header</td>
+<td>S</td>
+<td>a clean window mid-session</td>
+</tr>
+</tbody>
+</table>
+<h2 id="self-development-team-enablement">Self-development team enablement<a class="headerlink" href="#self-development-team-enablement" title="Permanent link">&para;</a></h2>
+<p>The selfdev teams run unattended, land their work, and can be reattached from the REPL. Background execution above is the prerequisite for leaving and returning to a running main loop. The rest closes the gaps between the shipped team catalogs and the described workflow.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Committer permission - <code>git_commit</code> honors an explicit per-role allow instead of always resolving to ask, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated</td>
+<td>S</td>
+<td>unattended commits</td>
+</tr>
+<tr>
+<td>Committer as a callable stage - a run calls the committer to land the current state as one commit with a correct message</td>
+<td>M</td>
+<td>commits during a run</td>
+</tr>
+<tr>
+<td>Saved-session catalog in <code>/load</code> - <code>/load</code> lists and loads saved sessions, <code>/focus</code> stays live-runs-only, so an operator reattaches to a prior agent after a restart</td>
+<td>S-M</td>
+<td>switch to any prior agent</td>
+</tr>
+<tr>
+<td>Ask continuation - answering a parked ask resumes and continues its origin run in place, not only injecting the answer into the session</td>
+<td>M</td>
+<td>reply to stacked questions and continue</td>
+</tr>
+<tr>
+<td>Handoff from sub-agents - a team stage or delegated agent hands focus to the next agent (composer &gt; planner &gt; developer), not only the REPL root</td>
+<td>M</td>
+<td>automatic agent-to-agent handoff</td>
+</tr>
+<tr>
+<td>Researcher role with fresh context - a bundled researcher role with web access, started fresh per task</td>
+<td>S</td>
+<td>clean research per task</td>
+</tr>
+<tr>
+<td>Docs writer commits each added task - commit the tasks right after the operator's prompt, then work one point at a time</td>
+<td>S</td>
+<td>tasks land as agreed</td>
+</tr>
+</tbody>
+</table>
+<h2 id="memory-and-role-instructions">Memory and role instructions<a class="headerlink" href="#memory-and-role-instructions" title="Permanent link">&para;</a></h2>
+<p>The leader remembers the operator's instructions across runs, long role instructions live in full-length Markdown, and a conclusion stage lets a finished run improve the catalog.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Role instruction files - <code>.replio/roles/&lt;name&gt;.md</code> referenced from the JSON entry and appended verbatim</td>
+<td>M</td>
+<td>full-length role instructions</td>
+</tr>
+<tr>
+<td>Memory with references - a compact summary plus pointers to full-length Markdown and session artifacts, with a stale-reference guard</td>
+<td>S-M</td>
+<td>recall without replay</td>
+</tr>
+<tr>
+<td>Root role memory - inject role memory in <code>bind_root_agent</code> through a shared compose helper</td>
+<td>S</td>
+<td>the leader remembers across runs</td>
+</tr>
+<tr>
+<td><code>memorize</code> as a tool - memory writes through a tool an agent calls</td>
+<td>S-M</td>
+<td>memory the agent maintains</td>
+</tr>
+<tr>
+<td>Conclusion stage - a write-scoped stage that distills a finished run into role files, skills, or memory, and never commits</td>
+<td>M</td>
+<td>self-improvement loop</td>
+</tr>
+</tbody>
+</table>
+<p>Known gap: <code>bind_root_agent</code> applies the type prompt only when <code>config.origin('system_prompt') == 'default'</code>, it runs once at startup, and it never refreshes, so the root-memory change alone is incomplete. It must share one prompt-composition helper with <code>_new_sub_engine</code>, respect the <code>origin</code> guard, and ship with a refresh path (the conclusion stage), otherwise the injected memory never updates.</p>
+<h2 id="types-to-roles-rename">Types to roles rename<a class="headerlink" href="#types-to-roles-rename" title="Permanent link">&para;</a></h2>
+<p>One vocabulary names the agent catalog. The rename is clean in code with no compatibility aliases, and the operator adapts the existing <code>.replio</code> files by hand.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rename the type catalog to roles - <code>AgentType</code> to <code>Role</code>, <code>TypeRegistry</code> to <code>RoleRegistry</code>, <code>/types</code> to <code>/roles</code>, <code>--type</code> to <code>--role</code>, <code>register_types</code> to <code>register_roles</code>, <code>types.json</code> to <code>roles.json</code>, <code>docs/types.md</code> to <code>docs/roles.md</code>, a clean in-code rename with no compatibility aliases</td>
+<td>L</td>
+<td>one vocabulary</td>
+</tr>
+</tbody>
+</table>
+<h2 id="role-boundaries-skills-and-project-knowledge">Role boundaries, skills, and project knowledge<a class="headerlink" href="#role-boundaries-skills-and-project-knowledge" title="Permanent link">&para;</a></h2>
+<p>A role's file and folder access is a config rule, not a prompt, and a skill is tool or framework centered while the project description lives in <code>AGENTS.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Per-role path scoping - a role declares the files and folders it may touch, enforced by the tool policy</td>
+<td>M</td>
+<td>enforced role boundaries</td>
+</tr>
+<tr>
+<td><code>.replio</code> directory layout - reserved subfolders and file names, documented</td>
+<td>S-M</td>
+<td>a predictable state layout</td>
+</tr>
+<tr>
+<td>Skill definition and catalog review - tool, language, or framework skills, with a <code>python</code> skill and a <code>replio</code> skill, project description moved to <code>AGENTS.md</code></td>
+<td>M</td>
+<td>reusable skills</td>
+</tr>
+<tr>
+<td>Hidden files and allowed roots - hide secrets and config from tools by default, restrict visible paths</td>
+<td>M</td>
+<td>no accidental exposure</td>
+</tr>
+</tbody>
+</table>
+<h2 id="output-log-and-status-legibility">Output log and status legibility<a class="headerlink" href="#output-log-and-status-legibility" title="Permanent link">&para;</a></h2>
+<p>A session leaves a durable record, and status lines stay legible when a tool argument is large.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Effort</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Optional output log - a config-gated file recording everything printed in a session</td>
+<td>S-M</td>
+<td>a durable transcript to inspect</td>
+</tr>
+<tr>
+<td>Tool-call identification and compact params - a tool call is obvious at a glance and never dumps a file body</td>
+<td>S</td>
+<td>legible status lines</td>
+</tr>
+<tr>
+<td>Batched structured asks - several decisions in one structured ask</td>
+<td>S</td>
+<td>fewer round trips</td>
+</tr>
+<tr>
+<td>Tool identity - git prints as Git with its own glyph, and the dev wrappers get their own identity</td>
+<td>S</td>
+<td>recognizable tool calls</td>
+</tr>
+<tr>
+<td>Error color - a failed command prints its output red</td>
+<td>S</td>
+<td>visible failures</td>
+</tr>
+<tr>
+<td>Test runner timeout and scope - a code_test timeout that fits the full suite, related tests during the loop and the whole suite once</td>
+<td>S</td>
+<td>tests that finish</td>
+</tr>
+<tr>
+<td>Thinking visibility - show the reasoning, or drop the duration-only line</td>
+<td>S-M</td>
+<td>no misleading thought line</td>
+</tr>
+</tbody>
+</table>
 <h2 id="non-blocking-runs-live-focus">Non-blocking runs &amp; live focus<a class="headerlink" href="#non-blocking-runs-live-focus" title="Permanent link">&para;</a></h2>
-<p>Deferred from the runs, focus, and memory redesign. Each piece is independent.</p>
+<p>Deferred from the runs, focus, and memory redesign. Each piece is independent. Live focus lets the operator watch, join, or cancel a running run, and re-entering a finished run keeps that run's own context.</p>
 <table>
 <thead>
 <tr>
@@ -1576,39 +2015,6 @@
 <td>Live focus and cancellation - watch or join a running run and cancel it, and route input to the focused run</td>
 <td>M</td>
 <td>watch or join a running agent</td>
-</tr>
-</tbody>
-</table>
-<h2 id="self-development-team-enablement">Self-development team enablement<a class="headerlink" href="#self-development-team-enablement" title="Permanent link">&para;</a></h2>
-<p>The selfdev teams run unattended, land their work, and can be reattached from the REPL. Background execution above is the prerequisite for leaving and returning to a running main loop. The rest closes the gaps between the shipped team catalogs and the described workflow.</p>
-<table>
-<thead>
-<tr>
-<th>Task</th>
-<th>Effort</th>
-<th>Provides</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Committer permission - <code>git_commit</code> honors an explicit per-type allow instead of always resolving to ask, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated</td>
-<td>S</td>
-<td>unattended commits</td>
-</tr>
-<tr>
-<td>Focus session catalog - <code>/focus</code> lists saved sessions and their runs, not only live runs, so an operator reattaches to a prior agent after a restart</td>
-<td>S-M</td>
-<td>switch to any prior agent</td>
-</tr>
-<tr>
-<td>Ask continuation - answering a parked ask resumes and continues its origin run in place, not only injecting the answer into the session</td>
-<td>M</td>
-<td>reply to stacked questions and continue</td>
-</tr>
-<tr>
-<td>Handoff from sub-agents - a team stage or delegated agent hands focus to the next agent (composer &gt; planner &gt; developer), not only the REPL root</td>
-<td>M</td>
-<td>automatic agent-to-agent handoff</td>
 </tr>
 </tbody>
 </table>
@@ -1642,6 +2048,16 @@
 <td>Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO</td>
 <td>S</td>
 <td>documented direction</td>
+</tr>
+<tr>
+<td>Leader PM posture - hold the whole picture, push back on a request that breaks the project, and concretize an ambiguous prompt</td>
+<td>S</td>
+<td>a leader that holds the line</td>
+</tr>
+<tr>
+<td>Prompt brevity budget - every role prompt states a short output budget and a fixed report shape</td>
+<td>S</td>
+<td>less scrolling</td>
 </tr>
 </tbody>
 </table>

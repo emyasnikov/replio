@@ -1404,7 +1404,7 @@
 <li><strong>Global</strong> - <code>~/.config/replio/config.json</code> (user-wide defaults, credentials).</li>
 <li><strong>Local</strong> - <code>.replio/config.json</code> in the project path (project overrides).</li>
 </ol>
-<p>Every process merges them in memory. Nothing is distributed to folders. Writes default to the <strong>local</strong> file and hold only the keys you selected, so a save never re-writes the merged config. API keys live outside the config, in the global provider registry (<code>~/.config/replio/providers.json</code>), managed through <code>/connect</code> (see <a href="#model-registry-not-config">Models</a>).</p>
+<p>Every process merges them in memory. The merge descends into nested objects, so a local nested object overrides only the keys it names and keeps the default (or global) values for the rest. Lists and scalars replace wholesale, they never merge. Nothing is distributed to folders. Writes default to the <strong>local</strong> file and hold only the keys you selected, so a save never re-writes the merged config. API keys live outside the config, in the global provider registry (<code>~/.config/replio/providers.json</code>), managed through <code>/connect</code> (see <a href="#model-registry-not-config">Models</a>).</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># inspect in the REPL (origin: default/global/local)</span>
 /config
 <span class="c1"># set a value (project-local, Git-like default)</span>

@@ -1947,6 +1947,7 @@
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
 <h2 id="v0360">v0.36.0<a class="headerlink" href="#v0360" title="Permanent link">&para;</a></h2>
 <ul>
+<li>Config merge - nested config objects now merge per key across the built-in defaults, the global config, and the local config (<code>tool_permission</code>, <code>modes</code>, <code>ask_policy</code>, <code>memory_scopes</code>, <code>grant_permission</code>), so a local object overrides only the keys it names. Lists and scalars still replace wholesale. The default <code>ask</code>, <code>catalog</code>, <code>handoff</code>, and <code>team</code> permissions are no longer dropped when a local <code>tool_permission</code> is set, which had confirm-gated those tools because <code>ToolPolicy</code> falls back to <code>ask</code> for a missing category, and <code>Config.unset</code> recomputes the key from the remaining layers. Docs (<code>config.md</code>). Tests: <code>tests/test_config.py</code>, <code>tests/test_modes.py</code></li>
 <li>Dimmed thought summary - the <code>(Thought N.Ns)</code> line printed after streamed reasoning is dimmed again, so only the <code>- Thinking</code> header (reasoning shown) and the <code>+ Thought N.Ns</code> line (reasoning hidden) stay blue. Docs (<code>config.md</code>). Tests: <code>tests/test_ui.py</code></li>
 </ul>
 <h2 id="v0350-2026-09-20">v0.35.0 - 2026-09-20<a class="headerlink" href="#v0350-2026-09-20" title="Permanent link">&para;</a></h2>
