@@ -58,6 +58,7 @@
 
 ## Open
 
+- [ ] Focus keeps the run's context - re-entering a finished run uses its retained engine or resumes that run's own session, and never starts a fresh session. /focus drops the session:<name> attach, because saved sessions belong to /load
 - [ ] Interruptible run status - the status line yields to the keyboard during a delegated or team run, with a hint line naming the keys (Enter to continue, ^O to open, ^C to cancel) and a Switch <role> marker
 - [ ] Sub-run stats - each sub-run prints its duration and token count, dimmed, under its status line
 - [ ] Sub-run verbosity mode - a middle mode that keeps the caller in place and prints a truncated view of the sub-run (its write and edit calls), while research and reads stay hidden
