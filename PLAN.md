@@ -20,6 +20,17 @@ The bugs that blocked interaction twice and affect every package that needs a de
 | Reliable multi-line input - an explicit close rule (a closing delimiter at line start, or a blank line) instead of the odd-count quote heuristic | M | multi-line input that does not fire mid-typing |
 | Compact status params - render an oversized or multiline argument (`content`, `old`, `new`, `context`, `options`) as `<N chars>` or omit it, in the glyph status line and the confirm label | S | no body dumps in status or confirms |
 
+## Run control and sub-run visibility
+
+A running team or delegate takes the terminal, so the operator cannot abort, run a command, or focus another run. The status line yields to the keyboard, a sub-run reports what it cost, and a middle verbosity keeps the caller in place.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Interruptible run status - the status line yields to the keyboard, with a hint line naming the keys (Enter to continue, ^O to open, ^C to cancel) plus a `Switch <role>` marker | M | stay in control during a run |
+| Sub-run stats - print each sub-run's duration and token count, dimmed, under its status line | S-M | see what a sub-run cost |
+| Sub-run verbosity mode - a middle mode that keeps the caller in place and prints a truncated view of the sub-run (its write and edit calls), while research and reads stay hidden | M | watch progress without the noise |
+| Focus a live sub-run - `/focus` attaches to a running sub-run and leaves the caller reachable | M | jump into a live agent |
+
 ## REPL input and defaults
 
 Small operator-picked REPL changes, one commit each.
@@ -42,6 +53,7 @@ The selfdev teams run unattended, land their work, and can be reattached from th
 | Ask continuation - answering a parked ask resumes and continues its origin run in place, not only injecting the answer into the session | M | reply to stacked questions and continue |
 | Handoff from sub-agents - a team stage or delegated agent hands focus to the next agent (composer > planner > developer), not only the REPL root | M | automatic agent-to-agent handoff |
 | Researcher role with fresh context - a bundled researcher role with web access, started fresh per task | S | clean research per task |
+| Docs writer commits each added task - commit the tasks right after the operator's prompt, then work one point at a time | S | tasks land as agreed |
 
 ## Memory and role instructions
 
@@ -85,6 +97,10 @@ A session leaves a durable record, and status lines stay legible when a tool arg
 | Optional output log - a config-gated file recording everything printed in a session | S-M | a durable transcript to inspect |
 | Tool-call identification and compact params - a tool call is obvious at a glance and never dumps a file body | S | legible status lines |
 | Batched structured asks - several decisions in one structured ask | S | fewer round trips |
+| Tool identity - git prints as Git with its own glyph, and the dev wrappers get their own identity | S | recognizable tool calls |
+| Error color - a failed command prints its output red | S | visible failures |
+| Test runner timeout and scope - a code_test timeout that fits the full suite, related tests during the loop and the whole suite once | S | tests that finish |
+| Thinking visibility - show the reasoning, or drop the duration-only line | S-M | no misleading thought line |
 
 ## Non-blocking runs & live focus
 
@@ -106,6 +122,7 @@ The assistant is the operator's entry point. A composer turns a task into a team
 | Role-name sync - adopt assistant, composer, manager, and specialist across types, prompts, and docs | S | one canonical vocabulary |
 | Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO | S | documented direction |
 | Leader PM posture - hold the whole picture, push back on a request that breaks the project, and concretize an ambiguous prompt | S | a leader that holds the line |
+| Prompt brevity budget - every role prompt states a short output budget and a fixed report shape | S | less scrolling |
 
 ## Control & governance
 

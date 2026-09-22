@@ -58,6 +58,16 @@
 
 ## Open
 
+- [ ] Interruptible run status - the status line yields to the keyboard during a delegated or team run, with a hint line naming the keys (Enter to continue, ^O to open, ^C to cancel) and a Switch <role> marker
+- [ ] Sub-run stats - each sub-run prints its duration and token count, dimmed, under its status line
+- [ ] Sub-run verbosity mode - a middle mode that keeps the caller in place and prints a truncated view of the sub-run (its write and edit calls), while research and reads stay hidden
+- [ ] Focus a live sub-run - /focus attaches to a running sub-run and leaves the caller reachable
+- [ ] Tool identity - git prints as Git with its own glyph instead of Read log, and the dev wrappers get their own identity
+- [ ] Error color - a failed command prints its output red, so an error is visible instead of a dimmed body
+- [ ] Test runner timeout and scope - the code_test default timeout is too short for the full suite (about 142s against a 120s cap), and the tester runs only the related tests during the loop and the whole suite once
+- [ ] Thinking visibility - with show_thinking false only the + Thought N.Ns line prints, so the reasoning is invisible while its duration is shown
+- [ ] Prompt brevity budget - every role prompt states a short output budget and a fixed report shape, so a report is a few lines instead of an essay
+- [ ] Docs writer commits each added task - the docs writer commits the tasks right after the operator's prompt and then works through the single points one at a time
 - [ ] Rename "types" to "roles" - AgentType to Role, TypeRegistry to RoleRegistry, /types to /roles, --type to --role, register_types to register_roles, types.json to roles.json, docs/types.md to docs/roles.md, a clean rename in code with no compatibility aliases
 - [ ] Backslash line continuation - a trailing \ continues the message on the next line, alongside the existing """ and ''' blocks
 - [ ] hide_confirm_input default true - the typed input is hidden on the tool confirm unless overridden
