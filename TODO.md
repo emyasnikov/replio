@@ -58,8 +58,30 @@
 
 ## Open
 
-- [ ] Committer permission - `git_commit` honors an explicit per-type allow instead of always asking, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated (`plugins/replio-core-git`, non-blocking for the selfdev teams)
-- [ ] Focus session catalog - `/focus` lists saved sessions and their runs, not only live runs, so an operator can reattach to a prior agent after a restart
+- [ ] Rename "types" to "roles" - AgentType to Role, TypeRegistry to RoleRegistry, /types to /roles, --type to --role, register_types to register_roles, types.json to roles.json, docs/types.md to docs/roles.md, a clean rename in code with no compatibility aliases
+- [ ] Backslash line continuation - a trailing \ continues the message on the next line, alongside the existing """ and ''' blocks
+- [ ] hide_confirm_input default true - the typed input is hidden on the tool confirm unless overridden
+- [ ] Config merge fix - deep-merge nested config objects (`tool_permission`, `modes`, `ask_policy`, `memory_scopes`, `grant_permission`) across default, global, and local, so a local `tool_permission` no longer drops the `ask`, `catalog`, `handoff`, `team`, and `mcp` defaults
+- [ ] `ask` tool gating - never confirm-gate the `ask` tool, so a question is not blocked by the prompt it needs, and `hide_confirm_input` never hides a free-text ask answer
+- [ ] Reliable multi-line input - an explicit close rule instead of the odd-count `"""` heuristic, so a backspace or a pasted delimiter never submits the message mid-typing
+- [ ] Compact status params - an oversized or multiline tool argument renders as `<N chars>` or is omitted, in the glyph status line and the tool confirm label
+- [ ] Optional output log - a config-gated file recording everything printed in a session, for later analysis
+- [ ] Batched structured asks - `ask` handles one question at a time, so several decisions cannot be asked in one call
+- [ ] Committer as a callable stage - a run calls the committer to land the current state as one commit with a correct message, so a long run does not accumulate uncommitted work
+- [ ] Researcher role with fresh context - a bundled researcher role with web access, started fresh for every task so research never inherits stale context
+- [ ] Per-role path scoping - a role declares the files and folders it may touch, enforced by the tool policy rather than by a prompt
+- [ ] `.replio` directory layout - decide and document the reserved subfolders and file names under `.replio/`
+- [ ] Skill definition - a skill holds tool, language, or framework instructions, not a project description
+- [ ] Skill catalog review - rework the bundled and local skills against that definition, add a `python` skill and a `replio` skill, and move project-description text into `AGENTS.md`
+- [ ] `AGENTS.md` as the project description - keep it the single project description and update it when the structure, conventions, or extension points change
+- [ ] Leader PM posture - the leader holds the whole picture, pushes back on a request that breaks the project, and concretizes an ambiguous prompt until the requirement is synced instead of guessing
+- [ ] `memorize` as a tool - memory writes happen through a tool an agent calls, triggered by the operator's prompt, not only through the slash command
+- [ ] Role instruction files - a role's long instructions live in `.replio/roles/<name>.md`, referenced from the short JSON entry and appended verbatim
+- [ ] Memory with references - a bounded summary that points at full-length Markdown and session artifacts, with a guard against a misleading reference when the context is gone
+- [ ] Root role memory - inject `.replio/memory/roles/<role>.md` in `bind_root_agent` through a shared prompt-composition helper, with a refresh path
+- [ ] Conclusion stage - a bundled stage with a write-scoped role that distills a finished run into role files, skills, or memory, and never commits
+- [ ] Committer permission - `git_commit` honors an explicit per-role allow instead of always asking, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated (`plugins/replio-core-git`, non-blocking for the selfdev teams)
+- [ ] Saved-session catalog in `/load` - `/load` lists and loads saved sessions so an operator can reattach to a prior agent after a restart, while `/focus` stays live-runs-only
 - [ ] Ask continuation - answering a parked ask resumes and continues its origin run in place, instead of only injecting the answer into the session
 - [ ] Handoff from sub-agents - a team stage or delegated agent can hand focus to the next agent (composer > planner > developer), not only the REPL root
 - [ ] Fix the PyPI long-description screenshot - the image fails to load on the package page

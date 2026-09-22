@@ -9,6 +9,84 @@ Finished tasks are removed from this file and live as one-liners in `TODO.md` `#
 - Effort: S < M < L
 - Provides: the capability the task delivers
 
+## REPL interaction fixes
+
+The bugs that blocked interaction twice and affect every package that needs a decision or a long prompt.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Deep-merge nested config objects - merge `tool_permission`, `modes`, `ask_policy`, `memory_scopes`, and `grant_permission` per key across default, global, and local instead of replacing the whole object | S-M | predictable overrides |
+| Never confirm-gate `ask` - exclude the `ask` tool from its own confirm, so a question is never blocked by the prompt it needs | S | asking always works |
+| `hide_confirm_input` scope - the hidden input applies only to a `[Y/n]` confirm, never to a free-text ask answer | S | no unanswerable prompts |
+| Reliable multi-line input - an explicit close rule (a closing delimiter at line start, or a blank line) instead of the odd-count quote heuristic | M | multi-line input that does not fire mid-typing |
+| Compact status params - render an oversized or multiline argument (`content`, `old`, `new`, `context`, `options`) as `<N chars>` or omit it, in the glyph status line and the confirm label | S | no body dumps in status or confirms |
+
+## REPL input and defaults
+
+Small operator-picked REPL changes, one commit each.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| `hide_confirm_input` default true - the typed input is hidden on the tool confirm unless overridden | S | quieter confirms |
+| Backslash line continuation - a trailing `\` continues the message on the next line, alongside the existing `"""` and `'''` blocks | S | easier multi-line input |
+| `/clear` command - empty the screen and the previous messages, then reprint the startup header | S | a clean window mid-session |
+
+## Self-development team enablement
+
+The selfdev teams run unattended, land their work, and can be reattached from the REPL. Background execution above is the prerequisite for leaving and returning to a running main loop. The rest closes the gaps between the shipped team catalogs and the described workflow.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Committer permission - `git_commit` honors an explicit per-role allow instead of always resolving to ask, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated | S | unattended commits |
+| Committer as a callable stage - a run calls the committer to land the current state as one commit with a correct message | M | commits during a run |
+| Saved-session catalog in `/load` - `/load` lists and loads saved sessions, `/focus` stays live-runs-only, so an operator reattaches to a prior agent after a restart | S-M | switch to any prior agent |
+| Ask continuation - answering a parked ask resumes and continues its origin run in place, not only injecting the answer into the session | M | reply to stacked questions and continue |
+| Handoff from sub-agents - a team stage or delegated agent hands focus to the next agent (composer > planner > developer), not only the REPL root | M | automatic agent-to-agent handoff |
+| Researcher role with fresh context - a bundled researcher role with web access, started fresh per task | S | clean research per task |
+
+## Memory and role instructions
+
+The leader remembers the operator's instructions across runs, long role instructions live in full-length Markdown, and a conclusion stage lets a finished run improve the catalog.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Role instruction files - `.replio/roles/<name>.md` referenced from the JSON entry and appended verbatim | M | full-length role instructions |
+| Memory with references - a compact summary plus pointers to full-length Markdown and session artifacts, with a stale-reference guard | S-M | recall without replay |
+| Root role memory - inject role memory in `bind_root_agent` through a shared compose helper | S | the leader remembers across runs |
+| `memorize` as a tool - memory writes through a tool an agent calls | S-M | memory the agent maintains |
+| Conclusion stage - a write-scoped stage that distills a finished run into role files, skills, or memory, and never commits | M | self-improvement loop |
+
+Known gap: `bind_root_agent` applies the type prompt only when `config.origin('system_prompt') == 'default'`, it runs once at startup, and it never refreshes, so the root-memory change alone is incomplete. It must share one prompt-composition helper with `_new_sub_engine`, respect the `origin` guard, and ship with a refresh path (the conclusion stage), otherwise the injected memory never updates.
+
+## Types to roles rename
+
+One vocabulary names the agent catalog. The rename is clean in code with no compatibility aliases, and the operator adapts the existing `.replio` files by hand.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Rename the type catalog to roles - `AgentType` to `Role`, `TypeRegistry` to `RoleRegistry`, `/types` to `/roles`, `--type` to `--role`, `register_types` to `register_roles`, `types.json` to `roles.json`, `docs/types.md` to `docs/roles.md`, a clean in-code rename with no compatibility aliases | L | one vocabulary |
+
+## Role boundaries, skills, and project knowledge
+
+A role's file and folder access is a config rule, not a prompt, and a skill is tool or framework centered while the project description lives in `AGENTS.md`.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Per-role path scoping - a role declares the files and folders it may touch, enforced by the tool policy | M | enforced role boundaries |
+| `.replio` directory layout - reserved subfolders and file names, documented | S-M | a predictable state layout |
+| Skill definition and catalog review - tool, language, or framework skills, with a `python` skill and a `replio` skill, project description moved to `AGENTS.md` | M | reusable skills |
+| Hidden files and allowed roots - hide secrets and config from tools by default, restrict visible paths | M | no accidental exposure |
+
+## Output log and status legibility
+
+A session leaves a durable record, and status lines stay legible when a tool argument is large.
+
+| Task | Effort | Provides |
+|------|--------|----------|
+| Optional output log - a config-gated file recording everything printed in a session | S-M | a durable transcript to inspect |
+| Tool-call identification and compact params - a tool call is obvious at a glance and never dumps a file body | S | legible status lines |
+| Batched structured asks - several decisions in one structured ask | S | fewer round trips |
+
 ## Non-blocking runs & live focus
 
 Deferred from the runs, focus, and memory redesign. Each piece is independent.
@@ -17,17 +95,6 @@ Deferred from the runs, focus, and memory redesign. Each piece is independent.
 |------|--------|----------|
 | Background execution - run sub-agents and teams off the calling thread, with thread-safe session and registry access | L | non-blocking runs |
 | Live focus and cancellation - watch or join a running run and cancel it, and route input to the focused run | M | watch or join a running agent |
-
-## Self-development team enablement
-
-The selfdev teams run unattended, land their work, and can be reattached from the REPL. Background execution above is the prerequisite for leaving and returning to a running main loop. The rest closes the gaps between the shipped team catalogs and the described workflow.
-
-| Task | Effort | Provides |
-|------|--------|----------|
-| Committer permission - `git_commit` honors an explicit per-type allow instead of always resolving to ask, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated | S | unattended commits |
-| Focus session catalog - `/focus` lists saved sessions and their runs, not only live runs, so an operator reattaches to a prior agent after a restart | S-M | switch to any prior agent |
-| Ask continuation - answering a parked ask resumes and continues its origin run in place, not only injecting the answer into the session | M | reply to stacked questions and continue |
-| Handoff from sub-agents - a team stage or delegated agent hands focus to the next agent (composer > planner > developer), not only the REPL root | M | automatic agent-to-agent handoff |
 
 ## Assistant roles & team orchestration
 
@@ -39,6 +106,7 @@ The assistant is the operator's entry point. A composer turns a task into a team
 | Core dev team configuration - a development team with the review loop plus the project lead/support teams and skills | S | ready-made teams and skills |
 | Role-name sync - adopt assistant, composer, manager, and specialist across types, prompts, and docs | S | one canonical vocabulary |
 | Assistant-roles track docs - record the architecture and work packages in VISION, PLAN, and TODO | S | documented direction |
+| Leader PM posture - hold the whole picture, push back on a request that breaks the project, and concretize an ambiguous prompt | S | a leader that holds the line |
 
 ## Control & governance
 
