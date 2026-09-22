@@ -2,6 +2,7 @@
 
 ## v0.36.0
 
+- Config merge - nested config objects now merge per key across the built-in defaults, the global config, and the local config (`tool_permission`, `modes`, `ask_policy`, `memory_scopes`, `grant_permission`), so a local object overrides only the keys it names. Lists and scalars still replace wholesale. The default `ask`, `catalog`, `handoff`, and `team` permissions are no longer dropped when a local `tool_permission` is set, which had confirm-gated those tools because `ToolPolicy` falls back to `ask` for a missing category, and `Config.unset` recomputes the key from the remaining layers. Docs (`config.md`). Tests: `tests/test_config.py`, `tests/test_modes.py`
 - Dimmed thought summary - the `(Thought N.Ns)` line printed after streamed reasoning is dimmed again, so only the `- Thinking` header (reasoning shown) and the `+ Thought N.Ns` line (reasoning hidden) stay blue. Docs (`config.md`). Tests: `tests/test_ui.py`
 
 ## v0.35.0 - 2026-09-20

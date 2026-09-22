@@ -119,6 +119,17 @@ _NEW_PROVIDER_PLUGINS = ['replio-core-opencode', 'replio-core-ollama',
 _MISSING = object()
 
 
+def _merge(base: dict, override: dict) -> dict:
+    merged = copy.deepcopy(base)
+    for key, value in override.items():
+        current = merged.get(key)
+        if isinstance(current, dict) and isinstance(value, dict):
+            merged[key] = _merge(current, value)
+        else:
+            merged[key] = copy.deepcopy(value)
+    return merged
+
+
 class Config:
     GLOBAL_DIR: Path | None = None
 
@@ -138,12 +149,14 @@ class Config:
         if self.global_path.exists():
             with open(self.global_path) as f:
                 self._global_raw = json.load(f)
-            self.data.update(self._global_raw)
         if self.local_path.exists():
             with open(self.local_path) as f:
                 self._local_raw = json.load(f)
-            self.data.update(self._local_raw)
+        self.data = self._merged()
         self._migrate_plugins()
+
+    def _merged(self) -> dict:
+        return _merge(_merge(DEFAULT_CONFIG, self._global_raw), self._local_raw)
 
     def _migrate_plugins(self):
         plugins = self.data.get('plugins')
@@ -191,14 +204,11 @@ class Config:
     def unset(self, key, scope: str = 'local'):
         raw = self._global_raw if scope == 'global' else self._local_raw
         raw.pop(key, None)
-        other_raw = self._local_raw if scope == 'global' else self._global_raw
-        fallback = other_raw.get(key, _MISSING)
-        if fallback is not _MISSING:
-            self.data[key] = fallback
-        elif key in DEFAULT_CONFIG:
-            self.data[key] = copy.deepcopy(DEFAULT_CONFIG[key])
-        else:
+        value = self._merged().get(key, _MISSING)
+        if value is _MISSING:
             self.data.pop(key, None)
+        else:
+            self.data[key] = value
         if scope == 'global':
             self._write_global({})
         else:

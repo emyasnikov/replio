@@ -150,7 +150,8 @@ class TestModes(unittest.TestCase):
         config = make_config({'modes': {'zeta': {}, 'alpha': {}}})
         try:
             specs = mode_list(config)
-            self.assertEqual([s.name for s in specs], ['alpha', 'zeta'])
+            self.assertEqual([s.name for s in specs],
+                             ['alpha', 'build', 'plan', 'zeta'])
         finally:
             config._tmp.cleanup()
 

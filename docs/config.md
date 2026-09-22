@@ -5,7 +5,7 @@ Config is a single JSON object read from two files and merged per key, with proj
 1. **Global** - `~/.config/replio/config.json` (user-wide defaults, credentials).
 2. **Local** - `.replio/config.json` in the project path (project overrides).
 
-Every process merges them in memory. Nothing is distributed to folders. Writes default to the **local** file and hold only the keys you selected, so a save never re-writes the merged config. API keys live outside the config, in the global provider registry (`~/.config/replio/providers.json`), managed through `/connect` (see [Models](#model-registry-not-config)).
+Every process merges them in memory. The merge descends into nested objects, so a local nested object overrides only the keys it names and keeps the default (or global) values for the rest. Lists and scalars replace wholesale, they never merge. Nothing is distributed to folders. Writes default to the **local** file and hold only the keys you selected, so a save never re-writes the merged config. API keys live outside the config, in the global provider registry (`~/.config/replio/providers.json`), managed through `/connect` (see [Models](#model-registry-not-config)).
 
 ```bash
 # inspect in the REPL (origin: default/global/local)

@@ -61,7 +61,6 @@
 - [ ] Rename "types" to "roles" - AgentType to Role, TypeRegistry to RoleRegistry, /types to /roles, --type to --role, register_types to register_roles, types.json to roles.json, docs/types.md to docs/roles.md, a clean rename in code with no compatibility aliases
 - [ ] Backslash line continuation - a trailing \ continues the message on the next line, alongside the existing """ and ''' blocks
 - [ ] hide_confirm_input default true - the typed input is hidden on the tool confirm unless overridden
-- [ ] Config merge fix - deep-merge nested config objects (`tool_permission`, `modes`, `ask_policy`, `memory_scopes`, `grant_permission`) across default, global, and local, so a local `tool_permission` no longer drops the `ask`, `catalog`, `handoff`, `team`, and `mcp` defaults
 - [ ] `ask` tool gating - never confirm-gate the `ask` tool, so a question is not blocked by the prompt it needs, and `hide_confirm_input` never hides a free-text ask answer
 - [ ] Reliable multi-line input - an explicit close rule instead of the odd-count `"""` heuristic, so a backspace or a pasted delimiter never submits the message mid-typing
 - [ ] Compact status params - an oversized or multiline tool argument renders as `<N chars>` or is omitted, in the glyph status line and the tool confirm label
@@ -162,6 +161,7 @@
 
 ## Done
 
+- [x] Config merge fix - nested config objects merge per key across default, global, and local
 - [x] REPL UI colors and prompts - orange actions/asks, red errors, blue thinking, `[Y/n]` confirm
 - [x] opencode reasoning echo - send `reasoning_content` back on assistant messages
 - [x] Session log version - each session records the Replio version that wrote it

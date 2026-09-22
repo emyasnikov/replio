@@ -15,7 +15,6 @@ The bugs that blocked interaction twice and affect every package that needs a de
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Deep-merge nested config objects - merge `tool_permission`, `modes`, `ask_policy`, `memory_scopes`, and `grant_permission` per key across default, global, and local instead of replacing the whole object | S-M | predictable overrides |
 | Never confirm-gate `ask` - exclude the `ask` tool from its own confirm, so a question is never blocked by the prompt it needs | S | asking always works |
 | `hide_confirm_input` scope - the hidden input applies only to a `[Y/n]` confirm, never to a free-text ask answer | S | no unanswerable prompts |
 | Reliable multi-line input - an explicit close rule (a closing delimiter at line start, or a blank line) instead of the odd-count quote heuristic | M | multi-line input that does not fire mid-typing |
