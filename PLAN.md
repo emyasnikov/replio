@@ -24,8 +24,6 @@ A running team or delegate takes the terminal, so the operator cannot abort, run
 | Task | Effort | Provides |
 |------|--------|----------|
 | Interruptible run status - the status line yields to the keyboard, with a hint line naming the keys (Enter to continue, ^O to open, ^C to cancel) plus a `Switch <role>` marker | M | stay in control during a run |
-| Sub-run stats - print each sub-run's duration and token count, dimmed, under its status line | S-M | see what a sub-run cost |
-| Sub-run verbosity mode - a middle mode that keeps the caller in place and prints a truncated view of the sub-run (its write and edit calls), while research and reads stay hidden | M | watch progress without the noise |
 | Focus a live sub-run - `/focus` watches, joins, or cancels a running sub-run and leaves the caller reachable | M | jump into a live agent |
 | Focus keeps the run's context - re-entering a finished run resumes its own session, never a fresh one, and `/focus` drops the `session:<name>` attach | S | context survives a re-entry |
 

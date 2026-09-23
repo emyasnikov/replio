@@ -12,7 +12,7 @@ from .sessions import turns
 from .commands.registry import CommandRegistry
 from .commands.builtins import register_builtins
 from .plugins.manager import PluginManager
-from .ui import BufferUI, NullUI, ReplUI
+from .ui import BufferUI, NullUI, ReplUI, SubRunUI
 
 
 @dataclass
@@ -540,9 +540,17 @@ class Engine:
                      plugin_manager=self._plugin_manager, provider=provider,
                      runs=self.runs, parent_run=self.current_run.id, run=run)
         if ui is None:
-            sub._ui = BufferUI(
-                sub.current_run,
-                max_lines=int(self.config.get('run_buffer_max_lines', 0) or 0))
+            max_lines = int(self.config.get('run_buffer_max_lines', 0) or 0)
+            verbosity = str(
+                self.config.get('subrun_verbosity', 'quiet') or 'quiet').lower()
+            if verbosity == 'summary':
+                sub._ui = SubRunUI(sub.current_run, self.ui,
+                                   max_lines=max_lines)
+            elif verbosity == 'full':
+                sub._ui = SubRunUI(sub.current_run, self.ui,
+                                   max_lines=max_lines, forward_all=True)
+            else:
+                sub._ui = BufferUI(sub.current_run, max_lines=max_lines)
         sub.role = type_name
         sub.current_run.role = type_name
         sub.current_run.task = task
@@ -649,7 +657,7 @@ class Engine:
             self.ui.status_end()
             self.runs.finish(sub.current_run.id, 'error')
             raise
-        self.ui.status_end()
+        self.ui.status_end(self._run_stats(result))
         status = 'done' if result.status in ('ok', 'truncated') else 'error'
         self.runs.finish(sub.current_run.id, status)
         if result.session and result.session not in self.current_session.sub_sessions:
@@ -657,6 +665,17 @@ class Engine:
             self.session_auto_save()
         self._update_role_memory(type_name, result.session)
         return result
+
+    def _run_stats(self, result: TurnResult) -> str:
+        usage = result.usage or {}
+        total = usage.get('total_tokens')
+        if total is None:
+            total = (usage.get('prompt_tokens') or 0) + \
+                (usage.get('completion_tokens') or 0)
+        parts = [f'{result.duration:.1f}s']
+        if total:
+            parts.append(f'{int(total):,} tokens')
+        return f'({", ".join(parts)})'
 
     def _update_role_memory(self, role: str, session_name: str):
         if not role or not session_name:

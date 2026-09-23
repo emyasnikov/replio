@@ -264,10 +264,17 @@ class ReplUI:
             return
         self._start_spinner(str(label or 'Working'))
 
-    def status_end(self):
+    def status_end(self, note: str = ''):
         if not self._loop.config.get('status_spinner', True):
+            if note:
+                self._emit(note, DIM)
             return
+        label = self._spinner_label.rstrip('.').strip()
         self._stop_spinner()
+        body = f'✓ {label}' if label else '✓ done'
+        if note:
+            body += f' {note}'
+        self._emit(body, DIM)
 
     def _spinner_run(self):
         while not self._spinner_stop.is_set():
@@ -485,7 +492,7 @@ class NullUI:
     def status_begin(self, label):
         pass
 
-    def status_end(self):
+    def status_end(self, note=''):
         pass
 
     def warning(self, msg):
@@ -564,8 +571,10 @@ class BufferUI:
     def status_begin(self, label):
         self._flush()
 
-    def status_end(self):
+    def status_end(self, note=''):
         self._flush()
+        if note:
+            self._line(note)
 
     def warning(self, msg):
         self._line(f'[warning] {msg}')
@@ -612,6 +621,19 @@ class BufferUI:
         return None
 
 
+class SubRunUI(BufferUI):
+    def __init__(self, run, parent, max_lines: int = 0,
+                 forward_all: bool = False):
+        super().__init__(run, max_lines)
+        self._parent = parent
+        self._forward_all = forward_all
+
+    def activity(self, glyph, verb, label, body):
+        super().activity(glyph, verb, label, body)
+        if self._forward_all or glyph == '→':
+            self._parent.activity(glyph, verb, label, body)
+
+
 class HeadlessUI:
     def __init__(self, auto: str = 'deny', verbose: bool = False, stream: bool = True,
                  show_thinking: bool = True, show_thought_duration: bool = True,
@@ -650,8 +672,9 @@ class HeadlessUI:
     def status_begin(self, label):
         pass
 
-    def status_end(self):
-        pass
+    def status_end(self, note=''):
+        if self.verbose and note:
+            sys.stderr.write(f'{note}\n')
 
     def warning(self, msg):
         sys.stderr.write(f'[warning] {msg}\n')

@@ -60,8 +60,6 @@
 
 - [ ] Focus keeps the run's context - re-entering a finished run uses its retained engine or resumes that run's own session, and never starts a fresh session. /focus drops the session:<name> attach, because saved sessions belong to /load
 - [ ] Interruptible run status - the status line yields to the keyboard during a delegated or team run, with a hint line naming the keys (Enter to continue, ^O to open, ^C to cancel) and a Switch <role> marker
-- [ ] Sub-run stats - each sub-run prints its duration and token count, dimmed, under its status line
-- [ ] Sub-run verbosity mode - a middle mode that keeps the caller in place and prints a truncated view of the sub-run (its write and edit calls), while research and reads stay hidden
 - [ ] Focus a live sub-run - /focus attaches to a running sub-run and leaves the caller reachable
 - [ ] Tool identity - git prints as Git with its own glyph instead of Read log, and the dev wrappers get their own identity
 - [ ] Error color - a failed command prints its output red, so an error is visible instead of a dimmed body
@@ -168,6 +166,8 @@
 
 ## Done
 
+- [x] Sub-run stage lines - completed delegate/team stages stay visible with duration and tokens
+- [x] Sub-run verbosity - `subrun_verbosity` quiet/summary/full, summary forwards writes and edits
 - [x] Reliable multi-line input - explicit close rule (delimiter at line start or blank line), backslash continuation
 - [x] `ask` never confirm-gated - a question is not blocked by the prompt it needs, and free-text asks stay visible
 - [x] Committer permission - a vcs category gates git_commit, so an allowed role commits unattended

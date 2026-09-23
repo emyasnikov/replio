@@ -90,6 +90,7 @@ Deleting a project's `.replio/config.json` reverts it to the global and built-in
 | `status_spinner`            | `true`                 | Show an animated Braille status line while a delegated agent or team stage runs. The REPL is blocked, so the spinner runs on its own thread. Off hides it. Headless and Null sinks ignore it |
 | `stream_retries`            | `2`                    | Extra attempts (after the first) when a provider stream ends before a completion event without content |
 | `stream_retry_delay`        | `0.5`                  | Seconds to wait between stream retries                                  |
+| `subrun_verbosity`          | `"quiet"`              | How much of a delegated sub-run reaches the terminal while the caller waits. `quiet` buffers the whole run (read it with `/focus log`), `summary` forwards only the sub-run's write and edit activity lines, `full` forwards every activity line. The run's own `✓ <stage> (Ns, N tokens)` line always prints on completion |
 | `system_prompt`             | `""`                   | Optional system prompt, injected for every front-end (REPL, `run`, `serve`) |
 | `temperature`               | `0.7`                  | Sampling temperature                                                   |
 | `tool_analysis`             | `false`                | Model-generated one-line analysis of each tool result (log-only)      |

@@ -160,12 +160,65 @@ class TestThinkingSpinner(unittest.TestCase):
         ]
         calls = []
         self.chat._ui.status_begin = lambda label: calls.append(('begin', label))
-        self.chat._ui.status_end = lambda: calls.append(('end',))
+        self.chat._ui.status_end = lambda note='': calls.append(('end', note))
         with patch('sys.stdout', new=io.StringIO()):
             self.chat.run_subagent('writer', 'draft it')
         self.assertEqual(calls[0][0], 'begin')
         self.assertIn('writer', calls[0][1])
-        self.assertEqual(calls[-1], ('end',))
+        self.assertEqual(calls[-1][0], 'end')
+
+    def test_status_end_prints_frozen_line_with_note(self):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            self.chat._ui.status_begin('dev: planner...')
+            self.chat._ui.status_end('(1.2s, 300 tokens)')
+        value = out.getvalue()
+        self.assertIn('✓ dev: planner', value)
+        self.assertIn('(1.2s, 300 tokens)', value)
+
+    def test_run_stats_reports_duration_and_tokens(self):
+        from replio.engine import TurnResult
+        result = TurnResult(duration=2.5, usage={'prompt_tokens': 100,
+                                                'completion_tokens': 20})
+        self.assertEqual(self.chat._run_stats(result), '(2.5s, 120 tokens)')
+
+    def test_run_stats_omits_tokens_without_usage(self):
+        from replio.engine import TurnResult
+        self.assertEqual(self.chat._run_stats(TurnResult(duration=1.0)),
+                         '(1.0s)')
+
+    def test_subrun_summary_forwards_only_writes(self):
+        from replio.ui import SubRunUI
+        run = self.chat.current_run
+        forwarded = []
+        parent = type('P', (), {'activity': lambda self, *a: forwarded.append(a)})()
+        ui = SubRunUI(run, parent)
+        ui.activity('→', 'Write', 'a.md', [])
+        ui.activity('←', 'Read', 'a.md', [])
+        self.assertEqual(len(forwarded), 1)
+        self.assertEqual(forwarded[0][0], '→')
+
+    def test_subrun_verbosity_full_forwards_all(self):
+        from replio.ui import SubRunUI
+        run = self.chat.current_run
+        forwarded = []
+        parent = type('P', (), {'activity': lambda self, *a: forwarded.append(a)})()
+        ui = SubRunUI(run, parent, forward_all=True)
+        ui.activity('←', 'Read', 'a.md', [])
+        ui.activity('→', 'Write', 'a.md', [])
+        self.assertEqual(len(forwarded), 2)
+
+    def test_subrun_verbosity_selects_ui(self):
+        from replio.types import AgentType
+        from replio.ui import BufferUI, SubRunUI
+        self.chat.types.put(
+            AgentType(name='writer', system_prompt='w'), scope='local')
+        self.chat.config.set('subrun_verbosity', 'summary')
+        self.assertIsInstance(self.chat._new_sub_engine('writer')._ui,
+                              SubRunUI)
+        self.chat.config.set('subrun_verbosity', 'quiet')
+        self.assertIsInstance(self.chat._new_sub_engine('writer')._ui,
+                              BufferUI)
 
     def test_thinking_end_streamed_prints_thought_duration(self):
         self.chat.config.set('show_thinking', True)
