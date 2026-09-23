@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from tests.helpers import make_chat
 from replio.engine import Engine
-from replio.ui import HeadlessUI, DIM, RED, BLUE, ORANGE
+from replio.ui import HeadlessUI, DIM, RED, BLUE, ORANGE, _hidden_input
 
 
 class TestGlyphActivityLines(unittest.TestCase):
@@ -393,6 +393,145 @@ class TestWordStreaming(unittest.TestCase):
 
         with patch('replio.ui.input', side_effect=fake_input):
             self.assertFalse(self.ui.confirm('write_file', 'write_file a.md'))
+
+
+class TestLinePrompts(unittest.TestCase):
+
+    def setUp(self):
+        self.chat = make_chat()
+        self.ui = self.chat._ui
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def _capture(self, fn):
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            fn()
+        return out.getvalue()
+
+    def _confirm(self, answers, label='write_file a.md'):
+        with patch('replio.ui.input', side_effect=list(answers)):
+            return self.ui.confirm('write_file', label)
+
+    def test_confirm_y_approves(self):
+        self.assertTrue(self._confirm(['y']))
+
+    def test_confirm_yes_approves(self):
+        self.assertTrue(self._confirm(['yes']))
+
+    def test_confirm_enter_approves(self):
+        self.assertTrue(self._confirm(['']))
+
+    def test_confirm_n_declines(self):
+        self.assertFalse(self._confirm(['n']))
+
+    def test_confirm_no_declines(self):
+        self.assertFalse(self._confirm(['no']))
+
+    def test_confirm_unknown_reprompts(self):
+        self.assertFalse(self._confirm(['maybe', 'n']))
+
+    def test_confirm_question_marks_start_of_line(self):
+        def fake_input(prompt):
+            sys.stdout.write(prompt)
+            return 'n'
+
+        def run():
+            with patch('replio.ui.input', side_effect=fake_input):
+                self.ui.confirm('write_file', 'write_file a.md')
+        value = self._capture(run)
+        self.assertIn('? write_file a.md - approve? [Y/n]', value)
+        self.assertNotIn('  ? ', value)
+
+    def test_confirm_hidden_input(self):
+        self.chat.config.set('hide_confirm_input', True)
+        with patch('replio.ui._hidden_input', return_value='y') as hidden:
+            with patch('replio.ui.input', side_effect=AssertionError(
+                    'visible input used')):
+                self.assertTrue(self.ui.confirm('write_file', 'write_file a.md'))
+        hidden.assert_called_once()
+
+    def test_confirm_timeout_denies(self):
+        self.chat.config.set('confirm_timeout', 2)
+        with patch('replio.ui.select.select', return_value=([], [], [])):
+            with patch('replio.ui.input', side_effect=AssertionError(
+                    'input must not be called on timeout')):
+                value = self._capture(
+                    lambda: self.ui.confirm('write_file', 'write_file a.md'))
+        self.assertIn('no answer in 2s, denied', value)
+
+    def test_confirm_eof_denies(self):
+        with patch('replio.ui.input', side_effect=EOFError):
+            self.assertFalse(self.ui.confirm('write_file', 'write_file a.md'))
+
+    def test_confirm_keyboard_interrupt_reraises(self):
+        with patch('replio.ui.input', side_effect=KeyboardInterrupt):
+            with self.assertRaises(KeyboardInterrupt):
+                self.ui.confirm('write_file', 'write_file a.md')
+
+    def test_ask_digit_returns_option_text(self):
+        with patch('replio.ui.input', return_value='2'):
+            answer = self.ui.ask('which?', options=['a', 'b'])
+        self.assertEqual(answer, 'b')
+
+    def test_ask_out_of_range_digit_is_free_text(self):
+        with patch('replio.ui.input', return_value='9'):
+            answer = self.ui.ask('which?', options=['a', 'b'])
+        self.assertEqual(answer, '9')
+
+    def test_ask_non_digit_enters_free_text(self):
+        with patch('replio.ui.input', return_value='my own answer'):
+            answer = self.ui.ask('which?', options=['a', 'b'])
+        self.assertEqual(answer, 'my own answer')
+
+    def test_ask_enter_returns_none(self):
+        with patch('replio.ui.input', return_value=''):
+            self.assertIsNone(self.ui.ask('which?', options=['a', 'b']))
+
+    def test_ask_timeout_returns_none(self):
+        self.chat.config.set('confirm_timeout', 2)
+        with patch('replio.ui.select.select', return_value=([], [], [])):
+            with patch('replio.ui.input', side_effect=AssertionError(
+                    'input must not be called on timeout')):
+                self.assertIsNone(self.ui.ask('which?', options=['a', 'b']))
+
+    def test_ask_options_rendered_as_numbered_list(self):
+        with patch('replio.ui.input', return_value='1'):
+            value = self._capture(
+                lambda: self.ui.ask('which?', options=['a', 'b']))
+        self.assertIn('  1. a', value)
+        self.assertIn('  2. b', value)
+
+    def test_ask_uses_visible_input_even_when_confirm_hidden(self):
+        self.chat.config.set('hide_confirm_input', True)
+        with patch('replio.ui._hidden_input', side_effect=AssertionError(
+                'hidden input used')):
+            with patch('replio.ui.input', return_value='answer'):
+                self.assertEqual(self.ui.ask('q'), 'answer')
+
+    def test_hidden_path_does_not_read_stdin(self):
+        class _FakeTTY:
+            def fileno(self):
+                return 0
+
+            def close(self):
+                pass
+
+        with patch('replio.ui._open_tty', return_value=_FakeTTY()):
+            with patch('termios.tcgetattr',
+                       return_value=[0, 0, 0, 0, 0, 0, []]):
+                with patch('termios.tcsetattr'):
+                    with patch('tty.setcbreak'):
+                        with patch('replio.ui._read_key',
+                                   side_effect=['y', '\r']):
+                            with patch('replio.ui.sys.stdin') as stdin:
+                                stdin.readline.side_effect = AssertionError(
+                                    'stdin read')
+                                stdin.fileno.side_effect = AssertionError(
+                                    'stdin read')
+                                self.assertEqual(
+                                    _hidden_input('? ', 0.0), 'y')
 
 
 class TestReplColors(unittest.TestCase):

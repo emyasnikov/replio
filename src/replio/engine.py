@@ -1384,7 +1384,7 @@ class Engine:
         if action == 'deny':
             self._log_permission(name, action, 'denied', path)
             return f'Error: tool "{name}" is disabled by tool policy'
-        if action == 'ask':
+        if action == 'ask' and registry.confirm_for(name):
             try:
                 granted = self._confirm_tool(name, args)
             except KeyboardInterrupt:

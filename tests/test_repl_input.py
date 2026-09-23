@@ -113,6 +113,22 @@ class TestReplInput(unittest.TestCase):
         self._run(['what is """ x """?', EOFError])
         self.chat.chat.assert_called_once_with('what is """ x """?')
 
+    def test_blank_line_closes_block(self):
+        self._run(['"""', 'hello', '', EOFError])
+        self.chat.chat.assert_called_once_with('hello')
+
+    def test_delimiter_only_closes_at_line_start(self):
+        self._run(['"""', 'a """ b', '"""', EOFError])
+        self.chat.chat.assert_called_once_with('a """ b')
+
+    def test_backslash_continuation(self):
+        self._run(['first \\', 'second \\', 'third', EOFError])
+        self.chat.chat.assert_called_once_with('first\nsecond\nthird')
+
+    def test_backslash_in_middle_is_plain(self):
+        self._run(['a\\b', EOFError])
+        self.chat.chat.assert_called_once_with('a\\b')
+
 
 if __name__ == '__main__':
     unittest.main()

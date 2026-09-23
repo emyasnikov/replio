@@ -11,13 +11,10 @@ Finished tasks are removed from this file and live as one-liners in `TODO.md` `#
 
 ## REPL interaction fixes
 
-The bugs that blocked interaction twice and affect every package that needs a decision or a long prompt.
+The prompt reliability work landed (line-based prompts, `ask` never confirm-gated, explicit multi-line close rule). What remains is keeping large tool arguments out of the status line and the confirm label.
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Never confirm-gate `ask` - exclude the `ask` tool from its own confirm, so a question is never blocked by the prompt it needs | S | asking always works |
-| `hide_confirm_input` scope - the hidden input applies only to a `[Y/n]` confirm, never to a free-text ask answer | S | no unanswerable prompts |
-| Reliable multi-line input - an explicit close rule (a closing delimiter at line start, or a blank line) instead of the odd-count quote heuristic | M | multi-line input that does not fire mid-typing |
 | Compact status params - render an oversized or multiline argument (`content`, `old`, `new`, `context`, `options`) as `<N chars>` or omit it, in the glyph status line and the confirm label | S | no body dumps in status or confirms |
 
 ## Run control and sub-run visibility
@@ -39,7 +36,6 @@ Small operator-picked REPL changes, one commit each.
 | Task | Effort | Provides |
 |------|--------|----------|
 | `hide_confirm_input` default true - the typed input is hidden on the tool confirm unless overridden | S | quieter confirms |
-| Backslash line continuation - a trailing `\` continues the message on the next line, alongside the existing `"""` and `'''` blocks | S | easier multi-line input |
 | `/clear` command - empty the screen and the previous messages, then reprint the startup header | S | a clean window mid-session |
 
 ## Self-development team enablement

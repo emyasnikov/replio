@@ -196,6 +196,7 @@ def register_ask_tool(registry, engine) -> Callable:
         permission='ask',
         key_arg='question',
         short='Ask the human or the lead agent for a decision',
+        confirm=False,
     )
     def ask(question: str, context: str = '', options: list | None = None,
             target: str = 'human', kind: str = 'direction',

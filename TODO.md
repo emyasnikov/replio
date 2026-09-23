@@ -70,10 +70,7 @@
 - [ ] Prompt brevity budget - every role prompt states a short output budget and a fixed report shape, so a report is a few lines instead of an essay
 - [ ] Docs writer commits each added task - the docs writer commits the tasks right after the operator's prompt and then works through the single points one at a time
 - [ ] Rename "types" to "roles" - AgentType to Role, TypeRegistry to RoleRegistry, /types to /roles, --type to --role, register_types to register_roles, types.json to roles.json, docs/types.md to docs/roles.md, a clean rename in code with no compatibility aliases
-- [ ] Backslash line continuation - a trailing \ continues the message on the next line, alongside the existing """ and ''' blocks
 - [ ] hide_confirm_input default true - the typed input is hidden on the tool confirm unless overridden
-- [ ] `ask` tool gating - never confirm-gate the `ask` tool, so a question is not blocked by the prompt it needs, and `hide_confirm_input` never hides a free-text ask answer
-- [ ] Reliable multi-line input - an explicit close rule instead of the odd-count `"""` heuristic, so a backspace or a pasted delimiter never submits the message mid-typing
 - [ ] Compact status params - an oversized or multiline tool argument renders as `<N chars>` or is omitted, in the glyph status line and the tool confirm label
 - [ ] Optional output log - a config-gated file recording everything printed in a session, for later analysis
 - [ ] Batched structured asks - `ask` handles one question at a time, so several decisions cannot be asked in one call
@@ -171,6 +168,8 @@
 
 ## Done
 
+- [x] Reliable multi-line input - explicit close rule (delimiter at line start or blank line), backslash continuation
+- [x] `ask` never confirm-gated - a question is not blocked by the prompt it needs, and free-text asks stay visible
 - [x] Committer permission - a vcs category gates git_commit, so an allowed role commits unattended
 - [x] Scoped `code_test` - a target runs that target, empty runs are reported, timeout 300s
 - [x] Config merge fix - nested config objects merge per key across default, global, and local

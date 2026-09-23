@@ -59,7 +59,7 @@ Replio runs the same loop in three ways: interactively in the REPL, headlessly f
 
 ### REPL
 
-First-time setup with `/connect`, then type any message. Tab-complete `/` commands and session names, and navigate history with arrow keys. Open a `"""` or `'''` block to type a multi-line prompt. The framing quotes are stripped and the whole message is sent as one turn. Ctrl-C exits the REPL from anywhere, even inside an open block.
+First-time setup with `/connect`, then type any message. Tab-complete `/` commands and session names, and navigate history with arrow keys. Open a `"""` or `'''` block to type a multi-line prompt, close it with a matching delimiter on its own line or a blank line, or end a line with `\` to continue on the next line. The framing is stripped and the whole message is sent as one turn. Ctrl-C exits the REPL from anywhere, even inside an open block.
 
 ```
 >>> /connect ollama

@@ -1,3 +1,4 @@
+import os
 import select
 import sys
 import threading
@@ -14,6 +15,30 @@ ORANGE = '\033[38;5;208m'
 RESET = '\033[0m'
 
 
+def _open_tty():
+    try:
+        return open('/dev/tty', 'r')
+    except OSError:
+        return None
+
+
+def _read_key(fd: int, timeout: float) -> str | None:
+    if timeout and timeout > 0:
+        try:
+            ready, _, _ = select.select([fd], [], [], timeout)
+        except (OSError, ValueError, TypeError):
+            return None
+        if not ready:
+            return None
+    try:
+        data = os.read(fd, 1)
+    except OSError:
+        raise EOFError()
+    if not data:
+        raise EOFError()
+    return data.decode('utf-8', 'ignore')
+
+
 def _timed_input(prompt: str, timeout: float, hidden: bool = False) -> str | None:
     if hidden:
         return _hidden_input(prompt, timeout)
@@ -28,14 +53,23 @@ def _timed_input(prompt: str, timeout: float, hidden: bool = False) -> str | Non
 
 
 def _hidden_input(prompt: str, timeout: float) -> str | None:
+    tty_file = _open_tty()
+    if tty_file is None:
+        return _hidden_input_stdin(prompt, timeout)
+    return _hidden_input_fd(prompt, timeout, tty_file)
+
+
+def _hidden_input_stdin(prompt: str, timeout: float) -> str | None:
     import termios
     import tty
-    fd = sys.stdin.fileno()
+    try:
+        fd = sys.stdin.fileno()
+    except (AttributeError, ValueError, OSError):
+        return input(prompt)
     try:
         attrs = termios.tcgetattr(fd)
     except (termios.error, OSError, ValueError):
-        import getpass
-        return getpass.getpass(prompt)
+        return input(prompt)
     sys.stdout.write(prompt)
     sys.stdout.flush()
     try:
@@ -50,6 +84,36 @@ def _hidden_input(prompt: str, timeout: float) -> str | None:
         return line.rstrip('\n')
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, attrs)
+        sys.stdout.write('\n')
+        sys.stdout.flush()
+
+
+def _hidden_input_fd(prompt: str, timeout: float, tty_file) -> str | None:
+    import termios
+    import tty
+    fd = tty_file.fileno()
+    try:
+        attrs = termios.tcgetattr(fd)
+    except (termios.error, OSError, ValueError):
+        tty_file.close()
+        return _hidden_input_stdin(prompt, timeout)
+    sys.stdout.write(prompt)
+    sys.stdout.flush()
+    try:
+        tty.setcbreak(fd)
+        chars = []
+        while True:
+            key = _read_key(fd, timeout)
+            if key is None:
+                if not chars:
+                    return None
+                continue
+            if key in ('\r', '\n'):
+                return ''.join(chars)
+            chars.append(key)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, attrs)
+        tty_file.close()
         sys.stdout.write('\n')
         sys.stdout.flush()
 
@@ -340,20 +404,26 @@ class ReplUI:
         self._ensure_newline()
         timeout = self._confirm_timeout()
         hidden = bool(self._loop.config.get('hide_confirm_input', False))
-        try:
-            answer = _timed_input(
-                f'\001{ORANGE}\002? {label} - approve? [Y/n] \001{RESET}\002',
-                timeout, hidden=hidden)
-        except EOFError:
-            sys.stdout.write('\n')
-            return False
-        except KeyboardInterrupt:
-            sys.stdout.write('\n')
-            raise
-        if answer is None:
-            sys.stdout.write(f'? {label} - no answer in {timeout:g}s, denied\n')
-            return False
-        return answer.strip().lower() not in ('n', 'no')
+        prompt = f'\001{ORANGE}\002? {label} - approve? [Y/n] \001{RESET}\002'
+        while True:
+            try:
+                answer = _timed_input(prompt, timeout, hidden=hidden)
+            except EOFError:
+                sys.stdout.write('\n')
+                return False
+            except KeyboardInterrupt:
+                sys.stdout.write('\n')
+                raise
+            if answer is None:
+                sys.stdout.write(
+                    f'? {label} - no answer in {timeout:g}s, denied\n')
+                return False
+            normalized = answer.strip().lower()
+            if normalized in ('', 'y', 'yes'):
+                return True
+            if normalized in ('n', 'no'):
+                return False
+            sys.stdout.write('? please answer y or n\n')
 
     def _confirm_timeout(self) -> float:
         loop = getattr(self, '_loop', None)
@@ -372,11 +442,14 @@ class ReplUI:
         self._emit(f'{prefix}Ask: {question}', ORANGE)
         if context:
             self._emit(context, DIM)
+        options = list(options or [])
+        for i, opt in enumerate(options, 1):
+            self._emit(f'  {i}. {opt}', DIM)
         if options:
-            self._emit('Options: ' + ' / '.join(options) + ' (or type your own)', DIM)
+            self._emit('  (pick a number, or type your own)', DIM)
+        prompt = f'\001{ORANGE}\002? Answer: \001{RESET}\002'
         try:
-            answer = _timed_input(f'\001{ORANGE}\002? Answer: \001{RESET}\002',
-                                  timeout)
+            answer = _timed_input(prompt, timeout)
         except EOFError:
             sys.stdout.write('\n')
             return None
@@ -386,7 +459,14 @@ class ReplUI:
         if answer is None:
             sys.stdout.write('? no answer given\n')
             return None
-        return answer.strip() or None
+        text = answer.strip()
+        if not text:
+            return None
+        if options and text.isdigit():
+            index = int(text) - 1
+            if 0 <= index < len(options):
+                return options[index]
+        return text
 
 
 class NullUI:

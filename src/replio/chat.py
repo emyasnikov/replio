@@ -40,6 +40,13 @@ def _strip_framing(text: str, delim: str) -> str:
             + text[last + len(delim):]).strip('\n')
 
 
+def _strip_open(text: str, delim: str) -> str:
+    idx = text.find(delim)
+    if idx == -1:
+        return text
+    return (text[:idx] + text[idx + len(delim):]).strip('\n')
+
+
 class ChatLoop(Engine):
     def __init__(self, config: Config):
         ui = ReplUI(self)
@@ -165,23 +172,52 @@ class ChatLoop(Engine):
             print()
             return None
         delim = _open_delim(line)
-        if delim is None:
-            return line
+        if delim is not None:
+            return self._read_block(line, delim)
+        if line.endswith('\\'):
+            return self._read_continued(line)
+        return line
+
+    def _read_block(self, line: str, delim: str) -> str | None:
         parts = [line]
         while True:
             try:
-                parts.append(input(CONT_PROMPT).rstrip())
+                nxt = input(CONT_PROMPT).rstrip()
             except (EOFError, KeyboardInterrupt):
                 print()
                 return None
-            buffer = '\n'.join(parts)
-            if _overlap_count(buffer, delim) % 2 == 0:
-                composed = _strip_framing(buffer, delim)
-                try:
-                    readline.add_history(composed)
-                except Exception:
-                    pass
+            parts.append(nxt)
+            stripped = nxt.strip()
+            if stripped == delim:
+                composed = _strip_framing('\n'.join(parts), delim)
+                self._remember(composed)
                 return composed
+            if stripped == '':
+                composed = _strip_open('\n'.join(parts), delim)
+                self._remember(composed)
+                return composed
+
+    def _read_continued(self, line: str) -> str | None:
+        parts = [line[:-1].rstrip()]
+        while True:
+            try:
+                nxt = input(CONT_PROMPT).rstrip()
+            except (EOFError, KeyboardInterrupt):
+                print()
+                return None
+            if nxt.endswith('\\'):
+                parts.append(nxt[:-1].rstrip())
+                continue
+            parts.append(nxt)
+            composed = '\n'.join(parts)
+            self._remember(composed)
+            return composed
+
+    def _remember(self, text: str):
+        try:
+            readline.add_history(text)
+        except Exception:
+            pass
 
     def _prompt(self) -> str:
         role = ''

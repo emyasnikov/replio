@@ -50,6 +50,14 @@ class TestAskTool(unittest.TestCase):
             out = self.chat._run_tool('ask', {'question': 'which port?'})
         self.assertEqual(out, 'Use port 8080')
 
+    def test_ask_not_confirm_gated(self):
+        self.chat._init_tooling()
+        with patch.object(self.chat._ui, 'confirm',
+                          side_effect=AssertionError('ask was confirm-gated')):
+            with patch('builtins.input', return_value='Use port 8080'):
+                out = self.chat._run_tool('ask', {'question': 'which port?'})
+        self.assertEqual(out, 'Use port 8080')
+
     def test_human_ask_empty_is_cancelled(self):
         self.chat._init_tooling()
         with patch('builtins.input', return_value=''):
@@ -67,7 +75,8 @@ class TestAskTool(unittest.TestCase):
         out = buf.getvalue()
         self.assertIn('Ask: which?', out)
         self.assertIn('ctx', out)
-        self.assertIn('Options: a / b', out)
+        self.assertIn('  1. a', out)
+        self.assertIn('  2. b', out)
 
     def test_ask_no_ui_no_lead_errors(self):
         engine = make_engine()

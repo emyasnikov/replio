@@ -28,7 +28,7 @@ class ToolRegistry:
                  param_aliases: dict | None = None,
                  note: Callable[[str], bool] | None = None,
                  permission_fn: Callable[[dict], str] | None = None,
-                 loop: bool = False):
+                 loop: bool = False, confirm: bool = True):
         def wrapper(fn):
             def build_schema(tool_name: str) -> dict:
                 return {
@@ -57,6 +57,7 @@ class ToolRegistry:
                 'note': note,
                 'permission_fn': permission_fn,
                 'loop': loop,
+                'confirm': confirm,
                 'schema': build_schema(name),
             }
             self._tools[name] = entry
@@ -161,6 +162,10 @@ class ToolRegistry:
     def loop_for(self, name: str) -> bool:
         canon, tool = self._canonical(name)
         return bool(tool and tool.get('loop'))
+
+    def confirm_for(self, name: str) -> bool:
+        canon, tool = self._canonical(name)
+        return bool(tool.get('confirm', True)) if tool else True
 
     def params_str(self, name: str, arguments: dict,
                    exclude: tuple[str, ...] = ()) -> str:
