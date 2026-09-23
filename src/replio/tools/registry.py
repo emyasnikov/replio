@@ -28,7 +28,8 @@ class ToolRegistry:
                  param_aliases: dict | None = None,
                  note: Callable[[str], bool] | None = None,
                  permission_fn: Callable[[dict], str] | None = None,
-                 loop: bool = False, confirm: bool = True):
+                 loop: bool = False, confirm: bool = True,
+                 error: Callable[[str], bool] | None = None):
         def wrapper(fn):
             def build_schema(tool_name: str) -> dict:
                 return {
@@ -58,6 +59,7 @@ class ToolRegistry:
                 'permission_fn': permission_fn,
                 'loop': loop,
                 'confirm': confirm,
+                'error': error,
                 'schema': build_schema(name),
             }
             self._tools[name] = entry
@@ -139,6 +141,15 @@ class ToolRegistry:
         except Exception:
             return False
 
+    def is_error_result(self, name: str, result: str) -> bool:
+        canon, tool = self._canonical(name)
+        if not tool or not tool.get('error'):
+            return False
+        try:
+            return bool(tool['error'](result))
+        except Exception:
+            return False
+
     def refine_required(self, name: str) -> bool:
         canon, tool = self._canonical(name)
         return bool(tool and tool.get('refine'))
@@ -185,7 +196,9 @@ class ToolRegistry:
                          key=lambda kv: list(props).index(kv[0]) if kv[0] in props else 99)
         parts = []
         for k, v in ordered:
-            text = str(v)[:60]
+            text = str(v)
+            if '\n' in text or len(text) > 60:
+                text = f'<{len(text)} chars>'
             parts.append(f'{k}={text}')
         return ', '.join(parts)
 

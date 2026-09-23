@@ -57,6 +57,16 @@ def _run_command_permission(args: dict, _permissions: dict | None = None) -> str
     return 'deny'
 
 
+def _is_failure(result: str) -> bool:
+    for line in result.splitlines():
+        if line.startswith('exit '):
+            try:
+                return int(line[5:].strip()) != 0
+            except ValueError:
+                return False
+    return False
+
+
 def register_tools(registry):
     @registry.register(
         name='run_command',
@@ -87,6 +97,7 @@ def register_tools(registry):
         aliases=['bash', 'exec'],
         param_aliases={'cmd': 'command'},
         permission_fn=_run_command_permission,
+        error=_is_failure,
     )
     def run_command(command: str, cwd: str | None = None,
                     timeout: int = 30, _config=None) -> str:

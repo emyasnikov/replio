@@ -611,6 +611,13 @@ class TestReplColors(unittest.TestCase):
         value = self._capture(lambda: self.ui.tool_error('Error: boom'))
         self.assertIn(RED, value)
 
+    def test_tool_error_result_prints_all_lines_red(self):
+        value = self._capture(
+            lambda: self.ui.tool_error_result('$ cmd\nexit 1\nboom'))
+        self.assertIn('exit 1', value)
+        self.assertIn('boom', value)
+        self.assertIn(RED, value)
+
     def test_thinking_header_blue(self):
         self.chat.config.set('show_thinking', True)
         value = self._capture(lambda: self.ui.thinking_begin())

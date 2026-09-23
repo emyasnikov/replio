@@ -61,14 +61,11 @@
 - [ ] Focus keeps the run's context - re-entering a finished run uses its retained engine or resumes that run's own session, and never starts a fresh session. /focus drops the session:<name> attach, because saved sessions belong to /load
 - [ ] Interruptible run status - the status line yields to the keyboard during a delegated or team run, with a hint line naming the keys (Enter to continue, ^O to open, ^C to cancel) and a Switch <role> marker
 - [ ] Focus a live sub-run - /focus attaches to a running sub-run and leaves the caller reachable
-- [ ] Tool identity - git prints as Git with its own glyph instead of Read log, and the dev wrappers get their own identity
-- [ ] Error color - a failed command prints its output red, so an error is visible instead of a dimmed body
 - [ ] Tester loop scope - the tester runs only the related tests during the loop and the whole suite once, as a role-prompt change
 - [ ] Thinking visibility - with show_thinking false only the + Thought N.Ns line prints, so the reasoning is invisible while its duration is shown
 - [ ] Prompt brevity budget - every role prompt states a short output budget and a fixed report shape, so a report is a few lines instead of an essay
 - [ ] Docs writer commits each added task - the docs writer commits the tasks right after the operator's prompt and then works through the single points one at a time
 - [ ] hide_confirm_input default true - the typed input is hidden on the tool confirm unless overridden
-- [ ] Compact status params - an oversized or multiline tool argument renders as `<N chars>` or is omitted, in the glyph status line and the tool confirm label
 - [ ] Batched structured asks - `ask` handles one question at a time, so several decisions cannot be asked in one call
 - [ ] Committer as a callable stage - a run calls the committer to land the current state as one commit with a correct message, so a long run does not accumulate uncommitted work
 - [ ] Researcher role with fresh context - a bundled researcher role with web access, started fresh for every task so research never inherits stale context
@@ -163,6 +160,9 @@
 - [ ] Session import from Markdown/JSON
 
 ## Done
+- [x] Tool identity - git and the dev wrappers print their own glyph and verb
+- [x] Error color - a failed command echoes its output red
+- [x] Compact status params - large or multiline args render as `<N chars>`
 - [x] Optional output log - `output_log` writes the REPL transcript with colors to `.replio/output/`
 
 - [x] Renamed types to roles - Role/RoleRegistry, /roles + /role, --role, register_roles, roles.json

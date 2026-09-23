@@ -135,6 +135,8 @@ def register_tools(registry):
         key_arg='operation',
         short='Run a read-only git command',
         echo=True,
+        glyph='⎇',
+        verb='Git',
         aliases=['git_status', 'git_diff', 'git_log', 'git_branch', 'git_show'],
     )
     def git(operation: str = 'status', path: str = '', limit: int = 20,
@@ -178,6 +180,8 @@ def register_tools(registry):
         path_arg='cwd',
         key_arg='operation',
         short='Stage or commit git changes',
+        glyph='⎇',
+        verb='Git',
         permission_fn=_write_action,
         aliases=['commit'],
         param_aliases={'msg': 'message', 'message_text': 'message'},

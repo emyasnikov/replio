@@ -9,14 +9,6 @@ Finished tasks are removed from this file and live as one-liners in `TODO.md` `#
 - Effort: S < M < L
 - Provides: the capability the task delivers
 
-## REPL interaction fixes
-
-The prompt reliability work landed (line-based prompts, `ask` never confirm-gated, explicit multi-line close rule). What remains is keeping large tool arguments out of the status line and the confirm label.
-
-| Task | Effort | Provides |
-|------|--------|----------|
-| Compact status params - render an oversized or multiline argument (`content`, `old`, `new`, `context`, `options`) as `<N chars>` or omit it, in the glyph status line and the confirm label | S | no body dumps in status or confirms |
-
 ## Run control and sub-run visibility
 
 A running team or delegate takes the terminal, so the operator cannot abort, run a command, or focus another run. The status line yields to the keyboard, a sub-run reports what it cost, and a middle verbosity keeps the caller in place.
@@ -80,10 +72,7 @@ A session leaves a durable record, and status lines stay legible when a tool arg
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Tool-call identification and compact params - a tool call is obvious at a glance and never dumps a file body | S | legible status lines |
 | Batched structured asks - several decisions in one structured ask | S | fewer round trips |
-| Tool identity - git prints as Git with its own glyph, and the dev wrappers get their own identity | S | recognizable tool calls |
-| Error color - a failed command prints its output red | S | visible failures |
 | Tester loop scope - the tester runs only the related tests during the loop and the whole suite once | S | a fast related check, then a full run |
 | Thinking visibility - show the reasoning, or drop the duration-only line | S-M | no misleading thought line |
 

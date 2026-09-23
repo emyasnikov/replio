@@ -175,6 +175,13 @@ class TestGitTools(unittest.TestCase):
         self.assertEqual(self.registry.path_arg_for('git'), 'cwd')
         self.assertEqual(self.registry.key_arg_for('git'), 'operation')
 
+    def test_git_has_own_identity(self):
+        self.assertEqual(self.registry.activity('git', {'operation': 'log'})[:2],
+                         ('⎇', 'Git'))
+        self.assertEqual(self.registry.activity('git_commit',
+                                                {'operation': 'commit'})[:2],
+                         ('⎇', 'Git'))
+
     def test_write_action_defers_unless_all(self):
         self.assertIsNone(git_plugin._write_action({}))
         self.assertIsNone(git_plugin._write_action({'operation': 'commit'}))

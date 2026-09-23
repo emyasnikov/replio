@@ -386,6 +386,12 @@ class ReplUI:
         self._ensure_newline()
         self._emit(f'! {msg.split(chr(10), 1)[0]}', RED)
 
+    def tool_error_result(self, output):
+        self.flush()
+        self._ensure_newline()
+        for line in output.splitlines():
+            self._emit(line, RED)
+
     def tool_note(self, output):
         self.flush()
         self._ensure_newline()
@@ -537,6 +543,9 @@ class NullUI:
     def tool_error(self, msg):
         pass
 
+    def tool_error_result(self, output):
+        pass
+
     def tool_note(self, output):
         pass
 
@@ -622,6 +631,10 @@ class BufferUI:
 
     def tool_error(self, msg):
         self._line(f'! {msg.split(chr(10), 1)[0]}')
+
+    def tool_error_result(self, output):
+        for line in output.splitlines():
+            self._line(line)
 
     def tool_note(self, output):
         lines = [l for l in output.splitlines() if l]
@@ -725,6 +738,10 @@ class HeadlessUI:
     def tool_error(self, msg):
         if self.verbose:
             sys.stderr.write(f'! {msg.split(chr(10), 1)[0]}\n')
+
+    def tool_error_result(self, output):
+        if self.verbose:
+            sys.stderr.write(output.rstrip('\n') + '\n')
 
     def tool_note(self, output):
         if self.verbose:

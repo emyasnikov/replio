@@ -56,6 +56,12 @@ class TestExecTools(unittest.TestCase):
         out = self.run_tool('run_command', command='exit 3', cwd=str(self.root))
         self.assertIn('exit 3', out)
 
+    def test_run_command_error_predicate(self):
+        bad = self.run_tool('run_command', command='exit 3', cwd=str(self.root))
+        self.assertTrue(self.registry.is_error_result('run_command', bad))
+        good = self.run_tool('run_command', command='echo hi', cwd=str(self.root))
+        self.assertFalse(self.registry.is_error_result('run_command', good))
+
     def test_run_command_timeout(self):
         out = self.run_tool('run_command', command='sleep 5', cwd=str(self.root), timeout=1)
         self.assertIn('timed out', out)

@@ -1283,7 +1283,10 @@ class Engine:
                     and self._tool_registry.echo_for(name) and output
                     and not self._tool_registry.is_note_result(name, output)
                     and not output.startswith(('[cancelled]', 'Error'))):
-                self.ui.tool_result(output)
+                if self._tool_registry.is_error_result(name, output):
+                    self.ui.tool_error_result(output)
+                else:
+                    self.ui.tool_result(output)
             executed.append({'name': name, 'arguments': args})
             analysis = None
             if (self.config.get('tool_analysis')

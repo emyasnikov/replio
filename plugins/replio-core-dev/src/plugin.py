@@ -41,6 +41,16 @@ def _truncate(text: str, max_chars: int = 0) -> str:
     return text
 
 
+def _is_failure(result: str) -> bool:
+    for line in result.splitlines():
+        if line.startswith('exit '):
+            try:
+                return int(line[5:].strip()) != 0
+            except ValueError:
+                return False
+    return False
+
+
 def _cmd(config, key: str, default: str) -> list[str]:
     raw = ''
     if config is not None:
@@ -131,6 +141,9 @@ def register_tools(registry):
         key_arg='target',
         short='Run the project test suite',
         echo=True,
+        glyph='$',
+        verb='Test',
+        error=_is_failure,
         aliases=['run_tests', 'test_suite'],
         param_aliases={'test': 'target', 'path': 'target', 'tests': 'target'},
     )
@@ -166,6 +179,9 @@ def register_tools(registry):
         key_arg='target',
         short='Run the project linter',
         echo=True,
+        glyph='$',
+        verb='Lint',
+        error=_is_failure,
         aliases=['run_lint', 'lint_check'],
         param_aliases={'path': 'target'},
     )
@@ -203,6 +219,9 @@ def register_tools(registry):
         key_arg='target',
         short='Run the project formatter',
         echo=True,
+        glyph='$',
+        verb='Format',
+        error=_is_failure,
         aliases=['run_format', 'format_code'],
         param_aliases={'path': 'target'},
     )
