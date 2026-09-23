@@ -69,7 +69,6 @@
 - [ ] Docs writer commits each added task - the docs writer commits the tasks right after the operator's prompt and then works through the single points one at a time
 - [ ] hide_confirm_input default true - the typed input is hidden on the tool confirm unless overridden
 - [ ] Compact status params - an oversized or multiline tool argument renders as `<N chars>` or is omitted, in the glyph status line and the tool confirm label
-- [ ] Optional output log - a config-gated file recording everything printed in a session, for later analysis
 - [ ] Batched structured asks - `ask` handles one question at a time, so several decisions cannot be asked in one call
 - [ ] Committer as a callable stage - a run calls the committer to land the current state as one commit with a correct message, so a long run does not accumulate uncommitted work
 - [ ] Researcher role with fresh context - a bundled researcher role with web access, started fresh for every task so research never inherits stale context
@@ -164,6 +163,7 @@
 - [ ] Session import from Markdown/JSON
 
 ## Done
+- [x] Optional output log - `output_log` writes the REPL transcript with colors to `.replio/output/`
 
 - [x] Renamed types to roles - Role/RoleRegistry, /roles + /role, --role, register_roles, roles.json
 - [x] Sub-run stage lines - completed delegate/team stages stay visible with duration and tokens

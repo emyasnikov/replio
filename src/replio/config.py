@@ -59,6 +59,8 @@ DEFAULT_CONFIG = {
     'status_spinner': True,
     'subrun_verbosity': 'quiet',
     'run_buffer_max_lines': 2000,
+    'output_log': False,
+    'output_log_dir': '.replio/output',
     'reasoning': 'auto',
     'markdown_streaming': False,
     'word_streaming': True,

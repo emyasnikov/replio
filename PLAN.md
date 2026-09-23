@@ -80,7 +80,6 @@ A session leaves a durable record, and status lines stay legible when a tool arg
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Optional output log - a config-gated file recording everything printed in a session | S-M | a durable transcript to inspect |
 | Tool-call identification and compact params - a tool call is obvious at a glance and never dumps a file body | S | legible status lines |
 | Batched structured asks - several decisions in one structured ask | S | fewer round trips |
 | Tool identity - git prints as Git with its own glyph, and the dev wrappers get their own identity | S | recognizable tool calls |

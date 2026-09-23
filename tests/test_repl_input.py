@@ -130,5 +130,31 @@ class TestReplInput(unittest.TestCase):
         self.chat.chat.assert_called_once_with('a\\b')
 
 
+class TestOutputLog(unittest.TestCase):
+
+    def tearDown(self):
+        self.chat._tmp.cleanup()
+
+    def _run(self, config, lines=('hello', EOFError)):
+        self.chat = make_chat(config)
+        self.chat.chat = MagicMock()
+        out = io.StringIO()
+        with patch('sys.stdout', new=out):
+            with patch('replio.chat.input', side_effect=list(lines)):
+                with patch('replio.chat.readline'):
+                    self.chat.run()
+        return self.chat.config.local_path.parent.parent
+
+    def test_output_log_written_when_enabled(self):
+        worktree = self._run({'output_log': True})
+        logs = list((worktree / '.replio' / 'output').glob('*.txt'))
+        self.assertEqual(len(logs), 1)
+        self.assertIn('Replio', logs[0].read_text())
+
+    def test_no_output_log_when_disabled(self):
+        worktree = self._run({})
+        self.assertFalse((worktree / '.replio' / 'output').exists())
+
+
 if __name__ == '__main__':
     unittest.main()

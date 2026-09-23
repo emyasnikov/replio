@@ -228,7 +228,37 @@ class ChatLoop(Engine):
         label = role[:1].upper() + role[1:]
         return f'\001\033[1;36m\002{label} >>>\001\033[0m\002 '
 
+    def _open_output_log(self):
+        if not self.config.get('output_log', False):
+            return None
+        from .ui import TeeStream
+        worktree = self.config.local_path.parent.parent
+        base = Path(str(self.config.get('output_log_dir', '.replio/output')
+                         or '.replio/output'))
+        if not base.is_absolute():
+            base = worktree / base
+        try:
+            base.mkdir(parents=True, exist_ok=True)
+            name = self.current_session.session_name or 'output'
+            path = base / f'{name}.txt'
+            stream = TeeStream(sys.stdout, path)
+            stream.write(f'# Replio output log - {path.name}\n')
+            return stream
+        except OSError:
+            return None
+
     def run(self):
+        tee = self._open_output_log()
+        if tee is not None:
+            sys.stdout = tee
+        try:
+            self._run_repl()
+        finally:
+            if tee is not None:
+                sys.stdout = tee._stream
+                tee.close()
+
+    def _run_repl(self):
         if self.config.get('clear_screen', True):
             sys.stdout.write('\033[3J\033[2J\033[H')
             sys.stdout.flush()

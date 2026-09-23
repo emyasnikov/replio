@@ -15,6 +15,33 @@ ORANGE = '\033[38;5;208m'
 RESET = '\033[0m'
 
 
+class TeeStream:
+    def __init__(self, stream, path):
+        self._stream = stream
+        self._file = open(path, 'a', encoding='utf-8', errors='replace')
+
+    def write(self, text):
+        self._stream.write(text)
+        if text and ('\r' not in text or '\n' in text):
+            clean = text.replace('\001', '').replace('\002', '')
+            self._file.write(clean)
+        return len(text)
+
+    def flush(self):
+        self._stream.flush()
+        self._file.flush()
+
+    def close(self):
+        try:
+            self._file.flush()
+            self._file.close()
+        except OSError:
+            pass
+
+    def __getattr__(self, name):
+        return getattr(self._stream, name)
+
+
 def _open_tty():
     try:
         return open('/dev/tty', 'r')
