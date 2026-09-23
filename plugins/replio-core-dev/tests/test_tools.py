@@ -96,7 +96,33 @@ class TestDevTools(unittest.TestCase):
                                 _Cfg(**{'dev.test_cmd': script}),
                                 target='tests.test_something',
                                 cwd=str(self.root))
+        self.assertIn(f'$ {script} tests.test_something', out)
         self.assertIn('tests.test_something', out)
+
+    def test_code_test_target_runs_module(self):
+        self._write('tests/__init__.py', '')
+        self._write('tests/test_ok.py', 'import unittest\n'
+                    'class T(unittest.TestCase):\n'
+                    '    def test_p(self):\n'
+                    '        self.assertTrue(True)\n')
+        out = self.run_tool('code_test', target='tests.test_ok',
+                            cwd=str(self.root))
+        self.assertIn(f'$ {sys.executable} -m unittest tests.test_ok', out)
+        self.assertNotIn('discover tests tests.test_ok', out)
+        self.assertIn('exit 0', out)
+        self.assertIn('OK', out)
+
+    def test_code_test_target_no_match_reported(self):
+        self._write('tests/__init__.py', '')
+        self._write('tests/test_empty.py', 'import unittest\n')
+        out = self.run_tool('code_test', target='tests.test_empty',
+                            cwd=str(self.root))
+        self.assertIn('no tests matched "tests.test_empty"', out)
+        self.assertIn('NO TESTS RAN', out)
+        self.assertIn('exit 5', out)
+
+    def test_default_timeout_fits_full_suite(self):
+        self.assertGreaterEqual(dev_plugin.DEFAULT_TIMEOUT, 300)
 
     def test_code_lint_default_is_ruff(self):
         script = self._cmd('fake_lint.sh')

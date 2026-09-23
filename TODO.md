@@ -65,7 +65,7 @@
 - [ ] Focus a live sub-run - /focus attaches to a running sub-run and leaves the caller reachable
 - [ ] Tool identity - git prints as Git with its own glyph instead of Read log, and the dev wrappers get their own identity
 - [ ] Error color - a failed command prints its output red, so an error is visible instead of a dimmed body
-- [ ] Test runner timeout and scope - the code_test default timeout is too short for the full suite (about 142s against a 120s cap), and the tester runs only the related tests during the loop and the whole suite once
+- [ ] Tester loop scope - the tester runs only the related tests during the loop and the whole suite once, as a role-prompt change
 - [ ] Thinking visibility - with show_thinking false only the + Thought N.Ns line prints, so the reasoning is invisible while its duration is shown
 - [ ] Prompt brevity budget - every role prompt states a short output budget and a fixed report shape, so a report is a few lines instead of an essay
 - [ ] Docs writer commits each added task - the docs writer commits the tasks right after the operator's prompt and then works through the single points one at a time
@@ -172,6 +172,7 @@
 
 ## Done
 
+- [x] Scoped `code_test` - a target runs that target, empty runs are reported, timeout 300s
 - [x] Config merge fix - nested config objects merge per key across default, global, and local
 - [x] REPL UI colors and prompts - orange actions/asks, red errors, blue thinking, `[Y/n]` confirm
 - [x] opencode reasoning echo - send `reasoning_content` back on assistant messages

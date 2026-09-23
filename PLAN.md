@@ -100,7 +100,7 @@ A session leaves a durable record, and status lines stay legible when a tool arg
 | Batched structured asks - several decisions in one structured ask | S | fewer round trips |
 | Tool identity - git prints as Git with its own glyph, and the dev wrappers get their own identity | S | recognizable tool calls |
 | Error color - a failed command prints its output red | S | visible failures |
-| Test runner timeout and scope - a code_test timeout that fits the full suite, related tests during the loop and the whole suite once | S | tests that finish |
+| Tester loop scope - the tester runs only the related tests during the loop and the whole suite once | S | a fast related check, then a full run |
 | Thinking visibility - show the reasoning, or drop the duration-only line | S-M | no misleading thought line |
 
 ## Non-blocking runs & live focus

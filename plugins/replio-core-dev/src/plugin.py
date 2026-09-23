@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 MAX_TIMEOUT = 600
-DEFAULT_TIMEOUT = 120
+DEFAULT_TIMEOUT = 300
 
 DEFAULTS = {
     'test': 'python -m unittest discover',
@@ -55,8 +55,22 @@ def _cmd(config, key: str, default: str) -> list[str]:
     return _resolve_interpreter(argv)
 
 
+def _is_discover(argv: list[str]) -> bool:
+    return (len(argv) >= 4 and argv[1] == '-m' and argv[2] == 'unittest'
+            and argv[3] == 'discover')
+
+
+def _test_argv(config, target: str) -> list[str]:
+    argv = _cmd(config, 'dev.test_cmd', DEFAULTS['test'])
+    if not target:
+        return argv
+    if _is_discover(argv):
+        return [argv[0], '-m', 'unittest', target]
+    return argv + [target]
+
+
 def _run(argv: list[str], cwd: str | None, config,
-         timeout: int) -> str:
+         timeout: int, target: str = '') -> str:
     if cwd and not Path(cwd).is_dir():
         return f'Error: cwd not found: {cwd}'
     timeout = _clamp_timeout(timeout)
@@ -79,6 +93,11 @@ def _run(argv: list[str], cwd: str | None, config,
     if cwd:
         lines.append(f'[cwd: {cwd}]')
     lines.append(f'exit {proc.returncode}')
+    no_tests = 'NO TESTS RAN' in body or proc.returncode == 5
+    if target and no_tests:
+        lines.append(
+            f'Error: no tests matched "{target}" '
+            f'(unittest exit {proc.returncode})')
     if body:
         lines.append(_truncate(body, _cap(config)))
     return '\n'.join(lines)
@@ -117,10 +136,8 @@ def register_tools(registry):
     )
     def code_test(target: str = '', cwd: str | None = None,
                   timeout: int = DEFAULT_TIMEOUT, _config=None) -> str:
-        argv = _cmd(_config, 'dev.test_cmd', DEFAULTS['test'])
-        if target:
-            argv = argv + [target]
-        return _run(argv, cwd, _config, timeout)
+        argv = _test_argv(_config, target)
+        return _run(argv, cwd, _config, timeout, target=target)
 
     @registry.register(
         name='code_lint',
