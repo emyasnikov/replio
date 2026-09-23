@@ -12,9 +12,9 @@ Every tool call is gated by `ToolPolicy` (`src/replio/tools/policy.py`) with thr
 
 Resolution precedence (see [tools.md](tools.md) for the full flow):
 
-1. Name-level `tools.deny` and the `tools.allow` allowlist.
-2. The category action from `tool_permission` (`read` / `list` / `edit` / `bash` / `web` / `delegate`).
-3. A per-invocation resolver (`permission_fn`) that refines the action from the tool's current arguments, for example `delegate` resolves per type: a configured type uses its own `tool_permission`, an agent type outside the registry is denied (see [types.md](types.md)).
+1. Name-level `tools.deny` and the `tools.allow` allowlist. A `deny` here wins outright.
+2. The category action from `tool_permission` (`bash` / `delegate` / `edit` / `list` / `read` / `vcs` / `web`). A `deny` here is final and skips the resolver.
+3. A per-invocation resolver (`permission_fn`) that runs after the category action and overrides a non-`deny` one from the tool's current arguments, or returns `None` to defer to it. For example `delegate` resolves per type: a configured type uses its own `tool_permission` and an agent type outside the registry is denied (see [types.md](types.md)), and `git_commit` defers to `vcs` except for `all=true`, which asks.
 4. Worktree escalation: `read` / `list` / `write` tools on paths outside the worktree escalate `allow` to `ask`.
 
 The worktree is the directory holding the local `.replio/`, which is the launch directory or `--path`. A `file_read` / `list_dir` / `file_write` / `glob` / `grep` on a path outside it escalates to `ask`, so an agent cannot silently reach files beyond its scope. Launching from `~` makes home the worktree, so subdirectories do not escalate. Launch inside the project or pass `--path` for project-scoped prompting.

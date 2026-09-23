@@ -9,6 +9,7 @@ SRC = Path(__file__).resolve().parents[1] / 'src'
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from replio.tools.policy import ToolPolicy
 from replio.tools.registry import ToolRegistry
 
 
@@ -170,13 +171,28 @@ class TestGitTools(unittest.TestCase):
 
     def test_metadata_registered(self):
         self.assertEqual(self.registry.permission_for('git'), 'read')
-        self.assertEqual(self.registry.permission_for('git_commit'), 'edit')
+        self.assertEqual(self.registry.permission_for('git_commit'), 'vcs')
         self.assertEqual(self.registry.path_arg_for('git'), 'cwd')
         self.assertEqual(self.registry.key_arg_for('git'), 'operation')
 
-    def test_write_action_asks(self):
-        self.assertEqual(git_plugin._write_action({}), 'ask')
-        self.assertEqual(git_plugin._write_action({'operation': 'commit'}), 'ask')
+    def test_write_action_defers_unless_all(self):
+        self.assertIsNone(git_plugin._write_action({}))
+        self.assertIsNone(git_plugin._write_action({'operation': 'commit'}))
+        self.assertEqual(git_plugin._write_action({'all': True}), 'ask')
+
+    def test_vcs_permission_resolution(self):
+        resolvers = {'git_commit': git_plugin._write_action}
+        carved = ToolPolicy(
+            permissions={'edit': 'allow', 'vcs': 'allow'},
+            resolvers=resolvers)
+        self.assertEqual(carved.action('git_commit', 'vcs'), 'allow')
+        self.assertEqual(carved.action('git_commit', 'vcs', args={}), 'allow')
+        self.assertEqual(
+            carved.action('git_commit', 'vcs', args={'all': True}), 'ask')
+        gated = ToolPolicy(
+            permissions={'edit': 'allow'}, resolvers=resolvers)
+        self.assertEqual(gated.action('git_commit', 'vcs'), 'ask')
+        self.assertEqual(gated.action('git_commit', 'vcs', args={}), 'ask')
 
     def test_aliases_registered(self):
         for alias in ('git_status', 'git_diff', 'git_log', 'git_branch',

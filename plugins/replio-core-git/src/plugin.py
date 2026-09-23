@@ -88,8 +88,10 @@ def _read_args(operation: str, path: str, limit: int, staged: bool,
     return ['status', '--short', '--branch']
 
 
-def _write_action(args: dict) -> str:
-    return 'ask'
+def _write_action(args: dict) -> str | None:
+    if (args or {}).get('all'):
+        return 'ask'
+    return None
 
 
 def register_tools(registry):
@@ -143,7 +145,7 @@ def register_tools(registry):
 
     @registry.register(
         name='git_commit',
-        description='Stage or commit changes with git: add stages a path (or everything with all=true), commit creates a commit with the given message. This is a state-changing operation and always asks for confirmation. Does not push, merge, checkout, or rewrite history.',
+        description='Stage or commit changes with git: add stages a path (or everything with all=true), commit creates a commit with the given message. This is a state-changing operation gated by the vcs permission category: a role whose vcs carve is allow commits without prompting, every other role confirms, and staging everything with all=true always asks. Does not push, merge, checkout, or rewrite history.',
         parameters={
             'type': 'object',
             'properties': {
@@ -172,7 +174,7 @@ def register_tools(registry):
             'required': [],
         },
         category='write',
-        permission='edit',
+        permission='vcs',
         path_arg='cwd',
         key_arg='operation',
         short='Stage or commit git changes',

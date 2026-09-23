@@ -48,7 +48,6 @@ The selfdev teams run unattended, land their work, and can be reattached from th
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Committer permission - `git_commit` honors an explicit per-role allow instead of always resolving to ask, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated | S | unattended commits |
 | Committer as a callable stage - a run calls the committer to land the current state as one commit with a correct message | M | commits during a run |
 | Saved-session catalog in `/load` - `/load` lists and loads saved sessions, `/focus` stays live-runs-only, so an operator reattaches to a prior agent after a restart | S-M | switch to any prior agent |
 | Ask continuation - answering a parked ask resumes and continues its origin run in place, not only injecting the answer into the session | M | reply to stacked questions and continue |

@@ -149,6 +149,11 @@ class TestConfigMerge(_IsolatedConfigBase):
         self.global_path.parent.mkdir(parents=True, exist_ok=True)
         self.global_path.write_text(json.dumps(data))
 
+    def test_vcs_category_defaults_to_ask(self):
+        self.assertEqual(DEFAULT_CONFIG['tool_permission']['vcs'], 'ask')
+        c = Config(path=str(self.project))
+        self.assertEqual(c.get('tool_permission')['vcs'], 'ask')
+
     def test_local_tool_permission_keeps_default_categories(self):
         self.write_local({'tool_permission': {
             'bash': 'allow',

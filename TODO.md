@@ -90,7 +90,6 @@
 - [ ] Memory with references - a bounded summary that points at full-length Markdown and session artifacts, with a guard against a misleading reference when the context is gone
 - [ ] Root role memory - inject `.replio/memory/roles/<role>.md` in `bind_root_agent` through a shared prompt-composition helper, with a refresh path
 - [ ] Conclusion stage - a bundled stage with a write-scoped role that distills a finished run into role files, skills, or memory, and never commits
-- [ ] Committer permission - `git_commit` honors an explicit per-role allow instead of always asking, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated (`plugins/replio-core-git`, non-blocking for the selfdev teams)
 - [ ] Saved-session catalog in `/load` - `/load` lists and loads saved sessions so an operator can reattach to a prior agent after a restart, while `/focus` stays live-runs-only
 - [ ] Ask continuation - answering a parked ask resumes and continues its origin run in place, instead of only injecting the answer into the session
 - [ ] Handoff from sub-agents - a team stage or delegated agent can hand focus to the next agent (composer > planner > developer), not only the REPL root
@@ -172,6 +171,7 @@
 
 ## Done
 
+- [x] Committer permission - a vcs category gates git_commit, so an allowed role commits unattended
 - [x] Scoped `code_test` - a target runs that target, empty runs are reported, timeout 300s
 - [x] Config merge fix - nested config objects merge per key across default, global, and local
 - [x] REPL UI colors and prompts - orange actions/asks, red errors, blue thinking, `[Y/n]` confirm

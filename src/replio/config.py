@@ -89,6 +89,7 @@ DEFAULT_CONFIG = {
         'mcp': 'ask',
         'read': 'allow',
         'team': 'allow',
+        'vcs': 'ask',
         'web': 'allow',
     },
     'mcp.servers': [],

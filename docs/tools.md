@@ -20,7 +20,7 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 | `file_read` | replio-core-fs | `read` | `read` | Read a file with numbered lines (aliases `read_file`, `read`, `view`) |
 | `file_write` | replio-core-fs | `write` | `edit` | Create/overwrite/append a file (aliases `write_file`, `write`) |
 | `git` | replio-core-git | `read` | `read` | Read-only git: status/diff/log/branch/show/rev_parse (aliases `git_status`, `git_diff`, `git_log`, ...) |
-| `git_commit` | replio-core-git | `write` | `edit` | Stage/commit git changes, always confirm-gated (alias `commit`) |
+| `git_commit` | replio-core-git | `write` | `vcs` | Stage/commit git changes, confirm-gated unless the `vcs` carve is `allow` (`all=true` always asks). Alias `commit` |
 | `glob` | replio-core-fs | `search` | `read` | Recursive pattern lookup |
 | `grep` | replio-core-fs | `search` | `read` | Regex content search (`file:line:` results, alias `find`) |
 | `handoff` | core | `handoff` | `handoff` | Pause or finish this run and hand control to a parent/sibling/child/root/run id |
@@ -69,8 +69,8 @@ Tools are registered with `@registry.register(name, description, parameters)` pl
 |-----|-------------|
 | `refine` | Auto-refine short `query` args via a lightweight model call, gated by `query_refine` |
 | `category` | `ask` / `catalog` / `delegate` / `exec` / `handoff` / `mcp` / `read` / `search` / `todo` / `write` - drives the default activity glyph and verb |
-| `permission` | The `tool_permission` key that gates the tool: `bash` / `catalog` / `edit` / `handoff` / `list` / `mcp` / `read` / `team` / `web` |
-| `permission_fn` | Optional `Callable[[dict], str]` resolving the action (`allow`/`ask`/`deny`) from the current arguments - refines a non-`deny` base action at call time (see `delegate`) |
+| `permission` | The `tool_permission` key that gates the tool: `bash` / `catalog` / `edit` / `handoff` / `list` / `mcp` / `read` / `team` / `vcs` / `web` |
+| `permission_fn` | Optional `Callable[[dict], str]` resolving the action (`allow`/`ask`/`deny`) from the current arguments - refines a non-`deny` base action at call time, or returns `None` to defer to the category action (see `delegate`, `git_commit`) |
 | `path_arg` | Which parameter is a filesystem path, for worktree scope checks |
 | `key_arg` | Which argument appears in status/confirm labels and glyph activity lines |
 | `glyph` / `verb` | Per-tool activity-line overrides (e.g. `glob` uses `* Glob`, `web_fetch` uses `↓ Fetch`) |
@@ -132,8 +132,8 @@ Every resolution and its outcome (granted / declined / denied) is recorded to th
 Resolution precedence:
 
 1. **Name-level** - `tools.deny` (always denied) and `tools.allow` (when non-empty, it is an allowlist, so everything else is denied).
-2. **Category action** - the `tool_permission.<key>` action for the tool's `permission` key. `deny` here filters the tool from the provider schema and from tool listings, not just direct calls.
-3. **Per-invocation resolver** - a tool may declare a `permission_fn` that refines the action from its current arguments (e.g. `delegate` resolves per type: a configured type uses its own `tool_permission` with `delegate` defaulting to `allow`, an agent type outside the registry is `deny`). The resolver only refines a non-`deny` base action and is skipped when no arguments are available, so schema filtering (`allowed()`) keeps the tool visible for `ask`/`allow` categories.
+2. **Category action** - the `tool_permission.<key>` action for the tool's `permission` key. `deny` here is final, skips the resolver, and filters the tool from the provider schema and from tool listings, not just direct calls.
+3. **Per-invocation resolver** - a tool may declare a `permission_fn` that overrides a non-`deny` base action from its current arguments, and returning `None` defers to the category action. It is skipped when the base action is `deny` and when no arguments are available, so schema filtering (`allowed()`) keeps the tool visible for `ask`/`allow` categories. `delegate` resolves per type: a configured type uses its own `tool_permission` with `delegate` defaulting to `allow`, an agent type outside the registry is `deny`. `git_commit` defers to the `vcs` category except for `all=true`, which asks.
 4. **Worktree escalation** - `read` / `list` / `write` tools pointing outside the project worktree escalate from `allow` to `ask`.
 
 Modes ([config.md](config.md)) layer over the base policy: a mode's `tool_permission` merges over the base (mode wins per key), its `tools.deny` appends, and its `tools.allow` replaces when non-empty. The built-in `plan` mode denies the `edit` and `bash` categories, so write and exec tools are filtered from the schema and refused on direct calls. Switch with `/mode <name>` in the REPL or `--mode <name>` on `replio run` / `replio serve`.
