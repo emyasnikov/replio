@@ -88,10 +88,10 @@ class TestUnattendedAskUi(unittest.TestCase):
             chat._tmp.cleanup()
 
     def test_subagent_inherits_unattended_and_no_ask_ui(self):
-        from replio.types import AgentType
+        from replio.roles import Role
         chat = make_chat({'unattended': True})
         try:
-            chat.types.put(AgentType(name='w', system_prompt='Writer'),
+            chat.roles.put(Role(name='w', system_prompt='Writer'),
                            scope='local')
             sub = chat._new_sub_engine('w')
             self.assertTrue(sub.config.get('unattended'))
@@ -129,10 +129,10 @@ class TestUnattendedNonBlocking(unittest.TestCase):
             chat._tmp.cleanup()
 
     def test_subagent_human_ask_parks_when_unattended(self):
-        from replio.types import AgentType
+        from replio.roles import Role
         chat = make_chat({'unattended': True})
         try:
-            chat.types.put(AgentType(name='w', system_prompt='Writer'),
+            chat.roles.put(Role(name='w', system_prompt='Writer'),
                            scope='local')
             sub = chat._new_sub_engine('w')
             sub._init_tooling()

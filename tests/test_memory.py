@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from replio import memory
-from replio.types import AgentType
+from replio.roles import Role
 
 from tests.helpers import make_chat
 
@@ -65,8 +65,8 @@ class TestRoleMemory(unittest.TestCase):
     def setUp(self):
         self.chat = make_chat()
         self.worktree = self.chat.config.local_path.parent.parent
-        self.chat.types.put(
-            AgentType(name='writer', system_prompt='You are the writer.'),
+        self.chat.roles.put(
+            Role(name='writer', system_prompt='You are the writer.'),
             scope='local')
 
     def tearDown(self):

@@ -412,7 +412,7 @@ def cmd_jobs(args) -> int:
             mode=getattr(args, 'mode', '') or '',
             provider=getattr(args, 'provider', '') or '',
             model=getattr(args, 'model', '') or '',
-            type=getattr(args, 'type', '') or '',
+            role=getattr(args, 'role', '') or '',
             system_prompt=getattr(args, 'system_prompt', '') or '',
             task_file=_store_task_file(config.local_path.parent.parent, file_arg),
             tool_permission=tool_permission,
@@ -495,7 +495,7 @@ def _jobs_add_supervisor(config, registry, args) -> int:
         print(f'Error: {e}', file=sys.stderr)
         return 1
     print(f'Added supervisor job: {job.name} [{job.status}]')
-    print(f'  type:      {job.type}')
+    print(f'  role:      {job.role}')
     print(f'  schedule:  {describe_schedule(job)}')
     print(f'  task file: {job.task_file}')
     print(f'  run now:   replio jobs run {job.name}')
@@ -715,7 +715,7 @@ def _fleet_logs(controller, args) -> int:
 
 def _fleet_config(controller, args) -> int:
     import json
-    from .types import TypeRegistry
+    from .roles import RoleRegistry
     agent = controller.manifest.find(args.name)
     if agent is None:
         print(f'Agent not found: {args.name}', file=sys.stderr)
@@ -741,25 +741,25 @@ def _fleet_config(controller, args) -> int:
             return 1
         category, _, action = pair.partition('=')
         perms[category.strip()] = action.strip()
-    type_name = getattr(args, 'type', '') or ''
-    agent_type = None
-    if type_name:
-        registry = TypeRegistry(local_path=agent_dir / '.replio' / 'types.json')
-        agent_type = registry.find(type_name)
-        if agent_type is None:
-            print(f'Unknown agent type: {type_name}', file=sys.stderr)
+    role_name = getattr(args, 'role', '') or ''
+    agent_role = None
+    if role_name:
+        registry = RoleRegistry(local_path=agent_dir / '.replio' / 'roles.json')
+        agent_role = registry.find(role_name)
+        if agent_role is None:
+            print(f'Unknown role: {role_name}', file=sys.stderr)
             return 1
-        if agent_type.system_prompt and 'system_prompt' not in patch:
-            patch['system_prompt'] = agent_type.system_prompt
-        if agent_type.model and 'model' not in patch:
-            patch['model'] = agent_type.model
-        for key, value in agent_type.tool_permission.items():
+        if agent_role.system_prompt and 'system_prompt' not in patch:
+            patch['system_prompt'] = agent_role.system_prompt
+        if agent_role.model and 'model' not in patch:
+            patch['model'] = agent_role.model
+        for key, value in agent_role.tool_permission.items():
             perms.setdefault(key, value)
     if perms:
         patch['tool_permission'] = perms
     if not patch:
         print('Nothing to set - give at least one of --provider/--model/'
-              '--type/--system-prompt/--mode/--tools-deny/--tool-permission',
+              '--role/--system-prompt/--mode/--tools-deny/--tool-permission',
               file=sys.stderr)
         return 1
     target = agent_dir / '.replio' / 'config.json'
@@ -774,7 +774,7 @@ def _fleet_config(controller, args) -> int:
         from .models import ModelRegistry
         from .providers import merged_providers
         from .providers.registry import resolve_model_ref
-        model_target = getattr(args, 'model', '') or (agent_type.model if agent_type else '')
+        model_target = getattr(args, 'model', '') or (agent_role.model if agent_role else '')
         if model_target:
             model_registry = ModelRegistry()
             model_provider = patch.get('provider') or existing.get('provider') or ''

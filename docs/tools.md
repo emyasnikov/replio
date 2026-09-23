@@ -11,11 +11,11 @@ The built-in web and machine tools ship as bundled plugins, loaded out of the bo
 | Tool | Plugin | Category | Permission | Purpose |
 |------|--------|----------|------------|---------|
 | `ask` | core | `ask` | `ask` | Ask the human or the lead agent for a decision, pausing until answered |
-| `catalog` | core | `catalog` | `catalog` | Manage agent types, teams, and skills: list/show/save/remove, plus reload |
+| `catalog` | core | `catalog` | `catalog` | Manage roles, teams, and skills: list/show/save/remove, plus reload |
 | `code_format` | replio-core-dev | `exec` | `bash` | Run the project formatter (`dev.format_cmd`, default `ruff format .`) |
 | `code_lint` | replio-core-dev | `exec` | `bash` | Run the project linter (`dev.lint_cmd`, default `ruff check .`) |
 | `code_test` | replio-core-dev | `exec` | `bash` | Run the project test suite (`dev.test_cmd`, default `python -m unittest discover`, resolved to the current interpreter) |
-| `delegate` | core | `delegate` | `delegate` | Run a task under an agent type as a sub-agent |
+| `delegate` | core | `delegate` | `delegate` | Run a task under a role as a sub-agent |
 | `file_edit` | replio-core-edit | `write` | `edit` | Targeted search-and-replace in a file with a diff preview (`count` occurrences, `0` = all, alias `edit`) |
 | `file_read` | replio-core-fs | `read` | `read` | Read a file with numbered lines (aliases `read_file`, `read`, `view`) |
 | `file_write` | replio-core-fs | `write` | `edit` | Create/overwrite/append a file (aliases `write_file`, `write`) |
@@ -37,7 +37,7 @@ Plugins register additional tools the same way and automatically inherit tool po
 The `ask` tool (core, like `delegate`) pauses the run and routes a decision or permission request to an answerer, so a sub-agent or team stage gets a decision mid-run instead of returning open questions at the end. Schema: `question` (required), `context`, `options` (suggested answers), `target`, `kind` (`permission`/`direction`, default `direction`), and `permission` (the tool or category for a permission request):
 
 - `target='human'` (default) - the operator answers at the terminal. The root loop prompts directly. A sub-agent's ask is prefixed with its `sub_<...>` session name so the operator knows who is asking (delegation and team stages run synchronously in-process, so the terminal is free while a sub-agent runs). The answer feeds back into the asking agent's context and the run continues.
-- `target='lead'` - the agent type or engine that delegated this run decides. The lead answers through a lightweight non-streaming consultation (a bounded prompt with the question, context, options, and the sub-agent's delegated task), not a full parent turn. A root engine has no lead, so `target='lead'` falls back to `human`, and `human` falls back to `lead` when no terminal is reachable.
+- `target='lead'` - the role or engine that delegated this run decides. The lead answers through a lightweight non-streaming consultation (a bounded prompt with the question, context, options, and the sub-agent's delegated task), not a full parent turn. A root engine has no lead, so `target='lead'` falls back to `human`, and `human` falls back to `lead` when no terminal is reachable.
 - `kind='permission'` - a request for a tool or category the sub-agent is not allowed to use. Routing follows `ask_policy.permission` (`auto` = the lead decides and grants one use, `human` = the operator, `deny` = disabled), capped by the caller's `grant_permission` ceiling. An approval creates a one-shot grant on the asking sub-agent, consumed by the next matching call. The operator may answer `always` to make it reusable for the rest of that sub-agent's run. The lead only ever grants `once`. See [config.md](config.md#permission-authority).
 - When no one can answer (headless `run`/`serve`/jobs: no terminal and no lead at the root), `ask` returns an `Error: ask has no one to answer ...` result and the run continues autonomously. It never blocks on stdin outside the REPL. The asynchronous "pause a job and wait for an operator reply over a connector" variant is tracked separately (see [jobs.md](jobs.md)).
 
@@ -134,7 +134,7 @@ Resolution precedence:
 
 1. **Name-level** - `tools.deny` (always denied) and `tools.allow` (when non-empty, it is an allowlist, so everything else is denied).
 2. **Category action** - the `tool_permission.<key>` action for the tool's `permission` key. `deny` here is final, skips the resolver, and filters the tool from the provider schema and from tool listings, not just direct calls.
-3. **Per-invocation resolver** - a tool may declare a `permission_fn` that overrides a non-`deny` base action from its current arguments, and returning `None` defers to the category action. It is skipped when the base action is `deny` and when no arguments are available, so schema filtering (`allowed()`) keeps the tool visible for `ask`/`allow` categories. `delegate` resolves per type: a configured type uses its own `tool_permission` with `delegate` defaulting to `allow`, an agent type outside the registry is `deny`. `git_commit` defers to the `vcs` category except for `all=true`, which asks.
+3. **Per-invocation resolver** - a tool may declare a `permission_fn` that overrides a non-`deny` base action from its current arguments, and returning `None` defers to the category action. It is skipped when the base action is `deny` and when no arguments are available, so schema filtering (`allowed()`) keeps the tool visible for `ask`/`allow` categories. `delegate` resolves per role: a configured role uses its own `tool_permission` with `delegate` defaulting to `allow`, a role outside the registry is `deny`. `git_commit` defers to the `vcs` category except for `all=true`, which asks.
 4. **Worktree escalation** - `read` / `list` / `write` tools pointing outside the project worktree escalate from `allow` to `ask`.
 
 Modes ([config.md](config.md)) layer over the base policy: a mode's `tool_permission` merges over the base (mode wins per key), its `tools.deny` appends, and its `tools.allow` replaces when non-empty. The built-in `plan` mode denies the `edit` and `bash` categories, so write and exec tools are filtered from the schema and refused on direct calls. Switch with `/mode <name>` in the REPL or `--mode <name>` on `replio run` / `replio serve`.

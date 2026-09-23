@@ -263,9 +263,9 @@ git -C ~/replio-agents/workspace/repo worktree remove ~/replio-agents/workspace/
 
 ## Alternative: in-process delegation (no containers)
 
-The fleet above isolates roles by process, worktree, and container. A lighter setup needs no Docker at all: one REPL lead agent delegates tasks to type sub-agents, and the sub-agent's final answer is handed back.
+The fleet above isolates roles by process, worktree, and container. A lighter setup needs no Docker at all: one REPL lead agent delegates tasks to role sub-agents, and the sub-agent's final answer is handed back.
 
-The bundled `programming` team (`planner`, `programmer`, `tester`, `code-reviewer`) ships with system prompts and per-type permissions (see [types.md](../types.md) and [swarm.md](../swarm.md)). Delegation defaults to `allow`, so the lead can delegate to any configured type without a prompt. To require a confirmation for a specific type (for example, to keep write-heavy work gated), override only its `delegate` field in the local type catalog (`.replio/types.json`):
+The bundled `programming` team (`planner`, `programmer`, `tester`, `code-reviewer`) ships with system prompts and per-role permissions (see [roles.md](../roles.md) and [swarm.md](../swarm.md)). Delegation defaults to `allow`, so the lead can delegate to any configured role without a prompt. To require a confirmation for a specific type (for example, to keep write-heavy work gated), override only its `delegate` field in the local role catalog (`.replio/roles.json`):
 
 ```json
 {
@@ -315,6 +315,6 @@ Everything above uses only features shipped in the current release. The followin
 
 | Planned capability | Current workaround in this guide |
 |--------------------|-----------------------------------|
-| `/agent` types command + auditor agents | `delegate` tool + bundled types (in-process sub-agents), see the in-process section below. Auditors still need a review role |
+| `/agent` types command + auditor agents | `delegate` tool + bundled roles (in-process sub-agents), see the in-process section below. Auditors still need a review role |
 
 Shipped since this guide was written: a read-only `git` tool plus gated `git_commit` (status/diff/log/commit as gated tools instead of `run_command`), `code_test`/`code_lint`/`code_format` wrappers, the `run_command` command allowlist (`tool_permission.bash_allow`) replacing role-separation-plus-`tools.allow` for scoped shell, and the per-worktree instructions file (`project_instructions`, default `AGENTS.md`) auto-loaded into every agent's system prompt.

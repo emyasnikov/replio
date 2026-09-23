@@ -32,7 +32,7 @@ Read the full vision, decisions, and context economics in [Vision](vision.md).
 - **Agentic REPL** - streaming output, dimmed thinking, markdown-aware rendering, readline history, tab completion
 - **Permissions** - every tool is gated by `allow` / `ask` / `deny`, with path-scoped confirmation outside your worktree and an audit trail in session logs
 - **Sessions** - complete append-only turn/part logs, `/history` and `/print`, `/compact`, and Markdown export
-- **Agent types, skills, and teams** - reusable agents with per-invocation skills, and named pipelines with shared memory and a review loop
+- **Roles, skills, and teams** - reusable agents with per-invocation skills, and named pipelines with shared memory and a review loop
 - **Plugins** - external repositories register tools, providers, slash commands, services, types, teams, skills, and eval fixtures. The core stays zero-dependency
 
 ## Development plan

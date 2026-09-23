@@ -150,9 +150,9 @@ class TestThinkingSpinner(unittest.TestCase):
         NullUI().status_end()
 
     def test_run_subagent_wraps_status(self):
-        from replio.types import AgentType
-        self.chat.types.put(
-            AgentType(name='writer', system_prompt='You are the writer.'),
+        from replio.roles import Role
+        self.chat.roles.put(
+            Role(name='writer', system_prompt='You are the writer.'),
             scope='local')
         self.chat.provider.chat.side_effect = [
             [{'type': 'token', 'content': 'done'},
@@ -209,10 +209,10 @@ class TestThinkingSpinner(unittest.TestCase):
         self.assertEqual(len(forwarded), 2)
 
     def test_subrun_verbosity_selects_ui(self):
-        from replio.types import AgentType
+        from replio.roles import Role
         from replio.ui import BufferUI, SubRunUI
-        self.chat.types.put(
-            AgentType(name='writer', system_prompt='w'), scope='local')
+        self.chat.roles.put(
+            Role(name='writer', system_prompt='w'), scope='local')
         self.chat.config.set('subrun_verbosity', 'summary')
         self.assertIsInstance(self.chat._new_sub_engine('writer')._ui,
                               SubRunUI)

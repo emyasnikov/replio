@@ -4,7 +4,7 @@ import tempfile
 
 from replio.engine import _review_passed
 from replio.teams import Team, TeamRegistry, TeamStage
-from replio.types import AgentType
+from replio.roles import Role
 
 from tests.helpers import make_chat
 
@@ -29,8 +29,8 @@ class TestTeamLoop(unittest.TestCase):
         self.chat = make_chat()
         self.sessions_dir = self.chat.config.local_path.parent / 'sessions'
         for name in ('researcher', 'writer', 'reviewer', 'referencer'):
-            self.chat.types.put(
-                AgentType(name=name, system_prompt=f'You are the {name}.'),
+            self.chat.roles.put(
+                Role(name=name, system_prompt=f'You are the {name}.'),
                 scope='local')
 
     def tearDown(self):
@@ -44,7 +44,7 @@ class TestTeamLoop(unittest.TestCase):
         return Team(name='doc', stages=list(stages), loop=loop or {})
 
     def test_plan_resolves_names_and_indices(self):
-        team = self._team(TeamStage(type='writer'), TeamStage(type='reviewer'),
+        team = self._team(TeamStage(role='writer'), TeamStage(role='reviewer'),
                           loop={'from': 'writer', 'until': 'reviewer'})
         self.assertEqual(self.chat._team_loop_plan(team), (0, 1, 3, 'VERDICT:'))
         team.loop = {'from': 0, 'until': 1, 'max_iterations': 5,
@@ -52,17 +52,17 @@ class TestTeamLoop(unittest.TestCase):
         self.assertEqual(self.chat._team_loop_plan(team), (0, 1, 5, 'REVIEW:'))
 
     def test_plan_invalid_returns_none(self):
-        team = self._team(TeamStage(type='writer'), loop={'from': 'ghost',
+        team = self._team(TeamStage(role='writer'), loop={'from': 'ghost',
                                                           'until': 'writer'})
         self.assertIsNone(self.chat._team_loop_plan(team))
         self.assertIsNone(self.chat._team_loop_plan(
-            self._team(TeamStage(type='writer'))))
+            self._team(TeamStage(role='writer'))))
         self.assertIsNone(self.chat._team_loop_plan(
-            self._team(TeamStage(type='writer'), TeamStage(type='reviewer'),
+            self._team(TeamStage(role='writer'), TeamStage(role='reviewer'),
                        loop={'from': 'reviewer', 'until': 'writer'})))
 
     def test_pass_on_first_iteration(self):
-        team = self._team(TeamStage(type='writer'), TeamStage(type='reviewer'),
+        team = self._team(TeamStage(role='writer'), TeamStage(role='reviewer'),
                           loop={'from': 'writer', 'until': 'reviewer'})
         self.chat.provider.chat.side_effect = [
             self._result('draft'), self._result('VERDICT: PASS'),
@@ -74,7 +74,7 @@ class TestTeamLoop(unittest.TestCase):
         self.assertEqual(result.status, 'ok')
 
     def test_changes_then_pass_iterates(self):
-        team = self._team(TeamStage(type='writer'), TeamStage(type='reviewer'),
+        team = self._team(TeamStage(role='writer'), TeamStage(role='reviewer'),
                           loop={'from': 'writer', 'until': 'reviewer'})
         self.chat.provider.chat.side_effect = [
             self._result('d1'),
@@ -92,7 +92,7 @@ class TestTeamLoop(unittest.TestCase):
         self.assertIn('fix the intro', user['content'])
 
     def test_cap_reached_without_pass(self):
-        team = self._team(TeamStage(type='writer'), TeamStage(type='reviewer'),
+        team = self._team(TeamStage(role='writer'), TeamStage(role='reviewer'),
                           loop={'from': 'writer', 'until': 'reviewer',
                                 'max_iterations': 2})
         self.chat.provider.chat.side_effect = [
@@ -105,10 +105,10 @@ class TestTeamLoop(unittest.TestCase):
 
     def test_pre_and_post_stages_run_once(self):
         team = self._team(
-            TeamStage(type='researcher'),
-            TeamStage(type='writer'),
-            TeamStage(type='reviewer'),
-            TeamStage(type='referencer'),
+            TeamStage(role='researcher'),
+            TeamStage(role='writer'),
+            TeamStage(role='reviewer'),
+            TeamStage(role='referencer'),
             loop={'from': 'writer', 'until': 'reviewer'})
         self.chat.provider.chat.side_effect = [
             self._result('findings'),
@@ -127,7 +127,7 @@ class TestTeamLoop(unittest.TestCase):
         self.assertIn('d2', last_user['content'])
 
     def test_stage_error_stops_loop(self):
-        team = self._team(TeamStage(type='writer'), TeamStage(type='reviewer'),
+        team = self._team(TeamStage(role='writer'), TeamStage(role='reviewer'),
                           loop={'from': 'writer', 'until': 'reviewer'})
         self.chat.provider.chat.side_effect = [
             [{'type': 'error', 'code': 0, 'message': 'boom'}],
@@ -149,8 +149,8 @@ class TestTeamLoop(unittest.TestCase):
             registry().put(Team(name='x', loop={'from': 'writer',
                                                 'until': 'reviewer',
                                                 'max_iterations': 4},
-                                stages=[TeamStage(type='writer'),
-                                        TeamStage(type='reviewer')]))
+                                stages=[TeamStage(role='writer'),
+                                        TeamStage(role='reviewer')]))
             team = registry().find('x')
             self.assertEqual(team.loop, {'from': 'writer', 'until': 'reviewer',
                                          'max_iterations': 4})
@@ -163,7 +163,7 @@ class TestTeamLoop(unittest.TestCase):
             'action': 'save', 'kind': 'team', 'name': 'reviewed',
             'loop': {'from': 'writer', 'until': 'reviewer',
                      'max_iterations': 2},
-            'stages': [{'type': 'writer'}, {'type': 'reviewer'}]})
+            'stages': [{'role': 'writer'}, {'role': 'reviewer'}]})
         team = self.chat.teams.find('reviewed')
         self.assertEqual(team.loop.get('from'), 'writer')
         self.assertEqual(team.loop.get('max_iterations'), 2)

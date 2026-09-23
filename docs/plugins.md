@@ -65,7 +65,7 @@ def register_tools(registry) -> None: ...        # @registry.register(...) - sam
 def register_providers(providers) -> None: ...   # providers["name"] = ProviderClass
 def register_commands(commands) -> None: ...     # @commands.register(...) - same as core commands
 def register_services(services) -> None: ...     # services["name"] = service object for core features
-def register_types(registry) -> None: ...     # registry.add_plugin({...}) - plugin-owned types
+def register_roles(registry) -> None: ...     # registry.add_plugin({...}) - plugin-owned roles
 def register_teams(teams) -> None: ...           # register into the TeamRegistry (see swarm.md)
 def register_skills(skills) -> None: ...         # skills.add_plugin({...}) - see skills.md
 def register_fixtures(fixtures) -> None: ...     # fixtures["id"] = fixture data - see eval.md
@@ -81,9 +81,9 @@ Plugin tools automatically inherit the tool permission policy, `/tool`, `/help`,
 
 `register_services` lets a plugin power a core feature that is not tool-calling. Two services exist today: web search-then-answer and job report-back. The bundled `replio-core-web` registers `services['search']` with `search(query, num)`, `display(query, results)`, and `context(query, results)` methods (without it, that mode reports the service is unavailable instead of erroring). The bundled `replio-core-webhook` registers `services['report']` with a `report(payload, config)` method: the scheduler calls it once per completed job run with a `job.run.completed` payload and its `Config`, so the connector reads its own keys (e.g. `report.webhook`) and posts the report. Any plugin can register a `report` service the same way to deliver run summaries elsewhere (email, chat, a local log). See [jobs.md](jobs.md#report-back).
 
-### Agent types, teams, and skills
+### Roles, teams, and skills
 
-`register_types(registry)` contributes types to the `TypeRegistry` via `registry.add_plugin(entry)` (same entry shape as `types.json`). Plugin types form an in-memory layer between bundled and global, so precedence is `bundled < plugin < global < local`, and a `types.json` entry can always override or replace a plugin-provided type. `register_teams(teams)` and `register_skills(skills)` register into the team and skills registries the same way (`teams.add_plugin(...)` / `skills.add_plugin(...)`, entry shapes in [teams.md](teams.md) and [skills.md](skills.md)). The `/types` list marks plugin types `(plugin)`. After `/plugins install`/`update`/`uninstall` the running REPL re-applies all three hooks immediately. Tools and commands still activate on the next start.
+`register_roles(registry)` contributes roles to the `RoleRegistry` via `registry.add_plugin(entry)` (same entry shape as `roles.json`). Plugin roles form an in-memory layer between bundled and global, so precedence is `bundled < plugin < global < local`, and a `roles.json` entry can always override or replace a plugin-provided role. `register_teams(teams)` and `register_skills(skills)` register into the team and skills registries the same way (`teams.add_plugin(...)` / `skills.add_plugin(...)`, entry shapes in [teams.md](teams.md) and [skills.md](skills.md)). The `/roles` list marks plugin roles `(plugin)`. After `/plugins install`/`update`/`uninstall` the running REPL re-applies all three hooks immediately. Tools and commands still activate on the next start.
 
 ### Eval fixtures
 

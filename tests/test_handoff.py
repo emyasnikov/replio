@@ -19,12 +19,12 @@ class TestHandoffTool(unittest.TestCase):
     def _handoff(self, target, done=False):
         return self.chat._run_tool('handoff', {'target': target, 'done': done})
 
-    def _child(self, type_name='writer'):
+    def _child(self, role_name='writer'):
         self.chat.provider.chat.side_effect = [
             [{'type': 'token', 'content': 'Draft ready.'},
              {'type': 'done', 'reason': 'stop'}],
         ]
-        res = self.chat.run_subagent(type_name, 'draft it')
+        res = self.chat.run_subagent(role_name, 'draft it')
         return self.chat.runs.get(res.run_id)
 
     def test_registered(self):
@@ -140,12 +140,12 @@ class TestHandoffApply(unittest.TestCase):
     def tearDown(self):
         self.chat._tmp.cleanup()
 
-    def _child(self, type_name='writer'):
+    def _child(self, role_name='writer'):
         self.chat.provider.chat.side_effect = [
             [{'type': 'token', 'content': 'Draft ready.'},
              {'type': 'done', 'reason': 'stop'}],
         ]
-        res = self.chat.run_subagent(type_name, 'draft it')
+        res = self.chat.run_subagent(role_name, 'draft it')
         return self.chat.runs.get(res.run_id)
 
     def test_apply_focuses_run(self):

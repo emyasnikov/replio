@@ -4,9 +4,9 @@ A **framework** gives you building blocks to construct an agent: you write the c
 
 ## Replio covers the runtime, and stays flexible
 
-Replio gives you the whole agent runtime out of the box, then lets you shape it through configuration rather than through code you have to maintain. The loop, tools, permissions, sessions, delegation, teams, jobs, and the fleet supervisor are ready to use. Models, providers, tools, agent types, teams, skills, modes, and permissions are all data you can edit, version, and extend with plugins.
+Replio gives you the whole agent runtime out of the box, then lets you shape it through configuration rather than through code you have to maintain. The loop, tools, permissions, sessions, delegation, teams, jobs, and the fleet supervisor are ready to use. Models, providers, tools, roles, teams, skills, modes, and permissions are all data you can edit, version, and extend with plugins.
 
-That covers the common need without a build step, and it keeps deep flexibility: you can define new agent types with their own prompts and permission carves, compose teams with per-stage skills and a review loop, add tools and providers as plugins, and drive everything from configuration. When you truly need a bespoke control flow, a framework remains the right tool for that layer, and Replio can still serve as the runtime behind it through its CLI and HTTP API.
+That covers the common need without a build step, and it keeps deep flexibility: you can define new roles with their own prompts and permission carves, compose teams with per-stage skills and a review loop, add tools and providers as plugins, and drive everything from configuration. When you truly need a bespoke control flow, a framework remains the right tool for that layer, and Replio can still serve as the runtime behind it through its CLI and HTTP API.
 
 ## Representatives
 

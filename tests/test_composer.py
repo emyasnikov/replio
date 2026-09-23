@@ -13,7 +13,7 @@ class TestComposerType(unittest.TestCase):
         self.chat._tmp.cleanup()
 
     def test_bundled_definition(self):
-        composer = self.chat.types.find('composer')
+        composer = self.chat.roles.find('composer')
         self.assertIsNotNone(composer)
         self.assertIn('composer', composer.system_prompt.lower())
         self.assertEqual(composer.tool_permission['catalog'], 'allow')
@@ -42,8 +42,8 @@ class TestComposerType(unittest.TestCase):
             'type': 'function',
             'function': {'name': 'catalog', 'arguments': json.dumps({
                 'action': 'save', 'kind': 'team', 'name': 'composed',
-                'stages': [{'type': 'researcher'},
-                           {'type': 'writer', 'skills': ['thesis']}]})},
+                'stages': [{'role': 'researcher'},
+                           {'role': 'writer', 'skills': ['thesis']}]})},
         }]
         self.chat.provider.chat.side_effect = [
             [{'type': 'tool_calls', 'tool_calls': tool_call}],
@@ -54,7 +54,7 @@ class TestComposerType(unittest.TestCase):
         self.assertEqual(result.content, 'Team composed ready.')
         team = self.chat.teams.find('composed')
         self.assertIsNotNone(team)
-        self.assertEqual([s.type for s in team.stages],
+        self.assertEqual([s.role for s in team.stages],
                          ['researcher', 'writer'])
         self.assertEqual(team.stages[1].skills, ['thesis'])
 

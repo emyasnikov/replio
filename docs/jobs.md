@@ -4,7 +4,7 @@
 
 ## Job store
 
-Jobs live in `.replio/jobs.json` next to the sessions, one register per worktree (same rule as types). The file is plain JSON and the last writer wins, so run one scheduler per `.replio`. Removing a job removes only its definition, while its sessions stay as the append-only log of every run. The register keeps the most recent 100 runs. The full transcript stays in the session file.
+Jobs live in `.replio/jobs.json` next to the sessions, one register per worktree (same rule as roles). The file is plain JSON and the last writer wins, so run one scheduler per `.replio`. Removing a job removes only its definition, while its sessions stay as the append-only log of every run. The register keeps the most recent 100 runs. The full transcript stays in the session file.
 
 ```json
 {
@@ -69,7 +69,7 @@ replio jobs add nightly --file jobs/nightly-report.md --cron "0 2 * * *"
 - **`replio jobs edit <name>`** (also `/jobs edit <name>`) opens the task file in `$EDITOR` (creating the template first if needed). `replio jobs show <name>` prints the stored path.
 - Paths under the worktree are stored relative to it. Absolute paths stay absolute. A task file missing at run time fails that run with a clear `task file not found` reason, so a broken link is never silently ignored.
 
-At run time the system prompt is composed of `type.system_prompt` (if an agent type is set), the task file contents (`## Job task`), `--system-prompt`, and the run memory (`## Run memory`, below). The engine's mode instruction is appended last. With none of them set, a generic recurring-job prompt is used.
+At run time the system prompt is composed of `role.system_prompt` (if a role is set), the task file contents (`## Job task`), `--system-prompt`, and the run memory (`## Run memory`, below). The engine's mode instruction is appended last. With none of them set, a generic recurring-job prompt is used.
 
 ## Run memory
 
@@ -110,15 +110,15 @@ replio jobs daemon [--tick 15] [--quiet]        # scheduler loop, Ctrl-C to stop
 | `--session` | Stable session name. Default is a fresh per-run `job_<ts>_<id>` file |
 | `--mode` | Mode override (`plan`, `build`, or custom) |
 | `--provider` / `--model` | Provider / model overrides |
-| `--type` | Apply an agent type's system prompt, model, and tool permissions |
-| `--system-prompt` | System prompt describing the job. Without it or an agent type, a generic recurring-job prompt is used |
+| `--role` | Apply a role's system prompt, model, and tool permissions |
+| `--system-prompt` | System prompt describing the job. Without it or a role, a generic recurring-job prompt is used |
 | `--tools-deny NAME` | Deny a tool (repeatable) |
 | `--tool-permission category=action` | Permission override, e.g. `bash=allow` (repeatable) |
 | `--retries N` | Retries after a failed attempt. Default `3` |
 | `--backoff SECONDS` | Base backoff, doubled per retry. Default `60` |
 | `--timeout SECONDS` | Max seconds for one attempt. `0` (default) = no cap |
 | `--require-approval` | Arm one run per approve, so every run parks in `waiting_approval` until a human approves it |
-| `--approve-model` | Approve the model referenced by `--type` (or `--model`) so the headless job may use it without prompting |
+| `--approve-model` | Approve the model referenced by `--role` (or `--model`) so the headless job may use it without prompting |
 | `--approval auto` | Start `approved` instead of `proposed` |
 
 ## Human in the loop
@@ -129,7 +129,7 @@ There are three distinct gates, from coarsest to finest:
 2. **Per-run approval (`--require-approval`)** - for when "something has to be decided" about *this* run, not arm-or-disarm for all time. Each run parks in `waiting_approval`: the daemon will not fire it, `replio jobs status` shows `WAITING for approve`, and `replio jobs approve <name>` (or `/jobs approve`) arms exactly the next run. It parks again after the run. `reject` clears the grant. `run` still overrides and executes now.
 3. **Mid-run blocking approval (tool-level, planned)** - an `ask` tool inside a running job pauses the run in place and waits for a human reply before resuming on the same session. The deepest "decide during the task" model, tracked separately in [TODO.md](../../TODO.md): it needs resumable mid-run state, a wait loop inside the run, and a transport to deliver the ask and return the answer (the planned webhook/email/Telegram connectors drive the same operator API).
 
-A job runs with `HeadlessUI(auto='deny')` on an unattended engine, the same posture as `replio serve`, plus parking. So until mid-run blocking is implemented, an `ask target='human'` inside a run is not paused and does not hang: it parks as a pending request in `.replio/asks.json` (returned to the agent as `[parked] Ask #<id> ...`), the run continues or finishes, and the operator answers later with `/asks answer <id> <text>` or `POST /asks/<id>/answer` on `replio serve`, which injects the answer into the run's session for the next run or continuation. Give a job its permissions up front (`--tool-permission bash=allow`, an agent type carve, or a `--tools-deny` list) and it will not need mid-run interruption. A sub-agent inside a job can still use `ask target='lead'` for a decision from the job's model mid-run. `timeout` runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so inspect a timed-out job with `replio jobs show <name>` before a manual retry.
+A job runs with `HeadlessUI(auto='deny')` on an unattended engine, the same posture as `replio serve`, plus parking. So until mid-run blocking is implemented, an `ask target='human'` inside a run is not paused and does not hang: it parks as a pending request in `.replio/asks.json` (returned to the agent as `[parked] Ask #<id> ...`), the run continues or finishes, and the operator answers later with `/asks answer <id> <text>` or `POST /asks/<id>/answer` on `replio serve`, which injects the answer into the run's session for the next run or continuation. Give a job its permissions up front (`--tool-permission bash=allow`, a role carve, or a `--tools-deny` list) and it will not need mid-run interruption. A sub-agent inside a job can still use `ask target='lead'` for a decision from the job's model mid-run. `timeout` runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so inspect a timed-out job with `replio jobs show <name>` before a manual retry.
 
 ## Report-back
 
@@ -146,12 +146,12 @@ A standing supervisor job is the overnight surface: job engines run unattended (
 
 ```bash
 replio jobs add-supervisor night --interval 86400 --task "Lead the work."
-# creates .replio/jobs/night.md from a supervisor template, type=leader, approved
+# creates .replio/jobs/night.md from a supervisor template, role=leader, approved
 replio jobs daemon            # runs it on schedule
 replio jobs run night         # or run it once now
 ```
 
-The job's type is `leader`, whose `grant_permission` lets it delegate categories it denies itself (bash, web) to team stages, and whose `ask_policy` routes decisions to the operator (parking them under unattended mode). The task file (`.replio/jobs/<name>.md`) carries the standing goal, and the next run picks up any edit. The model the job uses must be approved (`/model`, or `--approve-model` when a type or team references a model).
+The job role is `leader`, whose `grant_permission` lets it delegate categories it denies itself (bash, web) to team stages, and whose `ask_policy` routes decisions to the operator (parking them under unattended mode). The task file (`.replio/jobs/<name>.md`) carries the standing goal, and the next run picks up any edit. The model the job uses must be approved (`/model`, or `--approve-model` when a role or team references a model).
 
 While it runs:
 

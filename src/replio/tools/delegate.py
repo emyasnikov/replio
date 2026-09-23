@@ -6,8 +6,8 @@ _FOCUS_MODES = ('off', 'ask', 'on')
 
 
 def _delegate_action(engine, args: dict) -> str:
-    type_name = (args or {}).get('type', '')
-    entry = engine.types.find(type_name)
+    role_name = (args or {}).get('role', '')
+    entry = engine.roles.find(role_name)
     if entry is None:
         return 'deny'
     action = (entry.tool_permission or {}).get('delegate', 'allow')
@@ -83,17 +83,17 @@ def _summarize_session(engine, result) -> str:
     return summary
 
 
-def _format_result(engine, type_name: str, res) -> str:
+def _format_result(engine, role_name: str, res) -> str:
     if res.status == 'error':
         msgs = '; '.join(e.get('message', '') for e in (res.errors or []) if e.get('message'))
         return f'Error: delegated task failed: {msgs or "unknown error"}'
     content = (res.content or '').strip()
     if content:
-        return f'[delegate {type_name}] {content}'
+        return f'[delegate {role_name}] {content}'
     summary = _summarize_session(engine, res)
     if summary:
-        return f'[delegate {type_name}] (no final text; {summary})'
-    return f'[delegate {type_name}] (no content)'
+        return f'[delegate {role_name}] (no final text; {summary})'
+    return f'[delegate {role_name}] (no content)'
 
 
 def _sub_footer(engine, res):
@@ -110,17 +110,17 @@ def register_delegate_tool(registry, engine) -> Callable:
     @registry.register(
         name='delegate',
         description=(
-            "Run a task with an agent type as a sub-agent and return its final answer. "
-            "The sub-agent runs in its own session under the agent type's system prompt "
+            "Run a task with a role as a sub-agent and return its final answer. "
+            "The sub-agent runs in its own session under the role's system prompt "
             "and permissions. Use it for specialized work (research, writing, review), "
             "then continue from the returned result."
         ),
         parameters={
             'type': 'object',
             'properties': {
-                'type': {
+                'role': {
                     'type': 'string',
-                    'description': 'Name of the agent type to delegate to',
+                    'description': 'Name of the role to delegate to',
                 },
                 'task': {
                     'type': 'string',
@@ -129,8 +129,8 @@ def register_delegate_tool(registry, engine) -> Callable:
                 'skills': {
                     'type': 'array',
                     'items': {'type': 'string'},
-                    'description': 'Skill names to add to the agent type for '
-                                   'this run, layered over the type\'s own '
+                    'description': 'Skill names to add to the role for '
+                                   'this run, layered over the role\'s own '
                                    'skills. Use it to extend a reusable agent '
                                    'with task, technology, stack, or framework '
                                    'instructions.',
@@ -152,26 +152,26 @@ def register_delegate_tool(registry, engine) -> Callable:
                                    'start fresh).',
                 },
             },
-            'required': ['type', 'task'],
+            'required': ['role', 'task'],
         },
         category='delegate',
         permission='delegate',
-        key_arg='type',
-        short='Run a task with an agent type',
+        key_arg='role',
+        short='Run a task with a role',
         glyph='↳',
         verb='Delegate',
         loop=True,
         permission_fn=lambda args: _delegate_action(engine, args),
     )
-    def delegate(type: str, task: str, skills: list | None = None,
+    def delegate(role: str, task: str, skills: list | None = None,
                  resume: str = '', context: str = 'continue',
                  _config=None, _echo: bool = True) -> str:
         try:
-            res = engine.run_subagent(type, task, skills=skills,
+            res = engine.run_subagent(role, task, skills=skills,
                                       resume=resume, context=context)
         except ValueError as e:
             return f'Error: {e}'
-        result = _format_result(engine, type, res)
+        result = _format_result(engine, role, res)
         if not result.startswith('Error'):
             result += _offer_focus(engine, res.run_id, _config)
         if (_echo and _config is not None and _config.get('delegate_echo', True)

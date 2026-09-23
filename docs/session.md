@@ -8,7 +8,7 @@ Each session is one JSON file: `.replio/sessions/<name>.json`, next to the local
 
 Names are explicit (`/session new <name>`, `/session load <name>`, `replio run --session-id <name>`) or auto-generated as `ses_<timestamp>_<id>`, e.g. `ses_20260817_120000_ab12cd`. The `<id>` is a six-character base36 hash minted at creation and embedded in the name, so an auto session is fully named from the start (no prompt-slug rename).
 
-Session files carry a type prefix so the kinds stay distinguishable at a glance:
+Session files carry a kind prefix so the kinds stay distinguishable at a glance:
 
 | Prefix | Kind | Example |
 |--------|------|---------|
@@ -20,7 +20,7 @@ The trailing `<id>` is a six-character base36 hash minted at creation and embedd
 
 Delegation writes each sub-agent's log as its own session: `sub_<ts>_<id>` (`sub_20260817_120100_cd34ef`), with the calling session recorded as `parent_id` rather than in the filename. Job runs use `job_<ts>_<id>`, with the job name still recorded in the job registry and each run's `JobRun.session`. A caller may resume a run or session explicitly with `delegate`/`team` `resume=...` and `context=continue|compact|new`, which appends to that run's own log instead of minting a new one. These live in the same `.replio/sessions/` directory and are regular sessions, listed by `/sessions` (annotated with their parent), exportable, and loadable, so lead and sub-agent logs stay separate and complete.
 
-Each session also records the agent `role` that owns it (the bound root type, the delegated type, the team-stage type, or the job type), stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no `--type` leaves `role` empty.
+Each session also records the agent `role` that owns it (the bound root role, the delegated role, the team-stage role, or the job role), stamped at creation. That makes a run reconstructable from its log even after the process exits. A plain root or a headless run with no `--role` leaves `role` empty.
 
 Each session also records the Replio `version` that created it, so a log says which build wrote it. The version is stamped once at creation and never changes. Files written before the field load with an empty `version` (no backfill).
 
@@ -84,7 +84,7 @@ The headless CLI `replio export <name> [--out <file>]` reuses the same renderer 
 | `errors` | array | Turn-level errors (provider, network, agent loop) |
 | `parent_id` | string | Name of the session this one was spawned from (sub-agent sessions set it, empty otherwise) |
 | `permissions` | array | Audit log of tool permission decisions (see below) |
-| `role` | string | Agent type that owns the session, stamped at creation (empty for a plain root or a headless run with no `--type`) |
+| `role` | string | Role that owns the session, stamped at creation (empty for a plain root or a headless run with no `--role`) |
 | `session_id` | string | Six-character base36 session id, embedded in an auto name's trailing component (empty for explicit names) |
 | `session_name` | string | Session name, matches the filename |
 | `sub_sessions` | array | Names of sessions spawned from this one (delegations, since the delegate sets the sub-agent's `parent_id`) |
@@ -195,7 +195,7 @@ Every tool permission resolution is recorded to the `permissions` array, making 
 | `path` | The tool's `path_arg` value when the tool has one (e.g. the file or command target) |
 | `timestamp` | ISO 8601 UTC timestamp |
 
-Per-invocation (resolver-based) actions are recorded the same way, for example `delegate` logs the action resolved from the target type, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on, with no config switch, so the log stays a reliable audit record.
+Per-invocation (resolver-based) actions are recorded the same way, for example `delegate` logs the action resolved from the target role, so which delegation was allowed, asked, or denied is auditable. Entries are append-only and never removed. Recording is always on, with no config switch, so the log stays a reliable audit record.
 
 ## Append-only semantics
 

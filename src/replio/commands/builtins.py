@@ -682,39 +682,39 @@ def register_builtins(registry):
         else:
             print('Usage: /models [list [provider]]')
 
-    @registry.register('types', description='Manage agent types', subcommands=[
-        ('list', 'List agent types (list <tag> filters by tag)'),
-        ('show', 'Show an agent type definition'),
-        ('new', 'Create or override an agent type (local)'),
-        ('remove', 'Remove an agent type'),
+    @registry.register('roles', description='Manage roles', subcommands=[
+        ('list', 'List roles (list <tag> filters by tag)'),
+        ('show', 'Show a role definition'),
+        ('new', 'Create or override a role (local)'),
+        ('remove', 'Remove a role'),
     ])
-    def type_cmd(arg=''):
-        from ..types import AgentType
-        tr = chat.types
+    def role_cmd(arg=''):
+        from ..roles import Role
+        tr = chat.roles
         parts = arg.strip().split(maxsplit=1)
         action = parts[0] if parts else ''
         if not action or action == 'list':
             tag = ''
             if action == 'list' and len(parts) > 1:
                 tag = parts[1].strip()
-            types = tr.all()
+            roles = tr.all()
             if tag:
-                types = [t for t in types if tag in t.tags]
-            if not types:
+                roles = [t for t in roles if tag in t.tags]
+            if not roles:
                 if tag:
-                    print(f'  (no agent types tagged "{tag}")')
+                    print(f'  (no roles tagged "{tag}")')
                     known = ', '.join(sorted({t for t in tr.all()
                                               for t in t.tags}))
                     if known:
                         print(f'  known tags: {known}')
                 else:
-                    print('  (no agent types configured)')
-                    print('  Create one with /types new <name>, or edit '
+                    print('  (no roles configured)')
+                    print('  Create one with /roles new <name>, or edit '
                           f'{tr.local_path}')
                 return
             label = f' tagged "{tag}"' if tag else ''
-            print(f'{len(types)} agent types{label}:')
-            for t in types:
+            print(f'{len(roles)} roles{label}:')
+            for t in roles:
                 model = f' [{t.model}]' if t.model else ''
                 tags = f' tags={",".join(t.tags)}' if t.tags else ''
                 origin = f' ({tr.origin(t.name)})'
@@ -723,11 +723,11 @@ def register_builtins(registry):
         if action == 'show':
             name = parts[1].strip() if len(parts) > 1 else ''
             if not name:
-                print('Usage: /types show <name>')
+                print('Usage: /roles show <name>')
                 return
             t = tr.find(name)
             if t is None:
-                print(f'Agent type not found: {name}')
+                print(f'Role not found: {name}')
                 return
             print(f'{t.name} ({tr.origin(t.name)})')
             print(f'  system_prompt: {t.system_prompt or "(empty)"}')
@@ -744,34 +744,44 @@ def register_builtins(registry):
         if action == 'new':
             rest = parts[1].strip() if len(parts) > 1 else ''
             if not rest:
-                print('Usage: /types new <name> [system prompt]')
+                print('Usage: /roles new <name> [system prompt]')
                 return
             name = rest.split(maxsplit=1)[0]
             prompt = rest[len(name):].strip()
             existing = tr.find(name)
             prev_origin = tr.origin(name)
-            tr.put(AgentType(name=name, system_prompt=prompt), scope='local')
+            tr.put(Role(name=name, system_prompt=prompt), scope='local')
             if existing is not None:
-                print(f'Overrode agent type: {name} (was {prev_origin}) - '
+                print(f'Overrode role: {name} (was {prev_origin}) - '
                       f'edit {tr.local_path}')
             else:
-                print(f'Created agent type: {name} (local) - edit {tr.local_path}')
+                print(f'Created role: {name} (local) - edit {tr.local_path}')
             return
         if action == 'remove':
             name = parts[1].strip() if len(parts) > 1 else ''
             if not name:
-                print('Usage: /types remove <name>')
+                print('Usage: /roles remove <name>')
                 return
             if tr.remove(name):
-                print(f'Removed agent type: {name} (local)')
+                print(f'Removed role: {name} (local)')
             elif tr.is_bundled(name):
                 print(f'{name} is bundled with replio - override it with '
-                      '/types new <name>, or edit the local types file, '
+                      '/roles new <name>, or edit the local roles file, '
                       'instead of removing')
             else:
-                print(f'No local agent type to remove: {name}')
+                print(f'No local role to remove: {name}')
             return
-        print('Usage: /types [list|show <name>|new <name> [prompt]|remove <name>]')
+        print('Usage: /roles [list|show <name>|new <name> [prompt]|remove <name>]')
+
+    @registry.register('role', description='Show the current role')
+    def current_role_cmd(arg=''):
+        engine = chat.active() if hasattr(chat, 'active') else chat
+        role = str(getattr(engine, 'role', '') or '')
+        session = getattr(engine.current_session, 'session_name', '')
+        if role:
+            print(f'Role: {role} ({session})')
+        else:
+            print(f'Role: (root, no role bound) ({session})')
 
     @registry.register('teams', description='Manage teams', subcommands=[
         ('list', 'List teams (list <tag> filters by tag)'),
@@ -807,7 +817,7 @@ def register_builtins(registry):
             label = f' tagged "{tag}"' if tag else ''
             print(f'{len(teams)} teams{label}:')
             for t in teams:
-                stages = ' > '.join(s.type for s in t.stages)
+                stages = ' > '.join(s.role for s in t.stages)
                 tags = f' tags={",".join(t.tags)}' if t.tags else ''
                 origin = f' ({tr.origin(t.name)})'
                 print(f'  - {t.name}{tags}{origin}')
@@ -833,7 +843,7 @@ def register_builtins(registry):
                 return
             print('  stages:')
             for i, s in enumerate(t.stages, 1):
-                print(f'    {i}. {s.type}'
+                print(f'    {i}. {s.role}'
                       + (f' [mode={s.mode}]' if s.mode else ''))
                 if s.task_hint:
                     print(f'       task_hint: {s.task_hint}')
@@ -886,7 +896,7 @@ def register_builtins(registry):
             result = chat.run_team(t, task)
             for i, res in enumerate(result.stages, 1):
                 dur = f' {res.duration:.1f}s' if res.duration else ''
-                print(f'  {i}. {t.stages[i - 1].type:<16} {res.status}{dur}')
+                print(f'  {i}. {t.stages[i - 1].role:<16} {res.status}{dur}')
             if result.errors:
                 msgs = [e.get('message', '') for e in result.errors
                         if isinstance(e, dict) and e.get('message')]
@@ -1588,7 +1598,7 @@ def register_builtins(registry):
             while i < len(tokens):
                 tok = tokens[i]
                 if tok in ('--cron', '--interval', '--at', '--prompt', '--file',
-                           '--session', '--mode', '--provider', '--model', '--type'):
+                           '--session', '--mode', '--provider', '--model', '--role'):
                     opts[tok] = tokens[i + 1] if i + 1 < len(tokens) else ''
                     i += 2
                 elif tok == '--approval':
@@ -1639,7 +1649,7 @@ def register_builtins(registry):
                 mode=opts.get('--mode', '') or '',
                 provider=opts.get('--provider', '') or '',
                 model=opts.get('--model', '') or '',
-                type=opts.get('--type', '') or '',
+                role=opts.get('--role', '') or '',
                 task_file=task_file,
                 enabled=auto,
                 status='approved' if auto else 'proposed',
@@ -1724,7 +1734,7 @@ def _toggle_plugin(chat, pm, name, action):
 
 
 def _refresh_registries(chat, pm):
-    for name in ('types', 'teams', 'skills'):
+    for name in ('roles', 'teams', 'skills'):
         registry = getattr(chat, name, None)
         if registry is not None:
             registry.reload(pm)

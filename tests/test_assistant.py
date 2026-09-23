@@ -13,7 +13,7 @@ class TestAssistantRoot(unittest.TestCase):
         self.chat._tmp.cleanup()
 
     def test_bundled_assistant_definition(self):
-        assistant = self.chat.types.find('assistant')
+        assistant = self.chat.roles.find('assistant')
         self.assertIsNotNone(assistant)
         self.assertIn('assistant', assistant.system_prompt.lower())
         self.assertIn('composer', assistant.system_prompt.lower())
@@ -49,8 +49,8 @@ class TestAssistantRoot(unittest.TestCase):
         finally:
             chat._tmp.cleanup()
 
-    def test_assistant_type_rebind_applies_type(self):
-        chat = make_chat({'assistant_type': 'composer'})
+    def test_assistant_role_rebind_applies_type(self):
+        chat = make_chat({'assistant_role': 'composer'})
         try:
             chat._bind_assistant()
             self.assertEqual(chat.role, 'composer')
@@ -62,8 +62,8 @@ class TestAssistantRoot(unittest.TestCase):
         finally:
             chat._tmp.cleanup()
 
-    def test_unknown_assistant_type_is_noop(self):
-        chat = make_chat({'assistant_type': 'ghost'})
+    def test_unknown_assistant_role_is_noop(self):
+        chat = make_chat({'assistant_role': 'ghost'})
         try:
             chat._bind_assistant()
             self.assertEqual(chat.config.get('system_prompt'), '')
@@ -77,7 +77,7 @@ class TestAssistantRoot(unittest.TestCase):
         policy = self.chat._tool_policy
         self.assertEqual(
             policy.action('delegate', 'delegate', None,
-                          {'type': 'composer', 'task': 't'}), 'allow')
+                          {'role': 'composer', 'task': 't'}), 'allow')
         self.assertEqual(
             policy.action('catalog', 'catalog', None, {'action': 'list'}),
             'allow')

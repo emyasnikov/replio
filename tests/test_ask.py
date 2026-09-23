@@ -3,7 +3,7 @@ import json
 import unittest
 from unittest.mock import patch
 
-from replio.types import AgentType
+from replio.roles import Role
 
 from tests.helpers import make_chat
 from tests.test_engine import make_engine
@@ -88,8 +88,8 @@ class TestAskTool(unittest.TestCase):
             engine._tmp.cleanup()
 
     def test_lead_target_consults_lead_model(self):
-        self.chat.types.put(
-            AgentType(name='w', system_prompt='Writer agent'), scope='local')
+        self.chat.roles.put(
+            Role(name='w', system_prompt='Writer agent'), scope='local')
         sub = self.chat._new_sub_engine('w')
         self.assertIs(sub._lead, self.chat)
         self.assertIs(sub._ask_ui, self.chat._ask_ui)
@@ -104,8 +104,8 @@ class TestAskTool(unittest.TestCase):
         self.assertIn('which option?', msgs[-1]['content'])
 
     def test_lead_target_falls_back_to_human_when_lead_silent(self):
-        self.chat.types.put(
-            AgentType(name='w', system_prompt='Writer agent'), scope='local')
+        self.chat.roles.put(
+            Role(name='w', system_prompt='Writer agent'), scope='local')
         sub = self.chat._new_sub_engine('w')
         self.chat.provider.chat_nonstreaming.return_value = {'content': None}
         sub._init_tooling()
@@ -121,8 +121,8 @@ class TestAskTool(unittest.TestCase):
         self.assertEqual(out, 'operator decision')
 
     def test_subagent_human_ask_reaches_operator(self):
-        self.chat.types.put(
-            AgentType(name='w', system_prompt='Writer agent'), scope='local')
+        self.chat.roles.put(
+            Role(name='w', system_prompt='Writer agent'), scope='local')
         sub = self.chat._new_sub_engine('w')
         self.assertIs(sub._ask_ui, self.chat._ask_ui)
         sub._init_tooling()

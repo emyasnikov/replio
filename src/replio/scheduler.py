@@ -23,34 +23,34 @@ def _fresh_job_session(sessions_dir: Path, name: str, when: datetime) -> str:
 def _build_engine(config: Config, job: Job, verbose: bool,
                   stream: bool = False, session_name: str | None = None) -> Engine:
     sub_config = Config(path=str(config.local_path.parent.parent))
-    agent_type = None
+    agent_role = None
     skill_names = []
     grant_ceiling = None
-    if job.type:
+    if job.role:
         from .modes import merge_policy
-        from .types import (TypeRegistry, resolve_permissions,
+        from .roles import (RoleRegistry, resolve_permissions,
                             resolve_grant_ceiling)
-        types = TypeRegistry(local_path=config.local_path.parent / 'types.json')
-        agent_type = types.find(job.type)
-        if agent_type is None:
-            raise ValueError(f'Unknown agent type: {job.type}')
-        if agent_type.model:
-            sub_config.apply('model', agent_type.model)
+        roles = RoleRegistry(local_path=config.local_path.parent / 'roles.json')
+        agent_role = roles.find(job.role)
+        if agent_role is None:
+            raise ValueError(f'Unknown role: {job.role}')
+        if agent_role.model:
+            sub_config.apply('model', agent_role.model)
         parent_self = dict(merge_policy(sub_config)[0])
         parent_grant = (sub_config.get('grant_permission') or parent_self)
         permissions = resolve_permissions(
-            parent_self, parent_grant, agent_type.tool_permission)
+            parent_self, parent_grant, agent_role.tool_permission)
         sub_config.apply('tool_permission', permissions)
         grant_ceiling = resolve_grant_ceiling(
-            parent_self, parent_grant, agent_type.grant_permission, permissions)
-        if agent_type.ask_policy:
+            parent_self, parent_grant, agent_role.grant_permission, permissions)
+        if agent_role.ask_policy:
             ask_policy = dict(sub_config.get('ask_policy') or {})
-            ask_policy.update(agent_type.ask_policy)
+            ask_policy.update(agent_role.ask_policy)
             sub_config.apply('ask_policy', ask_policy)
-        skill_names = list(agent_type.skills or [])
+        skill_names = list(agent_role.skills or [])
     try:
         system_text = system_prompt_for(job, config.local_path.parent.parent,
-                                        agent_type)
+                                        agent_role)
     except FileNotFoundError as e:
         raise ValueError(str(e)) from e
     if skill_names:
@@ -79,7 +79,7 @@ def _build_engine(config: Config, job: Job, verbose: bool,
                     footer_tokens=sub_config.get('footer_tokens', ['context']))
     engine = Engine(sub_config, ui=ui,
                     approve_models=job.approve_model or bool(job.model))
-    engine.role = job.type or ''
+    engine.role = job.role or ''
     engine.current_run.role = engine.role
     if grant_ceiling is not None:
         engine._grant_ceiling = grant_ceiling

@@ -8,7 +8,7 @@ A larger task moves through the same steps every time:
 
 1. **Ask** - the operator tells the `assistant` what they want, in a sentence. Small tasks are answered inline. Bigger ones move on.
 2. **Compose** - the `composer` role designs a team for the task: which specialists, which skills each one needs, the order of stages, and whether a review loop should run. The team is saved to the catalog and can be reused.
-3. **Run** - the team runs stage by stage. Each stage is its own sub-agent with its own type, skills, and permission carve, and it writes its own session log. A review loop lets a producer revise against the reviewer's feedback until it passes.
+3. **Run** - the team runs stage by stage. Each stage is its own sub-agent with its own role, skills, and permission carve, and it writes its own session log. A review loop lets a producer revise against the reviewer's feedback until it passes.
 4. **Hand off** - as the work changes shape, control moves between runs. One agent finishes and hands focus to the next, which continues with its own session intact.
 5. **Watch or stay out** - the operator can follow along, jump into any run, or leave it running in the background.
 6. **Remember** - after the run, the team and its members refresh their memory, so the next run continues from the change instead of replaying a whole transcript.
@@ -20,7 +20,7 @@ A larger task moves through the same steps every time:
 
 A writing or research goal often needs two cooperating teams. A lead team keeps the direction steady: it tracks requirements, researches sources, drafts the text, and runs a review loop so the writer revises against the requirements and the references. A supporting team supplies evidence: it gathers data, checks the requirements, and produces tables and analysis that justify the statements in the text.
 
-The lead team leads and the support team serves. Each stage is an agent type with its own prompt and permissions, and each writer can carry more than one skill, so the same writer drafts an expose and later the full work by switching skills per task.
+The lead team leads and the support team serves. Each stage is a role with its own prompt and permissions, and each writer can carry more than one skill, so the same writer drafts an expose and later the full work by switching skills per task.
 
 ### Focus and handoff
 
@@ -30,7 +30,7 @@ The operator can watch this flow, stay out of it, or jump in with `/focus`, whic
 
 ### Scheduled maintainer
 
-Recurring work is a job. A job carries its own type and skills, so a convention like "keep the docs in sync with AGENTS.md" lives in a skill rather than in every prompt. The scheduler runs it unattended, and a run memory carries context from one run to the next.
+Recurring work is a job. A job carries its own role and skills, so a convention like "keep the docs in sync with AGENTS.md" lives in a skill rather than in every prompt. The scheduler runs it unattended, and a run memory carries context from one run to the next.
 
 ### Supervised fleet
 
@@ -47,4 +47,4 @@ The same loop is available headlessly. Use the CLI for one-shot prompts and the 
 - [Sessions](../session.md) - the run logs and how context is kept bounded
 - [Jobs](../jobs.md) - scheduled and durable work
 - [Agent fleets](../fleet.md) - many scoped agents under a supervisor
-- [Agent types](../types.md) and [Skills](../skills.md) - defining reusable specialists
+- [Roles](../roles.md) and [Skills](../skills.md) - defining reusable specialists

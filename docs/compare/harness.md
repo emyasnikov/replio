@@ -6,7 +6,7 @@ An **agent harness** is the runtime that turns a language model into an agent th
 
 Replio covers the whole harness in one small, self-contained package. It has the loop, a rich tool set, path-scoped permissions, complete session logs, delegation, teams, scheduled jobs, and a fleet supervisor, all in the Python standard library. There is nothing to compile and nothing to install beyond Python itself, so Replio runs anywhere Python runs, from a workstation to a small edge device.
 
-Replio is also extensively configurable without code changes. Models, tools, providers, agent types, teams, skills, and eval fixtures are all data, registered through files and plugins. You can reshape the agent, its tools, its permissions, and its orchestration from configuration, and keep every change in version control.
+Replio is also extensively configurable without code changes. Models, tools, providers, roles, teams, skills, and eval fixtures are all data, registered through files and plugins. You can reshape the agent, its tools, its permissions, and its orchestration from configuration, and keep every change in version control.
 
 ## Representatives
 

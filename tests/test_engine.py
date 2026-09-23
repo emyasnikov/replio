@@ -724,7 +724,7 @@ class TestModelRefUnfold(unittest.TestCase):
         self.engine._tmp.cleanup()
 
     def _write_type(self, name, model):
-        types_dir = self.engine.config.local_path.parent / 'types.json'
+        types_dir = self.engine.config.local_path.parent / 'roles.json'
         types_dir.write_text(json.dumps(
             {name: {'system_prompt': 'You are a worker.', 'model': model}}))
 
@@ -797,7 +797,7 @@ class TestModelRefUnfold(unittest.TestCase):
         from replio.teams import Team, TeamStage
         self._write_type('coder', 'opencode-go/deepseek-v4-flash')
         self.engine.models.remove('opencode-go', 'deepseek-v4-flash')
-        team = Team(name='t', stages=[TeamStage(type='coder')])
+        team = Team(name='t', stages=[TeamStage(role='coder')])
         result = self.engine.run_team(team, 'task')
         self.assertEqual(result.status, 'error')
         self.assertIn('unapproved model',

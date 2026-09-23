@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from replio.teams import Team, TeamStage
 from replio.tools.team import _clamped_stages, _team_action
-from replio.types import AgentType
+from replio.roles import Role
 
 from tests.helpers import make_chat
 
@@ -17,8 +17,8 @@ class TestTeamTool(unittest.TestCase):
         self.chat._summarize = MagicMock(return_value='summary')
         self.sessions_dir = self.chat.config.local_path.parent / 'sessions'
         for name in ('researcher', 'writer'):
-            self.chat.types.put(
-                AgentType(name=name, system_prompt=f'You are the {name}.'),
+            self.chat.roles.put(
+                Role(name=name, system_prompt=f'You are the {name}.'),
                 scope='local')
 
     def tearDown(self):
@@ -48,7 +48,7 @@ class TestTeamTool(unittest.TestCase):
         self.assertIn('task', entry['parameters']['properties'])
 
     def test_runs_pipeline_and_returns_final(self):
-        self._team('doc', TeamStage(type='researcher'), TeamStage(type='writer'))
+        self._team('doc', TeamStage(role='researcher'), TeamStage(role='writer'))
         self.chat.provider.chat.side_effect = [
             self._result('Research done.'), self._result('Draft done.'),
         ]
@@ -67,29 +67,29 @@ class TestTeamTool(unittest.TestCase):
         self.assertIn('has no stages', out)
 
     def test_unknown_stage_type_errors(self):
-        self._team('doc', TeamStage(type='ghost'))
+        self._team('doc', TeamStage(role='ghost'))
         out = self._run()
         self.assertIn('Error: team "doc" failed', out)
-        self.assertIn('Unknown agent type', out)
+        self.assertIn('Unknown role', out)
 
     def test_resolver_allows_known_team(self):
-        self._team('doc', TeamStage(type='researcher'))
+        self._team('doc', TeamStage(role='researcher'))
         self.assertEqual(_team_action(self.chat, {'name': 'doc'}), 'allow')
 
     def test_resolver_denies_stage_delegate_deny(self):
-        self.chat.types.put(AgentType(
+        self.chat.roles.put(Role(
             name='locked', system_prompt='x',
             tool_permission={'delegate': 'deny'}), scope='local')
-        self._team('doc', TeamStage(type='locked'))
+        self._team('doc', TeamStage(role='locked'))
         self.assertEqual(_team_action(self.chat, {'name': 'doc'}), 'deny')
         out = self._run()
         self.assertIn('disabled by tool policy', out)
 
     def test_resolver_asks_for_stage_delegate_ask(self):
-        self.chat.types.put(AgentType(
+        self.chat.roles.put(Role(
             name='cautious', system_prompt='x',
             tool_permission={'delegate': 'ask'}), scope='local')
-        self._team('doc', TeamStage(type='cautious'))
+        self._team('doc', TeamStage(role='cautious'))
         self.assertEqual(_team_action(self.chat, {'name': 'doc'}), 'ask')
         self.chat.provider.chat.side_effect = [self._result('done')]
         with patch('builtins.input', return_value='n'):
@@ -103,11 +103,11 @@ class TestTeamTool(unittest.TestCase):
         })
         try:
             chat._summarize = MagicMock(return_value='summary')
-            chat.types.put(AgentType(
+            chat.roles.put(Role(
                 name='impl', system_prompt='x',
                 tool_permission={'bash': 'allow'}), scope='local')
             chat.teams.put(Team(
-                name='doc', stages=[TeamStage(type='impl')]), scope='local')
+                name='doc', stages=[TeamStage(role='impl')]), scope='local')
             chat.provider.chat.side_effect = [
                 ({'type': 'token', 'content': 'done'},
                  {'type': 'done', 'reason': 'stop'}),
@@ -124,27 +124,27 @@ class TestTeamTool(unittest.TestCase):
             'tool_permission': {'ask': 'allow', 'read': 'allow', 'bash': 'ask'},
         })
         try:
-            chat.types.put(AgentType(
+            chat.roles.put(Role(
                 name='impl', system_prompt='x',
                 tool_permission={'bash': 'allow'}), scope='local')
-            chat.types.put(AgentType(
+            chat.roles.put(Role(
                 name='safe', system_prompt='x',
                 tool_permission={'bash': 'deny'}), scope='local')
             team = Team(name='doc', stages=[
-                TeamStage(type='impl'), TeamStage(type='safe')])
+                TeamStage(role='impl'), TeamStage(role='safe')])
             self.assertEqual(_clamped_stages(chat, team), ['impl'])
         finally:
             chat._tmp.cleanup()
 
     def test_cycle_guard(self):
-        self._team('doc', TeamStage(type='writer'))
+        self._team('doc', TeamStage(role='writer'))
         self.chat._team_stack = ['doc']
         result = self.chat.run_team(self.chat.teams.find('doc'), 'task')
         self.assertEqual(result.status, 'error')
         self.assertTrue(any(e.get('code') == 'team_cycle' for e in result.errors))
 
     def test_depth_guard(self):
-        self._team('doc', TeamStage(type='writer'))
+        self._team('doc', TeamStage(role='writer'))
         self.chat._team_depth = self.chat.config.get('max_team_depth')
         result = self.chat.run_team(self.chat.teams.find('doc'), 'task')
         self.assertEqual(result.status, 'error')
@@ -158,7 +158,7 @@ class TestTeamTool(unittest.TestCase):
         self.assertEqual(sub._team_stack, ['doc'])
 
     def test_agent_loop_runs_team_tool(self):
-        self._team('doc', TeamStage(type='writer'))
+        self._team('doc', TeamStage(role='writer'))
         tool_call = [{
             'id': 'call_team001',
             'type': 'function',

@@ -180,13 +180,13 @@ class Engine:
         return self._providers
 
     @property
-    def types(self):
-        if getattr(self, '_types', None) is None:
-            from .types import TypeRegistry
-            self._types = TypeRegistry(
-                local_path=self.config.local_path.parent / 'types.json')
-            self._plugin_manager.register_types(self._types)
-        return self._types
+    def roles(self):
+        if getattr(self, '_roles', None) is None:
+            from .roles import RoleRegistry
+            self._roles = RoleRegistry(
+                local_path=self.config.local_path.parent / 'roles.json')
+            self._plugin_manager.register_roles(self._roles)
+        return self._roles
 
     @property
     def teams(self):
@@ -210,17 +210,17 @@ class Engine:
         name = str(name or '').strip()
         if not name:
             return False
-        agent_type = self.types.find(name)
-        if agent_type is None:
+        agent_role = self.roles.find(name)
+        if agent_role is None:
             return False
         self.role = name
         self.current_session.role = name
         self.current_run.role = name
         if self.config.origin('system_prompt') == 'default':
-            prompt = agent_type.system_prompt
-            if agent_type.skills:
+            prompt = agent_role.system_prompt
+            if agent_role.skills:
                 from .skills import skills_section
-                section = skills_section(self.skills, agent_type.skills)
+                section = skills_section(self.skills, agent_role.skills)
                 if section:
                     if prompt.strip():
                         prompt = prompt.rstrip() + '\n\n' + section
@@ -228,18 +228,18 @@ class Engine:
                         prompt = section
             if prompt:
                 self.config.apply('system_prompt', prompt)
-        if agent_type.model and self.config.origin('model') == 'default':
-            self.config.apply('model', agent_type.model)
+        if agent_role.model and self.config.origin('model') == 'default':
+            self.config.apply('model', agent_role.model)
             self._reinit_provider()
-        if (agent_type.tool_permission
+        if (agent_role.tool_permission
                 and self.config.origin('tool_permission') == 'default'):
             permissions = dict(self.config.get('tool_permission') or {})
-            permissions.update(agent_type.tool_permission)
+            permissions.update(agent_role.tool_permission)
             self.config.apply('tool_permission', permissions)
-        if (agent_type.ask_policy
+        if (agent_role.ask_policy
                 and self.config.origin('ask_policy') == 'default'):
             policy = dict(self.config.get('ask_policy') or {})
-            policy.update(agent_type.ask_policy)
+            policy.update(agent_role.ask_policy)
             self.config.apply('ask_policy', policy)
         return True
 
@@ -248,7 +248,7 @@ class Engine:
 
     def reload_catalogs(self) -> list[str]:
         reloaded: list[str] = []
-        for attr, label in (('_types', 'types'), ('_teams', 'teams'),
+        for attr, label in (('_roles', 'roles'), ('_teams', 'teams'),
                             ('_skills', 'skills')):
             registry = getattr(self, attr, None)
             if registry is None:
@@ -479,19 +479,19 @@ class Engine:
             permission, 'grant', 'granted', scope=scope, granted_by=origin)
         return True
 
-    def _new_sub_engine(self, type_name: str, provider=None, mode: str = '',
+    def _new_sub_engine(self, role_name: str, provider=None, mode: str = '',
                         skills: list | None = None,
                         task: str = '',
                         session_name: str | None = None, ui=None,
                         link_parent: bool = True,
                         run: Run | None = None) -> 'Engine':
-        agent_type = self.types.find(type_name)
-        if agent_type is None:
-            raise ValueError(f'Unknown agent type: {type_name}')
+        agent_role = self.roles.find(role_name)
+        if agent_role is None:
+            raise ValueError(f'Unknown role: {role_name}')
         sub_config = Config(path=str(self.config.local_path.parent.parent))
         from .skills import skills_section
-        system_prompt = agent_type.system_prompt
-        names = list(agent_type.skills or [])
+        system_prompt = agent_role.system_prompt
+        names = list(agent_role.skills or [])
         for name in (skills or []):
             if name and name not in names:
                 names.append(name)
@@ -505,7 +505,7 @@ class Engine:
         from . import memory as memory_store
         worktree = self.config.local_path.parent.parent
         if memory_store.memory_enabled(sub_config, 'role'):
-            text = memory_store.read_memory(worktree, 'role', type_name)
+            text = memory_store.read_memory(worktree, 'role', role_name)
             section = memory_store.memory_section(text, self.config)
             if section:
                 if system_prompt.strip():
@@ -513,28 +513,28 @@ class Engine:
                 else:
                     system_prompt = section
         sub_config.apply('system_prompt', system_prompt)
-        if agent_type.model:
-            ref = self.unfold_ref(agent_type.model)
+        if agent_role.model:
+            ref = self.unfold_ref(agent_role.model)
             if ref is not None:
                 t_provider, t_base_url, t_model = ref
                 sub_config.apply('provider', t_provider)
                 sub_config.apply('base_url', t_base_url)
                 sub_config.apply('model', t_model)
             else:
-                sub_config.apply('model', agent_type.model)
-        from .types import resolve_permissions, resolve_grant_ceiling
+                sub_config.apply('model', agent_role.model)
+        from .roles import resolve_permissions, resolve_grant_ceiling
         parent_self = self._self_permissions()
         parent_grant = self._grant()
         permissions = resolve_permissions(
-            parent_self, parent_grant, agent_type.tool_permission)
+            parent_self, parent_grant, agent_role.tool_permission)
         sub_config.apply('tool_permission', permissions)
         sub_config.apply('mode', mode or 'build')
         sub_config.apply('unattended', self._is_unattended())
-        if agent_type.ask_policy:
+        if agent_role.ask_policy:
             ask_policy = dict(self.config.get('ask_policy') or {})
-            ask_policy.update(agent_type.ask_policy)
+            ask_policy.update(agent_role.ask_policy)
             sub_config.apply('ask_policy', ask_policy)
-        if provider is None and not agent_type.model:
+        if provider is None and not agent_role.model:
             provider = self.provider
         sub = Engine(sub_config, ui=ui,
                      plugin_manager=self._plugin_manager, provider=provider,
@@ -551,13 +551,13 @@ class Engine:
                                    max_lines=max_lines, forward_all=True)
             else:
                 sub._ui = BufferUI(sub.current_run, max_lines=max_lines)
-        sub.role = type_name
-        sub.current_run.role = type_name
+        sub.role = role_name
+        sub.current_run.role = role_name
         sub.current_run.task = task
         sub._lead = self
         sub._ask_ui = getattr(self, '_ask_ui', None)
         sub._grant_ceiling = resolve_grant_ceiling(
-            parent_self, parent_grant, agent_type.grant_permission, permissions)
+            parent_self, parent_grant, agent_role.grant_permission, permissions)
         sub._team_depth = getattr(self, '_team_depth', 0)
         sub._team_stack = list(getattr(self, '_team_stack', []))
         if session_name:
@@ -573,7 +573,7 @@ class Engine:
     def run_engine(self, run: Run, ui=None) -> 'Engine':
         if run.id == self.current_run.id:
             return self
-        if run.role and self.types.find(run.role) is not None:
+        if run.role and self.roles.find(run.role) is not None:
             sub = self._new_sub_engine(
                 run.role, session_name=run.session, ui=ui, link_parent=False,
                 run=run)
@@ -618,19 +618,19 @@ class Engine:
         session = self.sessions.read(text)
         return None, session.session_name if session is not None else ''
 
-    def run_subagent(self, type_name: str, task: str, mode: str = '',
+    def run_subagent(self, role_name: str, task: str, mode: str = '',
                      skills: list | None = None,
                      resume: str = '', context: str = 'continue') -> TurnResult:
-        agent_type = self.types.find(type_name)
-        if agent_type is None:
-            raise ValueError(f'Unknown agent type: {type_name}')
-        if agent_type.model:
-            ref = self.unfold_ref(agent_type.model)
+        agent_role = self.roles.find(role_name)
+        if agent_role is None:
+            raise ValueError(f'Unknown role: {role_name}')
+        if agent_role.model:
+            ref = self.unfold_ref(agent_role.model)
             provider, _, model = ref if ref else (
-                self.config.get('provider'), None, agent_type.model)
+                self.config.get('provider'), None, agent_role.model)
             if not self._ensure_model_approved(provider, model):
                 raise ValueError(
-                    f'Type "{type_name}" uses unapproved model "{model}" - '
+                    f'Type "{role_name}" uses unapproved model "{model}" - '
                     'approve it first (/model, --approve-model, or /connect)')
         ctx = str(context or 'continue').strip().lower()
         run = None
@@ -640,16 +640,16 @@ class Engine:
             if not session_name:
                 raise ValueError(f'Cannot resume "{resume}": not found')
         sub = self._new_sub_engine(
-            type_name, mode=mode, skills=skills, task=task,
+            role_name, mode=mode, skills=skills, task=task,
             session_name=session_name, run=run, link_parent=run is None)
         if run is not None:
             self.runs.reactivate(run.id)
         if ctx == 'compact':
             sub.compact_session()
-        label = type_name
+        label = role_name
         stack = list(getattr(self, '_team_stack', []))
         if stack:
-            label = f'{stack[-1]}: {type_name}'
+            label = f'{stack[-1]}: {role_name}'
         self.ui.status_begin(f'{label}...')
         try:
             result = sub.chat(task)
@@ -663,16 +663,20 @@ class Engine:
         if result.session and result.session not in self.current_session.sub_sessions:
             self.current_session.sub_sessions.append(result.session)
             self.session_auto_save()
-        self._update_role_memory(type_name, result.session)
+        self._update_role_memory(role_name, result.session)
         return result
 
     def _run_stats(self, result: TurnResult) -> str:
-        usage = result.usage or {}
+        try:
+            duration = float(getattr(result, 'duration', 0.0) or 0.0)
+        except (TypeError, ValueError):
+            duration = 0.0
+        usage = getattr(result, 'usage', None) or {}
         total = usage.get('total_tokens')
         if total is None:
             total = (usage.get('prompt_tokens') or 0) + \
                 (usage.get('completion_tokens') or 0)
-        parts = [f'{result.duration:.1f}s']
+        parts = [f'{duration:.1f}s']
         if total:
             parts.append(f'{int(total):,} tokens')
         return f'({", ".join(parts)})'
@@ -748,12 +752,12 @@ class Engine:
             parts.append(f'## Stage {j} result ({res.session or "stage"}):\n{content}')
         stage = team.stages[index]
         if index > 0 and team.stages[index - 1].handoff_note:
-            parts.append(f'Stage {index + 1} handoff from {team.stages[index - 1].type}: '
+            parts.append(f'Stage {index + 1} handoff from {team.stages[index - 1].role}: '
                          f'{team.stages[index - 1].handoff_note}')
         if memory:
             parts.append(f'## Team memory\n{memory}')
         hint = stage.task_hint or 'Complete this stage of the task.'
-        parts.append(f'Your stage ({stage.type}):\n{hint}')
+        parts.append(f'Your stage ({stage.role}):\n{hint}')
         return '\n\n'.join(parts)
 
     def _team_memory_summary(self, team, results: list, prior: str) -> str:
@@ -822,10 +826,10 @@ class Engine:
             if name and name not in stage_skills:
                 stage_skills.append(name)
         if stage is team.stages[0] and resume:
-            return self.run_subagent(stage.type, brief, mode=mode,
+            return self.run_subagent(stage.role, brief, mode=mode,
                                      skills=stage_skills, resume=resume,
                                      context=context)
-        return self.run_subagent(stage.type, brief, mode=mode,
+        return self.run_subagent(stage.role, brief, mode=mode,
                                  skills=stage_skills)
 
     def _build_iteration_brief(self, team, task: str, memory: str, stage,
@@ -849,14 +853,14 @@ class Engine:
         if memory:
             parts.append(f'## Team memory\n{memory}')
         hint = stage.task_hint or 'Complete this stage of the task.'
-        parts.append(f'Your stage ({stage.type}):\n{hint}')
+        parts.append(f'Your stage ({stage.role}):\n{hint}')
         return '\n\n'.join(parts)
 
     def _team_loop_plan(self, team):
         loop = dict(team.loop or {})
         if not loop:
             return None
-        names = [stage.type for stage in team.stages]
+        names = [stage.role for stage in team.stages]
 
         def resolve(value):
             if isinstance(value, int):
@@ -925,17 +929,17 @@ class Engine:
                          resume: str = '', context: str = 'continue') -> TeamRunResult:
         from .teams import read_team_memory, write_team_memory
         for stage in team.stages:
-            agent_type = self.types.find(stage.type)
-            if agent_type is None or not agent_type.model:
+            agent_role = self.roles.find(stage.role)
+            if agent_role is None or not agent_role.model:
                 continue
-            ref = self.unfold_ref(agent_type.model)
+            ref = self.unfold_ref(agent_role.model)
             provider, _, model = ref if ref else (
-                self.config.get('provider'), None, agent_type.model)
+                self.config.get('provider'), None, agent_role.model)
             if not self._ensure_model_approved(provider, model):
                 return TeamRunResult(
                     name=team.name, status='error',
                     errors=[{'code': '', 'message':
-                        f'Stage "{stage.type}" uses unapproved model "{model}" - '
+                        f'Stage "{stage.role}" uses unapproved model "{model}" - '
                         'approve it first (/model, --approve-model, or /connect)'}])
         worktree = self.config.local_path.parent.parent
         memory = read_team_memory(worktree, team.name)

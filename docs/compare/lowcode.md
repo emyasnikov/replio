@@ -4,7 +4,7 @@ A **low-code** tool gives you a visual canvas for building AI or automation flow
 
 ## Replio is code-first, with a path to visual
 
-Replio takes the code-first route and makes it a strength. Every configuration, from models and providers to tools, agent types, teams, and skills, is text you can read, diff, review, and keep in version control alongside your project. That means reproducible setups, clean reviews, and no hidden state in a database.
+Replio takes the code-first route and makes it a strength. Every configuration, from models and providers to tools, roles, teams, and skills, is text you can read, diff, review, and keep in version control alongside your project. That means reproducible setups, clean reviews, and no hidden state in a database.
 
 The composition model is the registries: define types with their own prompts and permission carves, compose teams with per-stage skills and a review loop, and run them from a prompt, a slash command, or the CLI. This covers the same ground as a canvas while staying scriptable.
 

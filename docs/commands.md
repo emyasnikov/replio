@@ -28,13 +28,14 @@ Run `replio` and type `/` to tab-complete commands. Use `/help` or `/help <cmd>`
 | `/teams`                |                | Manage teams: `list` (`list <tag>` filters), `show <name>`, `new <name> [description]`, `remove <name>`, `run <name> <task>`. See [teams.md](teams.md) |
 | `/thinking`             | `/reasoning`   | Show or switch reasoning display and request (`/thinking on` streams reasoning dimmed under a blue `- Thinking` header, `off` shows only a spinner) |
 | `/tool`                 |                | Run a tool directly (`/tool <name> {"key": "value"}`)          |
-| `/types`                |                | Manage types: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [types.md](types.md) |
+| `/role`                 |                | Show the active run's role and session. See [roles.md](roles.md) |
+| `/roles`                |                | Manage roles: `list` (`list <tag>` filters), `show <name>`, `new <name> [prompt]`, `remove <name>`. See [roles.md](roles.md) |
 | `/unattended`           |                | Show or toggle unattended mode (`/unattended on`/`off`): no stdin at any depth, confirms auto-deny, human asks route to the lead or return without pausing. See [config.md](config.md#unattended-mode) |
 | `/version`              | `/v`           | Show the Replio version                                       |
 
 `/help` renders commands with subcommands indented below and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under `/tool`. `/tool` with no arguments lists the same tools with their short descriptions.
 
-Delegation is a normal tool: the lead agent proposes it, or you run it directly, and `/tool delegate {"type": "researcher", "task": "..."}` routes through the same tool policy. A configured type delegates without prompting (`delegate` defaults to `allow`. Set an agent type's `delegate` to `ask` to confirm), and an agent type outside the registry is denied. See [types.md](types.md) and [swarm.md](swarm.md).
+Delegation is a normal tool: the lead agent proposes it, or you run it directly, and `/tool delegate {"role": "researcher", "task": "..."}` routes through the same tool policy. A configured role delegates without prompting (`delegate` defaults to `allow`. Set a role's `delegate` to `ask` to confirm), and a role outside the registry is denied. See [roles.md](roles.md) and [swarm.md](swarm.md).
 
 ## CLI
 
@@ -153,7 +154,7 @@ Scheduled and durable jobs (cron / interval / one-shot), with retries, backoff, 
 
 | Subcommand    | Description                                                              |
 |---------------|--------------------------------------------------------------------------|
-| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`, with `--prompt` optional when `--file` given), plus `--mode`, `--provider`/`--model`, `--type`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approve-model`, `--approval auto` |
+| `add`         | `replio jobs add <name> --file jobs/<name>.md --cron "0 2 * * *"` (or `--interval N` / `--at ISO`, with `--prompt` optional when `--file` given), plus `--mode`, `--provider`/`--model`, `--role`, `--system-prompt`, `--tools-deny`, `--tool-permission`, `--retries`, `--backoff`, `--timeout`, `--require-approval`, `--approve-model`, `--approval auto` |
 | `add-supervisor` | `replio jobs add-supervisor <name> [--interval N | --at ISO | --cron "expr"] [--task "text" | --file path]` - scaffold an approved `leader`-typed supervisor job from the supervisor task template |
 | `approve`     | `approve <name>` - activate a job (or arm the next run for `--require-approval` jobs) |
 | `daemon`      | `daemon [--tick 15] [--quiet]` - scheduler loop, Ctrl-C to stop           |
@@ -173,7 +174,7 @@ Supervise a fleet of scoped `replio serve` agents: ports, health checks, restart
 | Subcommand    | Description                                                                     |
 |---------------|---------------------------------------------------------------------------------|
 | `add`         | `add <name> [--dir] [--port N] [--max-restarts N]` - add an agent                |
-| `config`      | `config <name> --provider/--model/--type/--system-prompt/--mode/--tools-deny/--tool-permission` - write only those keys into `<dir>/.replio/config.json` |
+| `config`      | `config <name> --provider/--model/--role/--system-prompt/--mode/--tools-deny/--tool-permission` - write only those keys into `<dir>/.replio/config.json` |
 | `down`        | Stop the supervised agents and the daemon if running                             |
 | `init`        | Scan immediate subdirectories holding `.replio/config.json` into the manifest    |
 | `logs`        | `logs <name> [n] [--follow]` - tail an agent's `.replio/logs/<name>.log`         |

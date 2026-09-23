@@ -8,7 +8,7 @@ Memory lives under `.replio/memory/` in the worktree, one file per name:
 
 | Scope | Path | Refreshed | Injected |
 |-------|------|-----------|----------|
-| `role` | `.replio/memory/roles/<type>.md` | After a delegated agent run | Into that type's sub-agent system prompt |
+| `role` | `.replio/memory/roles/<type>.md` | After a delegated agent run | Into that role's sub-agent system prompt |
 | `team` | `.replio/memory/teams/<name>.md` | After a team run | Into every stage brief |
 | `job` | `.replio/memory/jobs/<name>.md` | After a job run | Into the run's system prompt |
 

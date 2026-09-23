@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from replio.modes import merge_policy
 from replio.tools.policy import ToolPolicy
-from replio.types import (AgentType, clamp_action, resolve_grant_ceiling,
+from replio.roles import (Role, clamp_action, resolve_grant_ceiling,
                           resolve_permissions)
 
 from tests.helpers import make_chat
@@ -99,7 +99,7 @@ class TestNoEscalation(unittest.TestCase):
             'tool_permission': {'ask': 'allow', 'read': 'allow', 'bash': 'deny'},
         })
         try:
-            chat.types.put(AgentType(name='impl', tool_permission={'bash': 'allow'}),
+            chat.roles.put(Role(name='impl', tool_permission={'bash': 'allow'}),
                            scope='local')
             sub = chat._new_sub_engine('impl')
             self.assertEqual(self._permissions(sub)['bash'], 'deny')
@@ -109,7 +109,7 @@ class TestNoEscalation(unittest.TestCase):
     def test_type_widens_when_grant_ceiling_allows(self):
         chat = make_chat({'grant_permission': {'read': 'allow', 'bash': 'allow'}})
         try:
-            chat.types.put(AgentType(name='impl', tool_permission={'bash': 'allow'}),
+            chat.roles.put(Role(name='impl', tool_permission={'bash': 'allow'}),
                            scope='local')
             sub = chat._new_sub_engine('impl')
             self.assertEqual(self._permissions(sub)['bash'], 'allow')
@@ -120,12 +120,12 @@ class TestNoEscalation(unittest.TestCase):
         chat = make_chat({'grant_permission': {'read': 'allow', 'bash': 'allow',
                                                'edit': 'allow'}})
         try:
-            chat.types.put(AgentType(
+            chat.roles.put(Role(
                 name='supervisor',
                 tool_permission={'read': 'allow', 'bash': 'deny', 'edit': 'deny'},
                 grant_permission={'read': 'allow', 'bash': 'allow',
                                   'edit': 'allow'}), scope='local')
-            chat.types.put(AgentType(
+            chat.roles.put(Role(
                 name='impl',
                 tool_permission={'read': 'allow', 'bash': 'allow',
                                  'edit': 'allow'}), scope='local')
@@ -140,11 +140,11 @@ class TestNoEscalation(unittest.TestCase):
     def test_oneshot_grant_does_not_propagate_to_child(self):
         chat = make_chat({'grant_permission': {'read': 'allow', 'bash': 'allow'}})
         try:
-            chat.types.put(AgentType(
+            chat.roles.put(Role(
                 name='supervisor',
                 tool_permission={'bash': 'deny'},
                 grant_permission={'bash': 'allow'}), scope='local')
-            chat.types.put(AgentType(name='worker', tool_permission={'bash': 'deny'}),
+            chat.roles.put(Role(name='worker', tool_permission={'bash': 'deny'}),
                            scope='local')
             sup = chat._new_sub_engine('supervisor')
             sup._init_tooling()
@@ -159,7 +159,7 @@ class TestNoEscalation(unittest.TestCase):
 class TestAskPermission(unittest.TestCase):
 
     def _worker(self, chat, ask_policy=None):
-        chat.types.put(AgentType(
+        chat.roles.put(Role(
             name='worker',
             tool_permission={'bash': 'deny'},
             ask_policy=ask_policy or {}), scope='local')

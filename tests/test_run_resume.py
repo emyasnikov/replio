@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from replio.engine import Engine, TeamRunResult
 from replio.teams import Team, TeamStage
-from replio.types import AgentType
+from replio.roles import Role
 
 from tests.helpers import make_chat
 
@@ -16,8 +16,8 @@ class TestRunResume(unittest.TestCase):
         self.chat = make_chat()
         self.sessions_dir = self.chat.config.local_path.parent / 'sessions'
         for name in ('researcher', 'writer'):
-            self.chat.types.put(
-                AgentType(name=name, system_prompt=f'You are the {name}.'),
+            self.chat.roles.put(
+                Role(name=name, system_prompt=f'You are the {name}.'),
                 scope='local')
 
     def tearDown(self):
@@ -95,7 +95,7 @@ class TestRunResume(unittest.TestCase):
 
     def test_team_resume_seeds_first_stage(self):
         team = Team(name='doc', stages=[
-            TeamStage(type='researcher'), TeamStage(type='writer')])
+            TeamStage(role='researcher'), TeamStage(role='writer')])
         self.chat.provider.chat.side_effect = [
             self._result('r1'), self._result('w1'),
             self._result('r2'), self._result('w2'),
@@ -111,7 +111,7 @@ class TestRunResume(unittest.TestCase):
         self.assertEqual(len(users), 2)
 
     def test_team_default_sessions_are_fresh(self):
-        team = Team(name='cold', stages=[TeamStage(type='writer')])
+        team = Team(name='cold', stages=[TeamStage(role='writer')])
         self.chat.provider.chat.side_effect = [
             self._result('a'), self._result('b'),
         ]
@@ -121,8 +121,8 @@ class TestRunResume(unittest.TestCase):
 
     def test_delegate_tool_forwards_resume(self):
         from types import SimpleNamespace
-        self.chat.types.put(
-            AgentType(name='dev', system_prompt='Dev',
+        self.chat.roles.put(
+            Role(name='dev', system_prompt='Dev',
                       tool_permission={'delegate': 'allow'}), scope='local')
         with patch.object(self.chat, 'run_subagent', return_value=SimpleNamespace(
                 status='ok', content='done', errors=[], session='sub_x',
@@ -130,7 +130,7 @@ class TestRunResume(unittest.TestCase):
             with patch('sys.stdout', new=io.StringIO()):
                 self.chat._init_tooling()
                 self.chat._tool_registry.execute(
-                    'delegate', {'type': 'dev', 'task': 't',
+                    'delegate', {'role': 'dev', 'task': 't',
                                  'resume': '#3', 'context': 'compact'})
         self.assertEqual(run.call_args.kwargs.get('resume'), '#3')
         self.assertEqual(run.call_args.kwargs.get('context'), 'compact')
@@ -157,7 +157,7 @@ class TestRunResume(unittest.TestCase):
                 global_dir=Path(tmp.name),
                 local_path=Path(tmp.name) / '.replio' / 'teams.json',
                 bundled_path=Path(tmp.name) / 'none.json')
-            reg.put(Team(name='x', stages=[TeamStage(type='w')]))
+            reg.put(Team(name='x', stages=[TeamStage(role='w')]))
             fresh = TeamRegistry(
                 global_dir=Path(tmp.name),
                 local_path=Path(tmp.name) / '.replio' / 'teams.json',

@@ -4,7 +4,7 @@
 
 A terminal-based **agentic REPL core**. The model is the planner. The tool registry is how it acts. It is a zero-dependency Python app (`stdlib only`) built around a **single agent loop**: one SSE stream per turn where the model either emits content or requests tool calls, which the loop executes and feeds back until the model answers.
 
-Multi-provider chat, web search, sessions, slash commands, machine access, types and delegation, and plugins are all capabilities on top of that core.
+Multi-provider chat, web search, sessions, slash commands, machine access, roles and delegation, and plugins are all capabilities on top of that core.
 
 ## Tech Stack
 
@@ -26,7 +26,7 @@ The agentic core has three layers:
 
    One stream, one round trip when no tools are used. `chat_nonstreaming()` is reserved for query refinement, not the main path. The loop is front-end agnostic: `ChatLoop` (REPL), `replio run` (CLI), and `replio serve` (HTTP) all call `Engine.chat(text) -> TurnResult`. The `<thinking>` marker split lives in the engine so thinking stays separate from content.
 
-2. **ToolRegistry** (`tools/registry.py`) - the **single dispatch point**. The model invokes tools via OpenAI function calling, slash commands are thin wrappers that call the same `execute()`. The loop never special-cases tool names - per-tool behavior comes from registration metadata (`refine`, `permission_fn`, `note`, later `confirm`). The `delegate` tool (`tools/delegate.py`) is a core tool that runs a task under an agent type by spawning an in-process sub-`Engine` (`Engine.run_subagent`) - the same agent loop, its own `sub_<ts>_<id>` session, a quiet `NullUI`. Its permission is a per-invocation `permission_fn` resolved per type. The `team` tool (`tools/team.py`) runs a named team pipeline (`Engine.run_team`) with the same per-stage permission resolution plus cycle and `max_team_depth` guards.
+2. **ToolRegistry** (`tools/registry.py`) - the **single dispatch point**. The model invokes tools via OpenAI function calling, slash commands are thin wrappers that call the same `execute()`. The loop never special-cases tool names - per-tool behavior comes from registration metadata (`refine`, `permission_fn`, `note`, later `confirm`). The `delegate` tool (`tools/delegate.py`) is a core tool that runs a task under a role by spawning an in-process sub-`Engine` (`Engine.run_subagent`) - the same agent loop, its own `sub_<ts>_<id>` session, a quiet `NullUI`. Its permission is a per-invocation `permission_fn` resolved per role. The `team` tool (`tools/team.py`) runs a named team pipeline (`Engine.run_team`) with the same per-stage permission resolution plus cycle and `max_team_depth` guards.
 
 3. **Commands** (`commands/`) - user-facing affordances. A command either wraps a tool or performs a local action (`/model`, `/session`, `/sessions`).
 
@@ -50,8 +50,8 @@ Replio/
 │   ├── cli.py               # `replio run` / `replio serve` / `replio eval` headless entry points
 │   ├── config.py            # JSON config (global + local merge)
 │   ├── models.py            # global model registry - models.json (connections + keys)
-│   ├── types.py             # TypeRegistry - bundled/global/local types.json merge + tags
-│   ├── bundled_types.json  # bundled default types (9, leader + two pre-carved teams)
+│   ├── roles.py             # RoleRegistry - bundled/global/local roles.json merge + tags
+│   ├── bundled_roles.json  # bundled default roles (9, leader + two pre-carved teams)
 │   ├── engine.py            # Headless agent core - Engine + TurnResult + run_subagent
 │   ├── chat.py              # ChatLoop(Engine) - REPL shell with readline
 │   ├── jobs.py              # Scheduled jobs - Job/JobRun model, registry, cron parser
@@ -78,7 +78,7 @@ Replio/
 │   │   ├── __init__.py
 │   │   ├── registry.py      # Tool registration + dispatch (OpenAI function calling)
 │   │   ├── policy.py        # ToolPolicy - allow/ask/deny permissions + path scoping
-│   │   ├── delegate.py      # Core delegate tool - type sub-agents via per-invocation policy
+│   │   ├── delegate.py      # Core delegate tool - role sub-agents via per-invocation policy
 │   │   ├── team.py          # Core team tool - run a named team pipeline, ceiling + depth guards
 │   │   └── ask.py           # Core ask tool - human/lead mid-run questions
 │   ├── plugins/
@@ -139,7 +139,7 @@ Replio/
 - Use only ASCII punctuation and glyphs in docs. Avoid typographic Unicode characters: em-dashes (`—`), en-dashes (`–`), smart/curly quotes (`‘ ’ “ ”`), the single-character ellipsis (`…`), non-breaking spaces, and similar substitutes. Use plain hyphens (`-`) or ASCII three dots (`...`) instead. Inline code and quoted strings may keep non-ASCII only when they reproduce literal runtime output (e.g. the `…` truncation marker).
 - Split clauses with periods or commas rather than semicolons (`;`).
 - Do not break a sentence with a dash-set-aside clause (for example `layers - swarm, jobs - with MCP`). Let the sentence flow as one statement, using commas, parentheses, or a separate sentence instead. Reserve the hyphen for compound words, list markers, bullet-list convention, and version separators. The dash-aside construction reads as machine-generated.
-- Sort enumerated lists alphanumerically: file trees, command and subcommand tables, tool/provider/type rosters, doc indexes, config key tables, and test coverage maps. New entries slot into their sorted position, never appended.
+- Sort enumerated lists alphanumerically: file trees, command and subcommand tables, tool/provider/role rosters, doc indexes, config key tables, and test coverage maps. New entries slot into their sorted position, never appended.
 
 ### Commits
 - One line only: no body, no trailers, no conventional-commit prefixes (`feat:`, `fix:`, `chore:`), no scope, no emoji, no issue numbers.
@@ -161,13 +161,13 @@ Replio/
 ### Machine Access & Permissions
 - `ToolPolicy` (`tools/policy.py`) is the single permission resolution point. The loop and `/tool` both route through it, so never special-case tool names for permission logic
 - Actions: `allow` (no prompt), `ask` (y/N confirm in the loop via `_confirm_tool`), `deny` (tool filtered from the provider schema and refused on direct calls)
-- Precedence: a name-level `deny`, the `tools.allow` allowlist, and a category `deny` win outright and skip the resolver. Otherwise the category action from `tool_permission` applies (default `ask`), and the per-invocation resolver (`permission_fn`, resolved from the tool's current arguments, e.g. `delegate` per type or `git_commit` except for `all=true`) may override a non-`deny` category action or return `None` to keep it. Worktree escalation turns an `allow` into `ask` for read/write/list outside the worktree
+- Precedence: a name-level `deny`, the `tools.allow` allowlist, and a category `deny` win outright and skip the resolver. Otherwise the category action from `tool_permission` applies (default `ask`), and the per-invocation resolver (`permission_fn`, resolved from the tool's current arguments, e.g. `delegate` per role or `git_commit` except for `all=true`) may override a non-`deny` category action or return `None` to keep it. Worktree escalation turns an `allow` into `ask` for read/write/list outside the worktree
 - The worktree is the directory holding the local `.replio/`, i.e. the launch directory, or `--path`. Launching from `~` makes the whole home directory the worktree, so subdirectories (including other projects) do **not** escalate. Launch inside the project or pass `--path` for project-scoped prompting
-- `bash: ask` by default, so every `run_command` confirms. Set `tool_permission.bash = "allow"` to disable prompting. `delegate` defaults to `allow` (runs without a prompt), refined per type: a configured type uses its own `tool_permission` (set `delegate: "ask"` on an agent type to confirm), an agent type outside the registry is denied. `git_commit` is gated by `vcs` (default `ask`): a role whose carve sets `vcs: allow` commits without a prompt while every other role confirms, and `all=true` always asks
-- Delegation (`run_subagent`) builds an in-process sub-`Engine` with the agent type's prompt, model override, and merged `tool_permission`, forces mode `build`, shares the caller's provider/plugin manager/worktree, and runs with `NullUI`, where ask-gated tools auto-deny, so a sub-agent's effective permissions are exactly its carve. Sub-agent results echo via `delegate_echo` (default on). Each sub-agent persists its own `sub_<ts>_<id>` session. The `ask` tool (core) is the explicit human-in-the-loop channel: `target='human'` routes to the operator at the terminal (via the root `ReplUI`, inherited by sub-engines as `_ask_ui`), `target='lead'` routes to the delegating engine's model (bounded `chat_nonstreaming` consultation via the sub-engine's `_lead` reference), and headless roots with neither return an error result without blocking
+- `bash: ask` by default, so every `run_command` confirms. Set `tool_permission.bash = "allow"` to disable prompting. `delegate` defaults to `allow` (runs without a prompt), refined per role: a configured role uses its own `tool_permission` (set `delegate: "ask"` on a role to confirm), a role outside the registry is denied. `git_commit` is gated by `vcs` (default `ask`): a role whose carve sets `vcs: allow` commits without a prompt while every other role confirms, and `all=true` always asks
+- Delegation (`run_subagent`) builds an in-process sub-`Engine` with the role's prompt, model override, and merged `tool_permission`, forces mode `build`, shares the caller's provider/plugin manager/worktree, and runs with `NullUI`, where ask-gated tools auto-deny, so a sub-agent's effective permissions are exactly its carve. Sub-agent results echo via `delegate_echo` (default on). Each sub-agent persists its own `sub_<ts>_<id>` session. The `ask` tool (core) is the explicit human-in-the-loop channel: `target='human'` routes to the operator at the terminal (via the root `ReplUI`, inherited by sub-engines as `_ask_ui`), `target='lead'` routes to the delegating engine's model (bounded `chat_nonstreaming` consultation via the sub-engine's `_lead` reference), and headless roots with neither return an error result without blocking
 - Confirm prompts and tool status are ephemeral REPL UI, never persisted to session files. The permission decision itself (granted / declined / denied) is recorded in the session `permissions` audit array
 - Full policy flow and registration metadata in `docs/tools.md`. Threat model in `docs/security.md`
-- Sandboxed exec (namespace/container isolation) is planned future work (see TODO). Per-agent permission profiles landed with types (`tool_permission` on each type)
+- Sandboxed exec (namespace/container isolation) is planned future work (see TODO). Per-agent permission profiles landed with roles (`tool_permission` on each role)
 
 ### Adding a Provider
 1. Subclass `OpenAICompatibleProvider` (core, in `src/replio/providers/base.py`) and set `DEFAULT_BASE_URL` / `DEFAULT_MODEL` (override `_headers()`/`_payload()` only for non-standard auth or bodies)
@@ -185,7 +185,7 @@ The chat() event contract and full provider reference are in `docs/providers.md`
 ### Adding a Plugin
 Plugins are external repositories, so never modify the core to add optional functionality:
 1. Create a plugin directory with a `manifest.json` (`name`, `version`, `replio_version` semver range, `python` range, `entry` default `plugin.py` (may point into `src/`), `requires` third-party deps, `provides`), an entry module under `src/`, and an optional `tests/` unit suite (stdlib `unittest`, found by `replio plugins test` and the core suite)
-2. The entry module may define `register_tools(registry)`, `register_providers(providers: dict)`, `register_commands(commands)`, `register_services(services)`, `register_types`/`register_teams`/`register_skills`, and `register_fixtures(fixtures)` (eval fixture catalog, see `docs/eval.md`), using the same decorators as core builtins
+2. The entry module may define `register_tools(registry)`, `register_providers(providers: dict)`, `register_commands(commands)`, `register_services(services)`, `register_roles`/`register_teams`/`register_skills`, and `register_fixtures(fixtures)` (eval fixture catalog, see `docs/eval.md`), using the same decorators as core builtins
 3. Import third-party deps lazily **inside** tool functions, the core never imports them
 4. Install via `/plugins install <git-url|path>` or `replio plugins install`. Activation is the `plugins` config list (empty = all), and `install`/`uninstall`/`enable`/`disable` maintain it automatically
 5. See `docs/plugins.md` for the full manifest schema, compatibility contract, and management commands

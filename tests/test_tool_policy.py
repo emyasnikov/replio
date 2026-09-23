@@ -104,10 +104,10 @@ class TestToolPolicy(unittest.TestCase):
     def test_resolver_refines_action(self):
         p = self.policy(permissions={'delegate': 'ask'},
                         resolvers={'delegate': lambda args: 'allow'
-                                   if args.get('type') == 'known' else 'deny'})
-        self.assertEqual(p.action('delegate', 'delegate', args={'type': 'known'}),
+                                   if args.get('role') == 'known' else 'deny'})
+        self.assertEqual(p.action('delegate', 'delegate', args={'role': 'known'}),
                          'allow')
-        self.assertEqual(p.action('delegate', 'delegate', args={'type': 'temp'}),
+        self.assertEqual(p.action('delegate', 'delegate', args={'role': 'temp'}),
                          'deny')
 
     def test_resolver_ignored_without_args(self):
@@ -119,13 +119,13 @@ class TestToolPolicy(unittest.TestCase):
         p = self.policy(permissions={}, deny=['delegate'],
                         resolvers={'delegate': lambda args: 'allow'})
         self.assertEqual(p.action('delegate', 'delegate',
-                                  args={'type': 'known'}), 'deny')
+                                  args={'role': 'known'}), 'deny')
 
     def test_resolver_ignores_invalid_value(self):
         p = self.policy(permissions={'delegate': 'ask'},
                         resolvers={'delegate': lambda args: 'bogus'})
         self.assertEqual(p.action('delegate', 'delegate',
-                                  args={'type': 'x'}), 'ask')
+                                  args={'role': 'x'}), 'ask')
 
     def test_allowed_ignores_resolver(self):
         p = self.policy(permissions={'delegate': 'ask'},

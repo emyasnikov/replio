@@ -21,9 +21,9 @@ class TestFocusOnDelegate(unittest.TestCase):
     def tearDown(self):
         self.chat._tmp.cleanup()
 
-    def _delegate(self, type_name='writer'):
+    def _delegate(self, role_name='writer'):
         return self.chat._run_tool('delegate',
-                                   {'type': type_name, 'task': 'draft it'})
+                                   {'role': role_name, 'task': 'draft it'})
 
     def test_default_is_off(self):
         self.assertEqual(self.chat.config.get('focus_on_delegate'), 'off')
@@ -71,7 +71,7 @@ class TestFocusOnDelegate(unittest.TestCase):
         sub._init_tooling()
         sub.run_subagent = MagicMock(return_value=TurnResult(
             content='done', session='sub_2', status='ok', run_id=self.run.id))
-        out = sub._run_tool('delegate', {'type': 'writer', 'task': 'x'})
+        out = sub._run_tool('delegate', {'role': 'writer', 'task': 'x'})
         self.assertNotIn('focus follows', out)
         self.assertIsNone(self.chat._pending_focus)
 
@@ -95,7 +95,7 @@ class TestFocusOnDelegateLoop(unittest.TestCase):
             [{'type': 'tool_calls', 'tool_calls': [
                 {'id': 'call_1', 'type': 'function',
                  'function': {'name': 'delegate',
-                              'arguments': json.dumps({'type': 'writer',
+                              'arguments': json.dumps({'role': 'writer',
                                                        'task': 'draft it'})}},
             ]}],
             [{'type': 'token', 'content': 'Delegated.'},

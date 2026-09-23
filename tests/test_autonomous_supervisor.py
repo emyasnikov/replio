@@ -40,7 +40,7 @@ class TestAutonomousSupervisor(unittest.TestCase):
                 'bash': 'allow', 'edit': 'allow', 'read': 'allow',
                 'list': 'allow', 'web': 'allow', 'ask': 'allow'},
         }))
-        (replio / 'types.json').write_text(json.dumps({
+        (replio / 'roles.json').write_text(json.dumps({
             'leader': {
                 'system_prompt': 'You lead the team.',
                 'tool_permission': {
@@ -59,7 +59,7 @@ class TestAutonomousSupervisor(unittest.TestCase):
         }))
         (replio / 'teams.json').write_text(json.dumps({
             'dev': {'description': 'dev pipeline',
-                    'stages': [{'type': 'worker'}]},
+                    'stages': [{'role': 'worker'}]},
         }))
         self.config = Config(path=str(self.base))
         self.reporter = _FakeReport()
@@ -94,7 +94,7 @@ class TestAutonomousSupervisor(unittest.TestCase):
 
     def _supervisor_job(self) -> Job:
         return Job('supervisor', {'interval': 86400}, prompt='lead the team',
-                   type='leader', status='approved', session='job.supervisor')
+                   role='leader', status='approved', session='job.supervisor')
 
     def test_loop_parks_ask_and_reports(self):
         job = self._supervisor_job()

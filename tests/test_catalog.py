@@ -1,6 +1,6 @@
 import unittest
 
-from replio.types import AgentType
+from replio.roles import Role
 
 from tests.helpers import make_chat
 
@@ -35,8 +35,8 @@ class TestCatalogTool(unittest.TestCase):
         perms = dict(self.chat.config.get('tool_permission'))
         perms['catalog'] = 'allow'
         self.chat.config.apply('tool_permission', perms)
-        self.chat.types.put(
-            AgentType(name='composer', system_prompt='c',
+        self.chat.roles.put(
+            Role(name='composer', system_prompt='c',
                       tool_permission={'catalog': 'allow'}), scope='local')
         sub = self.chat._new_sub_engine('composer')
         sub._init_tooling()
@@ -45,7 +45,7 @@ class TestCatalogTool(unittest.TestCase):
                                     {'action': 'list'}), 'allow')
 
     def test_list_types(self):
-        out = self._catalog(action='list', kind='type')
+        out = self._catalog(action='list', kind='role')
         self.assertIn('leader', out)
 
     def test_list_teams(self):
@@ -54,7 +54,7 @@ class TestCatalogTool(unittest.TestCase):
         self.assertIn('researcher > writer', out)
 
     def test_show_type(self):
-        out = self._catalog(action='show', kind='type', name='leader')
+        out = self._catalog(action='show', kind='role', name='leader')
         self.assertIn('system_prompt:', out)
 
     def test_show_team(self):
@@ -67,23 +67,23 @@ class TestCatalogTool(unittest.TestCase):
             action='show', kind='team', name='ghost'))
 
     def test_save_type(self):
-        out = self._catalog(action='save', kind='type', name='essayist',
+        out = self._catalog(action='save', kind='role', name='essayist',
                             system_prompt='You write essays.',
                             skills=['composing'], tags=['writing'])
-        self.assertIn('Saved agent type: essayist', out)
-        saved = self.chat.types.find('essayist')
+        self.assertIn('Saved role: essayist', out)
+        saved = self.chat.roles.find('essayist')
         self.assertEqual(saved.system_prompt, 'You write essays.')
         self.assertEqual(saved.skills, ['composing'])
-        self.assertEqual(self.chat.types.origin('essayist'), 'local')
+        self.assertEqual(self.chat.roles.origin('essayist'), 'local')
 
     def test_save_team_with_stages(self):
         out = self._catalog(
             action='save', kind='team', name='thesis', description='writing',
-            stages=[{'type': 'researcher', 'skills': ['sourcing']},
-                    {'type': 'writer', 'handoff_note': 'draft'}])
+            stages=[{'role': 'researcher', 'skills': ['sourcing']},
+                    {'role': 'writer', 'handoff_note': 'draft'}])
         self.assertIn('Saved team: thesis', out)
         team = self.chat.teams.find('thesis')
-        self.assertEqual([s.type for s in team.stages], ['researcher', 'writer'])
+        self.assertEqual([s.role for s in team.stages], ['researcher', 'writer'])
         self.assertEqual(team.stages[0].skills, ['sourcing'])
         self.assertEqual(team.stages[1].handoff_note, 'draft')
 
@@ -124,7 +124,7 @@ class TestCatalogTool(unittest.TestCase):
         self.assertIn('Error: kind must be', out)
 
     def test_missing_name(self):
-        out = self._catalog(action='save', kind='type')
+        out = self._catalog(action='save', kind='role')
         self.assertIn('name is required', out)
 
     def test_cross_engine_reload(self):
@@ -133,13 +133,13 @@ class TestCatalogTool(unittest.TestCase):
         sub._init_tooling()
         sub._tool_registry.execute(
             'catalog', {'action': 'save', 'kind': 'team', 'name': 'built',
-                        'stages': [{'type': 'researcher'}]})
+                        'stages': [{'role': 'researcher'}]})
         self.assertIsNone(self.chat.teams.find('built'))
         self.chat._reload_catalogs_if_changed()
         self.assertIsNotNone(self.chat.teams.find('built'))
 
     def test_unknown_action(self):
-        out = self._catalog(action='dance', kind='type')
+        out = self._catalog(action='dance', kind='role')
         self.assertIn('Error: action must be', out)
 
 

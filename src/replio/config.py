@@ -15,7 +15,7 @@ DEFAULT_CONFIG = {
     'hide_confirm_input': False,
     'system_prompt': '',
     'assistant': True,
-    'assistant_type': 'assistant',
+    'assistant_role': 'assistant',
     'prompt_role': False,
     'focus_on_delegate': 'off',
     'memory': True,

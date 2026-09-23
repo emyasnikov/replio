@@ -37,7 +37,7 @@ Every engine instance is a run, tracked in a process-local `RunRegistry` (`src/r
 
 ## Memory
 
-A run's own session is the context within a run. Across runs, continuity is bounded memory owned by `src/replio/memory.py`, one compacted Markdown summary per scope under `.replio/memory/` (`roles/<type>.md`, `teams/<name>.md`, `jobs/<name>.md`). Role memory is injected into a sub-agent's system prompt and refreshed after its run, and team/job memory is injected into briefs and refreshed after their runs, all through the same compaction summarizer with the previous memory as a seed. `memory`, `memory_scopes`, and `memory_max_chars` gate and cap it, and `/memorize` writes a scope on demand. See [memory.md](memory.md).
+A run's own session is the context within a run. Across runs, continuity is bounded memory owned by `src/replio/memory.py`, one compacted Markdown summary per scope under `.replio/memory/` (`roles/<role>.md`, `teams/<name>.md`, `jobs/<name>.md`). Role memory is injected into a sub-agent's system prompt and refreshed after its run, and team/job memory is injected into briefs and refreshed after their runs, all through the same compaction summarizer with the previous memory as a seed. `memory`, `memory_scopes`, and `memory_max_chars` gate and cap it, and `/memorize` writes a scope on demand. See [memory.md](memory.md).
 
 ## One stream, one round trip
 
@@ -98,10 +98,10 @@ src/replio/
 ├── scheduler.py         # JobScheduler - durable job daemon
 ├── server.py            # stdlib HTTP JSON API
 ├── sessions/            # session CRUD + markdown render
-├── skills.py            # SkillRegistry (per-type instructions)
+├── skills.py            # SkillRegistry (per-role instructions)
 ├── teams.py             # TeamRegistry (named team pipelines) + team memory helpers
 ├── tools/               # tool registry, tool policy, delegate, ask
-├── types.py             # TypeRegistry (agent types, bundled/plugin/global/local)
+├── roles.py             # RoleRegistry (roles, bundled/plugin/global/local)
 ├── ui.py                # UISink - ReplUI / HeadlessUI / BufferUI / NullUI
 └── utils/               # urllib-based SSE streaming
 ```

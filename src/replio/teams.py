@@ -5,12 +5,12 @@ from pathlib import Path
 from typing import Any
 
 from .config import Config
-from .types import _load_scope
+from .roles import _load_scope
 
 
 @dataclass
 class TeamStage:
-    type: str
+    role: str
     mode: str = ''
     task_hint: str = ''
     handoff_note: str = ''
@@ -19,9 +19,9 @@ class TeamStage:
     @classmethod
     def from_dict(cls, d) -> 'TeamStage':
         if isinstance(d, str):
-            return cls(type=d)
+            return cls(role=d)
         return cls(
-            type=str(d.get('type', '')),
+            role=str(d.get('role', '')),
             mode=str(d.get('mode') or ''),
             task_hint=str(d.get('task_hint') or ''),
             handoff_note=str(d.get('handoff_note') or ''),

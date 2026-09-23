@@ -61,15 +61,7 @@ The leader remembers the operator's instructions across runs, long role instruct
 | `memorize` as a tool - memory writes through a tool an agent calls | S-M | memory the agent maintains |
 | Conclusion stage - a write-scoped stage that distills a finished run into role files, skills, or memory, and never commits | M | self-improvement loop |
 
-Known gap: `bind_root_agent` applies the type prompt only when `config.origin('system_prompt') == 'default'`, it runs once at startup, and it never refreshes, so the root-memory change alone is incomplete. It must share one prompt-composition helper with `_new_sub_engine`, respect the `origin` guard, and ship with a refresh path (the conclusion stage), otherwise the injected memory never updates.
-
-## Types to roles rename
-
-One vocabulary names the agent catalog. The rename is clean in code with no compatibility aliases, and the operator adapts the existing `.replio` files by hand.
-
-| Task | Effort | Provides |
-|------|--------|----------|
-| Rename the type catalog to roles - `AgentType` to `Role`, `TypeRegistry` to `RoleRegistry`, `/types` to `/roles`, `--type` to `--role`, `register_types` to `register_roles`, `types.json` to `roles.json`, `docs/types.md` to `docs/roles.md`, a clean in-code rename with no compatibility aliases | L | one vocabulary |
+Known gap: `bind_root_agent` applies the role prompt only when `config.origin('system_prompt') == 'default'`, it runs once at startup, and it never refreshes, so the root-memory change alone is incomplete. It must share one prompt-composition helper with `_new_sub_engine`, respect the `origin` guard, and ship with a refresh path (the conclusion stage), otherwise the injected memory never updates.
 
 ## Role boundaries, skills, and project knowledge
 
@@ -141,7 +133,7 @@ Agents cooperate through types, delegation, and team stages. Sub-agents use the 
 | Auditor agents + generate > check > correct orchestration - run a main agent, an auditor, and a fix pass in a loop until passing | M-L | review-and-fix loops (later phase, listed in VISION.md out-of-scope) |
 | PM/dev/tester team orchestration as a user-facing pattern | M | team pattern on top of the teams registry |
 | Custom system prompts per session | S-M | per-site instructions |
-| Agent type directory scan for export/import - read `.replio/types/*.md` (front-matter types) to import and export types to Markdown | S-M | portable type definitions |
+| Role directory scan for export/import - read `.replio/roles/*.md` (front-matter roles) to import and export roles to Markdown | S-M | portable role definitions |
 | Swarm orchestration umbrella (TODO item) | - | decomposed by this package |
 
 ## Jobs operations + report-back
@@ -150,7 +142,7 @@ React to and see jobs from outside the box. Run teams on schedule.
 
 | Task | Effort | Provides |
 |------|--------|----------|
-| Recurring tasks carry their own role - each job carries its own type and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time | S-M | encoded recurring behavior |
+| Recurring tasks carry their own role - each job carries its own role and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time | S-M | encoded recurring behavior |
 | `jobs add --team` - scheduled team runs, per-run team summary session, member sessions as team stages | M | recurring team pipelines |
 | Jobs operator API - `GET /jobs` and `POST /jobs/<name>/approve|reject|run|disable` on `replio serve` | M | any client can see/act per agent |
 | Job event hooks - the scheduler emits typed transitions (`proposed`, `approved`, `will_run`, `executing`, `verified`, `failed`, `timeout`, `waiting_approval`) to registered `services`, channel-agnostic core | M | notification source |

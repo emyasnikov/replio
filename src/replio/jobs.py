@@ -173,7 +173,7 @@ class Job:
     mode: str = ''
     provider: str = ''
     model: str = ''
-    type: str = ''
+    role: str = ''
     system_prompt: str = ''
     task_file: str = ''
     tool_permission: dict = field(default_factory=dict)
@@ -210,7 +210,7 @@ class Job:
             'mode': self.mode,
             'provider': self.provider,
             'model': self.model,
-            'type': self.type,
+            'role': self.role,
             'system_prompt': self.system_prompt,
             'task_file': self.task_file,
             'tool_permission': dict(self.tool_permission),
@@ -239,7 +239,7 @@ class Job:
             mode=d.get('mode', ''),
             provider=d.get('provider', ''),
             model=d.get('model', ''),
-            type=d.get('type', ''),
+            role=d.get('role', ''),
             system_prompt=d.get('system_prompt', ''),
             task_file=d.get('task_file', ''),
             tool_permission=dict(d.get('tool_permission') or {}),
@@ -353,7 +353,7 @@ def ensure_task_file(worktree: Path, job: 'Job') -> Path:
     return path
 
 
-SUPERVISOR_TYPE = 'leader'
+SUPERVISOR_ROLE = 'leader'
 
 SUPERVISOR_TASK_TEMPLATE = """# {name}
 
@@ -383,7 +383,7 @@ def add_supervisor_job(registry: 'JobRegistry', name: str, worktree: Path,
         name=name,
         schedule=schedule,
         prompt=task or 'Lead the work, coordinate the teams, and report back.',
-        type=SUPERVISOR_TYPE,
+        role=SUPERVISOR_ROLE,
         task_file=task_file or f'.replio/jobs/{name}.md',
         status='waiting_approval' if require_approval else 'approved',
         enabled=True,
@@ -419,10 +419,10 @@ def write_memory(worktree: Path, job: 'Job', text: str) -> Path:
     return _write(worktree, 'job', job.name, text)
 
 
-def system_prompt_for(job: 'Job', worktree: Path, agent_type=None) -> str:
+def system_prompt_for(job: 'Job', worktree: Path, agent_role=None) -> str:
     parts = []
-    if agent_type is not None and getattr(agent_type, 'system_prompt', ''):
-        parts.append(agent_type.system_prompt)
+    if agent_role is not None and getattr(agent_role, 'system_prompt', ''):
+        parts.append(agent_role.system_prompt)
     if job.task_file:
         content = read_task_file(worktree, job)
         if content is None:
@@ -595,8 +595,8 @@ def render_show(registry: JobRegistry, name: str, print=print) -> bool:
         print(f'  memory:     {memory_rel} (written after the first run)')
     if job.mode:
         print(f'  mode:       {job.mode}')
-    if job.type:
-        print(f'  type:       {job.type}')
+    if job.role:
+        print(f'  role:       {job.role}')
     if job.provider:
         print(f'  provider:   {job.provider}')
     if job.model:

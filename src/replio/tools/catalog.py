@@ -3,26 +3,26 @@ from typing import Callable
 
 from ..skills import Skill
 from ..teams import Team
-from ..types import AgentType
+from ..roles import Role
 
-_TYPE_FIELDS = ('system_prompt', 'model', 'skills', 'tags',
+_ROLE_FIELDS = ('system_prompt', 'model', 'skills', 'tags',
                 'tool_permission', 'grant_permission', 'ask_policy')
 
 
-def _type_line(engine, agent_type) -> str:
+def _role_line(engine, agent_role) -> str:
     parts = []
-    if agent_type.model:
-        parts.append(f'model={agent_type.model}')
-    if agent_type.tags:
-        parts.append(f'tags={",".join(agent_type.tags)}')
-    if agent_type.skills:
-        parts.append(f'skills={",".join(agent_type.skills)}')
+    if agent_role.model:
+        parts.append(f'model={agent_role.model}')
+    if agent_role.tags:
+        parts.append(f'tags={",".join(agent_role.tags)}')
+    if agent_role.skills:
+        parts.append(f'skills={",".join(agent_role.skills)}')
     detail = ' ' + ' '.join(parts) if parts else ''
-    return f'- {agent_type.name}{detail} ({engine.types.origin(agent_type.name)})'
+    return f'- {agent_role.name}{detail} ({engine.roles.origin(agent_role.name)})'
 
 
 def _team_line(engine, team) -> str:
-    chain = ' > '.join(stage.type for stage in team.stages) or '(no stages)'
+    chain = ' > '.join(stage.role for stage in team.stages) or '(no stages)'
     tags = f' tags={",".join(team.tags)}' if team.tags else ''
     return (f'- {team.name}{tags} ({engine.teams.origin(team.name)}): {chain}')
 
@@ -33,20 +33,20 @@ def _skill_line(engine, skill) -> str:
     return f'- {skill.name} ({engine.skills.origin(skill.name)}){suffix}'
 
 
-def _show_type(engine, name: str) -> str:
-    agent_type = engine.types.find(name)
-    if agent_type is None:
-        return f'Error: unknown agent type "{name}"'
-    lines = [f'{agent_type.name} ({engine.types.origin(name)})']
-    lines.append(f'system_prompt: {agent_type.system_prompt or "(empty)"}')
-    if agent_type.model:
-        lines.append(f'model: {agent_type.model}')
-    if agent_type.skills:
-        lines.append(f'skills: {", ".join(agent_type.skills)}')
-    if agent_type.tags:
-        lines.append(f'tags: {", ".join(agent_type.tags)}')
+def _show_role(engine, name: str) -> str:
+    agent_role = engine.roles.find(name)
+    if agent_role is None:
+        return f'Error: unknown role "{name}"'
+    lines = [f'{agent_role.name} ({engine.roles.origin(name)})']
+    lines.append(f'system_prompt: {agent_role.system_prompt or "(empty)"}')
+    if agent_role.model:
+        lines.append(f'model: {agent_role.model}')
+    if agent_role.skills:
+        lines.append(f'skills: {", ".join(agent_role.skills)}')
+    if agent_role.tags:
+        lines.append(f'tags: {", ".join(agent_role.tags)}')
     for key in ('tool_permission', 'grant_permission', 'ask_policy'):
-        value = getattr(agent_type, key)
+        value = getattr(agent_role, key)
         if value:
             lines.append(f'{key}: {json.dumps(value)}')
     return '\n'.join(lines)
@@ -64,7 +64,7 @@ def _show_team(engine, name: str) -> str:
     if not team.stages:
         lines.append('stages: (none)')
     for i, stage in enumerate(team.stages, 1):
-        parts = [f'{i}. {stage.type}']
+        parts = [f'{i}. {stage.role}']
         if stage.mode:
             parts.append(f'mode={stage.mode}')
         lines.append(' '.join(parts))
@@ -84,13 +84,13 @@ def _show_skill(engine, name: str) -> str:
     return f'{skill.name} ({engine.skills.origin(name)})\n{skill.content}'
 
 
-def _save_type(engine, name: str, values: dict) -> str:
+def _save_role(engine, name: str, values: dict) -> str:
     data = {'name': name}
-    for field in _TYPE_FIELDS:
+    for field in _ROLE_FIELDS:
         if values.get(field) is not None:
             data[field] = values[field]
-    engine.types.put(AgentType.from_dict(data), scope='local')
-    return f'Saved agent type: {name} (local)'
+    engine.roles.put(Role.from_dict(data), scope='local')
+    return f'Saved role: {name} (local)'
 
 
 def _save_team(engine, name: str, values: dict) -> str:
@@ -115,12 +115,12 @@ def register_catalog_tool(registry, engine) -> Callable:
     @registry.register(
         name='catalog',
         description=(
-            "Manage the agent catalog: agent types, teams, and skills. Use it to "
-            "compose a team for a task, create the specialist types and skills it "
+            "Manage the agent catalog: roles, teams, and skills. Use it to "
+            "compose a team for a task, create the specialist roles and skills it "
             "needs, inspect what exists, or remove local entries. Saving writes to "
-            "the project catalog (.replio/) and reloads it, so a new type, team, "
-            "or skill is usable in the same run. A team stage's `type` must name an "
-            "agent type and its `skills` extend that type for the stage."
+            "the project catalog (.replio/) and reloads it, so a new role, team, "
+            "or skill is usable in the same run. A team stage's `role` names the "
+            "role to run and its `skills` extend that role for the stage."
         ),
         parameters={
             'type': 'object',
@@ -133,7 +133,7 @@ def register_catalog_tool(registry, engine) -> Callable:
                 },
                 'kind': {
                     'type': 'string',
-                    'enum': ['type', 'team', 'skill'],
+                    'enum': ['role', 'team', 'skill'],
                     'description': 'Which catalog to act on.',
                 },
                 'name': {
@@ -142,34 +142,34 @@ def register_catalog_tool(registry, engine) -> Callable:
                 },
                 'system_prompt': {
                     'type': 'string',
-                    'description': "Agent type: the role's system prompt.",
+                    'description': "Role: the role's system prompt.",
                 },
                 'model': {
                     'type': 'string',
-                    'description': 'Agent type: optional model override.',
+                    'description': 'Role: optional model override.',
                 },
                 'skills': {
                     'type': 'array',
                     'items': {'type': 'string'},
-                    'description': "Agent type: standing skill names. For a team "
+                    'description': "Role: standing skill names. For a team "
                                    "stage use the stage's own skills field.",
                 },
                 'tags': {
                     'type': 'array',
                     'items': {'type': 'string'},
-                    'description': 'Agent type, team, or skill: grouping tags.',
+                    'description': 'Role, team, or skill: grouping tags.',
                 },
                 'tool_permission': {
                     'type': 'object',
-                    'description': 'Agent type: per-category permission overrides.',
+                    'description': 'Role: per-category permission overrides.',
                 },
                 'grant_permission': {
                     'type': 'object',
-                    'description': 'Agent type: delegation ceiling for sub-agents.',
+                    'description': 'Role: delegation ceiling for sub-agents.',
                 },
                 'ask_policy': {
                     'type': 'object',
-                    'description': 'Agent type: ask routing by kind.',
+                    'description': 'Role: ask routing by kind.',
                 },
                 'content': {
                     'type': 'string',
@@ -185,14 +185,14 @@ def register_catalog_tool(registry, engine) -> Callable:
                     'items': {
                         'type': 'object',
                         'properties': {
-                            'type': {'type': 'string'},
+                            'role': {'type': 'string'},
                             'mode': {'type': 'string'},
                             'task_hint': {'type': 'string'},
                             'handoff_note': {'type': 'string'},
                             'skills': {'type': 'array',
                                        'items': {'type': 'string'}},
                         },
-                        'required': ['type'],
+                        'required': ['role'],
                     },
                 },
                 'loop': {
@@ -214,7 +214,7 @@ def register_catalog_tool(registry, engine) -> Callable:
         category='catalog',
         permission='catalog',
         key_arg='name',
-        short='Manage agent types, teams, and skills',
+        short='Manage roles, teams, and skills',
         glyph='+',
         verb='Catalog',
     )
@@ -232,25 +232,25 @@ def register_catalog_tool(registry, engine) -> Callable:
             return f'Reloaded catalogs: {", ".join(reloaded) or "(none loaded)"}'
         if action not in ('list', 'show', 'save', 'remove'):
             return 'Error: action must be list, show, save, remove, or reload'
-        if kind not in ('type', 'team', 'skill'):
+        if kind not in ('role', 'team', 'skill'):
             return 'Error: kind must be type, team, or skill'
         if action == 'list':
-            if kind == 'type':
-                return '\n'.join(_type_line(engine, t) for t in engine.types.all())
+            if kind == 'role':
+                return '\n'.join(_role_line(engine, t) for t in engine.roles.all())
             if kind == 'team':
                 return '\n'.join(_team_line(engine, t) for t in engine.teams.all())
             return '\n'.join(_skill_line(engine, s) for s in engine.skills.all())
         if not name:
             return f'Error: name is required to {action} a {kind}'
         if action == 'show':
-            if kind == 'type':
-                return _show_type(engine, name)
+            if kind == 'role':
+                return _show_role(engine, name)
             if kind == 'team':
                 return _show_team(engine, name)
             return _show_skill(engine, name)
         if action == 'remove':
-            if kind == 'type':
-                registry = engine.types
+            if kind == 'role':
+                registry = engine.roles
             elif kind == 'team':
                 registry = engine.teams
             else:
@@ -272,8 +272,8 @@ def register_catalog_tool(registry, engine) -> Callable:
                   'ask_policy': ask_policy, 'content': content,
                   'description': description, 'stages': stages,
                   'loop': loop}
-        if kind == 'type':
-            result = _save_type(engine, name, values)
+        if kind == 'role':
+            result = _save_role(engine, name, values)
         elif kind == 'team':
             result = _save_team(engine, name, values)
         else:

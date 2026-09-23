@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 
 from replio.asks import AskStore, inject_answer
-from replio.types import AgentType
+from replio.roles import Role
 
 from tests.helpers import make_chat
 from tests.test_engine import make_engine
@@ -115,7 +115,7 @@ class TestParking(unittest.TestCase):
     def test_subagent_human_ask_parks_not_lead(self):
         chat = make_chat({'unattended': True})
         try:
-            chat.types.put(AgentType(name='w', system_prompt='Writer'),
+            chat.roles.put(Role(name='w', system_prompt='Writer'),
                            scope='local')
             sub = chat._new_sub_engine('w')
             sub._init_tooling()
@@ -155,7 +155,7 @@ class TestParking(unittest.TestCase):
         chat = make_chat({'unattended': True,
                           'ask_policy': {'permission': 'human'}})
         try:
-            chat.types.put(AgentType(name='w', system_prompt='Writer'),
+            chat.roles.put(Role(name='w', system_prompt='Writer'),
                            scope='local')
             sub = chat._new_sub_engine('w')
             sub._init_tooling()
@@ -174,7 +174,7 @@ class TestParking(unittest.TestCase):
     def test_permission_auto_route_still_lead_when_unattended(self):
         chat = make_chat({'unattended': True})
         try:
-            chat.types.put(AgentType(name='w', system_prompt='Writer'),
+            chat.roles.put(Role(name='w', system_prompt='Writer'),
                            scope='local')
             chat.provider.chat_nonstreaming.return_value = {'content': 'yes'}
             sub = chat._new_sub_engine('w')

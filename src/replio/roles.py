@@ -19,24 +19,24 @@ def clamp_action(action: str, cap: str) -> str:
 
 
 def resolve_permissions(parent_self: dict, parent_grant: dict,
-                        type_permission: dict) -> dict:
+                        role_permission: dict) -> dict:
     parent_self = parent_self or {}
     parent_grant = parent_grant or {}
-    type_permission = type_permission or {}
+    role_permission = role_permission or {}
     out: dict = {}
-    for key in set(parent_self) | set(type_permission):
+    for key in set(parent_self) | set(role_permission):
         cap = parent_grant.get(key, parent_self.get(key, 'ask'))
-        want = type_permission.get(key, parent_self.get(key, cap))
+        want = role_permission.get(key, parent_self.get(key, cap))
         out[key] = clamp_action(want, cap)
     return out
 
 
-def resolve_grant_ceiling(parent_self: dict, parent_grant: dict, type_grant: dict,
+def resolve_grant_ceiling(parent_self: dict, parent_grant: dict, role_grant: dict,
                           self_permissions: dict) -> dict:
     parent_self = parent_self or {}
     parent_grant = parent_grant or {}
     self_permissions = self_permissions or {}
-    base = type_grant if type_grant else self_permissions
+    base = role_grant if role_grant else self_permissions
     out: dict = {}
     for key in set(base) | set(self_permissions):
         cap = parent_grant.get(key, parent_self.get(key, 'ask'))
@@ -46,7 +46,7 @@ def resolve_grant_ceiling(parent_self: dict, parent_grant: dict, type_grant: dic
 
 
 @dataclass
-class AgentType:
+class Role:
     name: str
     system_prompt: str = ''
     model: str = ''
@@ -57,7 +57,7 @@ class AgentType:
     ask_policy: dict = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, d: dict) -> 'AgentType':
+    def from_dict(cls, d: dict) -> 'Role':
         return cls(
             name=d.get('name', ''),
             system_prompt=d.get('system_prompt', ''),
@@ -97,16 +97,16 @@ def _load_scope(path: Path) -> dict[str, dict[str, Any]]:
     return out
 
 
-class TypeRegistry:
-    BUNDLED_FILENAME = 'bundled_types.json'
+class RoleRegistry:
+    BUNDLED_FILENAME = 'bundled_roles.json'
 
     def __init__(self, global_dir: Path | None = None,
                  local_path: Path | None = None,
                  bundled_path: Path | None = None):
         base = global_dir if global_dir is not None else (Config.GLOBAL_DIR or Path.home())
-        self.global_path = base / '.config' / 'replio' / 'types.json'
+        self.global_path = base / '.config' / 'replio' / 'roles.json'
         self.local_path = Path(local_path) if local_path is not None else (
-            Path.cwd() / '.replio' / 'types.json')
+            Path.cwd() / '.replio' / 'roles.json')
         self.bundled_path = Path(bundled_path) if bundled_path is not None else (
             Path(__file__).with_name(self.BUNDLED_FILENAME))
         self._bundled: dict[str, dict[str, Any]] = {}
@@ -129,7 +129,7 @@ class TypeRegistry:
         self._load()
         self._plugins = {}
         if plugin_manager is not None:
-            register = getattr(plugin_manager, 'register_types', None)
+            register = getattr(plugin_manager, 'register_roles', None)
             if register:
                 register(self)
 
@@ -155,17 +155,17 @@ class TypeRegistry:
             merged[name] = entry
         return merged
 
-    def all(self) -> list[AgentType]:
+    def all(self) -> list[Role]:
         return sorted(
-            (AgentType.from_dict(e) for e in self._merged_entries().values()),
+            (Role.from_dict(e) for e in self._merged_entries().values()),
             key=lambda p: p.name)
 
     def names(self) -> list[str]:
         return sorted(self._merged_entries())
 
-    def find(self, name: str) -> AgentType | None:
+    def find(self, name: str) -> Role | None:
         entry = self._merged_entries().get(name)
-        return AgentType.from_dict(entry) if entry is not None else None
+        return Role.from_dict(entry) if entry is not None else None
 
     def origin(self, name: str) -> str:
         has_local = name in self._local
@@ -188,11 +188,11 @@ class TypeRegistry:
     def is_bundled(self, name: str) -> bool:
         return name in self._bundled
 
-    def put(self, agent_type: AgentType, scope: str = 'local') -> AgentType:
+    def put(self, agent_role: Role, scope: str = 'local') -> Role:
         raw = self._local if scope == 'local' else self._global
-        raw[agent_type.name] = agent_type.to_body()
+        raw[agent_role.name] = agent_role.to_body()
         self._save_scope(scope)
-        return agent_type
+        return agent_role
 
     def remove(self, name: str, scope: str = 'local') -> bool:
         raw = self._local if scope == 'local' else self._global

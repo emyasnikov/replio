@@ -6,13 +6,13 @@
 - Agent health monitoring - the assistant watches endpoints (e.g. the `/health` of agents running as web APIs) and warns when an agent stops responding
 - Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style)
 - Non-blocking delegation - the assistant starts sub-agents or whole teams for bigger tasks and reports their status instead of blocking the current run
-- Recurring tasks carry their own role - each job carries its own type and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time
+- Recurring tasks carry their own role - each job carries its own role and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time
 - Auto-improving skills (autogen/autolearn) - a role refines its skills from experience and keeps them alongside its memory, so recurring work gets better without re-prompting
 - Runtime pluginization - make models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI replaceable plugins, and move the REPL to a plugin. Five replaceable layers: access, orchestration, capability, model, storage
 - One runtime, many agents - position Replio as an agent harness for fleets, not a single assistant
 - ACP inward and outward - speak the Agent Client Protocol so Replio can host and be hosted by other harnesses, alongside MCP
-- Commands as tools - expose slash commands to the model as permission-gated tools to configure types, teams, and skills, with command access limited per permission
-- Markdown catalogue - store types, teams, and skills as Markdown files (front matter) referenced from JSON, and move the bundled data files (`src/replio/*.json`) into one catalogue directory near `src`
+- Commands as tools - expose slash commands to the model as permission-gated tools to configure roles, teams, and skills, with command access limited per permission
+- Markdown catalogue - store roles, teams, and skills as Markdown files (front matter) referenced from JSON, and move the bundled data files (`src/replio/*.json`) into one catalogue directory near `src`
 - Hidden files and allowed paths - hide secrets and config from tools by default, and restrict visible paths to allowed roots
 - Context policy - keep user prompts until the task is done, cut unused references and tool results immediately, add a recall tool for role and team memory, enforce a configurable context limit, and offload large tool results to `.replio/tmp/` referenced from the session log
 - Context UI polish - auto-compaction, context trim, highlighting, and context desaturation
@@ -67,7 +67,6 @@
 - [ ] Thinking visibility - with show_thinking false only the + Thought N.Ns line prints, so the reasoning is invisible while its duration is shown
 - [ ] Prompt brevity budget - every role prompt states a short output budget and a fixed report shape, so a report is a few lines instead of an essay
 - [ ] Docs writer commits each added task - the docs writer commits the tasks right after the operator's prompt and then works through the single points one at a time
-- [ ] Rename "types" to "roles" - AgentType to Role, TypeRegistry to RoleRegistry, /types to /roles, --type to --role, register_types to register_roles, types.json to roles.json, docs/types.md to docs/roles.md, a clean rename in code with no compatibility aliases
 - [ ] hide_confirm_input default true - the typed input is hidden on the tool confirm unless overridden
 - [ ] Compact status params - an oversized or multiline tool argument renders as `<N chars>` or is omitted, in the glyph status line and the tool confirm label
 - [ ] Optional output log - a config-gated file recording everything printed in a session, for later analysis
@@ -107,7 +106,7 @@
 - [ ] Role-name sync - adopt assistant, composer, manager, and specialist as the canonical roles across types, prompts, and docs
 - [ ] Assistant-roles track docs - record the assistant, composer, and manager architecture and the work packages in VISION, PLAN, and TODO
 - [ ] Core dev team configuration - a bundled development team with the review loop plus the project lead/support teams and their skills
-- [ ] Manager role - a bundled agent type that runs one or many teams and reports, sequential first
+- [ ] Manager role - a bundled role that runs one or many teams and reports, sequential first
 - [ ] Per-job report destination - a `report_url` (or connector list) on a job so different jobs report to different endpoints, instead of one global `report.webhook`
 - [ ] Per-task decide-vs-park for `direction` asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator
 - [ ] Full `file_*` namespace extension - if `file_glob`/`file_grep` prove better with most models, extend the prefix to `list_dir`/`glob`/`grep` (old names stay aliases)
@@ -117,8 +116,8 @@
 - [ ] Job connectors - bundled `replio-core-webhook` (stdlib JSON POST, zero deps, works with n8n/IFTTT/any URL) first. External email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API so operators can react in time
 - [ ] Jobs operator API - `GET /jobs` and `POST /jobs/<name>/approve|reject|run|disable` on `replio serve`, so clients (web Control UI, connectors, fleet supervisor) can see and act per agent
 - [ ] Fleet jobs overview - `replio jobs list --root <dir>` scanning agent worktrees (agent, job, status, next run, task table), then the web Control UI on top
-- [ ] Agent type directory scan for export/import - read `.replio/types/*.md` (front-matter types) to import and export types to Markdown, paralleling the sessions Markdown export/import
-- [ ] Auto team selection - the assistant picks types, teams, and skills from the registries for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor)
+- [ ] Role directory scan for export/import - read `.replio/roles/*.md` (front-matter roles) to import and export roles to Markdown, paralleling the sessions Markdown export/import
+- [ ] Auto team selection - the assistant picks roles, teams, and skills from the registries for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -> Researcher > Writer > Referencer > Editor)
 - [ ] Thinking visibility - `/thinking on` + `reasoning` config documented, per-provider `reasoning_content` check so reasoning shows in the REPL
 - [ ] `/spawn` command - launch a scoped `replio serve` agent from the REPL (home -> project path), supervise (health/list/stop) and delegate to it (`docs/fleet.md`)
 - [ ] Remote channels - command agents from messaging apps (OpenClaw channels parity):
@@ -149,7 +148,7 @@
 - [ ] Workspace sessions - tools write into a scoped `--workspace` dir, optional `--git` sync
 - [ ] Sandboxed exec - namespace/container isolation for `run_command` (documented, planned for a later version)
 - [ ] `/agent` types - interactive type selection/run UX (type registry, sub-engine, and `delegate` landed. The `/agent` command itself remains)
-- [ ] PM/dev/tester team orchestration as a user-facing pattern (the agent types + `delegate` primitives landed, and it needs the jobs/team-config layer to be a pattern)
+- [ ] PM/dev/tester team orchestration as a user-facing pattern (the roles + `delegate` primitives landed, and it needs the jobs/team-config layer to be a pattern)
 - [ ] Headless web API plugin-first - stdlib `http.server` fallback, richer framework (FastAPI) via the dependency plugin
 - [ ] Enterprise plugins (stdlib-first, third-party deps optional):
   - [ ] Data ingestion - `read_stream` / `write_stream` (MQTT, OPC-UA, Modbus)
@@ -166,6 +165,7 @@
 
 ## Done
 
+- [x] Renamed types to roles - Role/RoleRegistry, /roles + /role, --role, register_roles, roles.json
 - [x] Sub-run stage lines - completed delegate/team stages stay visible with duration and tokens
 - [x] Sub-run verbosity - `subrun_verbosity` quiet/summary/full, summary forwards writes and edits
 - [x] Reliable multi-line input - explicit close rule (delimiter at line start or blank line), backslash continuation
@@ -197,13 +197,13 @@
 - [x] `/focus` command - show the run tree/log, attach by id/role/session, navigate runs
 - [x] Focus manager and role engines - REPL focus stack, stable `agent_<role>` sessions, `prompt_role`
 - [x] Run registry and call tree - in-process runs with parent/children and a flat call log
-- [x] Session role metadata - the owning agent type is stamped as `role` on every session at creation
+- [x] Session role metadata - the owning role is stamped as `role` on every session at creation
 - [x] Assistant root role - REPL binds assistant/assistant_type, delegation-first prompt
 - [x] Composer role - bundled team composer, catalog allow, edit/team deny
 - [x] Team review loop - team loop over producer/reviewer, VERDICT pass, max_iterations
 - [x] Warm member sessions - delegate/team session_key, team warm_sessions reuse sub_<key>
 - [x] Agent catalog tool - list/show/save/remove types, teams, skills, plus reload
-- [x] Per-invocation skills - delegate/team/stage skills layered over a type's standing skills
+- [x] Per-invocation skills - delegate/team/stage skills layered over a role's standing skills
 - [x] End-to-end supervisor verification - `replio jobs add-supervisor`, governance-loop test
 - [x] Report-back - `job.run.completed` events, `last run:`/`summary:` lines, footer status
 - [x] `replio-core-webhook` - report-back connector POSTing job reports to `report.webhook`
@@ -212,7 +212,7 @@
 - [x] `team` tool - model-invokable team pipeline, per-stage permission + ceiling/depth guards
 - [x] Delegation permission ceiling + `ask` permission grants - `grant_permission`, `ask_policy`
 - [x] CLI realigned to internal commands - replio models/config/plugins mirror /models, /config, /plugins
-- [x] Plural registry commands - /types, /teams, /skills (was /type, /team, /skill)
+- [x] Plural registry commands - /roles, /teams, /skills (was /type, /team, /skill)
 - [x] `/session` split - active session vs `/sessions` catalog (mirrors /model vs /models)
 - [x] Model commands - /model show/switch, /models configured, /models list [provider] live
 - [x] Loop tools - `/tool delegate` runs a persisted loop turn, sub-agent ask reaches the operator
@@ -240,7 +240,7 @@
 - [x] Agent-loop cancellation + tool-dialect hardening - Ctrl-C cancels the turn, unknown-tool hints
 - [x] Skills registry - `SkillRegistry`, local/global dirs + plugins, type `skills` in prompts
 - [x] Teams registry - `Team`/`TeamRegistry`, 4-layer `teams.json` merge, `/team` read/edit
-- [x] Plugin contribution hooks - register_types/teams/skills hooks, `TypeRegistry.reload()`
+- [x] Plugin contribution hooks - register_roles/teams/skills hooks, `RoleRegistry.reload()`
 - [x] Fleet orchestration - `replio fleet` supervisor CLI: ports, health, restart, config gen
 - [x] Per-run job sessions - `job_<ts>_<name>` files, unified `ses_`/`sub_`/`job_` naming
 - [x] Job run memory - rolling `.memory.md` summary injected into each run, seeded
@@ -251,10 +251,10 @@
 - [x] Watchable job runs - `replio jobs run --verbose` streams the live turn
 - [x] Richer job runs - `--type`/`--system-prompt`, recurring-job prompt, tool carve
 - [x] Scheduled / durable jobs - `replio jobs`: registry, daemon, cron, retries, approval gate
-- [x] Per-agent permission profiles - type tool_permission drives sub-agent policy
-- [x] In-process sub-engine - Engine.run_subagent: type overrides, NullUI, sub_ session
-- [x] `delegate` tool - core, per-type permission resolver, delegate_echo result display
-- [x] Agent types registry - global+local types.json merge, /type command, docs/types.md
+- [x] Per-agent permission profiles - role tool_permission drives sub-agent policy
+- [x] In-process sub-engine - Engine.run_subagent: role overrides, NullUI, sub_ session
+- [x] `delegate` tool - core, per-role permission resolver, delegate_echo result display
+- [x] Roles registry - global+local roles.json merge, /roles command, docs/roles.md
 - [x] Soft tool results surfaced as dimmed info lines - `(empty file)`, `(no matches)` etc
 - [x] Session audit trail - permission decisions (allow/ask/deny -> granted/declined/denied)
 - [x] Stable message ids - `msg_<hex>` auto-assigned to every session message

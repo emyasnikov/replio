@@ -385,7 +385,7 @@ class TestFleetCli(unittest.TestCase):
         rc, out, _ = self._capture(self._args(
             action='config', name='alpha', provider='ollama', model='m1',
             system_prompt='hello', mode='plan', tools_deny=['run_command'],
-            tool_permission=['bash=deny', 'web=allow'], type=''))
+            tool_permission=['bash=deny', 'web=allow'], role=''))
         self.assertEqual(rc, 0)
         target = self.root / 'alpha' / '.replio' / 'config.json'
         data = json.loads(target.read_text())
@@ -401,7 +401,7 @@ class TestFleetCli(unittest.TestCase):
     def test_config_type_inlined(self):
         ctrl = self._ctrl()
         ctrl.manifest.add(AgentDef(name='alpha', dir=str(self.root / 'alpha')))
-        lp = self.root / 'alpha' / '.replio' / 'types.json'
+        lp = self.root / 'alpha' / '.replio' / 'roles.json'
         lp.parent.mkdir(parents=True)
         lp.write_text(json.dumps({
             'archivist': {
@@ -412,7 +412,7 @@ class TestFleetCli(unittest.TestCase):
         rc, _, _ = self._capture(self._args(
             action='config', name='alpha', provider='', model='',
             system_prompt='', mode='', tools_deny=[], tool_permission=[],
-            type='archivist'))
+            role='archivist'))
         self.assertEqual(rc, 0)
         data = json.loads((self.root / 'alpha' / '.replio' / 'config.json').read_text())
         self.assertEqual(data['system_prompt'], 'You organise notes.')
@@ -426,9 +426,9 @@ class TestFleetCli(unittest.TestCase):
         rc, _, err = self._capture(self._args(
             action='config', name='alpha', provider='', model='',
             system_prompt='', mode='', tools_deny=[], tool_permission=[],
-            type='nosuch'))
+            role='nosuch'))
         self.assertEqual(rc, 1)
-        self.assertIn('Unknown agent type: nosuch', err)
+        self.assertIn('Unknown role: nosuch', err)
 
     def test_config_nothing_to_set_errors(self):
         ctrl = self._ctrl()
@@ -436,7 +436,7 @@ class TestFleetCli(unittest.TestCase):
         rc, _, err = self._capture(self._args(
             action='config', name='alpha', provider='', model='',
             system_prompt='', mode='', tools_deny=[], tool_permission=[],
-            type=''))
+            role=''))
         self.assertEqual(rc, 1)
         self.assertIn('Nothing to set', err)
 

@@ -36,10 +36,10 @@ The engine resolves the API key for the active provider from the provider regist
 
 ## Model refs and approval
 
-A **model ref** `provider/model` (e.g. `opencode-go/deepseek-v4-flash`, `ollama/gpt-oss:20b-cloud`) unfolds to the provider, its default base URL, and the bare model. It is accepted wherever a model is set (`/model <ref>`, `--model <ref>`, a config `model`, and an agent type's `model` field), so a type or team can pin provider and model together. Only a known provider (core or plugin) with a default base URL unfolds. Anything else is treated as a bare model id. Using an unfolded model is **gated on approval**: the model must appear in `models.json`, otherwise the engine prompts to approve it. The surfaces:
+A **model ref** `provider/model` (e.g. `opencode-go/deepseek-v4-flash`, `ollama/gpt-oss:20b-cloud`) unfolds to the provider, its default base URL, and the bare model. It is accepted wherever a model is set (`/model <ref>`, `--model <ref>`, a config `model`, and a role's `model` field), so a type or team can pin provider and model together. Only a known provider (core or plugin) with a default base URL unfolds. Anything else is treated as a bare model id. Using an unfolded model is **gated on approval**: the model must appear in `models.json`, otherwise the engine prompts to approve it. The surfaces:
 
 - **Interactive** - the REPL asks on load for an unapproved configured ref, `/model <ref>` asks before switching, and `/teams run` pre-checks the stages' type models and asks once for unapproved ones.
-- **Headless** - an explicit `--model` auto-approves (records into `models.json`). A model referenced by an agent type or team is denied unless `--approve-model` is passed (`replio run --approve-model`, `replio jobs add --approve-model`, `replio fleet config --approve-model`). A denied run stops with a clear "model not approved" error.
+- **Headless** - an explicit `--model` auto-approves (records into `models.json`). A model referenced by a role or team is denied unless `--approve-model` is passed (`replio run --approve-model`, `replio jobs add --approve-model`, `replio fleet config --approve-model`). A denied run stops with a clear "model not approved" error.
 
 A ref naming a provider with no stored key still switches to it but prints `run /connect <provider>` (the request then surfaces the auth error until you connect).
 

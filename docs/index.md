@@ -4,7 +4,7 @@ Detailed reference for Replio. For the overview, features, and quick start, see 
 
 - [Agent fleets](fleet.md) - single-purpose agent fleets, one scoped process per agent, deployment
 - [Agent swarms](swarm.md) - swarm orchestration, delegation, types, auditor and team patterns
-- [Agent types](types.md) - type catalog, storage, delegation and permission rule
+- [Roles](roles.md) - role catalog, storage, delegation and permission rule
 - [API endpoints](api.md) - HTTP JSON API for `replio serve`
 - [Architecture](architecture.md) - agent core: the loop, engine, UI sinks, front-ends, extension points
 - [Commands & CLI](commands.md) - slash commands and headless CLI flags

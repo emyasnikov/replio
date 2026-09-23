@@ -18,12 +18,12 @@ class TestFocusManager(unittest.TestCase):
     def tearDown(self):
         self.chat._tmp.cleanup()
 
-    def _child(self, type_name='writer'):
+    def _child(self, role_name='writer'):
         self.chat.provider.chat.side_effect = [
             [{'type': 'token', 'content': 'Draft ready.'},
              {'type': 'done', 'reason': 'stop'}],
         ]
-        res = self.chat.run_subagent(type_name, 'draft it')
+        res = self.chat.run_subagent(role_name, 'draft it')
         return self.chat.runs.get(res.run_id)
 
     def test_starts_at_root(self):
@@ -106,12 +106,12 @@ class TestFocusRouting(unittest.TestCase):
                     self.chat.run()
         return out.getvalue()
 
-    def _child(self, type_name='writer'):
+    def _child(self, role_name='writer'):
         self.chat.provider.chat.side_effect = [
             [{'type': 'token', 'content': 'Draft ready.'},
              {'type': 'done', 'reason': 'stop'}],
         ]
-        res = self.chat.run_subagent(type_name, 'draft it')
+        res = self.chat.run_subagent(role_name, 'draft it')
         return self.chat.runs.get(res.run_id)
 
     def test_turn_routes_to_active_engine(self):
@@ -161,12 +161,12 @@ class TestFocusCommand(unittest.TestCase):
             self.chat.registry.dispatch(line)
         return out.getvalue()
 
-    def _draft(self, type_name='writer'):
+    def _draft(self, role_name='writer'):
         self.chat.provider.chat.side_effect = [
             [{'type': 'token', 'content': 'Draft ready.'},
              {'type': 'done', 'reason': 'stop'}],
         ]
-        return self.chat.run_subagent(type_name, 'draft it')
+        return self.chat.run_subagent(role_name, 'draft it')
 
     def test_show_run_tree_and_log(self):
         self._draft('writer')

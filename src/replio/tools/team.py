@@ -15,7 +15,7 @@ def _team_action(engine, args: dict) -> str:
         return 'allow'
     action = 'allow'
     for stage in team.stages:
-        entry = engine.types.find(stage.type)
+        entry = engine.roles.find(stage.role)
         if entry is None:
             continue
         stage_action = _stage_action(engine, entry)
@@ -27,10 +27,10 @@ def _team_action(engine, args: dict) -> str:
 
 
 def _clamped_stages(engine, team) -> list[str]:
-    from ..types import resolve_permissions
+    from ..roles import resolve_permissions
     out: list[str] = []
     for stage in team.stages:
-        entry = engine.types.find(stage.type)
+        entry = engine.roles.find(stage.role)
         if entry is None:
             continue
         requested = entry.tool_permission or {}
@@ -38,7 +38,7 @@ def _clamped_stages(engine, team) -> list[str]:
             engine._self_permissions(), engine._grant(), requested)
         for key, value in requested.items():
             if isinstance(value, str) and value in _RANK and granted.get(key) != value:
-                out.append(stage.type)
+                out.append(stage.role)
                 break
     return out
 

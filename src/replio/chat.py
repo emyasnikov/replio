@@ -65,7 +65,7 @@ class ChatLoop(Engine):
     def _bind_assistant(self):
         if not self.config.get('assistant', True):
             return
-        name = str(self.config.get('assistant_type') or '').strip()
+        name = str(self.config.get('assistant_role') or '').strip()
         if name:
             self.bind_root_agent(name)
 

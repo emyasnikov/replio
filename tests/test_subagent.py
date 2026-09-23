@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from replio.types import AgentType
+from replio.roles import Role
 from replio.ui import BufferUI
 
 from tests.helpers import make_chat
@@ -19,7 +19,7 @@ class TestSubAgentEngine(unittest.TestCase):
     def tearDown(self):
         self.chat._tmp.cleanup()
 
-    def _delegate_log(self, type_name):
+    def _delegate_log(self, role_name):
         files = sorted(
             f for f in self.sessions_dir.glob('sub_*.json')
             if json.loads(f.read_text()).get('parent_id')
@@ -77,8 +77,8 @@ class TestSubAgentEngine(unittest.TestCase):
 
     def test_subagent_injects_type_skills(self):
         from replio.skills import Skill
-        self.chat.types.put(
-            AgentType(name='researcher', system_prompt='You are the researcher.',
+        self.chat.roles.put(
+            Role(name='researcher', system_prompt='You are the researcher.',
                     skills=['finders', 'filters']),
             scope='local')
         self.chat.skills.put(
@@ -95,8 +95,8 @@ class TestSubAgentEngine(unittest.TestCase):
 
     def test_subagent_skips_missing_skills(self):
         from replio.skills import Skill
-        self.chat.types.put(
-            AgentType(name='x', system_prompt='prompt',
+        self.chat.roles.put(
+            Role(name='x', system_prompt='prompt',
                     skills=['present', 'deleted']),
             scope='local')
         self.chat.skills.put(Skill(name='present', content='Present skill body.'))
@@ -107,16 +107,16 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertNotIn('## Skills\n\n### deleted', prompt)
 
     def test_subagent_without_skills_prompt_unchanged(self):
-        self.chat.types.put(
-            AgentType(name='plain', system_prompt='plain prompt', skills=[]),
+        self.chat.roles.put(
+            Role(name='plain', system_prompt='plain prompt', skills=[]),
             scope='local')
         sub = self.chat._new_sub_engine('plain')
         self.assertEqual(sub.config.get('system_prompt'), 'plain prompt')
 
     def test_subagent_skills_only_prompt(self):
         from replio.skills import Skill
-        self.chat.types.put(
-            AgentType(name='solo', system_prompt='', skills=['one']),
+        self.chat.roles.put(
+            Role(name='solo', system_prompt='', skills=['one']),
             scope='local')
         self.chat.skills.put(Skill(name='one', content='Skill only body.'))
         sub = self.chat._new_sub_engine('solo')
@@ -125,8 +125,8 @@ class TestSubAgentEngine(unittest.TestCase):
 
     def test_subagent_merges_invocation_skills(self):
         from replio.skills import Skill
-        self.chat.types.put(
-            AgentType(name='dev', system_prompt='You are a developer.',
+        self.chat.roles.put(
+            Role(name='dev', system_prompt='You are a developer.',
                       skills=['base']),
             scope='local')
         self.chat.skills.put(Skill(name='base', content='Base experience.'))
@@ -141,8 +141,8 @@ class TestSubAgentEngine(unittest.TestCase):
 
     def test_subagent_invocation_skills_dedupe(self):
         from replio.skills import Skill
-        self.chat.types.put(
-            AgentType(name='dev', system_prompt='p', skills=['base']),
+        self.chat.roles.put(
+            Role(name='dev', system_prompt='p', skills=['base']),
             scope='local')
         self.chat.skills.put(Skill(name='base', content='Base experience.'))
         sub = self.chat._new_sub_engine('dev', skills=['base', 'base'])
@@ -151,16 +151,16 @@ class TestSubAgentEngine(unittest.TestCase):
 
     def test_subagent_invocation_skills_ignores_empty_names(self):
         from replio.skills import Skill
-        self.chat.types.put(
-            AgentType(name='dev', system_prompt='p'), scope='local')
+        self.chat.roles.put(
+            Role(name='dev', system_prompt='p'), scope='local')
         self.chat.skills.put(Skill(name='extra', content='Extra skill body.'))
         sub = self.chat._new_sub_engine('dev', skills=['', None, 'extra'])
         self.assertIn('Extra skill body.', sub.config.get('system_prompt'))
 
     def test_run_subagent_passes_invocation_skills(self):
         from replio.skills import Skill
-        self.chat.types.put(
-            AgentType(name='plain2', system_prompt='plain prompt'),
+        self.chat.roles.put(
+            Role(name='plain2', system_prompt='plain prompt'),
             scope='local')
         self.chat.skills.put(Skill(name='extra', content='Extra skill body.'))
         self.chat.provider.chat.side_effect = [
@@ -178,8 +178,8 @@ class TestSubAgentEngine(unittest.TestCase):
         self.assertIs(sub.ui.run, sub.current_run)
 
     def test_model_override_applies(self):
-        self.chat.types.put(
-            AgentType(name='special', system_prompt='sp', model='deepseek-r1'),
+        self.chat.roles.put(
+            Role(name='special', system_prompt='sp', model='deepseek-r1'),
             scope='local')
         sub = self.chat._new_sub_engine('special')
         self.assertEqual(sub.config.get('model'), 'deepseek-r1')
@@ -220,8 +220,8 @@ class TestSubAgentEngine(unittest.TestCase):
             self.chat.run_subagent('nope', 'anything')
 
     def test_ask_gated_tool_cancelled_without_prompt(self):
-        self.chat.types.put(
-            AgentType(name='defaults', system_prompt='plain agent'),
+        self.chat.roles.put(
+            Role(name='defaults', system_prompt='plain agent'),
             scope='local')
         self.chat.provider.chat.side_effect = [
             [{'type': 'tool_calls', 'tool_calls': self._tool_call()}],

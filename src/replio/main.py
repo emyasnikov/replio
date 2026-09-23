@@ -157,7 +157,7 @@ def _add_jobs_parser(sub):
     ga.add_argument('--mode', help='Agent mode override (plan, build, or custom)')
     ga.add_argument('--provider', help='Provider override')
     ga.add_argument('--model', help='Model override')
-    ga.add_argument('--type', help='Agent type whose prompt, model, and permissions apply')
+    ga.add_argument('--role', help='Role whose prompt, model, and permissions apply')
     ga.add_argument('--system-prompt', help='System prompt override')
     ga.add_argument('--tools-deny', action='append', default=[],
                     help='Tool name to deny (repeatable)')
@@ -172,7 +172,7 @@ def _add_jobs_parser(sub):
                     help='Arm only one run per approve - each run parks in waiting_approval '
                          'until a human approves it')
     ga.add_argument('--approve-model', action='store_true',
-                    help='Approve the model referenced by --type (or --model) '
+                    help='Approve the model referenced by --role (or --model) '
                          'without prompting')
     ga.add_argument('--approval', choices=['manual', 'auto'], default='manual',
                     help='manual starts proposed and waits for approve (default); '
@@ -251,7 +251,7 @@ def _add_fleet_parser(sub):
     gc.add_argument('name')
     gc.add_argument('--provider', help='Provider override')
     gc.add_argument('--model', help='Model override')
-    gc.add_argument('--type', help='Inline an agent type\'s prompt, model, and permissions')
+    gc.add_argument('--role', help='Inline a role\'s prompt, model, and permissions')
     gc.add_argument('--system-prompt', help='System prompt override')
     gc.add_argument('--mode', help='Agent mode override (plan, build, or custom)')
     gc.add_argument('--tools-deny', action='append', default=[],
@@ -259,7 +259,7 @@ def _add_fleet_parser(sub):
     gc.add_argument('--tool-permission', action='append', default=[],
                     help='category=action override (repeatable), e.g. bash=allow')
     gc.add_argument('--approve-model', action='store_true',
-                    help='Approve the model referenced by --type or --model '
+                    help='Approve the model referenced by --role or --model '
                          'in the global models registry')
 
 

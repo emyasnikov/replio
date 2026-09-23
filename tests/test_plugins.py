@@ -78,14 +78,14 @@ def register_services(services):
 '''
 
 TYPE_PLUGIN = '''
-def register_types(registry):
+def register_roles(registry):
     registry.add_plugin({'name': 'helper',
                          'system_prompt': 'Helper type from a plugin',
                          'tags': ['plugin']})
 '''
 
 TYPE_FAIL_PLUGIN = '''
-def register_types(registry):
+def register_roles(registry):
     raise RuntimeError('type hook exploded')
 '''
 
@@ -93,8 +93,8 @@ TEAM_PLUGIN = '''
 def register_teams(teams):
     teams.add_plugin({'name': 'sme',
                       'description': 'Small team from a plugin',
-                      'stages': [{'type': 'researcher', 'task_hint': 'gather'},
-                                 {'type': 'writer'}]})
+                      'stages': [{'role': 'researcher', 'task_hint': 'gather'},
+                                 {'role': 'writer'}]})
 '''
 
 SKILL_PLUGIN = '''
@@ -380,30 +380,30 @@ class TestRegistration(PluginTestBase):
         self.assertIn('frobnicate', reg.commands)
 
     def _type_registry(self):
-        from replio.types import TypeRegistry
-        return TypeRegistry(
+        from replio.roles import RoleRegistry
+        return RoleRegistry(
             global_dir=self.root,
-            local_path=self.root / '.replio' / 'types.json',
-            bundled_path=self.root / 'nobundled' / 'types.json')
+            local_path=self.root / '.replio' / 'roles.json',
+            bundled_path=self.root / 'nobundled' / 'roles.json')
 
-    def test_register_types_hook(self):
+    def test_register_roles_hook(self):
         write_plugin(self.plugins_dir, 'pers', TYPE_PLUGIN, {'name': 'pers'})
         self.pm.load()
         reg = self._type_registry()
-        self.pm.register_types(reg)
+        self.pm.register_roles(reg)
         p = reg.find('helper')
         self.assertIsNotNone(p)
         self.assertEqual(p.system_prompt, 'Helper type from a plugin')
         self.assertEqual(reg.origin('helper'), 'plugin')
 
-    def test_register_types_hook_failure_marks_error(self):
+    def test_register_roles_hook_failure_marks_error(self):
         write_plugin(self.plugins_dir, 'boom', TYPE_FAIL_PLUGIN, {'name': 'boom'})
         self.pm.load()
         reg = self._type_registry()
-        self.pm.register_types(reg)
+        self.pm.register_roles(reg)
         info = self.pm.get('boom')
         self.assertEqual(info.status, 'error')
-        self.assertIn('register_types failed', info.error)
+        self.assertIn('register_roles failed', info.error)
 
     def test_register_teams_hook(self):
         write_plugin(self.plugins_dir, 'team', TEAM_PLUGIN, {'name': 'team'})
@@ -415,7 +415,7 @@ class TestRegistration(PluginTestBase):
         self.pm.register_teams(reg)
         t = reg.find('sme')
         self.assertIsNotNone(t)
-        self.assertEqual([s.type for s in t.stages],
+        self.assertEqual([s.role for s in t.stages],
                          ['researcher', 'writer'])
         self.assertEqual(t.stages[0].task_hint, 'gather')
         self.assertEqual(reg.origin('sme'), 'plugin')
@@ -569,10 +569,10 @@ class TestEngineIntegration(PluginTestBase):
         write_plugin(self.plugins_dir, 'pers', TYPE_PLUGIN, {'name': 'pers'})
         from replio.engine import Engine
         engine = Engine(self.config, ui=NullUI())
-        p = engine.types.find('helper')
+        p = engine.roles.find('helper')
         self.assertIsNotNone(p)
         self.assertEqual(p.system_prompt, 'Helper type from a plugin')
-        self.assertEqual(engine.types.origin('helper'), 'plugin')
+        self.assertEqual(engine.roles.origin('helper'), 'plugin')
 
     def test_engine_teams_include_plugin_contributions(self):
         write_plugin(self.plugins_dir, 'team', TEAM_PLUGIN, {'name': 'team'})
@@ -580,7 +580,7 @@ class TestEngineIntegration(PluginTestBase):
         engine = Engine(self.config, ui=NullUI())
         t = engine.teams.find('sme')
         self.assertIsNotNone(t)
-        self.assertEqual([s.type for s in t.stages],
+        self.assertEqual([s.role for s in t.stages],
                          ['researcher', 'writer'])
         self.assertEqual(engine.teams.origin('sme'), 'plugin')
 

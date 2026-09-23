@@ -219,7 +219,7 @@ class TestJobModel(unittest.TestCase):
     def test_round_trip_with_history(self):
         job = Job(
             'nightly', {'cron': '0 2 * * *'}, prompt='summarize logs',
-            session='ops.nightly', mode='plan', type='editor',
+            session='ops.nightly', mode='plan', role='editor',
             retries=5, backoff=120.0, enabled=True, status='verified',
             next_run_at=_iso(BASE), last_run_at=_iso(BASE - timedelta(hours=24)),
             history=[JobRun(started_at=_iso(BASE), finished_at=_iso(BASE),
@@ -365,12 +365,12 @@ class TestScheduler(unittest.TestCase):
         self.assertTrue(job.next_run_at)
 
     def test_unknown_type_fails_immediately(self):
-        job = Job('a', {'interval': 60}, prompt='work', type='ghost',
+        job = Job('a', {'interval': 60}, prompt='work', role='ghost',
                   status='approved')
         self.registry.put(job)
         run = self.scheduler.run_job(job)
         self.assertEqual(run.status, 'failed')
-        self.assertIn('Unknown agent type', run.reason)
+        self.assertIn('Unknown role', run.reason)
         self.assertEqual(job.status, 'failed')
 
     def test_build_engine_injects_type_skills(self):
@@ -381,11 +381,11 @@ class TestScheduler(unittest.TestCase):
             'researcher': {'name': 'researcher',
                            'system_prompt': 'You are the researcher.',
                            'skills': ['finders']}}
-        (base / '.replio' / 'types.json').write_text(json.dumps(types))
+        (base / '.replio' / 'roles.json').write_text(json.dumps(types))
         skills_dir = base / '.replio' / 'skills'
         skills_dir.mkdir(parents=True)
         (skills_dir / 'finders.md').write_text('Find sources and evaluate them.')
-        job = Job('r', {'interval': 3600}, prompt='work', type='researcher')
+        job = Job('r', {'interval': 3600}, prompt='work', role='researcher')
         engine = _build_engine(self.config, job, verbose=False)
         prompt = engine.config.get('system_prompt')
         self.assertIn('You are the researcher.', prompt)
@@ -399,8 +399,8 @@ class TestScheduler(unittest.TestCase):
         base = _Path(self.tmp.name)
         types = {'x': {'name': 'x', 'system_prompt': 'prompt',
                           'skills': ['nosuch']}}
-        (base / '.replio' / 'types.json').write_text(json.dumps(types))
-        job = Job('x', {'interval': 3600}, prompt='work', type='x')
+        (base / '.replio' / 'roles.json').write_text(json.dumps(types))
+        job = Job('x', {'interval': 3600}, prompt='work', role='x')
         engine = _build_engine(self.config, job, verbose=False)
         prompt = engine.config.get('system_prompt')
         self.assertIn('prompt', prompt)
@@ -605,12 +605,12 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(read_memory(worktree, job), 'second summary')
 
     def test_memory_recorded_when_engine_cannot_start(self):
-        job = Job('boom', {'interval': 60}, prompt='p', type='ghost',
+        job = Job('boom', {'interval': 60}, prompt='p', role='ghost',
                   status='approved')
         self.registry.put(job)
         self.scheduler.run_job(job)
         memory = read_memory(Path(self.tmp.name), job)
-        self.assertIn('Unknown agent type', memory)
+        self.assertIn('Unknown role', memory)
 
     def test_memory_injected_into_system_prompt(self):
         worktree = Path(self.tmp.name)
@@ -756,7 +756,7 @@ class TestSchedulerReport(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
         job = Job('a', {'interval': 60}, prompt='work', status='approved',
-                  type='nope')
+                  role='nope')
         self.registry.put(job)
         run = self.scheduler.run_job(job)
         self.assertEqual(run.status, 'failed')
@@ -826,7 +826,7 @@ class TestAddSupervisor(unittest.TestCase):
         worktree = self.config.local_path.parent.parent
         job = add_supervisor_job(self.registry, 'night', worktree,
                                  {'interval': 86400}, task='Lead.')
-        self.assertEqual(job.type, 'leader')
+        self.assertEqual(job.role, 'leader')
         self.assertEqual(job.status, 'approved')
         self.assertTrue(job.enabled)
         task = read_task_file(worktree, job)
@@ -900,7 +900,7 @@ class TestJobsCli(unittest.TestCase):
                                     retries=3, backoff=60.0, timeout=0,
                                     require_approval=False,
                                     session='', mode='', provider='', model='',
-                                    type='', system_prompt='', file='',
+                                    role='', system_prompt='', file='',
                                     no_retry=False, verbose=False,
                                     tick=15.0, quiet=False)
         for key, value in kw.items():

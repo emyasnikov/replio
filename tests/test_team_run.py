@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from replio.teams import Team, TeamRegistry, TeamStage, team_memory_path
-from replio.types import AgentType
+from replio.roles import Role
 
 from tests.helpers import make_chat
 
@@ -19,8 +19,8 @@ class TestTeamRun(unittest.TestCase):
         self.worktree = self.chat.config.local_path.parent.parent
         self.sessions_dir = self.chat.config.local_path.parent / 'sessions'
         for name in ('researcher', 'writer'):
-            self.chat.types.put(
-                AgentType(name=name, system_prompt=f'You are the {name}.'),
+            self.chat.roles.put(
+                Role(name=name, system_prompt=f'You are the {name}.'),
                 scope='local')
 
     def tearDown(self):
@@ -35,7 +35,7 @@ class TestTeamRun(unittest.TestCase):
 
     def test_brief_builds_task_and_hints(self):
         team = self._team(
-            TeamStage(type='researcher', task_hint='gather sources'))
+            TeamStage(role='researcher', task_hint='gather sources'))
         brief = self.chat._build_stage_brief(team, 'write about X', [], 0, '')
         self.assertIn('Team: doc', brief)
         self.assertIn('Original task:\nwrite about X', brief)
@@ -44,9 +44,9 @@ class TestTeamRun(unittest.TestCase):
 
     def test_brief_includes_prior_results_and_handoff(self):
         team = self._team(
-            TeamStage(type='researcher',
+            TeamStage(role='researcher',
                       handoff_note='pass the findings to the writer'),
-            TeamStage(type='writer', task_hint='write it up'))
+            TeamStage(role='writer', task_hint='write it up'))
         prior = [MagicMock(content='Findings: a, b', session='sub_one')]
         brief = self.chat._build_stage_brief(team, 'task', prior, 1, '')
         self.assertIn('## Stage 1 result (sub_one):\nFindings: a, b', brief)
@@ -55,13 +55,13 @@ class TestTeamRun(unittest.TestCase):
         self.assertIn('write it up', brief)
 
     def test_brief_includes_team_memory(self):
-        team = self._team(TeamStage(type='writer'))
+        team = self._team(TeamStage(role='writer'))
         brief = self.chat._build_stage_brief(team, 'task', [], 0,
                                              'earlier notes')
         self.assertIn('## Team memory\nearlier notes', brief)
 
     def test_brief_truncates_long_prior_results(self):
-        team = self._team(TeamStage(type='researcher'), TeamStage(type='writer'))
+        team = self._team(TeamStage(role='researcher'), TeamStage(role='writer'))
         prior = [MagicMock(content='word ' * 2000, session='sub_one')]
         brief = self.chat._build_stage_brief(team, 'task', prior, 1, '',
                                              prior_cap=500)
@@ -73,7 +73,7 @@ class TestTeamRun(unittest.TestCase):
             self._result('Research done.'), self._result('Draft done.'),
         ]
         result = self.chat.run_team(
-            self._team(TeamStage(type='researcher'), TeamStage(type='writer')),
+            self._team(TeamStage(role='researcher'), TeamStage(role='writer')),
             'write a report')
         self.assertEqual(result.status, 'ok')
         self.assertEqual([r.content for r in result.stages],
@@ -86,7 +86,7 @@ class TestTeamRun(unittest.TestCase):
             data = json.loads((self.sessions_dir / f'{res.session}.json').read_text())
             self.assertEqual(data['parent_id'], self.chat.current_session.session_name)
             expected = self.chat._build_stage_brief(
-                self._team(TeamStage(type='researcher'), TeamStage(type='writer')),
+                self._team(TeamStage(role='researcher'), TeamStage(role='writer')),
                 'write a report', result.stages[:i], i, '')
             self.assertEqual(data['turns'][0]['parts'][0]['text'], expected)
 
@@ -96,8 +96,8 @@ class TestTeamRun(unittest.TestCase):
             self._result('a'), self._result('b'),
         ]
         self.chat.run_team(self._team(
-            TeamStage(type='researcher'),
-            TeamStage(type='writer', mode='build')), 'task')
+            TeamStage(role='researcher'),
+            TeamStage(role='writer', mode='build')), 'task')
         subs = sorted(self.sessions_dir.glob('sub_*.json'))
         self.assertEqual(len(subs), 2)
         modes = sorted(
@@ -109,12 +109,12 @@ class TestTeamRun(unittest.TestCase):
         self.chat.skills.put(Skill(name='stage-skill', content='Stage skill body.'))
         self.chat.skills.put(Skill(name='task-skill', content='Task skill body.'))
         self.chat.skills.put(Skill(name='base-skill', content='Base skill body.'))
-        self.chat.types.put(
-            AgentType(name='writer', system_prompt='You are the writer.',
+        self.chat.roles.put(
+            Role(name='writer', system_prompt='You are the writer.',
                       skills=['base-skill']), scope='local')
         self.chat.provider.chat.side_effect = [self._result('done')]
         self.chat.run_team(
-            self._team(TeamStage(type='writer', skills=['stage-skill'])),
+            self._team(TeamStage(role='writer', skills=['stage-skill'])),
             'task', skills=['task-skill'])
         messages = self.chat.provider.chat.call_args[0][0]
         system = next(m for m in messages if m.get('role') == 'system')
@@ -128,7 +128,7 @@ class TestTeamRun(unittest.TestCase):
             self._result('never reached'),
         ]
         result = self.chat.run_team(
-            self._team(TeamStage(type='researcher'), TeamStage(type='writer')),
+            self._team(TeamStage(role='researcher'), TeamStage(role='writer')),
             'task')
         self.assertEqual(result.status, 'error')
         self.assertEqual(len(result.stages), 1)
@@ -140,12 +140,12 @@ class TestTeamRun(unittest.TestCase):
             self._result('ok'), self._result('ok'),
         ]
         result = self.chat.run_team(
-            self._team(TeamStage(type='researcher'), TeamStage(type='ghost')),
+            self._team(TeamStage(role='researcher'), TeamStage(role='ghost')),
             'task')
         self.assertEqual(result.status, 'error')
         self.assertEqual(len(result.stages), 1)
         self.assertEqual(self.chat.provider.chat.call_count, 1)
-        self.assertTrue(any('Unknown agent type' in str(e.get('message', ''))
+        self.assertTrue(any('Unknown role' in str(e.get('message', ''))
                             for e in result.errors))
 
     def test_run_team_no_stages(self):
@@ -160,7 +160,7 @@ class TestTeamRun(unittest.TestCase):
         ]
         with patch.object(self.chat, '_summarize',
                           return_value='team memory summary'):
-            result = self.chat.run_team(self._team(TeamStage(type='writer')), 'task')
+            result = self.chat.run_team(self._team(TeamStage(role='writer')), 'task')
         self.assertTrue(result.memory)
         memory_path = team_memory_path(self.worktree, 'doc')
         self.assertEqual(Path(result.memory), memory_path)
@@ -176,7 +176,7 @@ class TestTeamRun(unittest.TestCase):
             seen.append(msgs)
             return 'new summary'
         with patch.object(self.chat, '_summarize', side_effect=_summarize):
-            self.chat.run_team(self._team(TeamStage(type='writer')), 'task')
+            self.chat.run_team(self._team(TeamStage(role='writer')), 'task')
         text = team_memory_path(self.worktree, 'doc').read_text()
         self.assertEqual(text, 'new summary')
         self.assertTrue(any('prior notes' in (m.get('content') or '')
@@ -185,7 +185,7 @@ class TestTeamRun(unittest.TestCase):
     def test_memory_fallback_without_summarize(self):
         self.chat.provider.chat.side_effect = [self._result('fallback done')]
         with patch.object(self.chat, '_summarize', return_value=None):
-            result = self.chat.run_team(self._team(TeamStage(type='writer')), 'task')
+            result = self.chat.run_team(self._team(TeamStage(role='writer')), 'task')
         self.assertTrue(result.memory)
         text = team_memory_path(self.worktree, 'doc').read_text()
         self.assertIn('Team doc run:', text)
@@ -197,8 +197,8 @@ class TestTeamRunCommand(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.chat = make_chat()
-        self.chat.types.put(
-            AgentType(name='writer', system_prompt='You are the writer.'),
+        self.chat.roles.put(
+            Role(name='writer', system_prompt='You are the writer.'),
             scope='local')
 
     def tearDown(self):

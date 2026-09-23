@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from replio.types import AgentType
+from replio.roles import Role
 from replio.sessions import turns as session_turns
 
 from tests.helpers import make_chat
@@ -19,12 +19,12 @@ class TestDelegateTool(unittest.TestCase):
     def tearDown(self):
         self.chat._tmp.cleanup()
 
-    def _delegate_call(self, type_name='writer', task='write the doc'):
+    def _delegate_call(self, role_name='writer', task='write the doc'):
         return [{
             'id': 'call_del001',
             'type': 'function',
             'function': {'name': 'delegate',
-                         'arguments': json.dumps({'type': type_name,
+                         'arguments': json.dumps({'role': role_name,
                                                   'task': task})},
         }]
 
@@ -37,11 +37,11 @@ class TestDelegateTool(unittest.TestCase):
                 for p in t.get('parts') or [] if p['type'] == 'tool']
 
     def _allow_delegate(self, name='writer'):
-        self.chat.types.put(
-            AgentType(name=name, system_prompt='Writer agent',
+        self.chat.roles.put(
+            Role(name=name, system_prompt='Writer agent',
                       tool_permission={'delegate': 'allow'}), scope='local')
 
-    def _delegate_logs(self, type_name):
+    def _delegate_logs(self, role_name):
         return sorted(
             f for f in self.sessions_dir.glob('sub_*.json')
             if json.loads(f.read_text()).get('parent_id')
@@ -118,8 +118,8 @@ class TestDelegateTool(unittest.TestCase):
                       self._tool_msgs()[0]['output'])
 
     def test_type_ask_requires_confirm(self):
-        self.chat.types.put(
-            AgentType(name='writer', system_prompt='W',
+        self.chat.roles.put(
+            Role(name='writer', system_prompt='W',
                       tool_permission={'delegate': 'ask'}), scope='local')
         self.chat._ui.confirm = MagicMock(return_value=False)
         self.chat.provider.chat.side_effect = [
@@ -135,8 +135,8 @@ class TestDelegateTool(unittest.TestCase):
         self.assertFalse(self._delegate_logs('writer'))
 
     def test_confirm_granted_runs(self):
-        self.chat.types.put(
-            AgentType(name='writer', system_prompt='W',
+        self.chat.roles.put(
+            Role(name='writer', system_prompt='W',
                       tool_permission={'delegate': 'ask'}), scope='local')
         self.chat._ui.confirm = MagicMock(return_value=True)
         self.chat.provider.chat.side_effect = [
@@ -174,7 +174,7 @@ class TestDelegateTool(unittest.TestCase):
         ]
         with patch('sys.stdout', new=io.StringIO()) as buf:
             self.chat.registry.dispatch(
-                '/tool delegate {"type": "writer", "task": "write"}')
+                '/tool delegate {"role": "writer", "task": "write"}')
         out = buf.getvalue()
         self.assertEqual(out.count('[delegate writer] Sub result.'), 1)
         self.assertTrue(self._delegate_logs('writer'))
@@ -189,7 +189,7 @@ class TestDelegateTool(unittest.TestCase):
         ]
         with patch('sys.stdout', new=io.StringIO()):
             self.chat.registry.dispatch(
-                '/tool delegate {"type": "writer", "task": "write"}')
+                '/tool delegate {"role": "writer", "task": "write"}')
         roles = [p['type'] for t in self.chat.current_session.turns
                  for p in t.get('parts') or []]
         self.assertIn('text', roles)
@@ -203,15 +203,15 @@ class TestDelegateTool(unittest.TestCase):
 
     def test_forwards_skills_to_subagent(self):
         from types import SimpleNamespace
-        self.chat.types.put(
-            AgentType(name='dev', system_prompt='Dev',
+        self.chat.roles.put(
+            Role(name='dev', system_prompt='Dev',
                       tool_permission={'delegate': 'allow'}), scope='local')
         with patch.object(self.chat, 'run_subagent', return_value=SimpleNamespace(
                 status='ok', content='done', errors=[], session='sub_x',
                 duration=0.0, usage=None)) as run:
             self.chat._init_tooling()
             self.chat._tool_registry.execute(
-                'delegate', {'type': 'dev', 'task': 't',
+                'delegate', {'role': 'dev', 'task': 't',
                              'skills': ['django']})
         run.assert_called_once()
         self.assertEqual(run.call_args.kwargs.get('skills'), ['django'])
@@ -220,9 +220,9 @@ class TestDelegateTool(unittest.TestCase):
         self._allow_delegate()
         self.chat._init_tooling()
         policy = self.chat._tool_policy
-        args_allow = {'type': 'writer', 'task': 't'}
-        args_default = {'type': 'programmer', 'task': 't'}
-        args_unknown = {'type': 'ghost', 'task': 't'}
+        args_allow = {'role': 'writer', 'task': 't'}
+        args_default = {'role': 'programmer', 'task': 't'}
+        args_unknown = {'role': 'ghost', 'task': 't'}
         self.assertEqual(
             policy.action('delegate', 'delegate', None, args_allow), 'allow')
         self.assertEqual(
