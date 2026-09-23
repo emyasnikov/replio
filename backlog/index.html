@@ -1263,7 +1263,7 @@
 <li>[ ] Focus a live sub-run - /focus attaches to a running sub-run and leaves the caller reachable</li>
 <li>[ ] Tool identity - git prints as Git with its own glyph instead of Read log, and the dev wrappers get their own identity</li>
 <li>[ ] Error color - a failed command prints its output red, so an error is visible instead of a dimmed body</li>
-<li>[ ] Test runner timeout and scope - the code_test default timeout is too short for the full suite (about 142s against a 120s cap), and the tester runs only the related tests during the loop and the whole suite once</li>
+<li>[ ] Tester loop scope - the tester runs only the related tests during the loop and the whole suite once, as a role-prompt change</li>
 <li>[ ] Thinking visibility - with show_thinking false only the + Thought N.Ns line prints, so the reasoning is invisible while its duration is shown</li>
 <li>[ ] Prompt brevity budget - every role prompt states a short output budget and a fixed report shape, so a report is a few lines instead of an essay</li>
 <li>[ ] Docs writer commits each added task - the docs writer commits the tasks right after the operator's prompt and then works through the single points one at a time</li>
@@ -1288,7 +1288,6 @@
 <li>[ ] Memory with references - a bounded summary that points at full-length Markdown and session artifacts, with a guard against a misleading reference when the context is gone</li>
 <li>[ ] Root role memory - inject <code>.replio/memory/roles/&lt;role&gt;.md</code> in <code>bind_root_agent</code> through a shared prompt-composition helper, with a refresh path</li>
 <li>[ ] Conclusion stage - a bundled stage with a write-scoped role that distills a finished run into role files, skills, or memory, and never commits</li>
-<li>[ ] Committer permission - <code>git_commit</code> honors an explicit per-role allow instead of always asking, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated (<code>plugins/replio-core-git</code>, non-blocking for the selfdev teams)</li>
 <li>[ ] Saved-session catalog in <code>/load</code> - <code>/load</code> lists and loads saved sessions so an operator can reattach to a prior agent after a restart, while <code>/focus</code> stays live-runs-only</li>
 <li>[ ] Ask continuation - answering a parked ask resumes and continues its origin run in place, instead of only injecting the answer into the session</li>
 <li>[ ] Handoff from sub-agents - a team stage or delegated agent can hand focus to the next agent (composer &gt; planner &gt; developer), not only the REPL root</li>
@@ -1370,6 +1369,8 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] Committer permission - a vcs category gates git_commit, so an allowed role commits unattended</li>
+<li>[x] Scoped <code>code_test</code> - a target runs that target, empty runs are reported, timeout 300s</li>
 <li>[x] Config merge fix - nested config objects merge per key across default, global, and local</li>
 <li>[x] REPL UI colors and prompts - orange actions/asks, red errors, blue thinking, <code>[Y/n]</code> confirm</li>
 <li>[x] opencode reasoning echo - send <code>reasoning_content</code> back on assistant messages</li>

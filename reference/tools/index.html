@@ -1520,8 +1520,8 @@
 <td><code>git_commit</code></td>
 <td>replio-core-git</td>
 <td><code>write</code></td>
-<td><code>edit</code></td>
-<td>Stage/commit git changes, always confirm-gated (alias <code>commit</code>)</td>
+<td><code>vcs</code></td>
+<td>Stage/commit git changes, confirm-gated unless the <code>vcs</code> carve is <code>allow</code> (<code>all=true</code> always asks). Alias <code>commit</code></td>
 </tr>
 <tr>
 <td><code>glob</code></td>
@@ -1624,11 +1624,11 @@
 </tr>
 <tr>
 <td><code>permission</code></td>
-<td>The <code>tool_permission</code> key that gates the tool: <code>bash</code> / <code>catalog</code> / <code>edit</code> / <code>handoff</code> / <code>list</code> / <code>mcp</code> / <code>read</code> / <code>team</code> / <code>web</code></td>
+<td>The <code>tool_permission</code> key that gates the tool: <code>bash</code> / <code>catalog</code> / <code>edit</code> / <code>handoff</code> / <code>list</code> / <code>mcp</code> / <code>read</code> / <code>team</code> / <code>vcs</code> / <code>web</code></td>
 </tr>
 <tr>
 <td><code>permission_fn</code></td>
-<td>Optional <code>Callable[[dict], str]</code> resolving the action (<code>allow</code>/<code>ask</code>/<code>deny</code>) from the current arguments - refines a non-<code>deny</code> base action at call time (see <code>delegate</code>)</td>
+<td>Optional <code>Callable[[dict], str]</code> resolving the action (<code>allow</code>/<code>ask</code>/<code>deny</code>) from the current arguments - refines a non-<code>deny</code> base action at call time, or returns <code>None</code> to defer to the category action (see <code>delegate</code>, <code>git_commit</code>)</td>
 </tr>
 <tr>
 <td><code>path_arg</code></td>
@@ -1708,8 +1708,8 @@
 <p>Resolution precedence:</p>
 <ol>
 <li><strong>Name-level</strong> - <code>tools.deny</code> (always denied) and <code>tools.allow</code> (when non-empty, it is an allowlist, so everything else is denied).</li>
-<li><strong>Category action</strong> - the <code>tool_permission.&lt;key&gt;</code> action for the tool's <code>permission</code> key. <code>deny</code> here filters the tool from the provider schema and from tool listings, not just direct calls.</li>
-<li><strong>Per-invocation resolver</strong> - a tool may declare a <code>permission_fn</code> that refines the action from its current arguments (e.g. <code>delegate</code> resolves per type: a configured type uses its own <code>tool_permission</code> with <code>delegate</code> defaulting to <code>allow</code>, an agent type outside the registry is <code>deny</code>). The resolver only refines a non-<code>deny</code> base action and is skipped when no arguments are available, so schema filtering (<code>allowed()</code>) keeps the tool visible for <code>ask</code>/<code>allow</code> categories.</li>
+<li><strong>Category action</strong> - the <code>tool_permission.&lt;key&gt;</code> action for the tool's <code>permission</code> key. <code>deny</code> here is final, skips the resolver, and filters the tool from the provider schema and from tool listings, not just direct calls.</li>
+<li><strong>Per-invocation resolver</strong> - a tool may declare a <code>permission_fn</code> that overrides a non-<code>deny</code> base action from its current arguments, and returning <code>None</code> defers to the category action. It is skipped when the base action is <code>deny</code> and when no arguments are available, so schema filtering (<code>allowed()</code>) keeps the tool visible for <code>ask</code>/<code>allow</code> categories. <code>delegate</code> resolves per type: a configured type uses its own <code>tool_permission</code> with <code>delegate</code> defaulting to <code>allow</code>, an agent type outside the registry is <code>deny</code>. <code>git_commit</code> defers to the <code>vcs</code> category except for <code>all=true</code>, which asks.</li>
 <li><strong>Worktree escalation</strong> - <code>read</code> / <code>list</code> / <code>write</code> tools pointing outside the project worktree escalate from <code>allow</code> to <code>ask</code>.</li>
 </ol>
 <p>Modes (<a href="../config/">config.md</a>) layer over the base policy: a mode's <code>tool_permission</code> merges over the base (mode wins per key), its <code>tools.deny</code> appends, and its <code>tools.allow</code> replaces when non-empty. The built-in <code>plan</code> mode denies the <code>edit</code> and <code>bash</code> categories, so write and exec tools are filtered from the schema and refused on direct calls. Switch with <code>/mode &lt;name&gt;</code> in the REPL or <code>--mode &lt;name&gt;</code> on <code>replio run</code> / <code>replio serve</code>.</p>

@@ -1821,11 +1821,6 @@
 </thead>
 <tbody>
 <tr>
-<td>Committer permission - <code>git_commit</code> honors an explicit per-role allow instead of always resolving to ask, so a dedicated end-of-loop committer lands one commit per task while every other agent stays ask-gated</td>
-<td>S</td>
-<td>unattended commits</td>
-</tr>
-<tr>
 <td>Committer as a callable stage - a run calls the committer to land the current state as one commit with a correct message</td>
 <td>M</td>
 <td>commits during a run</td>
@@ -1984,9 +1979,9 @@
 <td>visible failures</td>
 </tr>
 <tr>
-<td>Test runner timeout and scope - a code_test timeout that fits the full suite, related tests during the loop and the whole suite once</td>
+<td>Tester loop scope - the tester runs only the related tests during the loop and the whole suite once</td>
 <td>S</td>
-<td>tests that finish</td>
+<td>a fast related check, then a full run</td>
 </tr>
 <tr>
 <td>Thinking visibility - show the reasoning, or drop the duration-only line</td>
