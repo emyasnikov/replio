@@ -1142,14 +1142,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/" class="md-nav__link">
+      <a href="../types.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Agent types
+    None
   
 
     
@@ -1443,7 +1443,7 @@
 <h1 id="scheduled-and-durable-jobs">Scheduled and durable jobs<a class="headerlink" href="#scheduled-and-durable-jobs" title="Permanent link">&para;</a></h1>
 <p><code>replio jobs</code> turns the one-shot agent loop into a durable workflow engine. <code>replio run</code> is a single turn. A job is a named task that adds scheduling, retries with backoff, approvals, a human-in-the-loop status model, and an append-only run history, stored as a file so it survives daemon restarts.</p>
 <h2 id="job-store">Job store<a class="headerlink" href="#job-store" title="Permanent link">&para;</a></h2>
-<p>Jobs live in <code>.replio/jobs.json</code> next to the sessions, one register per worktree (same rule as types). The file is plain JSON and the last writer wins, so run one scheduler per <code>.replio</code>. Removing a job removes only its definition, while its sessions stay as the append-only log of every run. The register keeps the most recent 100 runs. The full transcript stays in the session file.</p>
+<p>Jobs live in <code>.replio/jobs.json</code> next to the sessions, one register per worktree (same rule as roles). The file is plain JSON and the last writer wins, so run one scheduler per <code>.replio</code>. Removing a job removes only its definition, while its sessions stay as the append-only log of every run. The register keeps the most recent 100 runs. The full transcript stays in the session file.</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">"jobs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
@@ -1497,7 +1497,7 @@
 <li><strong><code>replio jobs edit &lt;name&gt;</code></strong> (also <code>/jobs edit &lt;name&gt;</code>) opens the task file in <code>$EDITOR</code> (creating the template first if needed). <code>replio jobs show &lt;name&gt;</code> prints the stored path.</li>
 <li>Paths under the worktree are stored relative to it. Absolute paths stay absolute. A task file missing at run time fails that run with a clear <code>task file not found</code> reason, so a broken link is never silently ignored.</li>
 </ul>
-<p>At run time the system prompt is composed of <code>type.system_prompt</code> (if an agent type is set), the task file contents (<code>## Job task</code>), <code>--system-prompt</code>, and the run memory (<code>## Run memory</code>, below). The engine's mode instruction is appended last. With none of them set, a generic recurring-job prompt is used.</p>
+<p>At run time the system prompt is composed of <code>role.system_prompt</code> (if a role is set), the task file contents (<code>## Job task</code>), <code>--system-prompt</code>, and the run memory (<code>## Run memory</code>, below). The engine's mode instruction is appended last. With none of them set, a generic recurring-job prompt is used.</p>
 <h2 id="run-memory">Run memory<a class="headerlink" href="#run-memory" title="Permanent link">&para;</a></h2>
 <p>Every run is summarized into the job's rolling memory, so the next run knows what happened before without a growing session file:</p>
 <ul>
@@ -1556,12 +1556,12 @@ replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </spa
 <td>Provider / model overrides</td>
 </tr>
 <tr>
-<td><code>--type</code></td>
-<td>Apply an agent type's system prompt, model, and tool permissions</td>
+<td><code>--role</code></td>
+<td>Apply a role's system prompt, model, and tool permissions</td>
 </tr>
 <tr>
 <td><code>--system-prompt</code></td>
-<td>System prompt describing the job. Without it or an agent type, a generic recurring-job prompt is used</td>
+<td>System prompt describing the job. Without it or a role, a generic recurring-job prompt is used</td>
 </tr>
 <tr>
 <td><code>--tools-deny NAME</code></td>
@@ -1589,7 +1589,7 @@ replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </spa
 </tr>
 <tr>
 <td><code>--approve-model</code></td>
-<td>Approve the model referenced by <code>--type</code> (or <code>--model</code>) so the headless job may use it without prompting</td>
+<td>Approve the model referenced by <code>--role</code> (or <code>--model</code>) so the headless job may use it without prompting</td>
 </tr>
 <tr>
 <td><code>--approval auto</code></td>
@@ -1604,7 +1604,7 @@ replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </spa
 <li><strong>Per-run approval (<code>--require-approval</code>)</strong> - for when "something has to be decided" about <em>this</em> run, not arm-or-disarm for all time. Each run parks in <code>waiting_approval</code>: the daemon will not fire it, <code>replio jobs status</code> shows <code>WAITING for approve</code>, and <code>replio jobs approve &lt;name&gt;</code> (or <code>/jobs approve</code>) arms exactly the next run. It parks again after the run. <code>reject</code> clears the grant. <code>run</code> still overrides and executes now.</li>
 <li><strong>Mid-run blocking approval (tool-level, planned)</strong> - an <code>ask</code> tool inside a running job pauses the run in place and waits for a human reply before resuming on the same session. The deepest "decide during the task" model, tracked separately in <a href="../../TODO.md">TODO.md</a>: it needs resumable mid-run state, a wait loop inside the run, and a transport to deliver the ask and return the answer (the planned webhook/email/Telegram connectors drive the same operator API).</li>
 </ol>
-<p>A job runs with <code>HeadlessUI(auto='deny')</code> on an unattended engine, the same posture as <code>replio serve</code>, plus parking. So until mid-run blocking is implemented, an <code>ask target='human'</code> inside a run is not paused and does not hang: it parks as a pending request in <code>.replio/asks.json</code> (returned to the agent as <code>[parked] Ask #&lt;id&gt; ...</code>), the run continues or finishes, and the operator answers later with <code>/asks answer &lt;id&gt; &lt;text&gt;</code> or <code>POST /asks/&lt;id&gt;/answer</code> on <code>replio serve</code>, which injects the answer into the run's session for the next run or continuation. Give a job its permissions up front (<code>--tool-permission bash=allow</code>, an agent type carve, or a <code>--tools-deny</code> list) and it will not need mid-run interruption. A sub-agent inside a job can still use <code>ask target='lead'</code> for a decision from the job's model mid-run. <code>timeout</code> runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so inspect a timed-out job with <code>replio jobs show &lt;name&gt;</code> before a manual retry.</p>
+<p>A job runs with <code>HeadlessUI(auto='deny')</code> on an unattended engine, the same posture as <code>replio serve</code>, plus parking. So until mid-run blocking is implemented, an <code>ask target='human'</code> inside a run is not paused and does not hang: it parks as a pending request in <code>.replio/asks.json</code> (returned to the agent as <code>[parked] Ask #&lt;id&gt; ...</code>), the run continues or finishes, and the operator answers later with <code>/asks answer &lt;id&gt; &lt;text&gt;</code> or <code>POST /asks/&lt;id&gt;/answer</code> on <code>replio serve</code>, which injects the answer into the run's session for the next run or continuation. Give a job its permissions up front (<code>--tool-permission bash=allow</code>, a role carve, or a <code>--tools-deny</code> list) and it will not need mid-run interruption. A sub-agent inside a job can still use <code>ask target='lead'</code> for a decision from the job's model mid-run. <code>timeout</code> runs the attempt on a daemon thread and abandons it if it overruns. The abandoned thread may still write to the shared session, so inspect a timed-out job with <code>replio jobs show &lt;name&gt;</code> before a manual retry.</p>
 <h2 id="report-back">Report-back<a class="headerlink" href="#report-back" title="Permanent link">&para;</a></h2>
 <p>A finished or failed run is surfaced in-band and, optionally, out-of-band, so an unattended supervisor does not have to be watched:</p>
 <ul>
@@ -1616,11 +1616,11 @@ replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </spa
 <h2 id="supervisor-overnight-run">Supervisor overnight run<a class="headerlink" href="#supervisor-overnight-run" title="Permanent link">&para;</a></h2>
 <p>A standing supervisor job is the overnight surface: job engines run unattended (they never read stdin), park human questions as asks, and report back. One command scaffolds it:</p>
 <div class="highlight"><pre><span></span><code>replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>add-supervisor<span class="w"> </span>night<span class="w"> </span>--interval<span class="w"> </span><span class="m">86400</span><span class="w"> </span>--task<span class="w"> </span><span class="s2">"Lead the work."</span>
-<span class="c1"># creates .replio/jobs/night.md from a supervisor template, type=leader, approved</span>
+<span class="c1"># creates .replio/jobs/night.md from a supervisor template, role=leader, approved</span>
 replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>daemon<span class="w">            </span><span class="c1"># runs it on schedule</span>
 replio<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>run<span class="w"> </span>night<span class="w">         </span><span class="c1"># or run it once now</span>
 </code></pre></div>
-<p>The job's type is <code>leader</code>, whose <code>grant_permission</code> lets it delegate categories it denies itself (bash, web) to team stages, and whose <code>ask_policy</code> routes decisions to the operator (parking them under unattended mode). The task file (<code>.replio/jobs/&lt;name&gt;.md</code>) carries the standing goal, and the next run picks up any edit. The model the job uses must be approved (<code>/model</code>, or <code>--approve-model</code> when a type or team references a model).</p>
+<p>The job role is <code>leader</code>, whose <code>grant_permission</code> lets it delegate categories it denies itself (bash, web) to team stages, and whose <code>ask_policy</code> routes decisions to the operator (parking them under unattended mode). The task file (<code>.replio/jobs/&lt;name&gt;.md</code>) carries the standing goal, and the next run picks up any edit. The model the job uses must be approved (<code>/model</code>, or <code>--approve-model</code> when a role or team references a model).</p>
 <p>While it runs:</p>
 <ul>
 <li><code>/asks</code> (or <code>GET /asks</code> on <code>replio serve</code>) lists parked asks. <code>/asks answer &lt;id&gt; &lt;text&gt;</code> (or <code>POST /asks/&lt;id&gt;/answer</code>) marks one answered and injects the answer into its origin session.</li>

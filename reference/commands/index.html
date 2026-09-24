@@ -1137,14 +1137,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/" class="md-nav__link">
+      <a href="../types.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Agent types
+    None
   
 
     
@@ -1553,9 +1553,14 @@
 <td>Run a tool directly (<code>/tool &lt;name&gt; {"key": "value"}</code>)</td>
 </tr>
 <tr>
-<td><code>/types</code></td>
+<td><code>/role</code></td>
 <td></td>
-<td>Manage types: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [prompt]</code>, <code>remove &lt;name&gt;</code>. See <a href="../types/">types.md</a></td>
+<td>Show the active run's role and session. See <a href="../roles/">roles.md</a></td>
+</tr>
+<tr>
+<td><code>/roles</code></td>
+<td></td>
+<td>Manage roles: <code>list</code> (<code>list &lt;tag&gt;</code> filters), <code>show &lt;name&gt;</code>, <code>new &lt;name&gt; [prompt]</code>, <code>remove &lt;name&gt;</code>. See <a href="../roles/">roles.md</a></td>
 </tr>
 <tr>
 <td><code>/unattended</code></td>
@@ -1570,7 +1575,7 @@
 </tbody>
 </table>
 <p><code>/help</code> renders commands with subcommands indented below and lists the allowed tools (policy- and mode-filtered, so plan mode hides write and exec tools) the same way under <code>/tool</code>. <code>/tool</code> with no arguments lists the same tools with their short descriptions.</p>
-<p>Delegation is a normal tool: the lead agent proposes it, or you run it directly, and <code>/tool delegate {"type": "researcher", "task": "..."}</code> routes through the same tool policy. A configured type delegates without prompting (<code>delegate</code> defaults to <code>allow</code>. Set an agent type's <code>delegate</code> to <code>ask</code> to confirm), and an agent type outside the registry is denied. See <a href="../types/">types.md</a> and <a href="../swarm/">swarm.md</a>.</p>
+<p>Delegation is a normal tool: the lead agent proposes it, or you run it directly, and <code>/tool delegate {"role": "researcher", "task": "..."}</code> routes through the same tool policy. A configured role delegates without prompting (<code>delegate</code> defaults to <code>allow</code>. Set a role's <code>delegate</code> to <code>ask</code> to confirm), and a role outside the registry is denied. See <a href="../roles/">roles.md</a> and <a href="../swarm/">swarm.md</a>.</p>
 <h2 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>usage: replio [-h] [--path PATH] [-v] {config,eval,export,fleet,jobs,mcp,models,plugins,run,serve} ...
 </code></pre></div>
@@ -1850,7 +1855,7 @@ replio<span class="w"> </span>config<span class="w"> </span>reload<span class="w
 <tbody>
 <tr>
 <td><code>add</code></td>
-<td><code>replio jobs add &lt;name&gt; --file jobs/&lt;name&gt;.md --cron "0 2 * * *"</code> (or <code>--interval N</code> / <code>--at ISO</code>, with <code>--prompt</code> optional when <code>--file</code> given), plus <code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--type</code>, <code>--system-prompt</code>, <code>--tools-deny</code>, <code>--tool-permission</code>, <code>--retries</code>, <code>--backoff</code>, <code>--timeout</code>, <code>--require-approval</code>, <code>--approve-model</code>, <code>--approval auto</code></td>
+<td><code>replio jobs add &lt;name&gt; --file jobs/&lt;name&gt;.md --cron "0 2 * * *"</code> (or <code>--interval N</code> / <code>--at ISO</code>, with <code>--prompt</code> optional when <code>--file</code> given), plus <code>--mode</code>, <code>--provider</code>/<code>--model</code>, <code>--role</code>, <code>--system-prompt</code>, <code>--tools-deny</code>, <code>--tool-permission</code>, <code>--retries</code>, <code>--backoff</code>, <code>--timeout</code>, <code>--require-approval</code>, <code>--approve-model</code>, <code>--approval auto</code></td>
 </tr>
 <tr>
 <td><code>add-supervisor</code></td>
@@ -1914,7 +1919,7 @@ replio<span class="w"> </span>config<span class="w"> </span>reload<span class="w
 </tr>
 <tr>
 <td><code>config</code></td>
-<td><code>config &lt;name&gt; --provider/--model/--type/--system-prompt/--mode/--tools-deny/--tool-permission</code> - write only those keys into <code>&lt;dir&gt;/.replio/config.json</code></td>
+<td><code>config &lt;name&gt; --provider/--model/--role/--system-prompt/--mode/--tools-deny/--tool-permission</code> - write only those keys into <code>&lt;dir&gt;/.replio/config.json</code></td>
 </tr>
 <tr>
 <td><code>down</code></td>

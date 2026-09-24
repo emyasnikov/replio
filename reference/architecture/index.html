@@ -1131,14 +1131,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/" class="md-nav__link">
+      <a href="../types.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Agent types
+    None
   
 
     
@@ -1448,7 +1448,7 @@
 <h2 id="focus">Focus<a class="headerlink" href="#focus" title="Permanent link">&para;</a></h2>
 <p><code>FocusManager</code> (<code>src/replio/focus.py</code>) owns the REPL's focus stack, keyed by run id. <code>ChatLoop.active()</code> returns the engine for the focused run and <code>ChatLoop.run()</code> routes turns and slash commands to it, so the operator talks to whichever agent is in focus. Focus only navigates: a run with a retained engine is attached directly, and a past run is rebuilt by <code>Engine.run_engine</code>, which resumes the run's own session and role instead of minting a name. <code>FocusManager.back()</code> walks the stack back and <code>reset()</code> returns to the root run, repointing <code>ReplUI._loop</code> so rendering and confirms follow the active engine. The <code>prompt_role</code> config (default false) prefixes the prompt with the active role (e.g. <code>Assistant &gt;&gt;&gt;</code>). The <code>/focus</code> command surfaces the same model: no args prints the current run, the run tree (each run showing its id, session, and session id, with a <code>↔ Switch to &lt;role&gt;</code> marker), and the call log, and it attaches or moves by <code>#run</code>, <code>#session_id</code>, <code>session:</code>, <code>root</code>, <code>parent</code>, <code>child</code>, <code>sibling</code>, <code>next</code>, <code>prev</code>, or <code>back</code>. The <code>handoff</code> tool lets an agent do the same at run time: it marks its own run <code>paused</code> or <code>done</code>, resolves <code>parent</code>/<code>child</code>/<code>sibling</code>/<code>root</code>/<code>#run</code>/<code>#session_id</code>/session name against the registry, and records a pending handoff that <code>ChatLoop</code> applies after the turn, so focus follows the target run once the model stops. The <code>focus_on_delegate</code> config (<code>off</code>, <code>ask</code>, <code>on</code>, default <code>off</code>) does the same for an ordinary <code>delegate</code> call: when it fires, the <code>delegate</code> tool records a pending focus on the child run (<code>TurnResult.run_id</code>) and the turn still finishes, so the REPL follows the sub-agent while the caller's answer completes.</p>
 <h2 id="memory">Memory<a class="headerlink" href="#memory" title="Permanent link">&para;</a></h2>
-<p>A run's own session is the context within a run. Across runs, continuity is bounded memory owned by <code>src/replio/memory.py</code>, one compacted Markdown summary per scope under <code>.replio/memory/</code> (<code>roles/&lt;type&gt;.md</code>, <code>teams/&lt;name&gt;.md</code>, <code>jobs/&lt;name&gt;.md</code>). Role memory is injected into a sub-agent's system prompt and refreshed after its run, and team/job memory is injected into briefs and refreshed after their runs, all through the same compaction summarizer with the previous memory as a seed. <code>memory</code>, <code>memory_scopes</code>, and <code>memory_max_chars</code> gate and cap it, and <code>/memorize</code> writes a scope on demand. See <a href="../memory/">memory.md</a>.</p>
+<p>A run's own session is the context within a run. Across runs, continuity is bounded memory owned by <code>src/replio/memory.py</code>, one compacted Markdown summary per scope under <code>.replio/memory/</code> (<code>roles/&lt;role&gt;.md</code>, <code>teams/&lt;name&gt;.md</code>, <code>jobs/&lt;name&gt;.md</code>). Role memory is injected into a sub-agent's system prompt and refreshed after its run, and team/job memory is injected into briefs and refreshed after their runs, all through the same compaction summarizer with the previous memory as a seed. <code>memory</code>, <code>memory_scopes</code>, and <code>memory_max_chars</code> gate and cap it, and <code>/memorize</code> writes a scope on demand. See <a href="../memory/">memory.md</a>.</p>
 <h2 id="one-stream-one-round-trip">One stream, one round trip<a class="headerlink" href="#one-stream-one-round-trip" title="Permanent link">&para;</a></h2>
 <p>When no tools are used, a turn is a single streaming request, with no separate non-streaming decision round. <code>chat_nonstreaming()</code> is reserved for auxiliary decisions: query refinement, tool-result analysis, compaction. The <code>&lt;thinking&gt;</code> marker split lives in the engine so thinking stays separate from content in JSON results and session logs.</p>
 <h2 id="ui-sinks">UI sinks<a class="headerlink" href="#ui-sinks" title="Permanent link">&para;</a></h2>
@@ -1534,10 +1534,10 @@
 ├── scheduler.py         # JobScheduler - durable job daemon
 ├── server.py            # stdlib HTTP JSON API
 ├── sessions/            # session CRUD + markdown render
-├── skills.py            # SkillRegistry (per-type instructions)
+├── skills.py            # SkillRegistry (per-role instructions)
 ├── teams.py             # TeamRegistry (named team pipelines) + team memory helpers
 ├── tools/               # tool registry, tool policy, delegate, ask
-├── types.py             # TypeRegistry (agent types, bundled/plugin/global/local)
+├── roles.py             # RoleRegistry (roles, bundled/plugin/global/local)
 ├── ui.py                # UISink - ReplUI / HeadlessUI / BufferUI / NullUI
 └── utils/               # urllib-based SSE streaming
 </code></pre></div>

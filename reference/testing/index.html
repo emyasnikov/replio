@@ -1043,14 +1043,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/" class="md-nav__link">
+      <a href="../types.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Agent types
+    None
   
 
     
@@ -1300,15 +1300,15 @@
 </tr>
 <tr>
 <td><code>test_delegate.py</code></td>
-<td><code>delegate</code> tool: type allow default (no prompt) / <code>ask</code> confirm grant-decline / unknown-type deny, <code>delegate_echo</code> on/off display + sub footer, <code>/tool delegate</code> single print, empty-content log-summary fallback, sub-agent session persistence + resolver actions</td>
+<td><code>delegate</code> tool: role allow default (no prompt) / <code>ask</code> confirm grant-decline / unknown-role deny, <code>delegate_echo</code> on/off display + sub footer, <code>/tool delegate</code> single print, empty-content log-summary fallback, sub-agent session persistence + resolver actions</td>
 </tr>
 <tr>
 <td><code>test_delegation_permissions.py</code></td>
-<td>Permission ceiling + grants: <code>clamp_action</code>/<code>resolve_permissions</code>/<code>resolve_grant_ceiling</code>, <code>ToolPolicy</code> one-shot/always grants + consume + category/tool matching, no-escalation (a type carve cannot widen above the caller's <code>grant_permission</code>), supervisor grants a category it cannot use itself, one-shot grants do not propagate to children, <code>ask(kind='permission')</code> routing (<code>auto</code>/<code>human</code>/<code>deny</code>, ceiling denial, lead grants <code>once</code> only, operator grants <code>once</code>/<code>always</code>), granted tool appears then is consumed from the schema, audit entries</td>
+<td>Permission ceiling + grants: <code>clamp_action</code>/<code>resolve_permissions</code>/<code>resolve_grant_ceiling</code>, <code>ToolPolicy</code> one-shot/always grants + consume + category/tool matching, no-escalation (a role carve cannot widen above the caller's <code>grant_permission</code>), supervisor grants a category it cannot use itself, one-shot grants do not propagate to children, <code>ask(kind='permission')</code> routing (<code>auto</code>/<code>human</code>/<code>deny</code>, ceiling denial, lead grants <code>once</code> only, operator grants <code>once</code>/<code>always</code>), granted tool appears then is consumed from the schema, audit entries</td>
 </tr>
 <tr>
 <td><code>test_engine.py</code></td>
-<td><code>Engine.chat</code> turn result, thinking/content separation, load-or-create sessions, auto <code>ses_&lt;ts&gt;_&lt;id&gt;</code> naming (stable across turns), plan-mode schema filtering, instruction injection, per-turn <code>mode</code>, glyph param suffix gating, <code>!</code> error-line rendering and <code>show_errors</code> gating, soft-result note-line rendering and <code>show_notes</code> gating, <code>check_connection</code>/<code>list_models</code> probe resolution and overrides without state mutation, <code>_reinit_provider</code> provider-registry API key resolution (no config fallback, registry custom base_url fallback when config empty), model-ref unfold + approval gate (unfolded provider/base_url/model, headless deny, <code>approve_models</code> grant, chat short-circuit, subagent type-model unfold + gate, team-run pre-check deny)</td>
+<td><code>Engine.chat</code> turn result, thinking/content separation, load-or-create sessions, auto <code>ses_&lt;ts&gt;_&lt;id&gt;</code> naming (stable across turns), plan-mode schema filtering, instruction injection, per-turn <code>mode</code>, glyph param suffix gating, <code>!</code> error-line rendering and <code>show_errors</code> gating, soft-result note-line rendering and <code>show_notes</code> gating, <code>check_connection</code>/<code>list_models</code> probe resolution and overrides without state mutation, <code>_reinit_provider</code> provider-registry API key resolution (no config fallback, registry custom base_url fallback when config empty), model-ref unfold + approval gate (unfolded provider/base_url/model, headless deny, <code>approve_models</code> grant, chat short-circuit, subrole-model unfold + gate, team-run pre-check deny)</td>
 </tr>
 <tr>
 <td><code>test_eval.py</code></td>
@@ -1316,7 +1316,7 @@
 </tr>
 <tr>
 <td><code>test_fleet.py</code></td>
-<td>Fleet supervisor: port allocation (preferred/bind-probe fallback/in-use skip/exhaustion), <code>/health</code> probe ok + failure, manifest/state round-trip + corrupt tolerance, spawn &gt; health &gt; crash &gt; restart &gt; down via <code>sys.executable -c</code> mock servers, <code>max_restarts</code> give-up, unhealthy-threshold restart, disabled gate, log files, env seams (<code>REPLIO_FLEET_PORT</code>), <code>replio fleet</code> CLI (init/add/remove/status/restart/config incl. type inline + unknown-type error), detached-daemon end-to-end (up --detach, status, down)</td>
+<td>Fleet supervisor: port allocation (preferred/bind-probe fallback/in-use skip/exhaustion), <code>/health</code> probe ok + failure, manifest/state round-trip + corrupt tolerance, spawn &gt; health &gt; crash &gt; restart &gt; down via <code>sys.executable -c</code> mock servers, <code>max_restarts</code> give-up, unhealthy-threshold restart, disabled gate, log files, env seams (<code>REPLIO_FLEET_PORT</code>), <code>replio fleet</code> CLI (init/add/remove/status/restart/config incl. role inline + unknown-role error), detached-daemon end-to-end (up --detach, status, down)</td>
 </tr>
 <tr>
 <td><code>test_focus.py</code></td>
@@ -1340,7 +1340,7 @@
 </tr>
 <tr>
 <td><code>test_jobs.py</code></td>
-<td>Job model + registry (round-trip incl. <code>require_approval</code>/<code>task_file</code>/<code>approve_model</code>/<code>created_at</code>, runnable + ready-to-run gates, corrupt file tolerance), cron parser (steps/ranges/lists/dom/dow/the restrictive day rule, leap day), <code>next_run</code>/<code>compute_next_run</code>/<code>parse_dt</code>, scheduler run/tick under a mocked engine (verified/failed, retries with backoff, per-attempt history, unknown type, one-shot <code>at</code>, approval gates, per-run <code>require_approval</code> park/re-arm, run memory write + injection, per-run session naming + collision dedupe + <code>--session</code> stability, run content capture), <code>_build_engine</code> type-skill injection (present/missing), task file template/linkage/missing-file failure, status/list/show rendering (incl. the <code>last run:</code> summary line), <code>replio jobs</code> CLI (add/approve/list, <code>--file</code>, edit, status output, stop, auto-approval, bad cron, duplicates, run exit codes + content printing), report-back dispatch (verified/failed/build-failure events, payload fields, injected service, no-service no-op, service-exception tolerance)</td>
+<td>Job model + registry (round-trip incl. <code>require_approval</code>/<code>task_file</code>/<code>approve_model</code>/<code>created_at</code>, runnable + ready-to-run gates, corrupt file tolerance), cron parser (steps/ranges/lists/dom/dow/the restrictive day rule, leap day), <code>next_run</code>/<code>compute_next_run</code>/<code>parse_dt</code>, scheduler run/tick under a mocked engine (verified/failed, retries with backoff, per-attempt history, unknown role, one-shot <code>at</code>, approval gates, per-run <code>require_approval</code> park/re-arm, run memory write + injection, per-run session naming + collision dedupe + <code>--session</code> stability, run content capture), <code>_build_engine</code> role-skill injection (present/missing), task file template/linkage/missing-file failure, status/list/show rendering (incl. the <code>last run:</code> summary line), <code>replio jobs</code> CLI (add/approve/list, <code>--file</code>, edit, status output, stop, auto-approval, bad cron, duplicates, run exit codes + content printing), report-back dispatch (verified/failed/build-failure events, payload fields, injected service, no-service no-op, service-exception tolerance)</td>
 </tr>
 <tr>
 <td><code>test_memory.py</code></td>
@@ -1360,7 +1360,7 @@
 </tr>
 <tr>
 <td><code>test_plugins.py</code></td>
-<td>Plugin manager: manifest compat ranges, discovery precedence, registration hooks (tools/providers/commands/services/types/teams/skills + hook-failure status), <code>_bundled_dir</code> fallback (source layout + forced import failure), install/update/uninstall, <code>replio plugins test</code> (+ <code>load_plugin_test_suite</code>)</td>
+<td>Plugin manager: manifest compat ranges, discovery precedence, registration hooks (tools/providers/commands/services/roles/teams/skills + hook-failure status), <code>_bundled_dir</code> fallback (source layout + forced import failure), install/update/uninstall, <code>replio plugins test</code> (+ <code>load_plugin_test_suite</code>)</td>
 </tr>
 <tr>
 <td><code>test_print.py</code></td>
@@ -1416,15 +1416,15 @@
 </tr>
 <tr>
 <td><code>test_subagent.py</code></td>
-<td>In-process sub-engine: provider/plugin/worktree inheritance, type prompt/mode/tool_permission application, type-skill system-prompt injection (present/missing/empty/no-skills), model override, <code>BufferUI</code>, unknown type, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
+<td>In-process sub-engine: provider/plugin/worktree inheritance, role prompt/mode/tool_permission application, role-skill system-prompt injection (present/missing/empty/no-skills), model override, <code>BufferUI</code>, unknown role, full <code>run_subagent</code> flow + persisted <code>sub_*</code> session with <code>parent_id</code>, ask-gated tool cancellation, parent <code>sub_sessions</code> linkage</td>
 </tr>
 <tr>
 <td><code>test_team_run.py</code></td>
-<td><code>Engine.run_team</code>: brief builder (task + prior results + handoff + memory + task hint, prior-result truncation), sequential stage execution with per-stage <code>sub_*</code> sessions + parent linkage + exact brief persistence, stage mode override + caller-mode inheritance, stop-on-failure, unknown-stage-type stop, zero stages, rolling team-memory write (summarized + prior-seeded + fallback), <code>/teams run</code> command output (stages + final result, unknown team, usage)</td>
+<td><code>Engine.run_team</code>: brief builder (task + prior results + handoff + memory + task hint, prior-result truncation), sequential stage execution with per-stage <code>sub_*</code> sessions + parent linkage + exact brief persistence, stage mode override + caller-mode inheritance, stop-on-failure, unknown-stage-role stop, zero stages, rolling team-memory write (summarized + prior-seeded + fallback), <code>/teams run</code> command output (stages + final result, unknown team, usage)</td>
 </tr>
 <tr>
 <td><code>test_team_tool.py</code></td>
-<td><code>team</code> tool: schema/registration (<code>category delegate</code>, <code>loop</code>), pipeline run + final result + sub-sessions, unknown team / no stages / unknown stage type errors, resolver allow/deny/ask per stage type, clamped-stage note, <code>run_team</code> cycle + depth guards, <code>_team_depth</code>/<code>_team_stack</code> propagation, full agent-loop team call</td>
+<td><code>team</code> tool: schema/registration (<code>category delegate</code>, <code>loop</code>), pipeline run + final result + sub-sessions, unknown team / no stages / unknown stage role errors, resolver allow/deny/ask per stage role, clamped-stage note, <code>run_team</code> cycle + depth guards, <code>_team_depth</code>/<code>_team_stack</code> propagation, full agent-loop team call</td>
 </tr>
 <tr>
 <td><code>test_teams.py</code></td>
@@ -1451,8 +1451,8 @@
 <td>Unattended mode: config defaults, root <code>_ask_ui</code> dropped (config, <code>--unattended</code>, <code>/unattended</code>) and restored by <code>set_unattended</code>, sub-engine inherits <code>unattended</code> + no <code>_ask_ui</code>, confirm auto-deny (no <code>ui.confirm</code> call), root human ask non-blocking / sub-agent human ask routes to the lead (no <code>input</code>), full-loop run_command confirm auto-deny, model approval not prompted unless <code>approve_models</code>, <code>/unattended</code> command status + toggle, <code>confirm_timeout</code> deny-on-timeout / answer-when-ready / zero-timeout passthrough for confirm and ask</td>
 </tr>
 <tr>
-<td><code>test_types.py</code></td>
-<td><code>TypeRegistry</code>: bundled/plugin/global/local merge and precedence, origins (bundled/plugin/local/global origin), tags roundtrip + merge, put/remove/reload (disk re-read + plugin-manager re-apply), <code>/types</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
+<td><code>test_roles.py</code></td>
+<td><code>RoleRegistry</code>: bundled/plugin/global/local merge and precedence, origins (bundled/plugin/local/global origin), tags roundtrip + merge, put/remove/reload (disk re-read + plugin-manager re-apply), <code>/roles</code> command (list/show/new override/remove, <code>list &lt;tag&gt;</code> filter, bundled remove rejected)</td>
 </tr>
 <tr>
 <td><code>test_ui.py</code></td>

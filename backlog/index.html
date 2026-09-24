@@ -1019,14 +1019,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/types/" class="md-nav__link">
+      <a href="../reference/types.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Agent types
+    None
   
 
     
@@ -1204,13 +1204,13 @@
 <li>Agent health monitoring - the assistant watches endpoints (e.g. the <code>/health</code> of agents running as web APIs) and warns when an agent stops responding</li>
 <li>Per-agent todo lists - view a delegated agent's tasks, mark items done, jump into its session, and ask for the current state (OpenCode-style)</li>
 <li>Non-blocking delegation - the assistant starts sub-agents or whole teams for bigger tasks and reports their status instead of blocking the current run</li>
-<li>Recurring tasks carry their own role - each job carries its own type and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time</li>
+<li>Recurring tasks carry their own role - each job carries its own role and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time</li>
 <li>Auto-improving skills (autogen/autolearn) - a role refines its skills from experience and keeps them alongside its memory, so recurring work gets better without re-prompting</li>
 <li>Runtime pluginization - make models, tools, skills, sessions, sandboxes, storage, loops, scheduling, and the UI replaceable plugins, and move the REPL to a plugin. Five replaceable layers: access, orchestration, capability, model, storage</li>
 <li>One runtime, many agents - position Replio as an agent harness for fleets, not a single assistant</li>
 <li>ACP inward and outward - speak the Agent Client Protocol so Replio can host and be hosted by other harnesses, alongside MCP</li>
-<li>Commands as tools - expose slash commands to the model as permission-gated tools to configure types, teams, and skills, with command access limited per permission</li>
-<li>Markdown catalogue - store types, teams, and skills as Markdown files (front matter) referenced from JSON, and move the bundled data files (<code>src/replio/*.json</code>) into one catalogue directory near <code>src</code></li>
+<li>Commands as tools - expose slash commands to the model as permission-gated tools to configure roles, teams, and skills, with command access limited per permission</li>
+<li>Markdown catalogue - store roles, teams, and skills as Markdown files (front matter) referenced from JSON, and move the bundled data files (<code>src/replio/*.json</code>) into one catalogue directory near <code>src</code></li>
 <li>Hidden files and allowed paths - hide secrets and config from tools by default, and restrict visible paths to allowed roots</li>
 <li>Context policy - keep user prompts until the task is done, cut unused references and tool results immediately, add a recall tool for role and team memory, enforce a configurable context limit, and offload large tool results to <code>.replio/tmp/</code> referenced from the session log</li>
 <li>Context UI polish - auto-compaction, context trim, highlighting, and context desaturation</li>
@@ -1256,24 +1256,15 @@
 </ul>
 <h2 id="open">Open<a class="headerlink" href="#open" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[ ] Command audit - review the slash commands for opaque or overlapping behavior and consolidate</li>
 <li>[ ] Focus keeps the run's context - re-entering a finished run uses its retained engine or resumes that run's own session, and never starts a fresh session. /focus drops the session:<name> attach, because saved sessions belong to /load</li>
 <li>[ ] Interruptible run status - the status line yields to the keyboard during a delegated or team run, with a hint line naming the keys (Enter to continue, ^O to open, ^C to cancel) and a Switch <role> marker</li>
-<li>[ ] Sub-run stats - each sub-run prints its duration and token count, dimmed, under its status line</li>
-<li>[ ] Sub-run verbosity mode - a middle mode that keeps the caller in place and prints a truncated view of the sub-run (its write and edit calls), while research and reads stay hidden</li>
 <li>[ ] Focus a live sub-run - /focus attaches to a running sub-run and leaves the caller reachable</li>
-<li>[ ] Tool identity - git prints as Git with its own glyph instead of Read log, and the dev wrappers get their own identity</li>
-<li>[ ] Error color - a failed command prints its output red, so an error is visible instead of a dimmed body</li>
 <li>[ ] Tester loop scope - the tester runs only the related tests during the loop and the whole suite once, as a role-prompt change</li>
 <li>[ ] Thinking visibility - with show_thinking false only the + Thought N.Ns line prints, so the reasoning is invisible while its duration is shown</li>
 <li>[ ] Prompt brevity budget - every role prompt states a short output budget and a fixed report shape, so a report is a few lines instead of an essay</li>
 <li>[ ] Docs writer commits each added task - the docs writer commits the tasks right after the operator's prompt and then works through the single points one at a time</li>
-<li>[ ] Rename "types" to "roles" - AgentType to Role, TypeRegistry to RoleRegistry, /types to /roles, --type to --role, register_types to register_roles, types.json to roles.json, docs/types.md to docs/roles.md, a clean rename in code with no compatibility aliases</li>
-<li>[ ] Backslash line continuation - a trailing \ continues the message on the next line, alongside the existing """ and ''' blocks</li>
 <li>[ ] hide_confirm_input default true - the typed input is hidden on the tool confirm unless overridden</li>
-<li>[ ] <code>ask</code> tool gating - never confirm-gate the <code>ask</code> tool, so a question is not blocked by the prompt it needs, and <code>hide_confirm_input</code> never hides a free-text ask answer</li>
-<li>[ ] Reliable multi-line input - an explicit close rule instead of the odd-count <code>"""</code> heuristic, so a backspace or a pasted delimiter never submits the message mid-typing</li>
-<li>[ ] Compact status params - an oversized or multiline tool argument renders as <code>&lt;N chars&gt;</code> or is omitted, in the glyph status line and the tool confirm label</li>
-<li>[ ] Optional output log - a config-gated file recording everything printed in a session, for later analysis</li>
 <li>[ ] Batched structured asks - <code>ask</code> handles one question at a time, so several decisions cannot be asked in one call</li>
 <li>[ ] Committer as a callable stage - a run calls the committer to land the current state as one commit with a correct message, so a long run does not accumulate uncommitted work</li>
 <li>[ ] Researcher role with fresh context - a bundled researcher role with web access, started fresh for every task so research never inherits stale context</li>
@@ -1310,7 +1301,7 @@
 <li>[ ] Role-name sync - adopt assistant, composer, manager, and specialist as the canonical roles across types, prompts, and docs</li>
 <li>[ ] Assistant-roles track docs - record the assistant, composer, and manager architecture and the work packages in VISION, PLAN, and TODO</li>
 <li>[ ] Core dev team configuration - a bundled development team with the review loop plus the project lead/support teams and their skills</li>
-<li>[ ] Manager role - a bundled agent type that runs one or many teams and reports, sequential first</li>
+<li>[ ] Manager role - a bundled role that runs one or many teams and reports, sequential first</li>
 <li>[ ] Per-job report destination - a <code>report_url</code> (or connector list) on a job so different jobs report to different endpoints, instead of one global <code>report.webhook</code></li>
 <li>[ ] Per-task decide-vs-park for <code>direction</code> asks - a task class (or per-run switch) that lets the supervisor auto-resolve a direction ask after a timeout instead of always parking it for the operator</li>
 <li>[ ] Full <code>file_*</code> namespace extension - if <code>file_glob</code>/<code>file_grep</code> prove better with most models, extend the prefix to <code>list_dir</code>/<code>glob</code>/<code>grep</code> (old names stay aliases)</li>
@@ -1320,8 +1311,8 @@
 <li>[ ] Job connectors - bundled <code>replio-core-webhook</code> (stdlib JSON POST, zero deps, works with n8n/IFTTT/any URL) first. External email (SMTP + polling) and Telegram (urllib long-poll) plugins later, all driving the jobs operator API so operators can react in time</li>
 <li>[ ] Jobs operator API - <code>GET /jobs</code> and <code>POST /jobs/&lt;name&gt;/approve|reject|run|disable</code> on <code>replio serve</code>, so clients (web Control UI, connectors, fleet supervisor) can see and act per agent</li>
 <li>[ ] Fleet jobs overview - <code>replio jobs list --root &lt;dir&gt;</code> scanning agent worktrees (agent, job, status, next run, task table), then the web Control UI on top</li>
-<li>[ ] Agent type directory scan for export/import - read <code>.replio/types/*.md</code> (front-matter types) to import and export types to Markdown, paralleling the sessions Markdown export/import</li>
-<li>[ ] Auto team selection - the assistant picks types, teams, and skills from the registries for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -&gt; Researcher &gt; Writer &gt; Referencer &gt; Editor)</li>
+<li>[ ] Role directory scan for export/import - read <code>.replio/roles/*.md</code> (front-matter roles) to import and export roles to Markdown, paralleling the sessions Markdown export/import</li>
+<li>[ ] Auto team selection - the assistant picks roles, teams, and skills from the registries for a task and delegates in sequence (team orchestration as a user-facing pattern, e.g. "compare with competitors" -&gt; Researcher &gt; Writer &gt; Referencer &gt; Editor)</li>
 <li>[ ] Thinking visibility - <code>/thinking on</code> + <code>reasoning</code> config documented, per-provider <code>reasoning_content</code> check so reasoning shows in the REPL</li>
 <li>[ ] <code>/spawn</code> command - launch a scoped <code>replio serve</code> agent from the REPL (home -&gt; project path), supervise (health/list/stop) and delegate to it (<code>docs/fleet.md</code>)</li>
 <li>[ ] Remote channels - command agents from messaging apps (OpenClaw channels parity):</li>
@@ -1352,7 +1343,7 @@
 <li>[ ] Workspace sessions - tools write into a scoped <code>--workspace</code> dir, optional <code>--git</code> sync</li>
 <li>[ ] Sandboxed exec - namespace/container isolation for <code>run_command</code> (documented, planned for a later version)</li>
 <li>[ ] <code>/agent</code> types - interactive type selection/run UX (type registry, sub-engine, and <code>delegate</code> landed. The <code>/agent</code> command itself remains)</li>
-<li>[ ] PM/dev/tester team orchestration as a user-facing pattern (the agent types + <code>delegate</code> primitives landed, and it needs the jobs/team-config layer to be a pattern)</li>
+<li>[ ] PM/dev/tester team orchestration as a user-facing pattern (the roles + <code>delegate</code> primitives landed, and it needs the jobs/team-config layer to be a pattern)</li>
 <li>[ ] Headless web API plugin-first - stdlib <code>http.server</code> fallback, richer framework (FastAPI) via the dependency plugin</li>
 <li>[ ] Enterprise plugins (stdlib-first, third-party deps optional):</li>
 <li>[ ] Data ingestion - <code>read_stream</code> / <code>write_stream</code> (MQTT, OPC-UA, Modbus)</li>
@@ -1369,6 +1360,19 @@
 </ul>
 <h2 id="done">Done<a class="headerlink" href="#done" title="Permanent link">&para;</a></h2>
 <ul>
+<li>[x] Tool identity - git and the dev wrappers print their own glyph and verb</li>
+<li>[x] Error color - a failed command echoes its output red</li>
+<li>[x] Compact status params - large or multiline args render as <code>&lt;N chars&gt;</code></li>
+<li>
+<p>[x] Optional output log - <code>output_log</code> writes the REPL transcript with colors to <code>.replio/output/</code></p>
+</li>
+<li>
+<p>[x] Renamed types to roles - Role/RoleRegistry, /roles + /role, --role, register_roles, roles.json</p>
+</li>
+<li>[x] Sub-run stage lines - completed delegate/team stages stay visible with duration and tokens</li>
+<li>[x] Sub-run verbosity - <code>subrun_verbosity</code> quiet/summary/full, summary forwards writes and edits</li>
+<li>[x] Reliable multi-line input - explicit close rule (delimiter at line start or blank line), backslash continuation</li>
+<li>[x] <code>ask</code> never confirm-gated - a question is not blocked by the prompt it needs, and free-text asks stay visible</li>
 <li>[x] Committer permission - a vcs category gates git_commit, so an allowed role commits unattended</li>
 <li>[x] Scoped <code>code_test</code> - a target runs that target, empty runs are reported, timeout 300s</li>
 <li>[x] Config merge fix - nested config objects merge per key across default, global, and local</li>
@@ -1396,13 +1400,13 @@
 <li>[x] <code>/focus</code> command - show the run tree/log, attach by id/role/session, navigate runs</li>
 <li>[x] Focus manager and role engines - REPL focus stack, stable <code>agent_&lt;role&gt;</code> sessions, <code>prompt_role</code></li>
 <li>[x] Run registry and call tree - in-process runs with parent/children and a flat call log</li>
-<li>[x] Session role metadata - the owning agent type is stamped as <code>role</code> on every session at creation</li>
+<li>[x] Session role metadata - the owning role is stamped as <code>role</code> on every session at creation</li>
 <li>[x] Assistant root role - REPL binds assistant/assistant_type, delegation-first prompt</li>
 <li>[x] Composer role - bundled team composer, catalog allow, edit/team deny</li>
 <li>[x] Team review loop - team loop over producer/reviewer, VERDICT pass, max_iterations</li>
 <li>[x] Warm member sessions - delegate/team session_key, team warm_sessions reuse sub_<key></li>
 <li>[x] Agent catalog tool - list/show/save/remove types, teams, skills, plus reload</li>
-<li>[x] Per-invocation skills - delegate/team/stage skills layered over a type's standing skills</li>
+<li>[x] Per-invocation skills - delegate/team/stage skills layered over a role's standing skills</li>
 <li>[x] End-to-end supervisor verification - <code>replio jobs add-supervisor</code>, governance-loop test</li>
 <li>[x] Report-back - <code>job.run.completed</code> events, <code>last run:</code>/<code>summary:</code> lines, footer status</li>
 <li>[x] <code>replio-core-webhook</code> - report-back connector POSTing job reports to <code>report.webhook</code></li>
@@ -1411,7 +1415,7 @@
 <li>[x] <code>team</code> tool - model-invokable team pipeline, per-stage permission + ceiling/depth guards</li>
 <li>[x] Delegation permission ceiling + <code>ask</code> permission grants - <code>grant_permission</code>, <code>ask_policy</code></li>
 <li>[x] CLI realigned to internal commands - replio models/config/plugins mirror /models, /config, /plugins</li>
-<li>[x] Plural registry commands - /types, /teams, /skills (was /type, /team, /skill)</li>
+<li>[x] Plural registry commands - /roles, /teams, /skills (was /type, /team, /skill)</li>
 <li>[x] <code>/session</code> split - active session vs <code>/sessions</code> catalog (mirrors /model vs /models)</li>
 <li>[x] Model commands - /model show/switch, /models configured, /models list [provider] live</li>
 <li>[x] Loop tools - <code>/tool delegate</code> runs a persisted loop turn, sub-agent ask reaches the operator</li>
@@ -1439,7 +1443,7 @@
 <li>[x] Agent-loop cancellation + tool-dialect hardening - Ctrl-C cancels the turn, unknown-tool hints</li>
 <li>[x] Skills registry - <code>SkillRegistry</code>, local/global dirs + plugins, type <code>skills</code> in prompts</li>
 <li>[x] Teams registry - <code>Team</code>/<code>TeamRegistry</code>, 4-layer <code>teams.json</code> merge, <code>/team</code> read/edit</li>
-<li>[x] Plugin contribution hooks - register_types/teams/skills hooks, <code>TypeRegistry.reload()</code></li>
+<li>[x] Plugin contribution hooks - register_roles/teams/skills hooks, <code>RoleRegistry.reload()</code></li>
 <li>[x] Fleet orchestration - <code>replio fleet</code> supervisor CLI: ports, health, restart, config gen</li>
 <li>[x] Per-run job sessions - <code>job_&lt;ts&gt;_&lt;name&gt;</code> files, unified <code>ses_</code>/<code>sub_</code>/<code>job_</code> naming</li>
 <li>[x] Job run memory - rolling <code>.memory.md</code> summary injected into each run, seeded</li>
@@ -1450,10 +1454,10 @@
 <li>[x] Watchable job runs - <code>replio jobs run --verbose</code> streams the live turn</li>
 <li>[x] Richer job runs - <code>--type</code>/<code>--system-prompt</code>, recurring-job prompt, tool carve</li>
 <li>[x] Scheduled / durable jobs - <code>replio jobs</code>: registry, daemon, cron, retries, approval gate</li>
-<li>[x] Per-agent permission profiles - type tool_permission drives sub-agent policy</li>
-<li>[x] In-process sub-engine - Engine.run_subagent: type overrides, NullUI, sub_ session</li>
-<li>[x] <code>delegate</code> tool - core, per-type permission resolver, delegate_echo result display</li>
-<li>[x] Agent types registry - global+local types.json merge, /type command, docs/types.md</li>
+<li>[x] Per-agent permission profiles - role tool_permission drives sub-agent policy</li>
+<li>[x] In-process sub-engine - Engine.run_subagent: role overrides, NullUI, sub_ session</li>
+<li>[x] <code>delegate</code> tool - core, per-role permission resolver, delegate_echo result display</li>
+<li>[x] Roles registry - global+local roles.json merge, /roles command, docs/roles.md</li>
 <li>[x] Soft tool results surfaced as dimmed info lines - <code>(empty file)</code>, <code>(no matches)</code> etc</li>
 <li>[x] Session audit trail - permission decisions (allow/ask/deny -&gt; granted/declined/denied)</li>
 <li>[x] Stable message ids - <code>msg_&lt;hex&gt;</code> auto-assigned to every session message</li>

@@ -1107,14 +1107,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/types/" class="md-nav__link">
+      <a href="../reference/types.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Agent types
+    None
   
 
     
@@ -1385,7 +1385,7 @@
 <li><strong>State and memory</strong> - complete append-only session logs, run-owned continuity, and compacted memory per role, team, and job.</li>
 <li><strong>Sandboxing and permissions</strong> - <code>allow</code> / <code>ask</code> / <code>deny</code> per tool, path-scoped confirmation outside the worktree, and an audit trail in the session log.</li>
 <li><strong>Observability</strong> - every prompt, thought, tool call, result, and error is persisted.</li>
-<li><strong>Orchestration</strong> - one agent or many: types and delegation (swarm), scheduled durable work (jobs), and a supervisor for many scoped agents (fleet).</li>
+<li><strong>Orchestration</strong> - one agent or many: roles and delegation (swarm), scheduled durable work (jobs), and a supervisor for many scoped agents (fleet).</li>
 </ul>
 <h2 id="the-runtime">The runtime<a class="headerlink" href="#the-runtime" title="Permanent link">&para;</a></h2>
 <p>Replio assembles five replaceable layers. Each can be swapped without touching the others:</p>
@@ -1407,7 +1407,7 @@
 </tr>
 <tr>
 <td>Capability</td>
-<td>tools, skills, types, and permissions</td>
+<td>tools, skills, roles, and permissions</td>
 </tr>
 <tr>
 <td>Model</td>
@@ -1426,7 +1426,7 @@
 <li><strong>Onboarding</strong> - on first run the assistant introduces itself, explains what it can do, and asks what the user wants to do. No system-level configuration is required of simple users.</li>
 <li><strong>Small tasks inline</strong> - a question or a small task is answered in the current run, through the existing one-stream agent loop.</li>
 <li><strong>Bigger tasks delegated, never blocking</strong> - for work that does not end after one task, the assistant starts sub-agents or whole teams, then reports their status. The user can check status with commands, jump into a session, ask for the current state, or view and mark items done on a per-agent todo list.</li>
-<li><strong>Recurring tasks carry their own role</strong> - each job carries its own type and skills, so behavior is encoded once instead of re-prompted. A recurring task that maintains docs "per AGENTS.md" keeps that convention in its own skill, not in every prompt.</li>
+<li><strong>Recurring tasks carry their own role</strong> - each job carries its own role and skills, so behavior is encoded once instead of re-prompted. A recurring task that maintains docs "per AGENTS.md" keeps that convention in its own skill, not in every prompt.</li>
 <li><strong>Health monitoring</strong> - the assistant can watch endpoints (for example the <code>/health</code> of agents running as web APIs) and warn when an agent stops responding.</li>
 <li><strong>One-window status</strong> - sessions, running agents, and configured jobs on the current machine are visible with commands, without a separate CLI. Logs are reachable from the same surface.</li>
 <li><strong>Report-back</strong> - finished or failed runs surface a summary, and are delivered out-of-band over connectors (webhook first, email later) when the terminal is closed.</li>
@@ -1437,7 +1437,7 @@
 <ol>
 <li><strong>Ask</strong> - the operator states an outcome to the <code>assistant</code>, in one sentence.</li>
 <li><strong>Compose</strong> - for work beyond one task, the assistant engages the <code>composer</code> role, which designs a team: the specialists, the skills each needs, the stage order, and an optional review loop. The team is saved to the catalog, so it can be reused and extended.</li>
-<li><strong>Run</strong> - the assistant starts the team. Stages run in order, each with its own type, skills, and permission carve, and each writing its own session log. A review loop lets a producer revise against the reviewer's feedback until it passes.</li>
+<li><strong>Run</strong> - the assistant starts the team. Stages run in order, each with its own role, skills, and permission carve, and each writing its own session log. A review loop lets a producer revise against the reviewer's feedback until it passes.</li>
 <li><strong>Hand off</strong> - as phases change, control moves from one run to the next. The assistant hands focus to the composer, the composer to a planning agent, the planning agent to a developer, and back again with a new task. Each run keeps its own session, so a developer resumes with what it just did.</li>
 <li><strong>Watch or stay out</strong> - the operator can follow progress, jump into any run with <code>/focus</code>, or let it run silently. A status line shows what each agent is doing.</li>
 <li><strong>Remember</strong> - after the run, the team and its members update bounded memory. The next run continues from the change, not from a replayed transcript.</li>
@@ -1447,21 +1447,21 @@
 <p>A few ways people use Replio:</p>
 <ul>
 <li><strong>One terminal, whole teams</strong> - ask the assistant for an outcome (a document, a feature, a review), and let it compose and run a team. You stay at one prompt.</li>
-<li><strong>A recurring maintainer</strong> - schedule a job that carries its own type and skills, for example "keep the docs in sync with AGENTS.md", and let the scheduler run it unattended.</li>
+<li><strong>A recurring maintainer</strong> - schedule a job that carries its own role and skills, for example "keep the docs in sync with AGENTS.md", and let the scheduler run it unattended.</li>
 <li><strong>A supervised fleet</strong> - run many single-purpose agents, one per folder, under the fleet supervisor, and reach each over HTTP.</li>
-<li><strong>A library of specialists</strong> - define agent types and skills once, then reuse them across tasks, teams, and jobs, extending a type per task with additional skills.</li>
+<li><strong>A library of specialists</strong> - define roles and skills once, then reuse them across tasks, teams, and jobs, extending a role per task with additional skills.</li>
 <li><strong>A scripted agent</strong> - drive the same loop from the CLI or the HTTP API for automation and CI.</li>
 </ul>
 <p>This is the operator-facing half of the runtime, and it is what the phases turn on.</p>
 <h2 id="decisions">Decisions<a class="headerlink" href="#decisions" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Assistant is the single point of contact</strong> - the main agent is named <code>assistant</code>. Delegation and team composition are assistant-driven, using the types, teams, and skills registries (bundled, global, local, and plugin layers).</li>
+<li><strong>Assistant is the single point of contact</strong> - the main agent is named <code>assistant</code>. Delegation and team composition are assistant-driven, using the roles, teams, and skills registries (bundled, global, local, and plugin layers).</li>
 <li><strong>Run-owned sessions</strong> - a session belongs to a run. Whoever starts a run creates its session: the root at startup, <code>delegate</code>/<code>team</code> at delegation, the scheduler per job run. A role is an identity a run borrows, never a session owner, so there is no <code>agent_&lt;role&gt;</code> and no <code>sub_&lt;key&gt;</code>.</li>
 <li><strong>Focus navigates, handoff moves</strong> - <code>/focus</code> shows the run tree and jumps into existing runs, and never creates a session. <code>handoff</code> moves focus between runs and pauses or finishes the current one, without creating or naming a session.</li>
 <li><strong>Memory, not replay</strong> - continuity has two scales. Within a run, the run's own session is the context, so a planner giving a developer another task sees its recent work. Across runs, continuity is bounded memory: a compacted Markdown summary per role, team, and job, injected into briefs and refreshed after runs, so recurring work does not replay an ever-growing session.</li>
 <li><strong>Sequential-first</strong> - team stages run one member after another via <code>run_subagent</code> (existing, battle-tested). In-process threaded concurrency is the later milestone for watching and joining a live run (cuts wall-clock and lets the operator jump in, not tokens).</li>
-<li><strong>No pre-saved run prompts</strong> - briefs, handoff, and memory are generated per run. Stored artifacts are types, teams, and skills in the registries.</li>
-<li><strong>Core stays thin and publishable</strong> - registries plus the sequential runner plus plugin hooks. Everything customer-specific lives in local <code>types.json</code>, <code>teams.json</code>, <code>skills/</code>, or plugins, and moves toward plugins entirely.</li>
+<li><strong>No pre-saved run prompts</strong> - briefs, handoff, and memory are generated per run. Stored artifacts are roles, teams, and skills in the registries.</li>
+<li><strong>Core stays thin and publishable</strong> - registries plus the sequential runner plus plugin hooks. Everything customer-specific lives in local <code>roles.json</code>, <code>teams.json</code>, <code>skills/</code>, or plugins, and moves toward plugins entirely.</li>
 </ul>
 <h2 id="context-economics-why-this-costs-what-it-costs">Context economics (why this costs what it costs)<a class="headerlink" href="#context-economics-why-this-costs-what-it-costs" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1477,7 +1477,7 @@
 <li><strong>Onboarding</strong> - the assistant introduces itself on first run and asks what to do. Defaults and docs for simple users.</li>
 <li><strong>One-window status</strong> - <code>/status</code> shows sessions, running agents, and configured jobs on the machine. Logs are reachable from the same surface.</li>
 <li><strong>Non-blocking delegation</strong> - the assistant delegates big tasks to sub-agents or teams without blocking, with progress reporting, jump-into-session, and per-agent todo lists that can be marked done.</li>
-<li><strong>Recurring tasks with roles</strong> - jobs carry their own type and skills, so recurring behavior is encoded per task.</li>
+<li><strong>Recurring tasks with roles</strong> - jobs carry their own role and skills, so recurring behavior is encoded per task.</li>
 <li><strong>Health monitoring</strong> - the assistant watches agent endpoints and warns on failures.</li>
 <li><strong>Report-back connectors</strong> - job summaries delivered out-of-band.</li>
 <li><strong>Governance mode</strong> - the full control surface when needed, invisible otherwise.</li>

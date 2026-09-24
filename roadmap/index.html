@@ -361,17 +361,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#repl-interaction-fixes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        REPL interaction fixes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#run-control-and-sub-run-visibility" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -409,17 +398,6 @@
     <span class="md-ellipsis">
       
         Memory and role instructions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#types-to-roles-rename" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Types to roles rename
       
     </span>
   </a>
@@ -1272,14 +1250,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/types/" class="md-nav__link">
+      <a href="../reference/types.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Agent types
+    None
   
 
     
@@ -1422,17 +1400,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#repl-interaction-fixes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        REPL interaction fixes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#run-control-and-sub-run-visibility" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1470,17 +1437,6 @@
     <span class="md-ellipsis">
       
         Memory and role instructions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#types-to-roles-rename" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Types to roles rename
       
     </span>
   </a>
@@ -1710,39 +1666,6 @@
 <li>Effort: S &lt; M &lt; L</li>
 <li>Provides: the capability the task delivers</li>
 </ul>
-<h2 id="repl-interaction-fixes">REPL interaction fixes<a class="headerlink" href="#repl-interaction-fixes" title="Permanent link">&para;</a></h2>
-<p>The bugs that blocked interaction twice and affect every package that needs a decision or a long prompt.</p>
-<table>
-<thead>
-<tr>
-<th>Task</th>
-<th>Effort</th>
-<th>Provides</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Never confirm-gate <code>ask</code> - exclude the <code>ask</code> tool from its own confirm, so a question is never blocked by the prompt it needs</td>
-<td>S</td>
-<td>asking always works</td>
-</tr>
-<tr>
-<td><code>hide_confirm_input</code> scope - the hidden input applies only to a <code>[Y/n]</code> confirm, never to a free-text ask answer</td>
-<td>S</td>
-<td>no unanswerable prompts</td>
-</tr>
-<tr>
-<td>Reliable multi-line input - an explicit close rule (a closing delimiter at line start, or a blank line) instead of the odd-count quote heuristic</td>
-<td>M</td>
-<td>multi-line input that does not fire mid-typing</td>
-</tr>
-<tr>
-<td>Compact status params - render an oversized or multiline argument (<code>content</code>, <code>old</code>, <code>new</code>, <code>context</code>, <code>options</code>) as <code>&lt;N chars&gt;</code> or omit it, in the glyph status line and the confirm label</td>
-<td>S</td>
-<td>no body dumps in status or confirms</td>
-</tr>
-</tbody>
-</table>
 <h2 id="run-control-and-sub-run-visibility">Run control and sub-run visibility<a class="headerlink" href="#run-control-and-sub-run-visibility" title="Permanent link">&para;</a></h2>
 <p>A running team or delegate takes the terminal, so the operator cannot abort, run a command, or focus another run. The status line yields to the keyboard, a sub-run reports what it cost, and a middle verbosity keeps the caller in place.</p>
 <table>
@@ -1758,16 +1681,6 @@
 <td>Interruptible run status - the status line yields to the keyboard, with a hint line naming the keys (Enter to continue, ^O to open, ^C to cancel) plus a <code>Switch &lt;role&gt;</code> marker</td>
 <td>M</td>
 <td>stay in control during a run</td>
-</tr>
-<tr>
-<td>Sub-run stats - print each sub-run's duration and token count, dimmed, under its status line</td>
-<td>S-M</td>
-<td>see what a sub-run cost</td>
-</tr>
-<tr>
-<td>Sub-run verbosity mode - a middle mode that keeps the caller in place and prints a truncated view of the sub-run (its write and edit calls), while research and reads stay hidden</td>
-<td>M</td>
-<td>watch progress without the noise</td>
 </tr>
 <tr>
 <td>Focus a live sub-run - <code>/focus</code> watches, joins, or cancels a running sub-run and leaves the caller reachable</td>
@@ -1796,11 +1709,6 @@
 <td><code>hide_confirm_input</code> default true - the typed input is hidden on the tool confirm unless overridden</td>
 <td>S</td>
 <td>quieter confirms</td>
-</tr>
-<tr>
-<td>Backslash line continuation - a trailing <code>\</code> continues the message on the next line, alongside the existing <code>"""</code> and <code>'''</code> blocks</td>
-<td>S</td>
-<td>easier multi-line input</td>
 </tr>
 <tr>
 <td><code>/clear</code> command - empty the screen and the previous messages, then reprint the startup header</td>
@@ -1890,25 +1798,7 @@
 </tr>
 </tbody>
 </table>
-<p>Known gap: <code>bind_root_agent</code> applies the type prompt only when <code>config.origin('system_prompt') == 'default'</code>, it runs once at startup, and it never refreshes, so the root-memory change alone is incomplete. It must share one prompt-composition helper with <code>_new_sub_engine</code>, respect the <code>origin</code> guard, and ship with a refresh path (the conclusion stage), otherwise the injected memory never updates.</p>
-<h2 id="types-to-roles-rename">Types to roles rename<a class="headerlink" href="#types-to-roles-rename" title="Permanent link">&para;</a></h2>
-<p>One vocabulary names the agent catalog. The rename is clean in code with no compatibility aliases, and the operator adapts the existing <code>.replio</code> files by hand.</p>
-<table>
-<thead>
-<tr>
-<th>Task</th>
-<th>Effort</th>
-<th>Provides</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Rename the type catalog to roles - <code>AgentType</code> to <code>Role</code>, <code>TypeRegistry</code> to <code>RoleRegistry</code>, <code>/types</code> to <code>/roles</code>, <code>--type</code> to <code>--role</code>, <code>register_types</code> to <code>register_roles</code>, <code>types.json</code> to <code>roles.json</code>, <code>docs/types.md</code> to <code>docs/roles.md</code>, a clean in-code rename with no compatibility aliases</td>
-<td>L</td>
-<td>one vocabulary</td>
-</tr>
-</tbody>
-</table>
+<p>Known gap: <code>bind_root_agent</code> applies the role prompt only when <code>config.origin('system_prompt') == 'default'</code>, it runs once at startup, and it never refreshes, so the root-memory change alone is incomplete. It must share one prompt-composition helper with <code>_new_sub_engine</code>, respect the <code>origin</code> guard, and ship with a refresh path (the conclusion stage), otherwise the injected memory never updates.</p>
 <h2 id="role-boundaries-skills-and-project-knowledge">Role boundaries, skills, and project knowledge<a class="headerlink" href="#role-boundaries-skills-and-project-knowledge" title="Permanent link">&para;</a></h2>
 <p>A role's file and folder access is a config rule, not a prompt, and a skill is tool or framework centered while the project description lives in <code>AGENTS.md</code>.</p>
 <table>
@@ -1954,29 +1844,9 @@
 </thead>
 <tbody>
 <tr>
-<td>Optional output log - a config-gated file recording everything printed in a session</td>
-<td>S-M</td>
-<td>a durable transcript to inspect</td>
-</tr>
-<tr>
-<td>Tool-call identification and compact params - a tool call is obvious at a glance and never dumps a file body</td>
-<td>S</td>
-<td>legible status lines</td>
-</tr>
-<tr>
 <td>Batched structured asks - several decisions in one structured ask</td>
 <td>S</td>
 <td>fewer round trips</td>
-</tr>
-<tr>
-<td>Tool identity - git prints as Git with its own glyph, and the dev wrappers get their own identity</td>
-<td>S</td>
-<td>recognizable tool calls</td>
-</tr>
-<tr>
-<td>Error color - a failed command prints its output red</td>
-<td>S</td>
-<td>visible failures</td>
 </tr>
 <tr>
 <td>Tester loop scope - the tester runs only the related tests during the loop and the whole suite once</td>
@@ -2131,9 +2001,9 @@
 <td>per-site instructions</td>
 </tr>
 <tr>
-<td>Agent type directory scan for export/import - read <code>.replio/types/*.md</code> (front-matter types) to import and export types to Markdown</td>
+<td>Role directory scan for export/import - read <code>.replio/roles/*.md</code> (front-matter roles) to import and export roles to Markdown</td>
 <td>S-M</td>
-<td>portable type definitions</td>
+<td>portable role definitions</td>
 </tr>
 <tr>
 <td>Swarm orchestration umbrella (TODO item)</td>
@@ -2154,7 +2024,7 @@
 </thead>
 <tbody>
 <tr>
-<td>Recurring tasks carry their own role - each job carries its own type and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time</td>
+<td>Recurring tasks carry their own role - each job carries its own role and skills, so behavior like "make doc changes per AGENTS.md" is encoded once instead of re-prompted every time</td>
 <td>S-M</td>
 <td>encoded recurring behavior</td>
 </tr>

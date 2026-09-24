@@ -1121,14 +1121,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/" class="md-nav__link">
+      <a href="../types.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Agent types
+    None
   
 
     
@@ -1440,12 +1440,12 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <tr>
 <td><code>assistant</code></td>
 <td><code>true</code></td>
-<td>Bind the REPL root to the <code>assistant_type</code> identity on startup. <code>false</code> leaves the root untyped (no injected identity). A non-empty <code>system_prompt</code> always wins over the type prompt</td>
+<td>Bind the REPL root to the <code>assistant_role</code> identity on startup. <code>false</code> leaves the root untyped (no injected identity). A non-empty <code>system_prompt</code> always wins over the role prompt</td>
 </tr>
 <tr>
-<td><code>assistant_type</code></td>
+<td><code>assistant_role</code></td>
 <td><code>"assistant"</code></td>
-<td>Agent type the REPL root binds to when <code>assistant</code> is on. Rebind to any type (e.g. <code>leader</code>, <code>composer</code>) or a local override of <code>assistant</code></td>
+<td>Role the REPL root binds to when <code>assistant</code> is on. Rebind to any role (e.g. <code>leader</code>, <code>composer</code>) or a local override of <code>assistant</code></td>
 </tr>
 <tr>
 <td><code>ask_policy</code></td>
@@ -1583,6 +1583,16 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td>Tool results replaced by a marker in persisted sessions</td>
 </tr>
 <tr>
+<td><code>output_log</code></td>
+<td><code>false</code></td>
+<td>Write everything the REPL prints to a file, ANSI colors included, so a mis-rendered line can be inspected later. Spinner repaints are skipped. Off by default</td>
+</tr>
+<tr>
+<td><code>output_log_dir</code></td>
+<td><code>".replio/output"</code></td>
+<td>Directory for the output log, relative to the worktree (or absolute). One file per session, named after it</td>
+</tr>
+<tr>
 <td><code>plugins</code></td>
 <td><em>(bundled)</em></td>
 <td>Plugins to load. Empty = all discovered plugins load</td>
@@ -1693,6 +1703,11 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <td>Seconds to wait between stream retries</td>
 </tr>
 <tr>
+<td><code>subrun_verbosity</code></td>
+<td><code>"quiet"</code></td>
+<td>How much of a delegated sub-run reaches the terminal while the caller waits. <code>quiet</code> buffers the whole run (read it with <code>/focus log</code>), <code>summary</code> forwards only the sub-run's write and edit activity lines, <code>full</code> forwards every activity line. The run's own <code>✓ &lt;stage&gt; (Ns, N tokens)</code> line always prints on completion</td>
+</tr>
+<tr>
 <td><code>system_prompt</code></td>
 <td><code>""</code></td>
 <td>Optional system prompt, injected for every front-end (REPL, <code>run</code>, <code>serve</code>)</td>
@@ -1785,7 +1800,7 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <span class="w">  </span><span class="nt">"web"</span><span class="p">:</span><span class="w"> </span><span class="s2">"allow"</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (Y/n confirm), <code>deny</code> (tool hidden/refused). Read/write/list outside the worktree escalate to <code>ask</code> automatically. The <code>delegate</code> category gates the <code>delegate</code> tool. On top of the category action, delegation resolves its permission from the target type: a configured type uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaulting to <code>allow</code>), while an agent type not in the registry defaults to <code>deny</code> (see <a href="../types/">types.md</a>). The <code>team</code> category gates the <code>team</code> tool (default <code>allow</code>), separate from <code>delegate</code> so a type can be a delegation target yet be barred from running pipelines. The <code>ask</code> category gates the <code>ask</code> tool (default <code>allow</code>, the interaction itself, answered by the human or the lead agent, see <a href="../tools/">tools.md</a>). The <code>catalog</code> category gates the <code>catalog</code> tool (default <code>allow</code>). It writes only to the project catalog in <code>.replio/</code>, so a team-composing agent can manage types, teams, and skills without general file edits. Set it to <code>ask</code> to confirm every catalog change. The <code>handoff</code> category gates the <code>handoff</code> tool (default <code>allow</code>). It only moves the REPL's focus between runs (see <a href="../tools/#handing-off-control">tools.md</a>). The <code>vcs</code> category gates the <code>git_commit</code> tool (default <code>ask</code>): a role whose carve sets <code>vcs: allow</code> (an unattended committer, granted by its type) commits without a prompt, every other role confirms, and the broad staging form (<code>all=true</code>) always asks so an unattended commit never sweeps unrelated work. The never-push rule is unaffected, <code>git_commit</code> does not push, merge, checkout, or rewrite history.</p>
+<p>Actions are <code>allow</code> (no prompt), <code>ask</code> (Y/n confirm), <code>deny</code> (tool hidden/refused). Read/write/list outside the worktree escalate to <code>ask</code> automatically. The <code>delegate</code> category gates the <code>delegate</code> tool. On top of the category action, delegation resolves its permission from the target role: a configured role uses its own <code>tool_permission</code> overrides (category <code>delegate</code> defaulting to <code>allow</code>), while a role not in the registry defaults to <code>deny</code> (see <a href="../roles/">roles.md</a>). The <code>team</code> category gates the <code>team</code> tool (default <code>allow</code>), separate from <code>delegate</code> so a role can be a delegation target yet be barred from running pipelines. The <code>ask</code> category gates the <code>ask</code> tool (default <code>allow</code>, the interaction itself, answered by the human or the lead agent, see <a href="../tools/">tools.md</a>). The <code>catalog</code> category gates the <code>catalog</code> tool (default <code>allow</code>). It writes only to the project catalog in <code>.replio/</code>, so a team-composing agent can manage roles, teams, and skills without general file edits. Set it to <code>ask</code> to confirm every catalog change. The <code>handoff</code> category gates the <code>handoff</code> tool (default <code>allow</code>). It only moves the REPL's focus between runs (see <a href="../tools/#handing-off-control">tools.md</a>). The <code>vcs</code> category gates the <code>git_commit</code> tool (default <code>ask</code>): a role whose carve sets <code>vcs: allow</code> (an unattended committer, granted by its role) commits without a prompt, every other role confirms, and the broad staging form (<code>all=true</code>) always asks so an unattended commit never sweeps unrelated work. The never-push rule is unaffected, <code>git_commit</code> does not push, merge, checkout, or rewrite history.</p>
 <h3 id="ask_policy"><code>ask_policy</code><a class="headerlink" href="#ask_policy" title="Permanent link">&para;</a></h3>
 <p>Routes the <code>ask</code> tool by kind:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1805,15 +1820,15 @@ replio<span class="w"> </span>config<span class="w"> </span><span class="nb">uns
 <li><code>tool_permission</code> - what the engine itself may use.</li>
 <li><code>grant_permission</code> - the ceiling on what it may hand down to sub-agents.</li>
 </ul>
-<p>A sub-agent's effective permissions are the parent's <code>tool_permission</code>, narrowed by the type's <code>tool_permission</code> carve and capped by the parent's <code>grant_permission</code>. A type can never widen a category above the ceiling, so a sub-agent cannot gain a permission its caller was not authorized to delegate. <code>grant_permission</code> defaults to the engine's own <code>tool_permission</code>, so delegation never escalates unless a type (or config) explicitly widens the ceiling.</p>
-<p>A type that sets <code>grant_permission</code> may delegate categories it does not use itself. For example, a supervisor with <code>edit</code>/<code>bash</code> denied for itself but allowed in its ceiling can hand them to an <code>implementer</code> while never running them.</p>
+<p>A sub-agent's effective permissions are the parent's <code>tool_permission</code>, narrowed by the role's <code>tool_permission</code> carve and capped by the parent's <code>grant_permission</code>. A role can never widen a category above the ceiling, so a sub-agent cannot gain a permission its caller was not authorized to delegate. <code>grant_permission</code> defaults to the engine's own <code>tool_permission</code>, so delegation never escalates unless a role (or config) explicitly widens the ceiling.</p>
+<p>A role that sets <code>grant_permission</code> may delegate categories it does not use itself. For example, a supervisor with <code>edit</code>/<code>bash</code> denied for itself but allowed in its ceiling can hand them to an <code>implementer</code> while never running them.</p>
 <p>An approved permission request creates a one-shot grant on the asking sub-agent (<code>once</code>), consumed by the next matching call. The operator may grant <code>always</code>, reusable for the rest of that sub-agent's run. Grants are never inherited by grandchildren and are recorded in the session <code>permissions</code> audit array.</p>
 <h3 id="unattended-mode">Unattended mode<a class="headerlink" href="#unattended-mode" title="Permanent link">&para;</a></h3>
 <p><code>unattended: true</code> guarantees that nothing in a turn reads stdin, at any depth, so an overnight REPL run cannot freeze on a prompt. It applies to the whole sub-agent tree:</p>
 <ul>
 <li><strong>Confirms auto-deny.</strong> A tool whose policy action is <code>ask</code> (e.g. <code>run_command</code> with <code>bash: ask</code>) returns <code>[cancelled] User declined the &lt;name&gt; call</code> instead of prompting.</li>
 <li><strong><code>ask target='human'</code> parks instead of prompting.</strong> The root engine drops its terminal UI (<code>_ask_ui</code> is not propagated down the tree), and any human-routed ask becomes a pending request persisted in <code>.replio/asks.json</code>, returned to the agent as <code>[parked] Ask #&lt;id&gt; ...</code> so it continues or finishes. A sub-agent's human ask parks rather than falling back to its lead, so the operator decides. Permission asks routed <code>human</code> park the same way. Routed <code>auto</code> still go to the lead (a one-shot grant).</li>
-<li><strong>Model approval is not prompted.</strong> An unapproved type/team model is denied (the run reports the error) unless the headless <code>approve_models</code> flag was passed. Launch with <code>--approve-model</code> if the run needs to approve one itself.</li>
+<li><strong>Model approval is not prompted.</strong> An unapproved role/team model is denied (the run reports the error) unless the headless <code>approve_models</code> flag was passed. Launch with <code>--approve-model</code> if the run needs to approve one itself.</li>
 </ul>
 <p>Enable it per run with <code>replio --unattended</code> (not persisted), in config with <code>unattended: true</code>, or live with <code>/unattended</code>. Parked asks are listed and answered with <code>/asks</code> or the serve API (<code>GET /asks</code>, <code>POST /asks/&lt;id&gt;/answer</code>). Answering marks the ask answered and injects the answer into the origin session, so the next turn on that session resumes with the operator's decision in context. Scheduled/durable job engines run unattended, so a job parks its human asks the same way. <code>confirm_timeout</code> (seconds, default <code>0</code> = forever) additionally makes attended confirm/ask prompts self-limiting, so a prompt left unanswered auto-denies instead of hanging.</p>
 <h3 id="bash_allow-command-allowlist-for-run_command"><code>bash_allow</code> - command allowlist for <code>run_command</code><a class="headerlink" href="#bash_allow-command-allowlist-for-run_command" title="Permanent link">&para;</a></h3>
