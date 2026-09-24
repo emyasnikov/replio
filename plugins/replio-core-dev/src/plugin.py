@@ -103,7 +103,8 @@ def _run(argv: list[str], cwd: str | None, config,
     if cwd:
         lines.append(f'[cwd: {cwd}]')
     lines.append(f'exit {proc.returncode}')
-    no_tests = 'NO TESTS RAN' in body or proc.returncode == 5
+    no_tests = ('NO TESTS RAN' in body or 'Ran 0 tests' in body
+                or proc.returncode == 5)
     if target and no_tests:
         lines.append(
             f'Error: no tests matched "{target}" '

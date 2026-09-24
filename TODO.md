@@ -58,6 +58,7 @@
 
 ## Open
 
+- [ ] Command audit - review the slash commands for opaque or overlapping behavior and consolidate
 - [ ] Focus keeps the run's context - re-entering a finished run uses its retained engine or resumes that run's own session, and never starts a fresh session. /focus drops the session:<name> attach, because saved sessions belong to /load
 - [ ] Interruptible run status - the status line yields to the keyboard during a delegated or team run, with a hint line naming the keys (Enter to continue, ^O to open, ^C to cancel) and a Switch <role> marker
 - [ ] Focus a live sub-run - /focus attaches to a running sub-run and leaves the caller reachable
@@ -160,6 +161,7 @@
 - [ ] Session import from Markdown/JSON
 
 ## Done
+- [x] `code_test` no-match detected on Python 3.11 (`Ran 0 tests`)
 - [x] Tool identity - git and the dev wrappers print their own glyph and verb
 - [x] Error color - a failed command echoes its output red
 - [x] Compact status params - large or multiline args render as `<N chars>`

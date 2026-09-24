@@ -118,8 +118,7 @@ class TestDevTools(unittest.TestCase):
         out = self.run_tool('code_test', target='tests.test_empty',
                             cwd=str(self.root))
         self.assertIn('no tests matched "tests.test_empty"', out)
-        self.assertIn('NO TESTS RAN', out)
-        self.assertIn('exit 5', out)
+        self.assertIn('Ran 0 tests', out)
 
     def test_default_timeout_fits_full_suite(self):
         self.assertGreaterEqual(dev_plugin.DEFAULT_TIMEOUT, 300)
